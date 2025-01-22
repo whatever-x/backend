@@ -1,0 +1,65 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+plugins {
+    id 'org.springframework.boot' version '3.4.1'
+    id 'io.spring.dependency-management' version '1.1.7'
+
+    // Kotlin 플러그인
+    id 'org.jetbrains.kotlin.jvm' version '1.9.25'
+    id 'org.jetbrains.kotlin.plugin.spring' version '1.9.25'
+    id 'org.jetbrains.kotlin.plugin.jpa' version '1.9.25'
+}
+
+allOpen {
+    annotation 'jakarta.persistence.Entity'
+    annotation 'jakarta.persistence.MappedSuperclass'
+    annotation 'jakarta.persistence.Embeddable'
+}
+
+group = 'com.whatever'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Spring
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Jackson과 Kotlin의 호환성을 위한 모듈
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
+
+    // 리플렉션을 지원하는 Kotlin 라이브러리
+    implementation 'org.jetbrains.kotlin:kotlin-reflect'
+
+    // Memory DB
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // DB
+    runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll('-Xjsr305=strict')
+        jvmTarget.set(JvmTarget.JVM_21)
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

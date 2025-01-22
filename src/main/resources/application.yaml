@@ -1,0 +1,100 @@
+spring:
+  profiles:
+    default: local
+    active: local-mem
+  application:
+    name: whatever-backend
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        show_sql: false
+        use_sql_comments: true
+        format_sql: true
+        globally_quoted_identifiers: true
+
+---
+# Production
+spring:
+  config:
+    activate:
+      on-profile: production
+#  datasource:
+#    url: 'jdbc:h2:mem:whatever;NON_KEYWORDS=USER'
+#    username: 'user'
+#    password: ''
+#    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+---
+# Dev
+spring:
+  config:
+    activate:
+      on-profile: dev
+#  datasource:
+#    url: 'jdbc:h2:mem:whatever;NON_KEYWORDS=USER'
+#    username: 'user'
+#    password: ''
+#    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+---
+# Local
+spring:
+  config:
+    activate:
+      on-profile: local
+    import: optional:file:.env[.properties]
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/whatever
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+---
+# Local-mem
+spring:
+  config:
+    activate:
+      on-profile: local-mem
+    import: optional:file:.env[.properties]
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: 'jdbc:h2:mem:whatever'
+    username: 'user'
+    password: ''
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
