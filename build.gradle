@@ -34,6 +34,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
     // Jackson과 Kotlin의 호환성을 위한 모듈
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
 
