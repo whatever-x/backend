@@ -1,7 +1,7 @@
 package com.whatever.global.exception
 
 import com.whatever.global.exception.common.CaramelException
-import com.whatever.global.exception.common.CaramelExceptionAdvice
+import com.whatever.global.exception.common.CaramelControllerAdvice
 import com.whatever.global.exception.dto.ExceptionResponse
 import jakarta.servlet.ServletException
 import jakarta.validation.ConstraintViolationException
@@ -17,7 +17,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException
 
 @RestControllerAdvice
-class GlobalExceptionAdvice : CaramelExceptionAdvice() {
+class GlobalControllerAdvice : CaramelControllerAdvice() {
 
     // TODO: 로깅처리 필수
 
