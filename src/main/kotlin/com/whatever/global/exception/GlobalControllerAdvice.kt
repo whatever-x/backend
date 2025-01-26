@@ -23,7 +23,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
 
     @ExceptionHandler(CaramelException::class)
     fun handleCaramelException(e: CaramelException): ResponseEntity<ExceptionResponse> {
-        return createErrorResponse(e.errorCode, e.detailMessage)
+        return createExceptionResponse(e.errorCode, e.detailMessage)
     }
 
     @ExceptionHandler(
@@ -44,7 +44,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
 
                 else -> "처리할 수 없는 에러가 발생했습니다. 관리자에게 문의해주세요."
             }
-        return createErrorResponse(
+        return createExceptionResponse(
             GlobalExceptionCode.ARGS_VALIDATION_FAILED,
             detailMessage
         )
@@ -55,7 +55,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
         HttpMessageNotReadableException::class
     )
     fun handleMethodArgumentTypeMismatchException(e: Exception): ResponseEntity<ExceptionResponse> {
-        return createErrorResponse(
+        return createExceptionResponse(
             GlobalExceptionCode.ARGS_TYPE_MISSMATCH,
             null
         )
@@ -63,7 +63,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
 
     @ExceptionHandler(Exception::class)
     fun handleApplicationException(e: Exception): ResponseEntity<ExceptionResponse> {
-        return createErrorResponse(GlobalExceptionCode.UNKNOWN)
+        return createExceptionResponse(GlobalExceptionCode.UNKNOWN)
     }
 
     @ExceptionHandler(
@@ -71,6 +71,6 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
         HttpRequestMethodNotSupportedException::class
     )
     fun handleNoResourceFoundException(e: ServletException): ResponseEntity<ExceptionResponse> {
-        return createErrorResponse(GlobalExceptionCode.NO_RESOURCE)
+        return createExceptionResponse(GlobalExceptionCode.NO_RESOURCE)
     }
 }

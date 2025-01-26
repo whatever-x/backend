@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity
 
 abstract class CaramelControllerAdvice {
 
-    fun createErrorResponse(
+    fun createExceptionResponse(
         errorCode: CaramelExceptionCode,
         detailMessage: String? = null,
     ): ResponseEntity<ExceptionResponse> {
