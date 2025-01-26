@@ -10,9 +10,9 @@ data class ExceptionResponse(
     companion object {
         fun of(errorCode: CaramelExceptionCode, detailMessage: String?): ExceptionResponse {
             return ExceptionResponse(
-                errorCode.code,
-                errorCode.message,
-                detailMessage
+                code = errorCode.code,
+                message = errorCode.message,
+                detailMessage = detailMessage
             )
         }
     }
