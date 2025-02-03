@@ -3,6 +3,7 @@ package com.whatever.domain.auth.client
 import com.whatever.config.KakaoKauthConfig
 import com.whatever.config.KakaoOAuthConfig
 import com.whatever.domain.auth.client.dto.*
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
@@ -47,6 +48,10 @@ interface KakaoOAuthClient {
 )
 interface KakaoOIDCClient {
 
+    @Cacheable(
+        cacheNames = ["kakao-oidc"],
+        cacheManager = "oidcCacheManager"
+    )
     @GetMapping(
         path = ["/.well-known/jwks.json"],
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE]
