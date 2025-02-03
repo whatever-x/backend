@@ -29,9 +29,6 @@ interface KakaoOAuthClient {
     )
     fun unlinkUser(@RequestHeader("Authorization") accessToken: String): KakaoUnlinkUserResponse
 
-    /**
-     * @param targetIdType kakao 문서에 따라 항상 "user_id"로 고정
-     */
     @PostMapping(
         path = ["/v1/user/unlink"],
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE]
@@ -55,5 +52,14 @@ interface KakaoOIDCClient {
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE]
     )
     fun getOIDCPublicKey(): KakaoOIDCPublicKeysResponse
+
+    /**
+     * 토큰의 유효성 검증이 불가능하므로 디버깅 용도로만 사용해야 한다.
+     */
+    @PostMapping(
+        path = ["/oauth/tokeninfo"],
+        consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE]
+    )
+    fun getIdTokenInfo(@ModelAttribute idToken: KakaoIdTokenInfoRequest): KakaoTokenInfoResponse
 
 }
