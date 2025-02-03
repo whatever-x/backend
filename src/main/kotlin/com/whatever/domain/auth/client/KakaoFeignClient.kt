@@ -1,6 +1,8 @@
 package com.whatever.domain.auth.client
 
+import com.whatever.config.KakaoKauthConfig
 import com.whatever.config.KakaoOAuthConfig
+import com.whatever.domain.auth.client.dto.KakaoOIDCPublicKeysResponse
 import com.whatever.domain.auth.client.dto.KakaoUnlinkUser
 import com.whatever.domain.auth.client.dto.KakaoUnlinkUserResponse
 import com.whatever.domain.auth.client.dto.KakaoUserInfoResponse
@@ -31,5 +33,20 @@ interface KakaoOAuthClient {
         @RequestHeader("Authorization") accessToken: String,
         unlinkUser: KakaoUnlinkUser,
     ): KakaoUnlinkUserResponse
+
+}
+
+@FeignClient(
+    name = "KakaoOIDCClient",
+    url = "https://kauth.kakao.com",
+    configuration = [KakaoKauthConfig::class]
+)
+interface KakaoOIDCClient {
+
+    @GetMapping(
+        path = ["/.well-known/jwks.json"],
+        consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE]
+    )
+    fun getOIDCPublicKey(): KakaoOIDCPublicKeysResponse
 
 }

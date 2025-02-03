@@ -47,3 +47,13 @@ class KakaoResponseDecoder() : ErrorDecoder {
     }
 
 }
+
+
+class KakaoKauthConfig {
+
+    @Bean
+    fun formEncoder(): Encoder {
+        return FormEncoder()
+    }
+
+}
