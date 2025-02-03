@@ -2,7 +2,7 @@ package com.whatever.global.exception
 
 import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.exception.common.CaramelControllerAdvice
-import com.whatever.global.exception.dto.ExceptionResponse
+import com.whatever.global.exception.dto.ErrorResponse
 import jakarta.servlet.ServletException
 import jakarta.validation.ConstraintViolationException
 import org.springframework.http.ResponseEntity
@@ -22,7 +22,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
     // TODO: 로깅처리 필수
 
     @ExceptionHandler(CaramelException::class)
-    fun handleCaramelException(e: CaramelException): ResponseEntity<ExceptionResponse> {
+    fun handleCaramelException(e: CaramelException): ResponseEntity<ErrorResponse> {
         return createExceptionResponse(e.errorCode, e.detailMessage)
     }
 
@@ -31,7 +31,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
         HandlerMethodValidationException::class,
         ConstraintViolationException::class,
     )
-    fun handleArgumentValidationException(e: Exception): ResponseEntity<ExceptionResponse> {
+    fun handleArgumentValidationException(e: Exception): ResponseEntity<ErrorResponse> {
         val detailMessage =
             when (e) {
                 is BindException -> e.bindingResult.fieldErrors.joinToString(", ") {
@@ -54,7 +54,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
         MethodArgumentTypeMismatchException::class,
         HttpMessageNotReadableException::class
     )
-    fun handleMethodArgumentTypeMismatchException(e: Exception): ResponseEntity<ExceptionResponse> {
+    fun handleMethodArgumentTypeMismatchException(e: Exception): ResponseEntity<ErrorResponse> {
         return createExceptionResponse(
             GlobalExceptionCode.ARGS_TYPE_MISSMATCH,
             null
@@ -62,7 +62,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
     }
 
     @ExceptionHandler(Exception::class)
-    fun handleApplicationException(e: Exception): ResponseEntity<ExceptionResponse> {
+    fun handleApplicationException(e: Exception): ResponseEntity<ErrorResponse> {
         return createExceptionResponse(GlobalExceptionCode.UNKNOWN)
     }
 
@@ -70,7 +70,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
         NoResourceFoundException::class,
         HttpRequestMethodNotSupportedException::class
     )
-    fun handleNoResourceFoundException(e: ServletException): ResponseEntity<ExceptionResponse> {
+    fun handleNoResourceFoundException(e: ServletException): ResponseEntity<ErrorResponse> {
         return createExceptionResponse(GlobalExceptionCode.NO_RESOURCE)
     }
 }
