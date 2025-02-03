@@ -2,13 +2,11 @@ package com.whatever.domain.auth.client
 
 import com.whatever.config.KakaoKauthConfig
 import com.whatever.config.KakaoOAuthConfig
-import com.whatever.domain.auth.client.dto.KakaoOIDCPublicKeysResponse
-import com.whatever.domain.auth.client.dto.KakaoUnlinkUser
-import com.whatever.domain.auth.client.dto.KakaoUnlinkUserResponse
-import com.whatever.domain.auth.client.dto.KakaoUserInfoResponse
+import com.whatever.domain.auth.client.dto.*
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
 
@@ -29,9 +27,18 @@ interface KakaoOAuthClient {
         path = ["/v1/user/unlink"],
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE]
     )
-    fun unlinkUser(
-        @RequestHeader("Authorization") accessToken: String,
-        unlinkUser: KakaoUnlinkUser,
+    fun unlinkUser(@RequestHeader("Authorization") accessToken: String): KakaoUnlinkUserResponse
+
+    /**
+     * @param targetIdType kakao 문서에 따라 항상 "user_id"로 고정
+     */
+    @PostMapping(
+        path = ["/v1/user/unlink"],
+        consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE]
+    )
+    fun unlinkUserByAdminKey(
+        @RequestHeader("Authorization") appAdminKeyWithPrefix: String,
+        @ModelAttribute unlinkUser: KakaoUnlinkUserRequest,
     ): KakaoUnlinkUserResponse
 
 }

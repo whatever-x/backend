@@ -14,4 +14,7 @@ data class OauthSecret(
     val redirectUrl: String,
     val appId: String,
     val adminKey: String,
-)
+) {
+    val adminKeyWithPrefix
+        get() = "KakaoAK ${adminKey}"
+}

@@ -1,13 +1,13 @@
 package com.whatever.domain.auth.client.dto
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies
-import com.fasterxml.jackson.databind.annotation.JsonNaming
+import feign.form.FormProperty
 
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class KakaoUnlinkUser(
-    val targetId: Long
+data class KakaoUnlinkUserRequest(
+    @FormProperty("target_id")
+    private var targetId: Long
 ) {
-    val targetIdType = "user_id"  // kakao 스펙상 user_id로 고정
+    @FormProperty("target_id_type")
+    private var targetIdType = "user_id"  // kakao 스펙상 user_id로 고정
 }
 
 data class KakaoUnlinkUserResponse(
