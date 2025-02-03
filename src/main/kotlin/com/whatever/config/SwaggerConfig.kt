@@ -21,7 +21,6 @@ class SwaggerConfig {
 
     @Bean
     fun openApi(): OpenAPI {
-
         val jwtScheme = "Caramel Access Token"
         val securityRequirement = SecurityRequirement().addList(jwtScheme)
 
@@ -37,7 +36,6 @@ class SwaggerConfig {
         return OpenAPI()
             .addSecurityItem(securityRequirement)
             .components(components)
-
     }
 
 }
