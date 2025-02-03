@@ -12,7 +12,14 @@ spring:
         use_sql_comments: true
         format_sql: true
         globally_quoted_identifiers: true
-
+oauth:
+  kakao:
+    base-url: ${OAUTH_BASE_URL}
+    client-id: ${OAUTH_CLIENT_ID}
+    client-secret: ${OAUTH_CLIENT_SECRET}
+    redirect-url: ${OAUTH_REDIRECT_URL}
+    app-id: ${OAUTH_APP_ID}
+    admin-key: ${OAUTH_ADMIN_KEY}
 ---
 # Production
 spring:
