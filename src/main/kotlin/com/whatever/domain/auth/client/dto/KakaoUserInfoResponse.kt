@@ -1,0 +1,33 @@
+package com.whatever.domain.auth.client.dto
+
+import com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy
+import com.fasterxml.jackson.databind.annotation.JsonNaming
+
+@JsonNaming(SnakeCaseStrategy::class)
+data class KakaoUserInfoResponse(
+    val id: Long,
+    val kakaoAccount: KakaoAccount? = null,
+    val properties: KakaoUserProperties? = null,
+)
+
+@JsonNaming(SnakeCaseStrategy::class)
+data class KakaoAccount(
+    val profile: Profile? = null,
+
+    // 하위 요소들은 kakao biz 필요
+    val name: String? = null,
+    val email: String? = null,
+    val phoneNumber: String? = null,
+)
+
+@JsonNaming(SnakeCaseStrategy::class)
+data class Profile(
+    val nickname: String? = null,
+    val thumbnailImageUrl: String? = null,
+    val profileImageUrl: String? = null,
+)
+
+@JsonNaming(SnakeCaseStrategy::class)
+data class KakaoUserProperties(
+    val nickname: String? = null,
+)
