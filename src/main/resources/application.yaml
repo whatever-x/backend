@@ -114,6 +114,8 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
+  cache:
+    type: caffeine
 
 logging:
   level:
