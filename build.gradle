@@ -33,9 +33,11 @@ dependencies {
     // Spring
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-
-    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3'
 
     // Jackson과 Kotlin의 호환성을 위한 모듈
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
@@ -43,15 +45,9 @@ dependencies {
     // 리플렉션을 지원하는 Kotlin 라이브러리
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
 
-    // Memory DB
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
     // DB
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.postgresql:postgresql'
-
-    // Swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3'
 
     // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
