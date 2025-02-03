@@ -25,6 +25,13 @@ oauth:
     redirect-url: ${OAUTH_REDIRECT_URL}
     app-id: ${OAUTH_APP_ID}
     admin-key: ${OAUTH_ADMIN_KEY}
+springdoc:
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+  swagger-ui:
+    path: /swagger
+    disable-swagger-default-url: true
+    display-request-duration: true
 ---
 # Production
 spring:
