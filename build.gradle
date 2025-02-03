@@ -10,6 +10,10 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.jpa' version '1.9.25'
 }
 
+ext {
+    springCloudVersion = "2024.0.0"
+}
+
 allOpen {
     annotation 'jakarta.persistence.Entity'
     annotation 'jakarta.persistence.MappedSuperclass'
@@ -33,6 +37,8 @@ dependencies {
     // Spring
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation 'io.github.openfeign:feign-okhttp:13.5'
 
     // Validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -60,6 +66,12 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll('-Xjsr305=strict')
         jvmTarget.set(JvmTarget.JVM_21)
+    }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion"
     }
 }
 
