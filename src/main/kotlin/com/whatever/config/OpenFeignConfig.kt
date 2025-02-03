@@ -1,6 +1,7 @@
 package com.whatever.config
 
 import feign.FeignException
+import feign.Logger
 import feign.Response
 import feign.codec.Encoder
 import feign.codec.ErrorDecoder
@@ -10,6 +11,12 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class FeignClientGlobalConfig {
+
+    @Bean
+    fun feignLoggerLevel(): Logger.Level {
+        return Logger.Level.FULL
+    }
+
 }
 
 class KakaoOAuthConfig {

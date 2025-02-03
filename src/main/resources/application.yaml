@@ -12,6 +12,11 @@ spring:
         use_sql_comments: true
         format_sql: true
         globally_quoted_identifiers: true
+  cloud:
+    openfeign:
+      okhttp:
+        enabled: true
+
 oauth:
   kakao:
     base-url: ${OAUTH_BASE_URL}
@@ -81,6 +86,10 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
+
+logging:
+  level:
+    com.whatever.domain.auth.client: DEBUG
 ---
 # Local-mem
 spring:
@@ -105,3 +114,7 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
+
+logging:
+  level:
+    com.whatever.domain.auth.client: DEBUG
