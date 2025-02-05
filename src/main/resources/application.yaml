@@ -12,6 +12,19 @@ spring:
         use_sql_comments: true
         format_sql: true
         globally_quoted_identifiers: true
+  cloud:
+    openfeign:
+      okhttp:
+        enabled: true
+
+oauth:
+  kakao:
+    base-url: ${OAUTH_BASE_URL}
+    client-id: ${OAUTH_CLIENT_ID}
+    client-secret: ${OAUTH_CLIENT_SECRET}
+    redirect-url: ${OAUTH_REDIRECT_URL}
+    app-id: ${OAUTH_APP_ID}
+    admin-key: ${OAUTH_ADMIN_KEY}
 springdoc:
   default-produces-media-type: application/json
   default-consumes-media-type: application/json
@@ -80,6 +93,13 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
+  cache: # 원하는 cache의 주석을 해제하여 사용
+    type: caffeine
+  #    type: redis
+
+logging:
+  level:
+    com.whatever.domain.auth.client: DEBUG
 ---
 # Local-mem
 spring:
@@ -104,3 +124,10 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
+  cache:  # 원하는 cache의 주석을 해제하여 사용
+    type: caffeine
+#    type: redis
+
+logging:
+  level:
+    com.whatever.domain.auth.client: DEBUG

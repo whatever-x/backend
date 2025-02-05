@@ -10,6 +10,10 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.jpa' version '1.9.25'
 }
 
+ext {
+    springCloudVersion = "2024.0.0"
+}
+
 allOpen {
     annotation 'jakarta.persistence.Entity'
     annotation 'jakarta.persistence.MappedSuperclass'
@@ -36,6 +40,17 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+    // OpenFeign
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation 'io.github.openfeign:feign-okhttp:13.5'
+
+    // Cache
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+
+    // Logging
+    implementation 'io.github.oshai:kotlin-logging-jvm:7.0.3'
+
     // Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3'
 
@@ -59,6 +74,12 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll('-Xjsr305=strict')
         jvmTarget.set(JvmTarget.JVM_21)
+    }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion"
     }
 }
 
