@@ -1,17 +1,23 @@
 package com.whatever.global.exception.common
 
-import com.whatever.global.exception.dto.ErrorResponse
+import com.whatever.global.exception.dto.CaramelApiResponse
 import org.springframework.http.ResponseEntity
 
 abstract class CaramelControllerAdvice {
 
     fun createExceptionResponse(
         errorCode: CaramelExceptionCode,
-        detailMessage: String? = null,
-    ): ResponseEntity<ErrorResponse> {
+        debugMessage: String? = null,
+    ): ResponseEntity<CaramelApiResponse<*>> {
         return ResponseEntity
             .status(errorCode.status)
-            .body(ErrorResponse.of(errorCode, detailMessage))
+            .body(
+                CaramelApiResponse.failed(
+                    code = errorCode.code,
+                    message = errorCode.message,
+                    debugMessage = debugMessage
+                )
+            )
     }
 
 }
