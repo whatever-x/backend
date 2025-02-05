@@ -1,8 +1,8 @@
 package com.whatever.global.exception
 
-import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.exception.common.CaramelControllerAdvice
-import com.whatever.global.exception.dto.ExceptionResponse
+import com.whatever.global.exception.common.CaramelException
+import com.whatever.global.exception.dto.CaramelApiResponse
 import jakarta.servlet.ServletException
 import jakarta.validation.ConstraintViolationException
 import org.springframework.http.ResponseEntity
@@ -22,8 +22,8 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
     // TODO: 로깅처리 필수
 
     @ExceptionHandler(CaramelException::class)
-    fun handleCaramelException(e: CaramelException): ResponseEntity<ExceptionResponse> {
-        return createExceptionResponse(e.errorCode, e.detailMessage)
+    fun handleCaramelException(e: CaramelException): ResponseEntity<CaramelApiResponse<*>> {
+        return createExceptionResponse(errorCode = e.errorCode, debugMessage = e.detailMessage)
     }
 
     @ExceptionHandler(
@@ -31,12 +31,12 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
         HandlerMethodValidationException::class,
         ConstraintViolationException::class,
     )
-    fun handleArgumentValidationException(e: Exception): ResponseEntity<ExceptionResponse> {
+    fun handleArgumentValidationException(e: Exception): ResponseEntity<CaramelApiResponse<*>> {
         val detailMessage =
             when (e) {
                 is BindException -> e.bindingResult.fieldErrors.joinToString(", ") {
-                        "${it.field} : ${it.defaultMessage}"
-                    }
+                    "${it.field} : ${it.defaultMessage}"
+                }
 
                 is ConstraintViolationException -> e.constraintViolations.joinToString(", ") {
                     "${it.propertyPath.last().name} : ${it.message}"
@@ -45,8 +45,8 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
                 else -> "처리할 수 없는 에러가 발생했습니다. 관리자에게 문의해주세요."
             }
         return createExceptionResponse(
-            GlobalExceptionCode.ARGS_VALIDATION_FAILED,
-            detailMessage
+            errorCode = GlobalExceptionCode.ARGS_VALIDATION_FAILED,
+            debugMessage = detailMessage
         )
     }
 
@@ -54,23 +54,23 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
         MethodArgumentTypeMismatchException::class,
         HttpMessageNotReadableException::class
     )
-    fun handleMethodArgumentTypeMismatchException(e: Exception): ResponseEntity<ExceptionResponse> {
+    fun handleMethodArgumentTypeMismatchException(e: Exception): ResponseEntity<CaramelApiResponse<*>> {
         return createExceptionResponse(
-            GlobalExceptionCode.ARGS_TYPE_MISSMATCH,
-            null
+            errorCode = GlobalExceptionCode.ARGS_TYPE_MISSMATCH,
+            debugMessage = null
         )
     }
 
     @ExceptionHandler(Exception::class)
-    fun handleApplicationException(e: Exception): ResponseEntity<ExceptionResponse> {
-        return createExceptionResponse(GlobalExceptionCode.UNKNOWN)
+    fun handleApplicationException(e: Exception): ResponseEntity<CaramelApiResponse<*>> {
+        return createExceptionResponse(errorCode = GlobalExceptionCode.UNKNOWN)
     }
 
     @ExceptionHandler(
         NoResourceFoundException::class,
         HttpRequestMethodNotSupportedException::class
     )
-    fun handleNoResourceFoundException(e: ServletException): ResponseEntity<ExceptionResponse> {
-        return createExceptionResponse(GlobalExceptionCode.NO_RESOURCE)
+    fun handleNoResourceFoundException(e: ServletException): ResponseEntity<CaramelApiResponse<*>> {
+        return createExceptionResponse(errorCode = GlobalExceptionCode.NO_RESOURCE)
     }
 }
