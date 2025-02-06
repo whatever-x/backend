@@ -1,14 +1,18 @@
 package com.whatever.global.jwt
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.whatever.config.properties.JwtProperties
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.toDate
 import io.jsonwebtoken.*
 import org.springframework.stereotype.Component
+import java.util.*
 
 @Component
 class JwtProvider(
     private val jwtProperties: JwtProperties,
+    private val objectMapper: ObjectMapper,
 ) {
     companion object {
         private const val USER_ID_CLAIM_KEY = "userId"
@@ -68,6 +72,24 @@ class JwtProvider(
         // TODO(준용) CustomException으로 변경
         val userId = jwt.payload[USER_ID_CLAIM_KEY] ?: throw IllegalArgumentException("AccessToken이 아닙니다.")
         return userId as Long
+    }
+
+    /**
+     * 서명을 검증하지 않아 검증 용도로 사용하면 안됩니다.
+     */
+    fun getUnsecuredHeader(token: String): Map<String, String> {
+        val jwtChunk = getJwtChunk(token)
+        val jwtHeader = Base64.getDecoder().decode(jwtChunk[0])  // header를 디코딩하여 kid 추출
+        return objectMapper.readValue(jwtHeader)
+    }
+
+    private fun getJwtChunk(token: String): List<String> {
+        val jwtChunk = token.split(Regex.fromLiteral("."))
+        if (jwtChunk.size < 3) {
+            // TODO(준용) CustomException으로 변경
+            throw IllegalArgumentException("올바르지 않은 JWT 형식입니다.")
+        }
+        return jwtChunk
     }
 
     private fun parseJwt(token: String): Jws<Claims> {
