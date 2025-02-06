@@ -93,12 +93,18 @@ class JwtProvider(
     }
 
     private fun parseJwt(token: String): Jws<Claims> {
-        try {
-            return Jwts.parser()
+        return parseJwtWithExceptionHandling {
+            Jwts.parser()
                 .requireIssuer(jwtProperties.issuer)
                 .verifyWith(jwtProperties.secretKey)
                 .build()
                 .parseSignedClaims(token)
+        }
+    }
+
+    final inline fun <T> parseJwtWithExceptionHandling(block: () -> T): T {
+        try {
+            return block()
 
             // TODO(준용) CustomException으로 변경
         } catch (e: InvalidClaimException) {
