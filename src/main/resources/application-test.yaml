@@ -1,0 +1,55 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+    import: optional:file:.env[.properties]
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: 'jdbc:h2:mem:whatever'
+    username: 'user'
+    password: ''
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        use_sql_comments: true
+        format_sql: true
+        globally_quoted_identifiers: true
+        show_sql: true
+  cloud:
+    openfeign:
+      okhttp:
+        enabled: true
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+  cache:
+    type: caffeine
+
+logging:
+  level:
+    com.whatever.domain.auth.client: DEBUG
+oauth:
+  kakao:
+    base-url: ${OAUTH_BASE_URL}
+    client-id: ${OAUTH_CLIENT_ID}
+    client-secret: ${OAUTH_CLIENT_SECRET}
+    redirect-url: ${OAUTH_REDIRECT_URL}
+    app-id: ${OAUTH_APP_ID}
+    admin-key: ${OAUTH_ADMIN_KEY}
+springdoc:
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+  swagger-ui:
+    path: /swagger
+    disable-swagger-default-url: true
+    display-request-duration: true
+jwt:
+  secret-key-str: ${SECRET_KEY_STR}
+  access-expiration-sec: ${ACCESS_EXPIRATION_SEC}
+  refresh-expiration-sec: ${REFRESH_EXPIRATION_SEC}
+  issuer: Caramel
