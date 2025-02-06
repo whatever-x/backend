@@ -10,11 +10,14 @@ import org.springframework.stereotype.Component
 class JwtProvider(
     private val jwtProperties: JwtProperties,
 ) {
+    companion object {
+        private const val USER_ID_CLAIM_KEY = "userId"
+    }
 
-    // TODO(준용) accessToken에 넣을 Claim 상의 후 DTO로 전환
+    // TODO(준용) accessToken에 넣을 User 정보 Claim 상의 후 DTO로 전환
     fun createAccessToken(userId: Long): String {
         val claims = mutableMapOf<String, String>()
-        claims["userId"] = userId.toString()
+        claims[USER_ID_CLAIM_KEY] = userId.toString()
 
         return createJwt(
             subject = "access",
@@ -56,6 +59,15 @@ class JwtProvider(
         } catch (e: RuntimeException) {
             false
         }
+    }
+
+    // TODO(준용) User 정보 DTO 반환으로 전환
+    fun parseAccessToken(token: String): Long {
+        val jwt = parseJwt(token)
+
+        // TODO(준용) CustomException으로 변경
+        val userId = jwt.payload[USER_ID_CLAIM_KEY] ?: throw IllegalArgumentException("AccessToken이 아닙니다.")
+        return userId as Long
     }
 
     private fun parseJwt(token: String): Jws<Claims> {
