@@ -3,7 +3,7 @@ package com.whatever.domain.sample.controller
 import com.whatever.domain.sample.exception.SampleExceptionCode
 import com.whatever.domain.sample.exception.SampleNotFoundException
 import com.whatever.domain.sample.service.SampleService
-import com.whatever.global.exception.dto.ExceptionResponse
+import com.whatever.global.exception.dto.ErrorResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
@@ -52,7 +52,7 @@ class SampleController(
             content = [  // 해당 응답에 대한 스키마 추가 가능
                 Content(
                     mediaType = "application/json",
-                    schema = Schema(implementation = ExceptionResponse::class),
+                    schema = Schema(implementation = ErrorResponse::class),
                     //array = ArraySchema(schema = Schema(implementation = ExceptionResponse::class))  // array도 가능
                 )
             ]
