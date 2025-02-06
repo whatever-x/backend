@@ -10,7 +10,7 @@ data class KakaoIdTokenInfoRequest(
 )
 
 @JsonNaming(SnakeCaseStrategy::class)
-data class KakaoTokenInfoResponse(
+data class KakaoIdTokenPayload(
     val iss: String,
     val aud: String,
     val sub: String,
