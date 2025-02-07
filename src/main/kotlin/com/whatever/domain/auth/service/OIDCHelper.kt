@@ -5,7 +5,9 @@ import com.whatever.domain.auth.client.dto.JsonWebKey
 import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
 import com.whatever.global.jwt.JwtProvider
 import io.jsonwebtoken.Claims
+import io.jsonwebtoken.InvalidClaimException
 import io.jsonwebtoken.Jws
+import io.jsonwebtoken.JwtParser
 import io.jsonwebtoken.Jwts
 import org.springframework.stereotype.Component
 import java.math.BigInteger
@@ -44,13 +46,30 @@ class OIDCHelper(
         issuer: String,
         audience: String,
     ): Jws<Claims> {
-        return jwtProvider.parseJwtWithExceptionHandling {
-            Jwts.parser()
+        val idTokenParser = getIdTokenParser(
+            issuer = issuer,
+            audience = audience,
+            rsaPublicKey = rsaPublicKey
+        )
+        return jwtProvider.parseJwt(
+            jwtParser = idTokenParser,
+            token = idToken
+        )
+    }
+
+    private fun getIdTokenParser(
+        issuer: String,
+        audience: String,
+        rsaPublicKey: PublicKey
+    ): JwtParser {
+        try {
+            return Jwts.parser()
                 .requireIssuer(issuer)
                 .requireAudience(audience)
                 .verifyWith(rsaPublicKey)
                 .build()
-                .parseSignedClaims(idToken)
+        } catch (e: InvalidClaimException) {  // TODO(준용) CustomException으로 변경
+            throw IllegalArgumentException("IdToken의 필수 클레임이 누락되었거나 올바르지 않습니다.")
         }
     }
 
