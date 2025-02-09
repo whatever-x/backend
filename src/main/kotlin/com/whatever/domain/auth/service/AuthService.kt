@@ -63,4 +63,5 @@ class DefaultAuthService(
 private fun KakaoUserInfoResponse.toUser() = User(
     platform = LoginPlatform.KAKAO,
     nickname = kakaoAccount?.profile?.nickname,
+    email = kakaoAccount?.email,
 )
