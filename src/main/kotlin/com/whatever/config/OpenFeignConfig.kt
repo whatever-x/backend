@@ -20,21 +20,6 @@ class FeignClientGlobalConfig {
 class KakaoOAuthConfig {
 
     @Bean
-    fun requestInterceptor(): RequestInterceptor {
-        return RequestInterceptor { template: RequestTemplate ->
-            template.headers()["Authorization"]
-                ?.firstOrNull()
-                ?.takeIf { it.startsWith("Bearer ").not() }
-                ?.let {
-                    template.run {
-                        removeHeader("Authorization")
-                        header("Authorization", "Bearer $it")
-                    }
-                }
-        }
-    }
-
-    @Bean
     fun formEncoder(): Encoder {
         return FormEncoder()
     }
