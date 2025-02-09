@@ -32,6 +32,11 @@ springdoc:
     path: /swagger
     disable-swagger-default-url: true
     display-request-duration: true
+jwt:
+  secret-key-str: ${SECRET_KEY_STR}
+  access-expiration-sec: ${ACCESS_EXPIRATION_SEC}
+  refresh-expiration-sec: ${REFRESH_EXPIRATION_SEC}
+  issuer: Caramel
 ---
 # Production
 spring:

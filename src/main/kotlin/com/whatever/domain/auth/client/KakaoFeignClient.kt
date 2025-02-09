@@ -65,6 +65,6 @@ interface KakaoOIDCClient {
         path = ["/oauth/tokeninfo"],
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE]
     )
-    fun getIdTokenInfo(@ModelAttribute idToken: KakaoIdTokenInfoRequest): KakaoTokenInfoResponse
+    fun getIdTokenInfo(@ModelAttribute idToken: KakaoIdTokenInfoRequest): KakaoIdTokenPayload
 
 }
