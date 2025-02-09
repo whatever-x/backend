@@ -12,7 +12,7 @@ class User(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     var email: String? = null,
 
     var birthDate: LocalDate? = null,
