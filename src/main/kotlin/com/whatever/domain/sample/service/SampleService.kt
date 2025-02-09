@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional(readOnly = true)
-class SampleService (
+class SampleService(
     sampleEntityRepository: SampleEntityRepository
 ) {
 

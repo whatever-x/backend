@@ -12,7 +12,7 @@ data class KakaoUserInfoResponse(
 
 @JsonNaming(SnakeCaseStrategy::class)
 data class KakaoAccount(
-    val profile: Profile? = null,
+    val profile: Profile,
 
     // 하위 요소들은 kakao biz 필요
     val name: String? = null,
@@ -22,9 +22,9 @@ data class KakaoAccount(
 
 @JsonNaming(SnakeCaseStrategy::class)
 data class Profile(
-    val nickname: String? = null,
-    val thumbnailImageUrl: String? = null,
-    val profileImageUrl: String? = null,
+    val nickname: String,
+    val thumbnailImageUrl: String,
+    val profileImageUrl: String,
 )
 
 @JsonNaming(SnakeCaseStrategy::class)

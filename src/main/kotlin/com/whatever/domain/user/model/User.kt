@@ -2,6 +2,7 @@ package com.whatever.domain.user.model
 
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.couple.model.Couple
+import com.whatever.domain.user.dto.UserStatus
 import jakarta.persistence.*
 import java.time.LocalDate
 
@@ -11,20 +12,20 @@ class User(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    @Column(nullable = false)
-    var name: String,
-
     @Column(unique = true, nullable = false)
-    var email: String,
+    var email: String? = null,
 
-    var birthDate: LocalDate,
+    var birthDate: LocalDate? = null,
 
     @Enumerated(EnumType.STRING)
     val platform: LoginPlatform,
 
     var nickname: String? = null,
 
-    var gender: String?,
+    var gender: String? = null,
+
+    @Enumerated(EnumType.STRING)
+    var userStatus: UserStatus = UserStatus.NEW,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "couple_id", referencedColumnName = "id")
