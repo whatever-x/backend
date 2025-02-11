@@ -31,3 +31,8 @@ class JwtUnsupportedException(
     errorCode: JwtExceptionCode,
     detailMessage: String? = null
 ) : CaramelJwtException(errorCode)
+
+class JwtMissingClaimException(
+    errorCode: JwtExceptionCode,
+    detailMessage: String? = null
+) : CaramelJwtException(errorCode)
