@@ -1,5 +1,6 @@
 package com.whatever.domain.auth.service
 
+import com.whatever.config.properties.JwtProperties
 import com.whatever.domain.auth.client.KakaoOAuthClient
 import com.whatever.domain.auth.client.dto.KakaoUserInfoResponse
 import com.whatever.domain.auth.dto.SocialAuthResponse
@@ -19,6 +20,7 @@ class AuthService(
     private val jwtHelper: JwtHelper,
     private val userRepository: UserRepository,
     private val redisTemplate: RedisTemplate<String, String>,
+    private val jwtProperties: JwtProperties
 ) {
     fun signUp(
         loginPlatform: LoginPlatform,
@@ -43,17 +45,25 @@ class AuthService(
         val kakaoUserInfoResponse = kakaoOAuthClient.getUserInfo(accessToken)
         val user = userRepository.save(kakaoUserInfoResponse.toUser())
 
-        val jwtAccessToken = jwtHelper.createAccessToken(kakaoUserInfoResponse.id)
-        val jwtRefreshToken = jwtHelper.createRefreshToken()
+        val userId = user.id ?: throw GlobalException(GlobalExceptionCode.ARGS_VALIDATION_FAILED)
 
-        return SocialAuthResponse(jwtAccessToken, jwtRefreshToken).also {
-            redisTemplate.opsForValue().set(user.id.toString(), it.refreshToken, Duration.ofDays(7L))
-        }
+        return createTokenAndSave(userId = userId)
     }
 
     private fun getAppleAccessToken(accessToken: String): SocialAuthResponse {
         // TODO: 애플 로그인 구현 필요
         throw IllegalStateException("애플 로그인 미구현")
+    }
+
+    private fun createTokenAndSave(userId: Long): SocialAuthResponse {
+        val accessToken = jwtHelper.createAccessToken(userId)  // access token 발행
+        val refreshToken = jwtHelper.createRefreshToken()  // refresh token 발행
+        redisTemplate.opsForValue()
+            .set(userId.toString(), refreshToken, Duration.ofSeconds(jwtProperties.refreshExpirationSec))
+        return SocialAuthResponse(
+            accessToken,
+            refreshToken,
+        )
     }
 }
 
