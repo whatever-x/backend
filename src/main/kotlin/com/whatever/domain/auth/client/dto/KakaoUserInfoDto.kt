@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming
 @JsonNaming(SnakeCaseStrategy::class)
 data class KakaoUserInfoResponse(
     val id: Long,
-    val kakaoAccount: KakaoAccount? = null,
+    val kakaoAccount: KakaoAccount,
     val properties: KakaoUserProperties? = null,
 )
 
@@ -18,6 +18,8 @@ data class KakaoAccount(
     val name: String? = null,
     val email: String? = null,
     val phoneNumber: String? = null,
+    val birthYear: String? = null,
+    val birthDay: String? = null,
 )
 
 @JsonNaming(SnakeCaseStrategy::class)

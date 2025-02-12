@@ -12,6 +12,7 @@ import com.whatever.global.exception.GlobalExceptionCode
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.time.Duration
+import java.time.LocalDate
 
 
 @Service
@@ -44,7 +45,6 @@ class AuthService(
     private fun getKakaoResponse(accessToken: String): SocialAuthResponse {
         val kakaoUserInfoResponse = kakaoOAuthClient.getUserInfo(accessToken)
         val user = userRepository.save(kakaoUserInfoResponse.toUser())
-
         val userId = user.id ?: throw GlobalException(GlobalExceptionCode.ARGS_VALIDATION_FAILED)
 
         return createTokenAndSave(userId = userId)
@@ -69,6 +69,15 @@ class AuthService(
 
 private fun KakaoUserInfoResponse.toUser() = User(
     platform = LoginPlatform.KAKAO,
-    nickname = kakaoAccount?.profile?.nickname,
-    email = kakaoAccount?.email,
+    nickname = kakaoAccount.profile.nickname,
+    email = kakaoAccount.email,
+    birthDate = if (kakaoAccount.birthYear != null && kakaoAccount.birthDay != null) {
+        LocalDate.of(
+            kakaoAccount.birthYear.toInt(),
+            kakaoAccount.birthDay.take(2).toInt(),
+            kakaoAccount.birthDay.takeLast(2).toInt()
+        )
+    } else {
+        null
+    }
 )

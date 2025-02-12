@@ -63,6 +63,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
 
     @ExceptionHandler(Exception::class)
     fun handleApplicationException(e: Exception): ResponseEntity<CaramelApiResponse<*>> {
+        println("->>> $e")
         return createExceptionResponse(errorCode = GlobalExceptionCode.UNKNOWN)
     }
 
