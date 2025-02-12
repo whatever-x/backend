@@ -12,23 +12,15 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.time.Duration
 
-interface AuthService {
-
-    fun signUp(
-        loginPlatform: LoginPlatform,
-        accessToken: String,
-    ): SocialAuthResponse
-}
 
 @Service
-class DefaultAuthService(
+class AuthService(
     private val kakaoOAuthClient: KakaoOAuthClient,
     private val jwtHelper: JwtHelper,
     private val userRepository: UserRepository,
     private val redisTemplate: RedisTemplate<String, String>,
-) : AuthService {
-
-    override fun signUp(
+) {
+    fun signUp(
         loginPlatform: LoginPlatform,
         accessToken: String,
     ): SocialAuthResponse {
