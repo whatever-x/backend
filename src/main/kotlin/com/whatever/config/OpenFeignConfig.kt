@@ -1,8 +1,6 @@
 package com.whatever.config
 
-import feign.FeignException
-import feign.Logger
-import feign.Response
+import feign.*
 import feign.codec.Encoder
 import feign.codec.ErrorDecoder
 import feign.form.FormEncoder
