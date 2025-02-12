@@ -1,8 +1,8 @@
 package com.whatever.domain.auth.controller
 
-import com.whatever.domain.auth.dto.AuthType
 import com.whatever.domain.auth.dto.SocialAuthResponse
 import com.whatever.domain.auth.service.AuthService
+import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.succeed
 import io.swagger.v3.oas.annotations.Operation
@@ -31,10 +31,10 @@ class AuthController(
     )
     @PostMapping("/sign-up")
     fun signUp(
-        authType: AuthType,
+        loginPlatform: LoginPlatform,
         accessToken: String,
     ): CaramelApiResponse<SocialAuthResponse> {
-        val socialAuthResponse = authService.signUp(authType, accessToken)
+        val socialAuthResponse = authService.signUp(loginPlatform, accessToken)
         return socialAuthResponse.succeed()
     }
 }

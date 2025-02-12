@@ -2,11 +2,12 @@ package com.whatever.domain.auth.service
 
 import com.whatever.domain.auth.client.KakaoOAuthClient
 import com.whatever.domain.auth.client.dto.KakaoUserInfoResponse
-import com.whatever.domain.auth.dto.AuthType
 import com.whatever.domain.auth.dto.SocialAuthResponse
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
+import com.whatever.global.exception.GlobalException
+import com.whatever.global.exception.GlobalExceptionCode
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -14,7 +15,7 @@ import java.time.Duration
 interface AuthService {
 
     fun signUp(
-        authType: AuthType,
+        loginPlatform: LoginPlatform,
         accessToken: String,
     ): SocialAuthResponse
 }
@@ -28,16 +29,20 @@ class DefaultAuthService(
 ) : AuthService {
 
     override fun signUp(
-        authType: AuthType,
+        loginPlatform: LoginPlatform,
         accessToken: String,
     ): SocialAuthResponse {
-        return when (authType) {
-            AuthType.KAKAO -> {
+        return when (loginPlatform) {
+            LoginPlatform.KAKAO -> {
                 getKakaoResponse(accessToken = accessToken)
             }
 
-            AuthType.APPLE -> {
+            LoginPlatform.APPLE -> {
                 getAppleAccessToken(accessToken = accessToken)
+            }
+
+            else -> {
+                throw GlobalException(GlobalExceptionCode.ARGS_VALIDATION_FAILED)
             }
         }
     }
