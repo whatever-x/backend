@@ -1,58 +1,39 @@
 package com.whatever.domain.auth.service
 
 import com.whatever.config.properties.JwtProperties
-import com.whatever.domain.auth.client.KakaoOAuthClient
-import com.whatever.domain.auth.client.dto.KakaoUserInfoResponse
 import com.whatever.domain.auth.dto.SocialAuthResponse
+import com.whatever.domain.auth.service.provider.SocialUserProvider
 import com.whatever.domain.user.model.LoginPlatform
-import com.whatever.domain.user.model.User
-import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.exception.GlobalException
 import com.whatever.global.exception.GlobalExceptionCode
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.time.Duration
-import java.time.LocalDate
 
 
 @Service
 class AuthService(
-    private val kakaoOAuthClient: KakaoOAuthClient,
     private val jwtHelper: JwtHelper,
-    private val userRepository: UserRepository,
     private val redisTemplate: RedisTemplate<String, String>,
-    private val jwtProperties: JwtProperties
+    private val jwtProperties: JwtProperties,
+    userProviders: List<SocialUserProvider>,
 ) {
-    fun signUp(
+    private val userProviderMap = userProviders.associateBy { it.platform }
+
+    fun signUpOrSignIn(
         loginPlatform: LoginPlatform,
         accessToken: String,
     ): SocialAuthResponse {
-        val userId = when (loginPlatform) {
-            LoginPlatform.KAKAO -> {
-                persistUserByKakao(kakaoAccessToken = accessToken)
-            }
+        val userProvider = userProviderMap[loginPlatform]
+            ?: throw GlobalException(
+                GlobalExceptionCode.ARGS_VALIDATION_FAILED,
+                "일치하는 로그인 플랫폼이 없습니다. platform: ${loginPlatform}"
+            )
 
-            LoginPlatform.APPLE -> {
-                persistUserByApple(appleAccessToken = accessToken)
-            }
-
-            else -> {
-                throw GlobalException(GlobalExceptionCode.ARGS_VALIDATION_FAILED)
-            }
-        }
+        val userId = userProvider.findOrCreateUser(accessToken).id
+            ?: throw GlobalException(GlobalExceptionCode.ARGS_VALIDATION_FAILED)
 
         return createTokenAndSave(userId = userId)
-    }
-
-    private fun persistUserByKakao(kakaoAccessToken: String): Long {
-        val kakaoUserInfoResponse = kakaoOAuthClient.getUserInfo(kakaoAccessToken)
-        val user = userRepository.save(kakaoUserInfoResponse.toUser())
-        return user.id ?: throw GlobalException(GlobalExceptionCode.ARGS_VALIDATION_FAILED)
-    }
-
-    private fun persistUserByApple(appleAccessToken: String): Long {
-        // TODO: 애플 로그인 구현 필요
-        throw IllegalStateException("애플 로그인 미구현")
     }
 
     private fun createTokenAndSave(userId: Long): SocialAuthResponse {
@@ -66,19 +47,3 @@ class AuthService(
         )
     }
 }
-
-private fun KakaoUserInfoResponse.toUser() = User(
-    platform = LoginPlatform.KAKAO,
-    platformUserId = platformUserId,
-    nickname = kakaoAccount.profile.nickname,
-    email = kakaoAccount.email,
-    birthDate = if (kakaoAccount.birthYear != null && kakaoAccount.birthDay != null) {
-        LocalDate.of(
-            kakaoAccount.birthYear.toInt(),
-            kakaoAccount.birthDay.take(2).toInt(),
-            kakaoAccount.birthDay.takeLast(2).toInt()
-        )
-    } else {
-        null
-    }
-)

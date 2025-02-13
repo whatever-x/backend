@@ -34,7 +34,7 @@ class AuthController(
         loginPlatform: LoginPlatform,
         accessToken: String,
     ): CaramelApiResponse<SocialAuthResponse> {
-        val socialAuthResponse = authService.signUp(loginPlatform, accessToken)
+        val socialAuthResponse = authService.signUpOrSignIn(loginPlatform, accessToken)
         return socialAuthResponse.succeed()
     }
 }
