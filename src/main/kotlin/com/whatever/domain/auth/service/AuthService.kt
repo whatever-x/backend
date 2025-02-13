@@ -27,30 +27,30 @@ class AuthService(
         loginPlatform: LoginPlatform,
         accessToken: String,
     ): SocialAuthResponse {
-        return when (loginPlatform) {
+        val userId = when (loginPlatform) {
             LoginPlatform.KAKAO -> {
-                getKakaoResponse(accessToken = accessToken)
+                persistUserByKakao(kakaoAccessToken = accessToken)
             }
 
             LoginPlatform.APPLE -> {
-                getAppleAccessToken(accessToken = accessToken)
+                persistUserByApple(appleAccessToken = accessToken)
             }
 
             else -> {
                 throw GlobalException(GlobalExceptionCode.ARGS_VALIDATION_FAILED)
             }
         }
-    }
-
-    private fun getKakaoResponse(accessToken: String): SocialAuthResponse {
-        val kakaoUserInfoResponse = kakaoOAuthClient.getUserInfo(accessToken)
-        val user = userRepository.save(kakaoUserInfoResponse.toUser())
-        val userId = user.id ?: throw GlobalException(GlobalExceptionCode.ARGS_VALIDATION_FAILED)
 
         return createTokenAndSave(userId = userId)
     }
 
-    private fun getAppleAccessToken(accessToken: String): SocialAuthResponse {
+    private fun persistUserByKakao(kakaoAccessToken: String): Long {
+        val kakaoUserInfoResponse = kakaoOAuthClient.getUserInfo(kakaoAccessToken)
+        val user = userRepository.save(kakaoUserInfoResponse.toUser())
+        return user.id ?: throw GlobalException(GlobalExceptionCode.ARGS_VALIDATION_FAILED)
+    }
+
+    private fun persistUserByApple(appleAccessToken: String): Long {
         // TODO: 애플 로그인 구현 필요
         throw IllegalStateException("애플 로그인 미구현")
     }
