@@ -69,6 +69,7 @@ class AuthService(
 
 private fun KakaoUserInfoResponse.toUser() = User(
     platform = LoginPlatform.KAKAO,
+    platformUserId = platformUserId,
     nickname = kakaoAccount.profile.nickname,
     email = kakaoAccount.email,
     birthDate = if (kakaoAccount.birthYear != null && kakaoAccount.birthDay != null) {

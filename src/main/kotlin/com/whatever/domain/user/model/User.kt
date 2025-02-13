@@ -20,6 +20,8 @@ class User(
     @Enumerated(EnumType.STRING)
     val platform: LoginPlatform,
 
+    val platformUserId: String,
+
     var nickname: String? = null,
 
     var gender: String? = null,

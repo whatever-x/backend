@@ -8,7 +8,10 @@ data class KakaoUserInfoResponse(
     val id: Long,
     val kakaoAccount: KakaoAccount,
     val properties: KakaoUserProperties? = null,
-)
+) {
+    val platformUserId
+        get() = id.toString()
+}
 
 @JsonNaming(SnakeCaseStrategy::class)
 data class KakaoAccount(
