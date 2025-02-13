@@ -5,6 +5,7 @@ import com.whatever.domain.auth.client.dto.KakaoUserInfoResponse
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 
@@ -19,8 +20,15 @@ class KakaoUserProvider(
 
     override fun findOrCreateUser(socialAccessToken: String): User {
         val userInfo = kakaoOAuthClient.getUserInfo(socialAccessToken)
-        return userRepository.findByPlatformUserId(userInfo.platformUserId)
-            ?: userRepository.save(userInfo.toUser())
+        userRepository.findByPlatformUserId(userInfo.platformUserId)?.let {
+            return it
+        }
+
+        return try {
+            userRepository.save(userInfo.toUser())
+        } catch (e: DataIntegrityViolationException) {
+            userRepository.findByPlatformUserId(userInfo.platformUserId) ?: throw e
+        }
     }
 }
 

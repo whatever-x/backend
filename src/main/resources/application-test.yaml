@@ -17,7 +17,7 @@ spring:
         use_sql_comments: true
         format_sql: true
         globally_quoted_identifiers: true
-        show_sql: true
+        show_sql: false
   cloud:
     openfeign:
       okhttp:
