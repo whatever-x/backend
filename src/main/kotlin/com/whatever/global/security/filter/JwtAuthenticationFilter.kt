@@ -40,13 +40,9 @@ class JwtAuthenticationFilter(
         filterChain.doFilter(request, response)
     }
 
-    private fun getAuthentication(accessToken: String): UsernamePasswordAuthenticationToken {
+    private fun getAuthentication(accessToken: String): UsernamePasswordAuthenticationToken? {
         val userId = jwtHelper.parseAccessToken(accessToken)
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw AuthenticationException(
-                errorCode = SecurityExceptionCode.USER_NOT_FOUND,
-                detailMessage = "가입되지 않은 유저입니다. 재가입이 필요합니다. UserId: ${userId}"
-            )
+        val user = userRepository.findByIdOrNull(userId) ?: return null
 
         val userDetails = CaramelUserDetails(
             userId = user.id!!,

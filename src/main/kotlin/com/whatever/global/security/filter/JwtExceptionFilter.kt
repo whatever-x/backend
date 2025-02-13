@@ -1,6 +1,7 @@
 package com.whatever.global.security.filter
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.whatever.global.exception.GlobalExceptionCode
 import com.whatever.global.jwt.exception.CaramelJwtException
 import com.whatever.global.security.exception.AuthenticationException
 import com.whatever.global.security.util.setExceptionResponse
@@ -27,10 +28,10 @@ class JwtExceptionFilter(
                 detailMessage = e.detailMessage,
                 objectMapper = objectMapper
             )
-        } catch (e: AuthenticationException) {
+        } catch (e: Exception) {
             response.setExceptionResponse(
-                errorCode = e.errorCode,
-                detailMessage = e.detailMessage,
+                errorCode = GlobalExceptionCode.UNKNOWN,
+                detailMessage = "인증 과정에서 예상하지 못한 에러가 발생했습니다.",
                 objectMapper = objectMapper
             )
         }
