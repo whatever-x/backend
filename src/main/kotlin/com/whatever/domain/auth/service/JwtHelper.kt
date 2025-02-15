@@ -2,9 +2,10 @@ package com.whatever.domain.auth.service
 
 import com.whatever.config.properties.JwtProperties
 import com.whatever.global.jwt.JwtProvider
-import io.jsonwebtoken.InvalidClaimException
-import io.jsonwebtoken.JwtParser
-import io.jsonwebtoken.Jwts
+import com.whatever.global.jwt.exception.CaramelJwtException
+import com.whatever.global.jwt.exception.JwtExceptionCode
+import com.whatever.global.jwt.exception.JwtMissingClaimException
+import io.jsonwebtoken.*
 import org.springframework.stereotype.Component
 
 @Component
@@ -14,6 +15,8 @@ class JwtHelper(
 ) {
     companion object {
         private const val USER_ID_CLAIM_KEY = "userId"
+        private const val ACCESS_SUBJECT_NAME = "access"
+        private const val REFRESH_SUBJECT_NAME = "refresh"
     }
 
     // TODO(준용) accessToken에 넣을 User 정보 Claim 상의 후 DTO로 전환
@@ -22,7 +25,7 @@ class JwtHelper(
         claims[USER_ID_CLAIM_KEY] = userId.toString()
 
         return jwtProvider.createJwt(
-            subject = "access",
+            subject = ACCESS_SUBJECT_NAME,
             expirationSec = jwtProperties.accessExpirationSec,
             claims = claims,
         )
@@ -30,7 +33,7 @@ class JwtHelper(
 
     fun createRefreshToken(): String {
         return jwtProvider.createJwt(
-            subject = "refresh",
+            subject = REFRESH_SUBJECT_NAME,
             expirationSec = jwtProperties.refreshExpirationSec,
         )
     }
@@ -42,9 +45,29 @@ class JwtHelper(
             token = token,
         )
 
-        // TODO(준용) CustomException으로 변경
-        val userId = jwt.payload[USER_ID_CLAIM_KEY] ?: throw IllegalArgumentException("AccessToken이 아닙니다.")
+        validateAccessToken(jwt)
+
+        val userId = jwt.payload[USER_ID_CLAIM_KEY]
+            ?: throw JwtMissingClaimException(
+                errorCode = JwtExceptionCode.MISSING_CLAIM,
+                detailMessage = "AccessToken에서 User 정보를 찾을 수 없습니다."
+            )
         return userId as Long
+    }
+
+    private fun validateAccessToken(jwt: Jws<Claims>) {
+        val subject = jwt.payload.subject
+            ?: throw JwtMissingClaimException(
+                errorCode = JwtExceptionCode.UNSUPPORTED,
+                detailMessage = "subject 정보가 없습니다. 지원하지 않는 JWT입니다."
+            )
+
+        if (subject == ACCESS_SUBJECT_NAME) {
+            throw JwtMissingClaimException(
+                errorCode = JwtExceptionCode.MISSING_CLAIM,
+                detailMessage = "AccessToken이 아닌 JWT입니다. 용도: $subject"
+            )
+        }
     }
 
     fun isValidJwt(token: String): Boolean {
@@ -54,7 +77,7 @@ class JwtHelper(
                 token = token
             )
             true
-        } catch (e: RuntimeException) {  // TODO(준용) CustomException으로 변경
+        } catch (e: CaramelJwtException) {
             false
         }
     }

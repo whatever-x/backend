@@ -3,11 +3,18 @@ package com.whatever.global.jwt
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.whatever.config.properties.JwtProperties
+import com.whatever.global.jwt.exception.*
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.toDate
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.*
+import io.jsonwebtoken.JwtException
+import io.jsonwebtoken.security.SecurityException
+import io.jsonwebtoken.security.SignatureException
 import org.springframework.stereotype.Component
 import java.util.*
+
+private val logger = KotlinLogging.logger {  }
 
 @Component
 class JwtProvider(
@@ -36,12 +43,24 @@ class JwtProvider(
     fun parseJwt(jwtParser: JwtParser, token: String): Jws<Claims> {
         try {
             return jwtParser.parseSignedClaims(token)
-
-            // TODO(준용) CustomException으로 변경
+        } catch (e: MalformedJwtException) {
+            logger.error(e) { "MalformedJwtException 발생 - 토큰 형식이 잘못되었습니다. 토큰: ${token}" }
+            throw JwtMalformedException(JwtExceptionCode.PARSE_FAILED)
+        } catch (e: SignatureException) {
+            logger.error(e) { "SignatureException 발생 - JWT 서명 검증에 실패했습니다. 토큰: ${token}" }
+            throw JwtSignatureException(JwtExceptionCode.PARSE_FAILED)
+        } catch (e: SecurityException) {
+            logger.error(e) { "SecurityException 발생 - JWT 암호 해독에 실패했습니다. 토큰: ${token}" }
+            throw JwtSecurityException(JwtExceptionCode.PARSE_FAILED)
+        } catch (e: ExpiredJwtException) {
+            logger.error(e) { "ExpiredJwtException 발생 - JWT가 만료되었습니다. 종류: ${e.claims.subject} 만료시간: ${e.claims.expiration}" }
+            throw JwtExpiredException(JwtExceptionCode.PARSE_FAILED)
         } catch (e: UnsupportedJwtException) {
-            throw IllegalArgumentException("서명되지 않았거나 지원되지 않는 JWT 형식입니다.")
+            logger.error(e) { "UnsupportedJwtException 발생 - 지원되지 않는 JWT 형식입니다. 토큰: ${token}" }
+            throw JwtUnsupportedException(JwtExceptionCode.PARSE_FAILED)
         } catch (e: JwtException) {
-            throw IllegalArgumentException("JWT를 파싱하거나 검증하는 과정에서 오류가 발생했습니다.")
+            logger.error(e) { "JwtException 발생 - JWT 파싱 또는 검증 중 오류가 발생했습니다. 토큰: ${token}" }
+            throw CaramelJwtException(JwtExceptionCode.PARSE_FAILED)
         }
     }
 
@@ -57,8 +76,7 @@ class JwtProvider(
     private fun getJwtChunk(token: String): List<String> {
         val jwtChunk = token.split(Regex.fromLiteral("."))
         if (jwtChunk.size < 3) {
-            // TODO(준용) CustomException으로 변경
-            throw IllegalArgumentException("올바르지 않은 JWT 형식입니다.")
+            throw JwtMalformedException(JwtExceptionCode.MALFORMED)
         }
         return jwtChunk
     }

@@ -3,6 +3,7 @@ package com.whatever.global.exception
 import com.whatever.global.exception.common.CaramelControllerAdvice
 import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.exception.dto.CaramelApiResponse
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.ServletException
 import jakarta.validation.ConstraintViolationException
 import org.springframework.http.ResponseEntity
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import org.springframework.web.servlet.resource.NoResourceFoundException
+
+private val logger = KotlinLogging.logger {  }
 
 @RestControllerAdvice
 class GlobalControllerAdvice : CaramelControllerAdvice() {
@@ -63,7 +66,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
 
     @ExceptionHandler(Exception::class)
     fun handleApplicationException(e: Exception): ResponseEntity<CaramelApiResponse<*>> {
-        println("->>> $e")
+        logger.error(e) { "예상하지 못한 예외가 발생했습니다." }
         return createExceptionResponse(errorCode = GlobalExceptionCode.UNKNOWN)
     }
 
