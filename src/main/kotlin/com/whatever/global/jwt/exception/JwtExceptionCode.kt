@@ -15,7 +15,8 @@ enum class JwtExceptionCode(
     SECURITY_FAILURE("003", "JWT 암호 해독에 실패했습니다."),
     EXPIRED("004", "JWT가 만료되었습니다.", HttpStatus.UNAUTHORIZED),
     UNSUPPORTED("005", "지원되지 않는 JWT 형식입니다."),
-    MISSING_CLAIM("006", "JWT에 필요한 정보가 없습니다.")
+    MISSING_CLAIM("006", "JWT에 필요한 정보가 없습니다."),
+    PARSE_FAILED("007", "인증 토큰이 유효하지 않습니다.")
     ;
 
     override val code = "JWT$sequence"
