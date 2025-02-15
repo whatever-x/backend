@@ -30,9 +30,6 @@ spring:
   cache:
     type: caffeine
 
-logging:
-  level:
-    com.whatever.domain.auth.client: DEBUG
 oauth:
   kakao:
     base-url: ${OAUTH_BASE_URL}

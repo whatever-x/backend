@@ -16,7 +16,6 @@ spring:
     openfeign:
       okhttp:
         enabled: true
-
 oauth:
   kakao:
     base-url: ${OAUTH_BASE_URL}
@@ -101,10 +100,6 @@ spring:
   cache: # 원하는 cache의 주석을 해제하여 사용
     type: caffeine
   #    type: redis
-
-logging:
-  level:
-    com.whatever.domain.auth.client: DEBUG
 ---
 # Local-mem
 spring:
@@ -133,6 +128,6 @@ spring:
     type: caffeine
 #    type: redis
 
-logging:
-  level:
-    com.whatever.domain.auth.client: DEBUG
+logback:
+    path:
+      root: ${LOG_FILE_ROOT_PATH}
