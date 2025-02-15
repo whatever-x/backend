@@ -6,17 +6,16 @@ import com.whatever.domain.auth.service.provider.SocialUserProvider
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.global.exception.GlobalException
 import com.whatever.global.exception.GlobalExceptionCode
-import org.springframework.data.redis.core.RedisTemplate
+import com.whatever.util.RedisUtil
 import org.springframework.stereotype.Service
-import java.time.Duration
 
 
 @Service
 class AuthService(
     private val jwtHelper: JwtHelper,
-    private val redisTemplate: RedisTemplate<String, String>,
     private val jwtProperties: JwtProperties,
     userProviders: List<SocialUserProvider>,
+    private val redisUtil: RedisUtil,
 ) {
     private val userProviderMap = userProviders.associateBy { it.platform }
 
@@ -39,8 +38,12 @@ class AuthService(
     private fun createTokenAndSave(userId: Long): SocialAuthResponse {
         val accessToken = jwtHelper.createAccessToken(userId)  // access token 발행
         val refreshToken = jwtHelper.createRefreshToken()  // refresh token 발행
-        redisTemplate.opsForValue()
-            .set(userId.toString(), refreshToken, Duration.ofSeconds(jwtProperties.refreshExpirationSec))
+        redisUtil.saveRefreshToken(
+            userId = userId,
+            deviceId = "tempDeviceId",  // TODO(준용): Client에서 Device Id를 받아와 저장 필요
+            refreshToken = refreshToken,
+            ttlSeconds = jwtProperties.refreshExpirationSec
+        )
         return SocialAuthResponse(
             accessToken,
             refreshToken,
