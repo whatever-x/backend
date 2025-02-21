@@ -17,14 +17,12 @@ class Content(
 
     var title: String? = null,
 
-    var body: String,
+    var description: String,
 
     var wishDate: LocalDate? = null,
 
-//    @OneToMany(mappedBy = "content", fetch = FetchType.LAZY)
-//    val dayEvents: MutableList<DayEvent> = mutableListOf(),
-//
-//    @OneToMany(mappedBy = "content", fetch = FetchType.LAZY)
-//    val timeEvents: MutableList<TimeEvent> = mutableListOf(),
+    @Enumerated(EnumType.STRING)
+    var status: ContentStatus = ContentStatus.ACTIVE,
+
 ) : BaseEntity() {
 }
