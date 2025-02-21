@@ -3,19 +3,19 @@ package com.whatever.domain.calendarevent.timeevent.model
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.calendarevent.eventrecurrence.model.EventRecurrence
+import com.whatever.domain.content.model.ContentDetails
 import com.whatever.domain.timezone.TimeZone
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
-class TimeEvent(
+class ScheduleEvent(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    @OneToOne(optional = false)
-    @JoinColumn(name = "content_id", referencedColumnName = "id")
-    val content: Content,
+    @Column(nullable = false)
+    val uid: String,
 
     @Column(nullable = false)
     val startDateTime: LocalDateTime,
@@ -31,16 +31,9 @@ class TimeEvent(
     @JoinColumn(name = "end_timezone_id", referencedColumnName = "id", nullable = false)
     val endTimeZone: TimeZone,
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recurrence_id", referencedColumnName = "id")
-    val eventRecurrence: EventRecurrence? = null,
+    @Embedded
+    var contentDetails: ContentDetails,
 
-    @OneToMany(mappedBy = "timeEvent")
-    val timeSlots: MutableList<TimeSlot> = mutableListOf(),
+    var isCompleted: Boolean,
 ) : BaseEntity() {
-
-    fun addSlots(timeSlots: List<TimeSlot>) {
-        this.timeSlots.addAll(timeSlots)
-    }
-
 }

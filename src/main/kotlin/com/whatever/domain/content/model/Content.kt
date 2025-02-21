@@ -15,9 +15,8 @@ class Content(
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     val user: User,
 
-    var title: String? = null,
-
-    var description: String,
+    @Embedded
+    val contentDetails: ContentDetails,
 
     var wishDate: LocalDate? = null,
 
