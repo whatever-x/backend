@@ -7,5 +7,9 @@ import jakarta.persistence.Embeddable
 class ContentDetails(
     @Column(nullable = false)
     var title: String,
+
     var description: String?,
+
+    @Column(nullable = false)
+    var isCompleted: Boolean = false,
 )

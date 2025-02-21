@@ -2,6 +2,7 @@ package com.whatever.domain.calendarevent.taskevent.model
 
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.calendarevent.eventrecurrence.model.EventRecurrence
+import com.whatever.domain.calendarevent.eventrecurrence.model.TaskRecurrenceOverride
 import com.whatever.domain.content.model.ContentDetails
 import jakarta.persistence.*
 import java.time.LocalDate
@@ -21,10 +22,10 @@ class TaskEvent(
     @Embedded
     val contentDetails: ContentDetails,
 
-    @Column(nullable = false)
-    var isCompleted: Boolean = false,
-
     @Embedded
     var eventRecurrence: EventRecurrence,
+
+    @OneToMany(mappedBy = "taskEvent", fetch = FetchType.LAZY)
+    val recurrenceOverrides: MutableList<TaskRecurrenceOverride> = mutableListOf(),
 ) : BaseEntity() {
 }

@@ -2,6 +2,7 @@ package com.whatever.domain.calendarevent.scheduleevent.model
 
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.calendarevent.eventrecurrence.model.EventRecurrence
+import com.whatever.domain.calendarevent.eventrecurrence.model.ScheduleRecurrenceOverride
 import com.whatever.domain.content.model.ContentDetails
 import com.whatever.domain.timezone.TimeZone
 import jakarta.persistence.*
@@ -33,10 +34,10 @@ class ScheduleEvent(
     @Embedded
     var contentDetails: ContentDetails,
 
-    @Column(nullable = false)
-    var isCompleted: Boolean = false,
-
     @Embedded
     var eventRecurrence: EventRecurrence,
+
+    @OneToMany(mappedBy = "scheduleEvent", fetch = FetchType.LAZY)
+    val recurrenceOverrides: MutableList<ScheduleRecurrenceOverride> = mutableListOf(),
 ) : BaseEntity() {
 }
