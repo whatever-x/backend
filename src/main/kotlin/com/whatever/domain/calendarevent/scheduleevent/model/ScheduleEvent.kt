@@ -1,8 +1,6 @@
-package com.whatever.domain.calendarevent.timeevent.model
+package com.whatever.domain.calendarevent.scheduleevent.model
 
 import com.whatever.domain.base.BaseEntity
-import com.whatever.domain.content.model.Content
-import com.whatever.domain.calendarevent.eventrecurrence.model.EventRecurrence
 import com.whatever.domain.content.model.ContentDetails
 import com.whatever.domain.timezone.TimeZone
 import jakarta.persistence.*
