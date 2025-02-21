@@ -1,21 +1,24 @@
-package com.whatever.domain.calendarevent.dayevent.model
+package com.whatever.domain.calendarevent.taskevent.model
 
 import com.whatever.domain.base.BaseEntity
+import com.whatever.domain.content.model.ContentDetails
 import jakarta.persistence.*
 import java.time.LocalDate
 
 @Entity
-class DaySlot (
+class TaskEvent(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "day_event_id", referencedColumnName = "id", nullable = false)
-    val dayEvent: DayEvent,
+    @Column(nullable = false)
+    val uid: String,
 
     @Column(nullable = false)
-    var slotDate: LocalDate,
+    val startDate: LocalDate,
+
+    @Embedded
+    val contentDetails: ContentDetails,
 
     @Column(nullable = false)
     var isCompleted: Boolean = false,

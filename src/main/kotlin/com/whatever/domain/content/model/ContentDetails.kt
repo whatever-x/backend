@@ -1,9 +1,11 @@
 package com.whatever.domain.content.model
 
+import jakarta.persistence.Column
 import jakarta.persistence.Embeddable
 
 @Embeddable
 class ContentDetails(
-    var title: String? = null,
-    var description: String,
+    @Column(nullable = false)
+    var title: String,
+    var description: String?,
 )

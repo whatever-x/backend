@@ -32,6 +32,7 @@ class ScheduleEvent(
     @Embedded
     var contentDetails: ContentDetails,
 
-    var isCompleted: Boolean,
+    @Column(nullable = false)
+    var isCompleted: Boolean = false,
 ) : BaseEntity() {
 }
