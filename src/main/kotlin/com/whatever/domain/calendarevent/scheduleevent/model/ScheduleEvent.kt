@@ -1,6 +1,7 @@
 package com.whatever.domain.calendarevent.scheduleevent.model
 
 import com.whatever.domain.base.BaseEntity
+import com.whatever.domain.calendarevent.eventrecurrence.model.EventRecurrence
 import com.whatever.domain.content.model.ContentDetails
 import com.whatever.domain.timezone.TimeZone
 import jakarta.persistence.*
@@ -34,5 +35,8 @@ class ScheduleEvent(
 
     @Column(nullable = false)
     var isCompleted: Boolean = false,
+
+    @Embedded
+    var eventRecurrence: EventRecurrence,
 ) : BaseEntity() {
 }

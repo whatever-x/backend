@@ -1,6 +1,7 @@
 package com.whatever.domain.calendarevent.taskevent.model
 
 import com.whatever.domain.base.BaseEntity
+import com.whatever.domain.calendarevent.eventrecurrence.model.EventRecurrence
 import com.whatever.domain.content.model.ContentDetails
 import jakarta.persistence.*
 import java.time.LocalDate
@@ -22,5 +23,8 @@ class TaskEvent(
 
     @Column(nullable = false)
     var isCompleted: Boolean = false,
+
+    @Embedded
+    var eventRecurrence: EventRecurrence,
 ) : BaseEntity() {
 }
