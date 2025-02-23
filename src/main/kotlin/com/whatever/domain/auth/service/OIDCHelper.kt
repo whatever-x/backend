@@ -1,6 +1,7 @@
 package com.whatever.domain.auth.service
 
 import com.whatever.config.properties.OauthProperties
+import com.whatever.domain.auth.client.dto.AppleIdTokenPayload
 import com.whatever.domain.auth.client.dto.JsonWebKey
 import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
 import com.whatever.global.jwt.JwtProvider
@@ -21,6 +22,24 @@ class OIDCHelper(
     private val jwtProvider: JwtProvider,
     private val oauthProperties: OauthProperties,
 ) {
+
+    fun parseAppleIdToken(
+        idToken: String,
+        oidcPublicKeys: List<JsonWebKey>,
+    ): AppleIdTokenPayload {
+        val kid = getKid(idToken)
+        val webKey = oidcPublicKeys.firstOrNull { jsonWebKey -> jsonWebKey.kid == kid }
+            ?: throw IllegalArgumentException("kid(${kid})에 해당하는 애플 공개키를 찾을 수 없습니다.")  // TODO(준용) CustomException으로 변경
+
+        val jws = parseIdToken(
+            idToken = idToken,
+            rsaPublicKey = getRsaPublicKey(webKey.n, webKey.e),
+            issuer = oauthProperties.apple.baseUrl,
+            audience = oauthProperties.apple.serviceId,
+        )
+
+        return jws.toAppleIdTokenPayload()
+    }
 
     fun parseKakaoIdToken(
         idToken: String,
@@ -109,5 +128,22 @@ private fun Jws<Claims>.toKakaoIdTokenPayload(): KakaoIdTokenPayload {
         nickname = payload["nickname"] as String?,
         picture = payload["picture"] as String?,
         email = payload["email"] as String?,
+    )
+}
+
+private fun Jws<Claims>.toAppleIdTokenPayload(): AppleIdTokenPayload {
+    return AppleIdTokenPayload(
+        iss = payload.issuer as String,
+        aud = payload.audience.joinToString(),
+        exp = payload["exp"].toString().toLong(),
+        iat = payload["iat"].toString().toLong(),
+        sub = payload.subject as String,
+        cHash = payload["c_hash"] as String,
+        email = payload["email"] as String?,
+        emailVerified = payload["email_verified"] as Boolean,
+        isPrivateEmail = payload["is_private_email"] as Boolean,
+        authTime = payload["auth_time"].toString().toLong(),
+        nonceSupported = payload["nonce_supported"] as Boolean,
+        nonce = payload["nonce"] as String?,
     )
 }
