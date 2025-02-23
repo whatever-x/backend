@@ -3,7 +3,7 @@ package com.whatever.domain.calendarevent.scheduleevent.model
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.calendarevent.eventrecurrence.model.EventRecurrence
 import com.whatever.domain.calendarevent.eventrecurrence.model.ScheduleRecurrenceOverride
-import com.whatever.domain.content.model.ContentDetails
+import com.whatever.domain.content.model.ContentDetail
 import com.whatever.domain.timezone.TimeZone
 import jakarta.persistence.*
 import java.time.LocalDateTime
@@ -32,7 +32,7 @@ class ScheduleEvent(
     val endTimeZone: TimeZone,
 
     @Embedded
-    var contentDetails: ContentDetails,
+    var contentDetail: ContentDetail,
 
     @Embedded
     var eventRecurrence: EventRecurrence,

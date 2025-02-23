@@ -2,7 +2,7 @@ package com.whatever.domain.calendarevent.eventrecurrence.model
 
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.calendarevent.taskevent.model.TaskEvent
-import com.whatever.domain.content.model.ContentDetails
+import com.whatever.domain.content.model.ContentDetail
 import jakarta.persistence.*
 import java.time.LocalDate
 
@@ -22,7 +22,7 @@ class TaskRecurrenceOverride(
     var startDate: LocalDate? = null,
 
     @Embedded
-    var contentDetails: ContentDetails,
+    var contentDetail: ContentDetail,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", referencedColumnName = "id")

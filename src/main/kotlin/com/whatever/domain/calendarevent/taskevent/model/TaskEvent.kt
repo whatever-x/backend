@@ -3,7 +3,7 @@ package com.whatever.domain.calendarevent.taskevent.model
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.calendarevent.eventrecurrence.model.EventRecurrence
 import com.whatever.domain.calendarevent.eventrecurrence.model.TaskRecurrenceOverride
-import com.whatever.domain.content.model.ContentDetails
+import com.whatever.domain.content.model.ContentDetail
 import jakarta.persistence.*
 import java.time.LocalDate
 
@@ -20,7 +20,7 @@ class TaskEvent(
     val startDate: LocalDate,
 
     @Embedded
-    val contentDetails: ContentDetails,
+    val contentDetail: ContentDetail,
 
     @Embedded
     var eventRecurrence: EventRecurrence,

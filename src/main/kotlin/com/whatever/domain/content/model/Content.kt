@@ -16,12 +16,12 @@ class Content(
     val user: User,
 
     @Embedded
-    val contentDetails: ContentDetails,
+    val contentDetail: ContentDetail,
 
     var wishDate: LocalDate? = null,
 
     @Enumerated(EnumType.STRING)
     var status: ContentStatus = ContentStatus.ACTIVE,
 
-) : BaseEntity() {
+    ) : BaseEntity() {
 }

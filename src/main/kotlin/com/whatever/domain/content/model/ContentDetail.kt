@@ -4,7 +4,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Embeddable
 
 @Embeddable
-class ContentDetails(
+class ContentDetail(
     @Column(nullable = false)
     var title: String,
 
