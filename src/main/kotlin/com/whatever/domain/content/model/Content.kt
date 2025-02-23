@@ -15,16 +15,13 @@ class Content(
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     val user: User,
 
-    var title: String? = null,
-
-    var body: String,
+    @Embedded
+    val contentDetail: ContentDetail,
 
     var wishDate: LocalDate? = null,
 
-//    @OneToMany(mappedBy = "content", fetch = FetchType.LAZY)
-//    val dayEvents: MutableList<DayEvent> = mutableListOf(),
-//
-//    @OneToMany(mappedBy = "content", fetch = FetchType.LAZY)
-//    val timeEvents: MutableList<TimeEvent> = mutableListOf(),
-) : BaseEntity() {
+    @Enumerated(EnumType.STRING)
+    var status: ContentStatus = ContentStatus.ACTIVE,
+
+    ) : BaseEntity() {
 }

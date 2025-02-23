@@ -13,6 +13,8 @@ class Couple (
 
     var startDate: LocalDate?,
 
+    var sharedMessage: String? = null,
+
     @OneToMany(mappedBy = "couple", fetch = FetchType.LAZY)
     val users: MutableList<User> = mutableListOf(),
 ) : BaseEntity() {
