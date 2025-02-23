@@ -54,9 +54,8 @@ interface KakaoOIDCClient {
     )
     @GetMapping(
         path = ["/.well-known/jwks.json"],
-        consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE]
     )
-    fun getOIDCPublicKey(): KakaoOIDCPublicKeysResponse
+    fun getOIDCPublicKey(): OIDCPublicKeysResponse
 
     /**
      * 토큰의 유효성 검증이 불가능하므로 디버깅 용도로만 사용해야 한다.

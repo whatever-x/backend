@@ -2,7 +2,7 @@ package com.whatever.domain.auth.client.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-data class KakaoOIDCPublicKeysResponse(
+data class OIDCPublicKeysResponse(
     val keys: List<JsonWebKey> = emptyList()
 )
 
