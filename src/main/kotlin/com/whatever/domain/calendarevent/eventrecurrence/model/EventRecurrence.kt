@@ -59,7 +59,7 @@ class EventRecurrence(
     @Convert(converter = RecurrenceDaySetConverter::class)
     var byDay: Set<RecurrenceDay> = emptySet(),
 
-    var byMonthDay: Byte? = null,
+    var byMonthDay: Int? = null,
 ) {
 
     companion object {
@@ -118,7 +118,7 @@ class EventRecurrence(
          */
         fun monthly(
             interval: Int = 1,
-            byMonthDay: Byte,
+            byMonthDay: Int,
             until: LocalDateTime? = null,
             count: Int? = null
         ): EventRecurrence {
@@ -165,7 +165,7 @@ class EventRecurrence(
          */
         fun yearly(
             interval: Int = 1,
-            byMonthDay: Byte,
+            byMonthDay: Int,
             until: LocalDateTime? = null,
             count: Int? = null
         ): EventRecurrence {
