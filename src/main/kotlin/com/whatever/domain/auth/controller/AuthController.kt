@@ -1,7 +1,7 @@
 package com.whatever.domain.auth.controller
 
-import com.whatever.domain.auth.dto.SignupSigninRequest
-import com.whatever.domain.auth.dto.SocialAuthResponse
+import com.whatever.domain.auth.dto.SignInRequest
+import com.whatever.domain.auth.dto.SignInResponse
 import com.whatever.domain.auth.service.AuthService
 import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.succeed
@@ -30,13 +30,13 @@ class AuthController(
             ApiResponse(responseCode = "403", description = "유효하지 않은 토큰"),
         ]
     )
-    @PostMapping("/sign-up")
+    @PostMapping("/sign-in")
     fun signUp(
-        @RequestBody request: SignupSigninRequest,
-    ): CaramelApiResponse<SocialAuthResponse> {
+        @RequestBody request: SignInRequest,
+    ): CaramelApiResponse<SignInResponse> {
         val socialAuthResponse = authService.signUpOrSignIn(
             loginPlatform = request.loginPlatform,
-            accessToken = request.accessToken
+            accessToken = request.idToken
         )
         return socialAuthResponse.succeed()
     }
