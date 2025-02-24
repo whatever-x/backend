@@ -4,10 +4,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties("oauth")
 data class OauthProperties (
-    val kakao: OauthSecret
+    val kakao: KakaoOauthSecret,
+    val apple: AppleOauthSecret,
 )
 
-data class OauthSecret(
+data class KakaoOauthSecret(
     val baseUrl: String,
     val clientId: String,
     val clientSecret: String,
@@ -18,3 +19,12 @@ data class OauthSecret(
     val adminKeyWithPrefix
         get() = "KakaoAK ${adminKey}"
 }
+
+data class AppleOauthSecret(
+    val baseUrl: String,
+    val teamId: String,
+    val serviceId: String,
+    val keyId: String,
+    val keyPath: String,
+    val redirectUrl: String,
+)

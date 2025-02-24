@@ -24,6 +24,13 @@ oauth:
     redirect-url: ${OAUTH_REDIRECT_URL}
     app-id: ${OAUTH_APP_ID}
     admin-key: ${OAUTH_ADMIN_KEY}
+  apple:
+    base-url: ${APPLE_BASE_URL}
+    team-id: ${APPLE_TEAM_ID}
+    service-id: ${APPLE_SERVICE_ID}
+    key-id: ${APPLE_KEY_ID}
+    key-path: ${APPLE_KEY_PATH}
+    redirect-url: ${APPLE_REDIRECT_URI}
 springdoc:
   default-produces-media-type: application/json
   default-consumes-media-type: application/json

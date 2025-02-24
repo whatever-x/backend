@@ -1,14 +1,15 @@
 package com.whatever.domain.auth.controller
 
+import com.whatever.domain.auth.dto.SignupSigninRequest
 import com.whatever.domain.auth.dto.SocialAuthResponse
 import com.whatever.domain.auth.service.AuthService
-import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.succeed
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController
     description = "인증 API"
 )
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/v1/auth")
 class AuthController(
     private val authService: AuthService,
 ) {
@@ -31,10 +32,12 @@ class AuthController(
     )
     @PostMapping("/sign-up")
     fun signUp(
-        loginPlatform: LoginPlatform,
-        accessToken: String,
+        @RequestBody request: SignupSigninRequest,
     ): CaramelApiResponse<SocialAuthResponse> {
-        val socialAuthResponse = authService.signUpOrSignIn(loginPlatform, accessToken)
+        val socialAuthResponse = authService.signUpOrSignIn(
+            loginPlatform = request.loginPlatform,
+            accessToken = request.accessToken
+        )
         return socialAuthResponse.succeed()
     }
 }
