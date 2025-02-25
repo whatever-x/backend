@@ -14,7 +14,7 @@ class RecurrenceDaySetConverterTest {
     @Test
     fun convertToDatabaseColumn() {
         // given
-        val recurrenceDays = listOf(
+        val recurrenceDays = setOf(
             RecurrenceDay(WeekDay.MO, 1),
             RecurrenceDay(WeekDay.WE),
             RecurrenceDay(WeekDay.FR)
@@ -32,7 +32,7 @@ class RecurrenceDaySetConverterTest {
     @Test
     fun convertToDatabaseColumn_WithEmptyList() {
         // given
-        val emptyList = emptyList<RecurrenceDay>()
+        val emptyList = emptySet<RecurrenceDay>()
 
         // when
         val result = converter.convertToDatabaseColumn(emptyList)
@@ -46,7 +46,7 @@ class RecurrenceDaySetConverterTest {
     fun convertToEntityAttribute() {
         // given
         val strRecurrenceDay = "1SU,MO,TU,3WE"
-        val expectedResult = listOf(
+        val expectedResult = setOf(
             RecurrenceDay(WeekDay.SU, 1),
             RecurrenceDay(WeekDay.MO),
             RecurrenceDay(WeekDay.TU),
@@ -65,7 +65,7 @@ class RecurrenceDaySetConverterTest {
     fun convertToEntityAttribute_WithIllegalFormat() {
         // given
         val strRecurrenceDay = "1SSU,11MO,TTU,WE"
-        val expectedResult = listOf(
+        val expectedResult = setOf(
             RecurrenceDay(WeekDay.MO, 11),
             RecurrenceDay(WeekDay.WE),
         )
@@ -82,10 +82,6 @@ class RecurrenceDaySetConverterTest {
     fun convertToEntityAttribute_WithAllIllegalFormat() {
         // given
         val strRecurrenceDay = "1SSU,-1MO,TTU,W"
-        val expectedResult = listOf(
-            RecurrenceDay(WeekDay.MO, 11),
-            RecurrenceDay(WeekDay.WE),
-        )
 
         // when
         val result = converter.convertToEntityAttribute(strRecurrenceDay)
