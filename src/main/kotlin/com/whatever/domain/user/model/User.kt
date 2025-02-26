@@ -2,7 +2,6 @@ package com.whatever.domain.user.model
 
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.couple.model.Couple
-import com.whatever.domain.user.dto.UserStatus
 import jakarta.persistence.*
 import java.time.LocalDate
 

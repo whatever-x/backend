@@ -1,6 +1,6 @@
 package com.whatever.global.security.principal
 
-import com.whatever.domain.user.dto.UserStatus
+import com.whatever.domain.user.model.UserStatus
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
