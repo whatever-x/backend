@@ -21,7 +21,7 @@ class Content(
     var wishDate: LocalDate? = null,
 
     @Enumerated(EnumType.STRING)
-    var status: ContentStatus = ContentStatus.ACTIVE,
+    var type: ContentType = ContentType.MEMO,
 
     ) : BaseEntity() {
 }
