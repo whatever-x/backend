@@ -5,7 +5,7 @@ import java.time.LocalDate
 
 data class PutUserProfileRequest(
     @Schema(description = "닉네임")
-    val nickname: String,
+    val nickname: String?,
     @Schema(description = "생일")
-    val birthday: LocalDate,
+    val birthday: LocalDate?,
 )
