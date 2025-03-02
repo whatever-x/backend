@@ -18,7 +18,7 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.access.AccessDeniedHandler
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
+import org.springframework.security.web.authentication.logout.LogoutFilter
 
 @EnableMethodSecurity
 @EnableWebSecurity
@@ -49,8 +49,8 @@ class SecurityConfig(
         }
 
         http.invoke {
-            addFilterBefore<BasicAuthenticationFilter>(jwtAuthenticationFilter)
-            addFilterBefore<JwtAuthenticationFilter>(jwtExceptionFilter)
+            addFilterAfter<LogoutFilter>(jwtExceptionFilter)
+            addFilterAfter<JwtExceptionFilter>(jwtAuthenticationFilter)
         }
 
         http.invoke {
