@@ -3,6 +3,7 @@ package com.whatever.config
 import com.whatever.domain.user.dto.UserStatus
 import com.whatever.global.security.filter.JwtAuthenticationFilter
 import com.whatever.global.security.filter.JwtExceptionFilter
+import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler
@@ -88,6 +89,20 @@ class SecurityConfig(
         val expressionHandler = DefaultMethodSecurityExpressionHandler()
         expressionHandler.setRoleHierarchy(roleHierarchy())
         return expressionHandler
+    }
+
+    @Bean
+    fun jwtAuthenticationFilterRegistration(filter: JwtAuthenticationFilter): FilterRegistrationBean<JwtAuthenticationFilter> {
+        val registration: FilterRegistrationBean<JwtAuthenticationFilter> = FilterRegistrationBean<JwtAuthenticationFilter>(filter)
+        registration.isEnabled = false
+        return registration
+    }
+
+    @Bean
+    fun jwtExceptionFilterRegistration(filter: JwtExceptionFilter): FilterRegistrationBean<JwtExceptionFilter> {
+        val registration: FilterRegistrationBean<JwtExceptionFilter> = FilterRegistrationBean<JwtExceptionFilter>(filter)
+        registration.isEnabled = false
+        return registration
     }
 
 }
