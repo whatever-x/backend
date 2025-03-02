@@ -23,10 +23,11 @@ class AuthController(
     private val authService: AuthService,
 ) {
     @Operation(
-        summary = "회원가입",
-        description = "소셜 토큰",
+        summary = "로그인 or 회원가입",
+        description = "이미 회원인 경우 로그인을, 그렇지 않다면 회원가입을 진행합니다.",
         responses = [
-            ApiResponse(responseCode = "200", description = "성공"),
+            ApiResponse(responseCode = "200", description = "로그인 성공"),
+            ApiResponse(responseCode = "201", description = "회원가입 성공"),
             ApiResponse(responseCode = "403", description = "유효하지 않은 토큰"),
         ]
     )
