@@ -1,6 +1,5 @@
 package com.whatever.domain.content.controller.dto.request
 
-import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED
 import java.time.LocalDate
@@ -8,11 +7,11 @@ import java.time.LocalDateTime
 
 @Schema(description = "콘텐츠 생성 요청 모델")
 data class CreateContentRequest(
-    @Schema(description = "콘텐츠 제목", example = "맛집 리스트")
-    val title: String,
+    @Schema(description = "콘텐츠 제목. title, description 둘 중 하나는 필수입니다.", example = "맛집 리스트")
+    val title: String? = null,
 
-    @Schema(description = "콘텐츠 설명", example = "어제 함께 갔던 맛집들")
-    val description: String,
+    @Schema(description = "콘텐츠 설명. title, description 둘 중 하나는 필수입니다.", example = "어제 함께 갔던 맛집들")
+    val description: String? = null,
 
     @Schema(
         description = "희망일",

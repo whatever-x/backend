@@ -40,7 +40,7 @@ class ContentController {
             ContentDetailResponse(
                 contentId = id,
                 title = "Title $id",
-                description = "Description for content $id",
+                description = "Description for content $id, link: https://youtu.be/FEcfXRPaO90?si=alix-sIZkIjOzfmx",
                 wishDate = DateTimeUtil.localNow().toLocalDate(),
                 isCompleted = false,
                 tagList = if (id % 2L == 0L) listOf(TagDto(tagId = id, tagLabel = "Tag for $id")) else emptyList()
