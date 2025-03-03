@@ -21,7 +21,6 @@ data class CreateContentRequest(
     )
     val wishDate: LocalDate? = null,
 
-    @Parameter(required = false)
     @Schema(
         description = "완료 여부",
         requiredMode = NOT_REQUIRED,
