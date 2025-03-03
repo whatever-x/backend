@@ -32,6 +32,7 @@ class AuthService(
 
         val user = userProvider.findOrCreateUser(accessToken)
         val userId = user.id ?: throw GlobalException(GlobalExceptionCode.ARGS_VALIDATION_FAILED)
+        val coupleId = user.couple?.id
 
         val serviceToken = createTokenAndSave(userId = userId)
         return SignInResponse(
@@ -39,6 +40,7 @@ class AuthService(
             userStatus = user.userStatus,
             nickname = user.nickname,
             birthDay = user.birthDate,
+            coupleId = coupleId,
         )
     }
 
