@@ -58,14 +58,6 @@ class UserService(
     }
 
     private fun validateNickname(nickname: String) {
-        if (nickname.isBlank()) {
-            throw UserException(UserExceptionCode.NICKNAME_REQUIRED)
-        }
-
-        if (nickname.length < 2 || nickname.length > 10) {
-            throw UserException(UserExceptionCode.INVALID_NICKNAME_LENGTH)
-        }
-
         // 한글, 영문, 숫자 허용
         val nicknameRegex = "^[가-힣a-zA-Z0-9]+$".toRegex()
         if (!nicknameRegex.matches(nickname)) {
