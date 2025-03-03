@@ -2,10 +2,11 @@ package com.whatever.domain.calendarevent.eventrecurrence.model
 
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
+import com.whatever.domain.calendarevent.scheduleevent.model.converter.ZonedIdConverter
 import com.whatever.domain.content.model.ContentDetail
-import com.whatever.domain.timezone.TimeZone
 import jakarta.persistence.*
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 @Entity
 class ScheduleRecurrenceOverride(
@@ -24,13 +25,13 @@ class ScheduleRecurrenceOverride(
 
     var endDatetime: LocalDateTime? = null,
 
-    @OneToOne
-    @JoinColumn(name = "start_timezone_id", referencedColumnName = "id", nullable = false)
-    var startTimezone: TimeZone? = null,
+    @Column(nullable = false)
+    @Convert(converter = ZonedIdConverter::class)
+    var startTimezone: ZoneId? = null,
 
-    @OneToOne
-    @JoinColumn(name = "end_timezone_id", referencedColumnName = "id", nullable = false)
-    var endTimezone: TimeZone? = null,
+    @Column(nullable = false)
+    @Convert(converter = ZonedIdConverter::class)
+    var endTimezone: ZoneId? = null,
 
     @Embedded
     var contentDetail: ContentDetail,
