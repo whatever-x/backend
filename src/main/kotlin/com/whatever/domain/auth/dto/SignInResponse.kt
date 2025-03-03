@@ -8,4 +8,5 @@ data class SignInResponse(
     val userStatus: UserStatus,
     val nickname: String?,
     val birthDay: LocalDate?,
+    val coupleId: Long?,
 )
