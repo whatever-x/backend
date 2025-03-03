@@ -21,9 +21,22 @@ class AppleUserProvider(
     override val platform: LoginPlatform
         get() = LoginPlatform.APPLE
 
-    override fun findOrCreateUser(socialAccessToken: String): User {
-        // TODO(준용): Apple 유저
-        throw IllegalStateException("미구현된 기능합니다.")
+    override fun findOrCreateUser(socialIdToken: String): User {
+        val kakaoPublicKey = appleOIDCClient.getOIDCPublicKey()
+        val idTokenPayload = oidcHelper.parseAppleIdToken(
+            idToken = socialIdToken,
+            oidcPublicKeys = kakaoPublicKey.keys,
+        )
+
+        userRepository.findByPlatformUserId(idTokenPayload.platformUserId)?.let {
+            return it
+        }
+
+        return try {
+            userRepository.save(idTokenPayload.toUser())
+        } catch (e: DataIntegrityViolationException) {
+            userRepository.findByPlatformUserId(idTokenPayload.platformUserId) ?: throw e
+        }
     }
 
     fun findOrCreateUserByAppleAuthFormData(appleAuthFormData: AppleAuthFormData): User {
