@@ -3,6 +3,7 @@ package com.whatever.config
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.global.security.filter.JwtAuthenticationFilter
 import com.whatever.global.security.filter.JwtExceptionFilter
+import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler
@@ -18,7 +19,7 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.access.AccessDeniedHandler
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
+import org.springframework.security.web.authentication.logout.LogoutFilter
 
 @EnableMethodSecurity
 @EnableWebSecurity
@@ -49,8 +50,8 @@ class SecurityConfig(
         }
 
         http.invoke {
-            addFilterBefore<BasicAuthenticationFilter>(jwtAuthenticationFilter)
-            addFilterBefore<JwtAuthenticationFilter>(jwtExceptionFilter)
+            addFilterAfter<LogoutFilter>(jwtExceptionFilter)
+            addFilterAfter<JwtExceptionFilter>(jwtAuthenticationFilter)
         }
 
         http.invoke {
@@ -88,6 +89,20 @@ class SecurityConfig(
         val expressionHandler = DefaultMethodSecurityExpressionHandler()
         expressionHandler.setRoleHierarchy(roleHierarchy())
         return expressionHandler
+    }
+
+    @Bean
+    fun jwtAuthenticationFilterRegistration(filter: JwtAuthenticationFilter): FilterRegistrationBean<JwtAuthenticationFilter> {
+        val registration: FilterRegistrationBean<JwtAuthenticationFilter> = FilterRegistrationBean<JwtAuthenticationFilter>(filter)
+        registration.isEnabled = false
+        return registration
+    }
+
+    @Bean
+    fun jwtExceptionFilterRegistration(filter: JwtExceptionFilter): FilterRegistrationBean<JwtExceptionFilter> {
+        val registration: FilterRegistrationBean<JwtExceptionFilter> = FilterRegistrationBean<JwtExceptionFilter>(filter)
+        registration.isEnabled = false
+        return registration
     }
 
 }
