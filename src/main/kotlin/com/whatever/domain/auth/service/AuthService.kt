@@ -22,7 +22,7 @@ class AuthService(
 
     fun signUpOrSignIn(
         loginPlatform: LoginPlatform,
-        accessToken: String,
+        idToken: String,
     ): SignInResponse {
         val userProvider = userProviderMap[loginPlatform]
             ?: throw GlobalException(
@@ -30,7 +30,7 @@ class AuthService(
                 detailMessage = "일치하는 로그인 플랫폼이 없습니다. platform: $loginPlatform"
             )
 
-        val user = userProvider.findOrCreateUser(accessToken)
+        val user = userProvider.findOrCreateUser(idToken)
         val userId = user.id ?: throw GlobalException(GlobalExceptionCode.ARGS_VALIDATION_FAILED)
 
         val serviceToken = createTokenAndSave(userId = userId)
