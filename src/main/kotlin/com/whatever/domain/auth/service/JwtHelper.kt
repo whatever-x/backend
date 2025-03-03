@@ -47,12 +47,12 @@ class JwtHelper(
 
         validateAccessToken(jwt)
 
-        val userId = jwt.payload[USER_ID_CLAIM_KEY]
+        val userId = jwt.payload[USER_ID_CLAIM_KEY]?.toString()
             ?: throw JwtMissingClaimException(
                 errorCode = JwtExceptionCode.MISSING_CLAIM,
                 detailMessage = "AccessToken에서 User 정보를 찾을 수 없습니다."
             )
-        return userId as Long
+        return userId.toLong()
     }
 
     private fun validateAccessToken(jwt: Jws<Claims>) {
@@ -62,7 +62,7 @@ class JwtHelper(
                 detailMessage = "subject 정보가 없습니다. 지원하지 않는 JWT입니다."
             )
 
-        if (subject == ACCESS_SUBJECT_NAME) {
+        if (subject != ACCESS_SUBJECT_NAME) {
             throw JwtMissingClaimException(
                 errorCode = JwtExceptionCode.MISSING_CLAIM,
                 detailMessage = "AccessToken이 아닌 JWT입니다. 용도: $subject"
