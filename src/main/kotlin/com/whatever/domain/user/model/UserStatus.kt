@@ -1,4 +1,4 @@
-package com.whatever.domain.user.dto
+package com.whatever.domain.user.model
 
 enum class UserStatus {
     NEW,

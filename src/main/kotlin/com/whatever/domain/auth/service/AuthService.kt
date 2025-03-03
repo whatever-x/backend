@@ -1,7 +1,8 @@
 package com.whatever.domain.auth.service
 
 import com.whatever.config.properties.JwtProperties
-import com.whatever.domain.auth.dto.SocialAuthResponse
+import com.whatever.domain.auth.dto.ServiceToken
+import com.whatever.domain.auth.dto.SignInResponse
 import com.whatever.domain.auth.service.provider.SocialUserProvider
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.global.exception.GlobalException
@@ -22,20 +23,26 @@ class AuthService(
     fun signUpOrSignIn(
         loginPlatform: LoginPlatform,
         accessToken: String,
-    ): SocialAuthResponse {
+    ): SignInResponse {
         val userProvider = userProviderMap[loginPlatform]
             ?: throw GlobalException(
-                GlobalExceptionCode.ARGS_VALIDATION_FAILED,
-                "일치하는 로그인 플랫폼이 없습니다. platform: ${loginPlatform}"
+                errorCode = GlobalExceptionCode.ARGS_VALIDATION_FAILED,
+                detailMessage = "일치하는 로그인 플랫폼이 없습니다. platform: $loginPlatform"
             )
 
-        val userId = userProvider.findOrCreateUser(accessToken).id
-            ?: throw GlobalException(GlobalExceptionCode.ARGS_VALIDATION_FAILED)
+        val user = userProvider.findOrCreateUser(accessToken)
+        val userId = user.id ?: throw GlobalException(GlobalExceptionCode.ARGS_VALIDATION_FAILED)
 
-        return createTokenAndSave(userId = userId)
+        val serviceToken = createTokenAndSave(userId = userId)
+        return SignInResponse(
+            serviceToken = serviceToken,
+            userStatus = user.userStatus,
+            nickname = user.nickname,
+            birthDay = user.birthDate,
+        )
     }
 
-    private fun createTokenAndSave(userId: Long): SocialAuthResponse {
+    private fun createTokenAndSave(userId: Long): ServiceToken {
         val accessToken = jwtHelper.createAccessToken(userId)  // access token 발행
         val refreshToken = jwtHelper.createRefreshToken()  // refresh token 발행
         redisUtil.saveRefreshToken(
@@ -44,7 +51,7 @@ class AuthService(
             refreshToken = refreshToken,
             ttlSeconds = jwtProperties.refreshExpirationSec
         )
-        return SocialAuthResponse(
+        return ServiceToken(
             accessToken,
             refreshToken,
         )

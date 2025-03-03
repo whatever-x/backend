@@ -2,7 +2,7 @@ package com.whatever.domain.auth.dto
 
 import com.whatever.domain.user.model.LoginPlatform
 
-data class SignupSigninRequest(
+data class SignInRequest(
     val loginPlatform: LoginPlatform,
-    val accessToken: String,
+    val idToken: String,
 )

@@ -1,7 +1,7 @@
 package com.whatever.global.security.handler
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.whatever.domain.user.dto.UserStatus
+import com.whatever.domain.user.model.UserStatus
 import com.whatever.global.security.exception.SecurityExceptionCode
 import com.whatever.global.security.util.getCurrentUserAuthorities
 import com.whatever.global.security.util.getCurrentUserId

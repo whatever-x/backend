@@ -1,6 +1,6 @@
 package com.whatever.config
 
-import com.whatever.domain.user.dto.UserStatus
+import com.whatever.domain.user.model.UserStatus
 import com.whatever.global.security.filter.JwtAuthenticationFilter
 import com.whatever.global.security.filter.JwtExceptionFilter
 import org.springframework.context.annotation.Bean

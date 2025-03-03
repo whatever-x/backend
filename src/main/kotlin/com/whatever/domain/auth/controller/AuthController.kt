@@ -1,7 +1,7 @@
 package com.whatever.domain.auth.controller
 
-import com.whatever.domain.auth.dto.SignupSigninRequest
-import com.whatever.domain.auth.dto.SocialAuthResponse
+import com.whatever.domain.auth.dto.SignInRequest
+import com.whatever.domain.auth.dto.SignInResponse
 import com.whatever.domain.auth.service.AuthService
 import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.succeed
@@ -23,20 +23,21 @@ class AuthController(
     private val authService: AuthService,
 ) {
     @Operation(
-        summary = "회원가입",
-        description = "소셜 토큰",
+        summary = "로그인 or 회원가입",
+        description = "이미 회원인 경우 로그인을, 그렇지 않다면 회원가입을 진행합니다.",
         responses = [
-            ApiResponse(responseCode = "200", description = "성공"),
+            ApiResponse(responseCode = "200", description = "로그인 성공"),
+            ApiResponse(responseCode = "201", description = "회원가입 성공"),
             ApiResponse(responseCode = "403", description = "유효하지 않은 토큰"),
         ]
     )
-    @PostMapping("/sign-up")
+    @PostMapping("/sign-in")
     fun signUp(
-        @RequestBody request: SignupSigninRequest,
-    ): CaramelApiResponse<SocialAuthResponse> {
+        @RequestBody request: SignInRequest,
+    ): CaramelApiResponse<SignInResponse> {
         val socialAuthResponse = authService.signUpOrSignIn(
             loginPlatform = request.loginPlatform,
-            accessToken = request.accessToken
+            accessToken = request.idToken
         )
         return socialAuthResponse.succeed()
     }
