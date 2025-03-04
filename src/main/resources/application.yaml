@@ -38,6 +38,9 @@ springdoc:
     path: /swagger
     disable-swagger-default-url: true
     display-request-duration: true
+swagger:
+  user: ${SWAGGER_USER}
+  password: ${SWAGGER_PASSWORD}
 jwt:
   secret-key-str: ${SECRET_KEY_STR}
   access-expiration-sec: ${ACCESS_EXPIRATION_SEC}
