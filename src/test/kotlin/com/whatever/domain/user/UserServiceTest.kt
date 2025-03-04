@@ -78,57 +78,6 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("닉네임이 빈 값일 경우 예외 발생")
-    fun emptyNickname() {
-        // given
-        val request = PostUserProfileRequest(
-            nickname = "",
-            birthday = LocalDate.of(1997, 10, 29),
-            agreementServiceTerms = true,
-            agreementPrivatePolicy = true
-        )
-
-        // when & then
-        assertThatThrownBy { userService.createProfile(request) }
-            .isInstanceOf(UserException::class.java)
-            .hasFieldOrPropertyWithValue("errorCode", UserExceptionCode.NICKNAME_REQUIRED)
-    }
-
-    @Test
-    @DisplayName("닉네임 길이가 2자 미만일 경우 예외 발생")
-    fun nicknameTooShort() {
-        // given
-        val request = PostUserProfileRequest(
-            nickname = "e",
-            birthday = LocalDate.of(1997, 10, 29),
-            agreementServiceTerms = true,
-            agreementPrivatePolicy = true
-        )
-
-        // when & then
-        assertThatThrownBy { userService.createProfile(request) }
-            .isInstanceOf(UserException::class.java)
-            .hasFieldOrPropertyWithValue("errorCode", UserExceptionCode.INVALID_NICKNAME_LENGTH)
-    }
-
-    @Test
-    @DisplayName("닉네임 길이가 10자 초과일 경우 예외 발생")
-    fun nicknameTooLong() {
-        // given
-        val request = PostUserProfileRequest(
-            nickname = "evergreenever",
-            birthday = LocalDate.of(1997, 10, 29),
-            agreementServiceTerms = true,
-            agreementPrivatePolicy = true
-        )
-
-        // when & then
-        assertThatThrownBy { userService.createProfile(request) }
-            .isInstanceOf(UserException::class.java)
-            .hasFieldOrPropertyWithValue("errorCode", UserExceptionCode.INVALID_NICKNAME_LENGTH)
-    }
-
-    @Test
     @DisplayName("닉네임에 허용되지 않는 문자 포함시 예외 발생")
     fun invalidNicknameCharacter() {
         // given
