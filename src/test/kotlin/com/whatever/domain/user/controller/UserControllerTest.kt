@@ -26,7 +26,7 @@ class UserControllerTest : ControllerTestSupport() {
         )
 
         // when // then
-        mockMvc.post("/user/profile") {
+        mockMvc.post("/v1/user/profile") {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
         }
@@ -48,7 +48,7 @@ class UserControllerTest : ControllerTestSupport() {
         )
 
         // when // then
-        mockMvc.post("/user/profile") {
+        mockMvc.post("/v1/user/profile") {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
         }
@@ -71,7 +71,7 @@ class UserControllerTest : ControllerTestSupport() {
         )
 
         // when // then
-        mockMvc.post("/user/profile") {
+        mockMvc.post("/v1/user/profile") {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
         }
@@ -94,7 +94,7 @@ class UserControllerTest : ControllerTestSupport() {
         )
 
         // when // then
-        mockMvc.post("/user/profile") {
+        mockMvc.post("/v1/user/profile") {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
         }
@@ -115,7 +115,7 @@ class UserControllerTest : ControllerTestSupport() {
         )
 
         // when // then
-        mockMvc.put("/user/profile") {
+        mockMvc.put("/v1/user/profile") {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
         }
@@ -135,7 +135,7 @@ class UserControllerTest : ControllerTestSupport() {
         )
 
         // when // then
-        mockMvc.put("/user/profile") {
+        mockMvc.put("/v1/user/profile") {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
         }
@@ -156,7 +156,7 @@ class UserControllerTest : ControllerTestSupport() {
         )
 
         // when // then
-        mockMvc.put("/user/profile") {
+        mockMvc.put("/v1/user/profile") {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
         }
@@ -177,7 +177,7 @@ class UserControllerTest : ControllerTestSupport() {
         )
 
         // when // then
-        mockMvc.put("/user/profile") {
+        mockMvc.put("/v1/user/profile") {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
         }
