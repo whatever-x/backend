@@ -3,10 +3,11 @@ package com.whatever.domain.calendarevent.scheduleevent.model
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.calendarevent.eventrecurrence.model.EventRecurrence
 import com.whatever.domain.calendarevent.eventrecurrence.model.ScheduleRecurrenceOverride
+import com.whatever.domain.calendarevent.scheduleevent.model.converter.ZonedIdConverter
 import com.whatever.domain.content.model.ContentDetail
-import com.whatever.domain.timezone.TimeZone
 import jakarta.persistence.*
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 @Entity
 class ScheduleEvent(
@@ -23,13 +24,13 @@ class ScheduleEvent(
     @Column(nullable = false)
     val endDateTime: LocalDateTime,
 
-    @OneToOne
-    @JoinColumn(name = "start_timezone_id", referencedColumnName = "id", nullable = false)
-    val startTimeZone: TimeZone,
+    @Column(nullable = false)
+    @Convert(converter = ZonedIdConverter::class)
+    val startTimeZone: ZoneId,
 
-    @OneToOne
-    @JoinColumn(name = "end_timezone_id", referencedColumnName = "id", nullable = false)
-    val endTimeZone: TimeZone,
+    @Column(nullable = false)
+    @Convert(converter = ZonedIdConverter::class)
+    val endTimeZone: ZoneId,
 
     @Embedded
     var contentDetail: ContentDetail,
@@ -40,4 +41,5 @@ class ScheduleEvent(
     @OneToMany(mappedBy = "scheduleEvent", fetch = FetchType.LAZY)
     val recurrenceOverrides: MutableList<ScheduleRecurrenceOverride> = mutableListOf(),
 ) : BaseEntity() {
+
 }
