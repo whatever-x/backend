@@ -9,6 +9,7 @@ import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.succeed
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
 
 @Tag(
@@ -26,7 +27,7 @@ class UserController(
     )
     @PutMapping("/profile")
     fun updateProfile(
-        @RequestBody putUserProfileRequest: PutUserProfileRequest,
+        @Valid @RequestBody putUserProfileRequest: PutUserProfileRequest,
     ): CaramelApiResponse<PutUserProfileResponse> {
         val userProfileResponse = userService.updateProfile(putUserProfileRequest)
         return userProfileResponse.succeed()
@@ -38,7 +39,7 @@ class UserController(
     )
     @PostMapping("/profile")
     fun createProfile(
-        @RequestBody postUserProfileRequest: PostUserProfileRequest
+        @Valid @RequestBody postUserProfileRequest: PostUserProfileRequest
     ): CaramelApiResponse<PostUserProfileResponse> {
         val userProfileResponse = userService.createProfile(postUserProfileRequest)
         return userProfileResponse.succeed()

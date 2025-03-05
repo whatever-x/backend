@@ -3,8 +3,8 @@ package com.whatever.global.security.handler
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.global.security.exception.SecurityExceptionCode
-import com.whatever.global.security.util.getCurrentUserAuthorities
-import com.whatever.global.security.util.getCurrentUserId
+import com.whatever.global.security.util.SecurityUtil.getCurrentUserAuthorities
+import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.global.security.util.setExceptionResponse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
@@ -14,7 +14,7 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.web.access.AccessDeniedHandler
 import org.springframework.stereotype.Component
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 @Component
 class CaramelAccessDeniedHandler(
