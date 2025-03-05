@@ -38,6 +38,9 @@ springdoc:
     path: /swagger
     disable-swagger-default-url: true
     display-request-duration: true
+swagger:
+  user: ${SWAGGER_USER}
+  password: ${SWAGGER_PASSWORD}
 jwt:
   secret-key-str: ${SECRET_KEY_STR}
   access-expiration-sec: ${ACCESS_EXPIRATION_SEC}
@@ -110,6 +113,11 @@ spring:
       hibernate:
         format_sql: true
         show_sql: true
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:initial-data-local.sql
   data:
     redis:
       host: ${REDIS_HOST}

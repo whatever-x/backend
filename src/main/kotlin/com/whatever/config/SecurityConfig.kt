@@ -3,19 +3,28 @@ package com.whatever.config
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.global.security.filter.JwtAuthenticationFilter
 import com.whatever.global.security.filter.JwtExceptionFilter
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
+import org.springframework.core.annotation.Order
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl
+import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer
 import org.springframework.security.config.annotation.web.invoke
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.core.userdetails.User
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.access.AccessDeniedHandler
@@ -31,8 +40,36 @@ class SecurityConfig(
     private val caramelAccessDeniedHandler: AccessDeniedHandler
 ) {
 
+    companion object {
+        private val swaggerUrlPatterns = arrayOf(
+            "/swagger",
+            "/swagger-ui/**",
+            "/swagger-resources/**",
+            "/v3/api-docs/**"
+        )
+    }
+
+    @Value("\${swagger.user}")
+    lateinit var swaggerUser: String
+    @Value("\${swagger.password}")
+    lateinit var swaggerPassword: String
+
+    @Profile("production", "dev")
     @Bean
-    fun filterChain(http: HttpSecurity): SecurityFilterChain {
+    @Order(1)
+    fun swaggerFilterChain(http: HttpSecurity): SecurityFilterChain {
+        http
+            .securityMatcher(*swaggerUrlPatterns)
+            .authorizeHttpRequests {
+                it.anyRequest().authenticated()
+            }
+            .httpBasic(Customizer.withDefaults())
+        return http.build()
+    }
+
+    @Bean
+    @Order(2)
+    fun defaultFilterChain(http: HttpSecurity): SecurityFilterChain {
         http.invoke {
             httpBasic { disable() }
             formLogin { disable() }
@@ -65,14 +102,28 @@ class SecurityConfig(
     }
 
     @Bean
-    fun webSecurityCustomizer(): WebSecurityCustomizer {
+    fun swaggerPasswordEncoder(): PasswordEncoder {
+        return BCryptPasswordEncoder(10)
+    }
+
+    /** InMemory User for Swagger */
+    @Bean
+    fun swaggerUserDetailsService(): UserDetailsService {
+        val users = User.builder()
+            .passwordEncoder { pw -> swaggerPasswordEncoder().encode(pw) }
+        val manager = InMemoryUserDetailsManager()
+        manager.createUser(
+            users.username(swaggerUser).password(swaggerPassword)
+                .roles("SWAGGER").build()
+        )
+        return manager
+    }
+
+    @Profile("local-mem")
+    @Bean
+    fun swaggerSecurityBypassCustomizer(): WebSecurityCustomizer {
         return WebSecurityCustomizer {
-            it.ignoring().requestMatchers(
-                "/swagger",
-                "/swagger-ui/**",
-                "/swagger-resources/**",
-                "/v3/api-docs/**"
-            )
+            it.ignoring().requestMatchers(*swaggerUrlPatterns)
         }
     }
 

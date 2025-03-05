@@ -24,7 +24,8 @@ class User(
 
     var nickname: String? = null,
 
-    var gender: String? = null,
+    @Enumerated(EnumType.STRING)
+    var gender: UserGender? = null,
 
     @Enumerated(EnumType.STRING)
     var userStatus: UserStatus = UserStatus.NEW,
