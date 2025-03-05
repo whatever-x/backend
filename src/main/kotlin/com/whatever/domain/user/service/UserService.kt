@@ -7,7 +7,7 @@ import com.whatever.domain.user.dto.PutUserProfileResponse
 import com.whatever.domain.user.exception.UserException
 import com.whatever.domain.user.exception.UserExceptionCode
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.security.util.getCurrentUserId
+import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -19,11 +19,6 @@ class UserService(
 ) {
     @Transactional
     fun createProfile(postUserProfileRequest: PostUserProfileRequest): PostUserProfileResponse {
-        with(postUserProfileRequest) {
-            validateNickname(nickname)
-            validateAgreements(agreementServiceTerms, agreementPrivatePolicy)
-        }
-
         val userId = getCurrentUserId()
         val user = userRepository.findByIdOrNull(userId)?.apply {
             nickname = postUserProfileRequest.nickname
@@ -62,16 +57,6 @@ class UserService(
         val nicknameRegex = "^[가-힣a-zA-Z0-9]+$".toRegex()
         if (!nicknameRegex.matches(nickname)) {
             throw UserException(UserExceptionCode.INVALID_NICKNAME_CHARACTER)
-        }
-    }
-
-    private fun validateAgreements(serviceTerms: Boolean, privatePolicy: Boolean) {
-        if (!serviceTerms) {
-            throw UserException(UserExceptionCode.SERVICE_TERMS_AGREEMENT_REQUIRED)
-        }
-
-        if (!privatePolicy) {
-            throw UserException(UserExceptionCode.PRIVATE_POLICY_AGREEMENT_REQUIRED)
         }
     }
 }
