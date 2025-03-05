@@ -1,11 +1,14 @@
 package com.whatever.domain.sample.controller
 
+import com.whatever.domain.auth.dto.SignInResponse
 import com.whatever.domain.sample.exception.SampleExceptionCode
 import com.whatever.domain.sample.exception.SampleNotFoundException
 import com.whatever.domain.sample.service.SampleService
+import com.whatever.domain.user.model.UserGender
+import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.ErrorResponse
+import com.whatever.global.exception.dto.succeed
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -14,8 +17,8 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.servlet.mvc.Controller
 
 @Profile("dev", "local-mem")
 @Tag(
@@ -64,5 +67,18 @@ class SampleController(
     fun getException(): ResponseEntity<String> {
         throw SampleNotFoundException(SampleExceptionCode.SAMPLE_CODE, "예외 생성 예시입니다.")
         return ResponseEntity.ok("exception not found")
+    }
+
+    /**
+     * 개발용 테스트 유저 로그인입니다.
+     * 사용에 주의해주세요.
+     */
+    @Operation(
+        summary = "개발용 테스트 유저 로그인",
+        description = "개발용 테스트 유저입니다."
+    )
+    @GetMapping("/test/sign-in")
+    fun testSignIn(@RequestParam gender: UserGender): CaramelApiResponse<SignInResponse> {
+        return sampleService.testSignIn(gender).succeed()
     }
 }
