@@ -32,7 +32,7 @@ class AuthController(
         ]
     )
     @PostMapping("/sign-in")
-    fun signUp(
+    fun signIn(
         @RequestBody request: SignInRequest,
     ): CaramelApiResponse<SignInResponse> {
         val socialAuthResponse = authService.signUpOrSignIn(
