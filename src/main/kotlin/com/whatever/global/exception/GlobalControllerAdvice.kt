@@ -23,9 +23,9 @@ private val logger = KotlinLogging.logger {  }
 class GlobalControllerAdvice : CaramelControllerAdvice() {
 
     // TODO: 로깅처리 필수
-
     @ExceptionHandler(CaramelException::class)
     fun handleCaramelException(e: CaramelException): ResponseEntity<CaramelApiResponse<*>> {
+        logger.error(e) { "예상하지 못한 예외가 발생했습니다." }
         return createExceptionResponse(errorCode = e.errorCode, debugMessage = e.detailMessage)
     }
 

@@ -21,4 +21,6 @@ data class KakaoIdTokenPayload(
     val nickname: String? = null,
     val picture: String? = null,
     val email: String? = null
-)
+) {
+    val platformUserId get() = sub
+}
