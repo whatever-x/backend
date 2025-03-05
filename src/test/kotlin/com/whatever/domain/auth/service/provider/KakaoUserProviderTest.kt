@@ -1,9 +1,9 @@
 package com.whatever.domain.auth.service.provider
 
-import com.whatever.domain.auth.client.KakaoOAuthClient
-import com.whatever.domain.auth.client.dto.KakaoAccount
-import com.whatever.domain.auth.client.dto.KakaoUserInfoResponse
-import com.whatever.domain.auth.client.dto.Profile
+import com.whatever.domain.auth.client.KakaoOIDCClient
+import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
+import com.whatever.domain.auth.client.dto.OIDCPublicKeysResponse
+import com.whatever.domain.auth.service.OIDCHelper
 import com.whatever.domain.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -26,7 +26,9 @@ class KakaoUserProviderTest @Autowired constructor(
 ) {
 
     @MockitoBean
-    private lateinit var kakaoOAuthClient: KakaoOAuthClient
+    private lateinit var kakaoOIDCClient: KakaoOIDCClient
+    @MockitoBean
+    private lateinit var oidcHelper: OIDCHelper
 
     @BeforeEach
     fun cleanDatabase() {
@@ -35,22 +37,22 @@ class KakaoUserProviderTest @Autowired constructor(
 
     @Test
     fun findOrCreateUserWithMultiThread() {
-        Mockito.`when`(kakaoOAuthClient.getUserInfo(Mockito.anyString()))
-            .thenReturn(
-                KakaoUserInfoResponse(
-                    id = 1L,
-                    KakaoAccount(
-                        Profile(
-                            nickname = "caramel",
-                            thumbnailImageUrl = "http://test.test.test/thumbnailImageUrl",
-                            profileImageUrl = "http://test.test.test/profileImageUrl",
-                        )
-                    )
-                )
-            )
+        Mockito.`when`(kakaoOIDCClient.getOIDCPublicKey())
+            .thenReturn(OIDCPublicKeysResponse())
+
+        Mockito.`when`(oidcHelper.parseKakaoIdToken(Mockito.anyString(), Mockito.anyList()))
+            .thenReturn(KakaoIdTokenPayload(
+                iss = "",
+                aud = "",
+                sub = "social-user-id",
+                iat = 1L,
+                exp = 1L,
+                authTime = 1L,
+                nickname = "test  nick",
+            ))
 
         // given
-        val kakaoAccessToken = "test-kakao-access-token"
+        val kakaoAccessToken = "test-kakao-id-token"
 
         val threadCount = 1000
         val executor = Executors.newFixedThreadPool(threadCount)
