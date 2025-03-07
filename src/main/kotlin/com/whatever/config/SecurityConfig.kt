@@ -13,7 +13,6 @@ import org.springframework.security.access.expression.method.DefaultMethodSecuri
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl
-import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -58,40 +57,42 @@ class SecurityConfig(
     @Bean
     @Order(1)
     fun swaggerFilterChain(http: HttpSecurity): SecurityFilterChain {
-        http
-            .securityMatcher(*swaggerUrlPatterns)
-            .authorizeHttpRequests {
-                it.anyRequest().authenticated()
+        http {
+            securityMatcher(*swaggerUrlPatterns)
+            authorizeHttpRequests {
+                authorize(anyRequest, authenticated)
             }
-            .httpBasic(Customizer.withDefaults())
+            httpBasic {  }
+        }
         return http.build()
     }
 
     @Bean
-    @Order(2)
     fun defaultFilterChain(http: HttpSecurity): SecurityFilterChain {
-        http.invoke {
+        http {
             httpBasic { disable() }
             formLogin { disable() }
             logout { disable() }
             csrf { disable() }
             cors { disable() }
+
+            sessionManagement {
+                sessionCreationPolicy = SessionCreationPolicy.STATELESS
+            }
         }
 
-        http.sessionManagement{ it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
-
-        http.invoke {
+        http {
             authorizeHttpRequests {
                 authorize(anyRequest, permitAll)  // TODO(준용) API에 따른 Role 추가 필요, 현재 임시로 모두 허용
             }
         }
 
-        http.invoke {
+        http {
             addFilterAfter<LogoutFilter>(jwtExceptionFilter)
             addFilterAfter<JwtExceptionFilter>(jwtAuthenticationFilter)
         }
 
-        http.invoke {
+        http {
             exceptionHandling {
                 authenticationEntryPoint = caramelAuthenticationEntryPoint
                 accessDeniedHandler = caramelAccessDeniedHandler
