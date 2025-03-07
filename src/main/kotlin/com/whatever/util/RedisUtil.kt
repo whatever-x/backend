@@ -12,7 +12,7 @@ class RedisUtil(
 ) {
 
     companion object {
-        private const val REFRESH_TOKEN_KEY = "refresh_token"
+        private const val REFRESH_TOKEN_PREFIX = "token:refresh:"
     }
 
     fun saveRefreshToken(
@@ -22,7 +22,7 @@ class RedisUtil(
         ttlSeconds: Long = jwtProperties.refreshExpirationSec,
     ) {
         redisTemplate.opsForValue().set(
-            "${REFRESH_TOKEN_KEY}:${userId}:${deviceId}",
+            "$REFRESH_TOKEN_PREFIX${userId}:${deviceId}",
             refreshToken,
             ttlSeconds,
             TimeUnit.SECONDS,
@@ -33,7 +33,7 @@ class RedisUtil(
         userId: Long,
         deviceId: String,
     ): String? {
-        val key = "${REFRESH_TOKEN_KEY}:${userId}:${deviceId}"
+        val key = "$REFRESH_TOKEN_PREFIX${userId}:${deviceId}"
         return redisTemplate.opsForValue().get(key)
     }
 
@@ -41,7 +41,7 @@ class RedisUtil(
         userId: Long,
         deviceId: String,
     ): Boolean {
-        val key = "${REFRESH_TOKEN_KEY}:${userId}:${deviceId}"
+        val key = "$REFRESH_TOKEN_PREFIX${userId}:${deviceId}"
         return redisTemplate.delete(key)
     }
 }
