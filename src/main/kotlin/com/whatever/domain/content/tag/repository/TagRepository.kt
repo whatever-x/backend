@@ -4,4 +4,5 @@ import com.whatever.domain.content.tag.model.Tag
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface TagRepository : JpaRepository<Tag, Long> {
+    fun findByIdIn(ids: List<Long>): List<Tag>
 }
