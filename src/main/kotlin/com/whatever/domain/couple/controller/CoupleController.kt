@@ -7,6 +7,7 @@ import com.whatever.domain.couple.controller.dto.response.CoupleBasicResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleInvitationCodeResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleUserInfoDto
 import com.whatever.domain.couple.controller.dto.response.CoupleDetailResponse
+import com.whatever.domain.couple.service.CoupleService
 import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.succeed
 import com.whatever.util.DateTimeUtil
@@ -27,7 +28,9 @@ import org.springframework.web.bind.annotation.RestController
 )
 @RestController
 @RequestMapping("/v1/couples")
-class CoupleController {
+class CoupleController(
+    private val coupleService: CoupleService
+) {
 
     @Operation(
         summary = "더미 커플 정보 조회",
@@ -55,16 +58,13 @@ class CoupleController {
     }
 
     @Operation(
-        summary = "더미 커플 초대 코드 생성",
+        summary = "커플 초대 코드 생성",
         description = "커플 초대 코드를 생성합니다. 커플이 아닌 유저만 접근 가능합니다."
     )
     @PostMapping("/invitation-code")
     fun createInvitationCode(): CaramelApiResponse<CoupleInvitationCodeResponse> {
-
-        // TODO(준용): 구현 필요
-        return CoupleInvitationCodeResponse(
-            invitationCode = "01954ba5-cfca-79a4-bb79-fb75c5061902"
-        ).succeed()
+        val response = coupleService.createInvitationCode()
+        return response.succeed()
     }
 
     @Operation(
