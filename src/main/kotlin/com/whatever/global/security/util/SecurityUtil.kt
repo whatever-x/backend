@@ -1,5 +1,6 @@
 package com.whatever.global.security.util
 
+import com.whatever.domain.user.model.UserStatus
 import com.whatever.global.security.exception.AuthenticationException
 import com.whatever.global.security.exception.SecurityExceptionCode
 import com.whatever.global.security.principal.CaramelUserDetails
@@ -8,12 +9,17 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 
 object SecurityUtil {
+
+    fun getCurrentUserStatus(): UserStatus {
+        return getUserDetails().status
+    }
+
     fun getCurrentUserAuthorities(): Set<GrantedAuthority> {
         return getUserDetails().authorities
     }
 
     fun getCurrentUserId(): Long {
-        return getUserDetails().getUserId()
+        return getUserDetails().userId
     }
 
     private fun getUserDetails(): CaramelUserDetails {

@@ -5,8 +5,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
 class CaramelUserDetails(
-    private val userId: Long,
-    private val status: UserStatus,
+    val userId: Long,
+    val status: UserStatus,
 ) : UserDetails {
 
     private val userIdStr = userId.toString()
@@ -23,10 +23,6 @@ class CaramelUserDetails(
 
     override fun getUsername(): String {
         return userIdStr
-    }
-
-    fun getUserId(): Long {
-        return userId
     }
 
 }
