@@ -19,13 +19,6 @@ data class CreateContentRequest(
     val description: String? = null,
 
     @Schema(
-        description = "희망일",
-        example = "2025-02-16",
-        requiredMode = NOT_REQUIRED,
-    )
-    val wishDate: LocalDate? = null,
-
-    @Schema(
         description = "완료 여부",
         requiredMode = NOT_REQUIRED,
     )
