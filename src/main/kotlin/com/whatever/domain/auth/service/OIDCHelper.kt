@@ -132,6 +132,12 @@ private fun Jws<Claims>.toKakaoIdTokenPayload(): KakaoIdTokenPayload {
 }
 
 private fun Jws<Claims>.toAppleIdTokenPayload(): AppleIdTokenPayload {
+    val isPrivateEmailValue = payload["is_private_email"]
+    val isPrivateEmail = when (isPrivateEmailValue) {
+        is Boolean -> isPrivateEmailValue
+        is String -> isPrivateEmailValue.toBoolean()
+        else -> false
+    }
     return AppleIdTokenPayload(
         iss = payload.issuer as String,
         aud = payload.audience.joinToString(),
@@ -141,7 +147,7 @@ private fun Jws<Claims>.toAppleIdTokenPayload(): AppleIdTokenPayload {
         cHash = payload["c_hash"] as String,
         email = payload["email"] as String?,
         emailVerified = payload["email_verified"] as Boolean,
-        isPrivateEmail = payload["is_private_email"] as Boolean,
+        isPrivateEmail = isPrivateEmail,
         authTime = payload["auth_time"].toString().toLong(),
         nonceSupported = payload["nonce_supported"] as Boolean,
         nonce = payload["nonce"] as String?,
