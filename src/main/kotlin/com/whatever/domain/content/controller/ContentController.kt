@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*
     description = "콘텐츠 API"
 )
 @RestController
-@RequestMapping("/v1/contents")
+@RequestMapping("/v1/content")
 class ContentController(
     private val contentService: ContentService,
 ) {

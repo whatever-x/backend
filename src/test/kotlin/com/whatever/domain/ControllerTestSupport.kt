@@ -1,6 +1,8 @@
 package com.whatever.domain
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.whatever.domain.content.controller.ContentController
+import com.whatever.domain.content.service.ContentService
 import com.whatever.domain.user.controller.UserController
 import com.whatever.domain.user.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,7 +19,8 @@ import org.springframework.web.filter.OncePerRequestFilter
  */
 @WebMvcTest(
     controllers = [
-        UserController::class
+        UserController::class,
+        ContentController::class,
     ],
     excludeAutoConfiguration = [
         SecurityAutoConfiguration::class
@@ -36,4 +39,7 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var userService: UserService
+
+    @MockitoBean
+    protected lateinit var contentService: ContentService
 }
