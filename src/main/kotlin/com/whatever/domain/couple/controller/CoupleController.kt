@@ -73,23 +73,8 @@ class CoupleController(
     )
     @PostMapping("/connect")
     fun createCouple(@RequestBody request: CreateCoupleRequest): CaramelApiResponse<CoupleDetailResponse> {
-
-        // TODO(준용): 구현 필요
-        return CoupleDetailResponse(
-            coupleId = 1L,
-            startDate = DateTimeUtil.localNow().toLocalDate(),
-            sharedMessage = "공유메시지",
-            hostInfo = CoupleUserInfoDto(
-                id = 1L,
-                nickname = "내 닉네임",
-                birthDate = DateTimeUtil.localNow().toLocalDate()
-            ),
-            partnerInfo = CoupleUserInfoDto(
-                id = 2L,
-                nickname = "상대방 닉네임",
-                birthDate = DateTimeUtil.localNow().toLocalDate()
-            )
-        ).succeed()
+        val response = coupleService.createCouple(request)
+        return response.succeed()
     }
 
     @Operation(

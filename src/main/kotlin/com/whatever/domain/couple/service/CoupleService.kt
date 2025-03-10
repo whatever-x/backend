@@ -1,37 +1,83 @@
 package com.whatever.domain.couple.service
 
+import com.whatever.domain.couple.controller.dto.request.CreateCoupleRequest
+import com.whatever.domain.couple.controller.dto.response.CoupleDetailResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleInvitationCodeResponse
+import com.whatever.domain.couple.controller.dto.response.CoupleUserInfoDto
 import com.whatever.domain.couple.exception.CoupleException
-import com.whatever.domain.couple.exception.CoupleExceptionCode.INVALID_USER_STATUS
-import com.whatever.domain.couple.exception.CoupleExceptionCode.INVITATION_CODE_GENERATION_FAIL
+import com.whatever.domain.couple.exception.CoupleExceptionCode.*
+import com.whatever.domain.couple.model.Couple
+import com.whatever.domain.couple.repository.CoupleRepository
+import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
+import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.RedisUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.viascom.nanoid.NanoId
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import java.time.Duration
+import org.springframework.transaction.annotation.Transactional
 
 private val logger = KotlinLogging.logger { }
 
 @Service
 class CoupleService(
     private val redisUtil: RedisUtil,
+    private val userRepository: UserRepository,
+    private val coupleRepository: CoupleRepository,
 ) {
 
     companion object {
         const val INVITATION_CODE_LENGTH = 10
     }
 
-    fun createInvitationCode(): CoupleInvitationCodeResponse {
-        val currentUserStatus = SecurityUtil.getCurrentUserStatus()
-        if (currentUserStatus != UserStatus.SINGLE) {
-            throw CoupleException(
-                errorCode = INVALID_USER_STATUS,
-                detailMessage = "current user status: $currentUserStatus"
-            )
+    @Transactional
+    fun createCouple(request: CreateCoupleRequest): CoupleDetailResponse {
+        val invitationCode = request.invitationCode
+        val hostUserId = redisUtil.getCoupleInvitationUser(invitationCode)
+            ?: throw CoupleException(errorCode = INVITATION_CODE_EXPIRED)
+        val partnerUserId = SecurityUtil.getCurrentUserId()
+
+        if (hostUserId == partnerUserId) {
+            throw CoupleException(errorCode = INVITATION_CODE_SELF_GENERATED)
         }
+
+        val hostUser = userRepository.findUserById(hostUserId, "host user not found")
+        isSingleUser(hostUser.userStatus)
+        val partnerUser = userRepository.findUserById(hostUserId, "partner user not found")
+        isSingleUser(partnerUser.userStatus)
+
+        hostUser.updateUserStatus(UserStatus.COUPLED)
+        partnerUser.updateUserStatus(UserStatus.COUPLED)
+        val newCouple = Couple(
+            startDate = null,
+            users = mutableListOf(hostUser, partnerUser)
+        )
+
+        val savedCouple = coupleRepository.save(newCouple)
+        redisUtil.deleteCoupleInvitationCode(invitationCode, hostUserId)
+
+        return CoupleDetailResponse(
+            coupleId = savedCouple.id!!,
+            startDate = savedCouple.startDate,
+            sharedMessage = savedCouple.sharedMessage,
+            hostInfo = CoupleUserInfoDto(
+                id = hostUser.id!!,
+                nickname = hostUser.nickname!!,
+                birthDate = hostUser.birthDate!!
+            ),
+            partnerInfo = CoupleUserInfoDto(
+                id = partnerUser.id!!,
+                nickname = partnerUser.nickname!!,
+                birthDate = partnerUser.birthDate!!
+            ),
+        )
+    }
+
+    fun createInvitationCode(): CoupleInvitationCodeResponse {
+        isSingleUser(SecurityUtil.getCurrentUserStatus())
 
         val userId = SecurityUtil.getCurrentUserId()
 
@@ -61,6 +107,15 @@ class CoupleService(
         )
     }
 
+    private fun isSingleUser(userStatus: UserStatus) {
+        if (userStatus != UserStatus.SINGLE) {
+            throw CoupleException(
+                errorCode = INVALID_USER_STATUS,
+                detailMessage = "user status: $userStatus"
+            )
+        }
+    }
+
     private fun generateInvitationCode(maxRegeneration: Int = 3): String {
         require(maxRegeneration in 0..10) {
             "생성 시도 횟수는 최대 10까지 세팅할 수 있습니다."
@@ -82,4 +137,9 @@ class CoupleService(
         )
     }
 
+}
+
+private fun UserRepository.findUserById(userId: Long, exceptionMessage: String): User {
+    return findByIdOrNull(userId)
+        ?: throw CoupleException(errorCode = USER_NOT_FOUND, detailMessage = exceptionMessage)
 }
