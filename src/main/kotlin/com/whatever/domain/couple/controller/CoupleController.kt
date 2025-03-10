@@ -44,7 +44,7 @@ class CoupleController(
             coupleId = coupleId,
             startDate = DateTimeUtil.localNow().toLocalDate(),
             sharedMessage = "공유메시지",
-            myInfo = CoupleUserInfoDto(
+            hostInfo = CoupleUserInfoDto(
                 id = 1L,
                 nickname = "내 닉네임",
                 birthDate = DateTimeUtil.localNow().toLocalDate()
@@ -79,7 +79,7 @@ class CoupleController(
             coupleId = 1L,
             startDate = DateTimeUtil.localNow().toLocalDate(),
             sharedMessage = "공유메시지",
-            myInfo = CoupleUserInfoDto(
+            hostInfo = CoupleUserInfoDto(
                 id = 1L,
                 nickname = "내 닉네임",
                 birthDate = DateTimeUtil.localNow().toLocalDate()
