@@ -7,12 +7,16 @@ import com.whatever.domain.content.controller.dto.response.ContentDetailListResp
 import com.whatever.domain.content.controller.dto.response.ContentDetailResponse
 import com.whatever.domain.content.controller.dto.response.ContentSummaryResponse
 import com.whatever.domain.content.controller.dto.response.TagDto
+import com.whatever.domain.content.exception.ContentException
+import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.model.ContentType
+import com.whatever.domain.content.service.ContentService
 import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.succeed
 import com.whatever.util.DateTimeUtil
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.web.bind.annotation.*
 
@@ -21,8 +25,10 @@ import org.springframework.web.bind.annotation.*
     description = "콘텐츠 API"
 )
 @RestController
-@RequestMapping("/v1/contents")
-class ContentController {
+@RequestMapping("/v1/content")
+class ContentController(
+    private val contentService: ContentService,
+) {
 
     @Operation(
         summary = "더미 콘텐츠 조회",
@@ -52,18 +58,17 @@ class ContentController {
     }
 
     @Operation(
-        summary = "더미 콘텐츠 생성",
+        summary = "콘텐츠 생성",
         description = "콘텐츠를 생성합니다. 날짜 정보를 보내지 않으면 Memo, 날짜 정보가 포함되면 Schedule로 생성됩니다."
     )
     @PostMapping
-    fun createContent(@RequestBody request: CreateContentRequest): CaramelApiResponse<ContentSummaryResponse> {
-
-        // TODO(준용): 구현 필요
-        return ContentSummaryResponse(
-            contentId = 1L,
-            contentType = request.dateTimeInfo?.let { ContentType.SCHEDULE }
-                ?: ContentType.MEMO,
-        ).succeed()
+    fun createContent(
+        @Valid @RequestBody request: CreateContentRequest
+    ): CaramelApiResponse<ContentSummaryResponse> {
+        if (request.title.isNullOrBlank() && request.description.isNullOrBlank()) {
+            throw ContentException(errorCode = ContentExceptionCode.TITLE_OR_DESCRIPTION_REQUIRED)
+        }
+        return contentService.createContent(request).succeed()
     }
 
     @Operation(
