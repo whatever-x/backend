@@ -37,4 +37,7 @@ class User(
 //    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 //    val contents: MutableList<Content> = mutableListOf(),
 ) : BaseEntity() {
+    fun updateUserStatus(newStatus: UserStatus) {
+        userStatus = newStatus
+    }
 }

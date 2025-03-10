@@ -21,6 +21,18 @@ class RedisUtil(
     }
 
     //  TODO(준용): Tx 추가
+    fun deleteCoupleInvitationCode(
+        invitationCode: String,
+        hostUserId: Long,
+    ): Boolean {
+        val invitationKey = "$INVITATION_CODE_PREFIX${invitationCode}"
+        val userKey = "$INVITATION_USER_PREFIX${hostUserId}"
+        val userDeleteResult = redisTemplate.delete(invitationKey)
+        val keyDeleteResult = redisTemplate.delete(userKey)
+        return userDeleteResult && keyDeleteResult
+    }
+
+    //  TODO(준용): Tx 추가
     fun saveCoupleInvitationCode(
         userId: Long,
         invitationCode: String,
