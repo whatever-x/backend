@@ -2,6 +2,7 @@ package com.whatever.domain.content.service
 
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
+import com.whatever.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
 import com.whatever.domain.content.model.ContentType
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.model.TagContentMapping
@@ -9,7 +10,6 @@ import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
@@ -28,7 +28,7 @@ class MemoCreator(
         tagIds: List<Long>,
     ): Content {
         val replacedTitle = when {
-            title.isNullOrBlank() && !description.isNullOrBlank() -> description.take(30)
+            title.isNullOrBlank() && !description.isNullOrBlank() -> description.take(MAX_TITLE_LENGTH)
             else -> title!!
         }
         val contentDetail = ContentDetail(
@@ -38,9 +38,9 @@ class MemoCreator(
         )
 
         val userId = getCurrentUserId()
-        val user = userRepository.findByIdOrNull(userId)
+        val user = userRepository.getReferenceById(userId)
         val content = Content(
-            user = user!!,
+            user = user,
             contentDetail = contentDetail,
             wishDate = null,
             type = ContentType.MEMO
@@ -49,8 +49,8 @@ class MemoCreator(
         val savedContent = contentRepository.save(content)
 
         if (tagIds.isNotEmpty()) {
-            val tags = tagRepository.findByIdIn(tagIds)
-            val mappings = tags.map { tag ->
+            val mappings = tagIds.map { tagId ->
+                val tag = tagRepository.getReferenceById(tagId)
                 TagContentMapping(
                     tag = tag,
                     content = savedContent
