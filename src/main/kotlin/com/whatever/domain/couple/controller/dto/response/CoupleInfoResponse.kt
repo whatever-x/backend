@@ -10,7 +10,7 @@ data class CoupleDetailResponse(
     val startDate: LocalDate?,
     val sharedMessage: String?,
     @Schema(description = "내 정보")
-    val myInfo: CoupleUserInfoDto,
+    val hostInfo: CoupleUserInfoDto,
     @Schema(description = "상대방 정보")
     val partnerInfo: CoupleUserInfoDto
 )

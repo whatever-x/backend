@@ -1,5 +1,6 @@
 package com.whatever.global.security.util
 
+import com.whatever.domain.user.model.UserStatus
 import com.whatever.global.security.exception.AuthenticationException
 import com.whatever.global.security.exception.SecurityExceptionCode
 import com.whatever.global.security.principal.CaramelUserDetails
@@ -8,14 +9,23 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 
 object SecurityUtil {
+
+    @JvmStatic
+    fun getCurrentUserStatus(): UserStatus {
+        return getUserDetails().status
+    }
+
+    @JvmStatic
     fun getCurrentUserAuthorities(): Set<GrantedAuthority> {
         return getUserDetails().authorities
     }
 
+    @JvmStatic
     fun getCurrentUserId(): Long {
-        return getUserDetails().getUserId()
+        return getUserDetails().userId
     }
 
+    @JvmStatic
     private fun getUserDetails(): CaramelUserDetails {
         val authentication = getAuthentication()
             .takeIf { it.isAuthenticated }
@@ -30,6 +40,7 @@ object SecurityUtil {
         )
     }
 
+    @JvmStatic
     private fun getAuthentication(): Authentication {
         return SecurityContextHolder.getContext().authentication
             ?: throw AuthenticationException(SecurityExceptionCode.AUTHENTICATION_NOT_FOUND)
