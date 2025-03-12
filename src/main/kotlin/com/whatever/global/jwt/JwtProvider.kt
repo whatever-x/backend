@@ -73,6 +73,12 @@ class JwtProvider(
         return objectMapper.readValue(jwtHeader)
     }
 
+    fun getUnsecuredPayload(token: String): Map<String, String>{
+        val jwtChunk = getJwtChunk(token)
+        val jwtHeader = Base64.getDecoder().decode(jwtChunk[1])
+        return objectMapper.readValue(jwtHeader)
+    }
+
     private fun getJwtChunk(token: String): List<String> {
         val jwtChunk = token.split(Regex.fromLiteral("."))
         if (jwtChunk.size < 3) {

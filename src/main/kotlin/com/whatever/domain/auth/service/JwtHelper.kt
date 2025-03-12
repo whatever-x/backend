@@ -82,6 +82,11 @@ class JwtHelper(
         }
     }
 
+    fun getUserId(token: String): Long {
+        return jwtProvider.getUnsecuredPayload(token)["userId"]?.toLong()
+            ?: throw IllegalArgumentException("userid require not null")
+    }
+
     private fun getJwtParser(): JwtParser {
         try {
             return Jwts.parser()

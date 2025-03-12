@@ -1,5 +1,6 @@
 package com.whatever.domain.auth.controller
 
+import com.whatever.domain.auth.dto.ServiceToken
 import com.whatever.domain.auth.dto.SignInRequest
 import com.whatever.domain.auth.dto.SignInResponse
 import com.whatever.domain.auth.service.AuthService
@@ -40,5 +41,21 @@ class AuthController(
             idToken = request.idToken
         )
         return socialAuthResponse.succeed()
+    }
+
+    @Operation(
+        summary = "토큰 refresh",
+        description = "새로운 accesstoken, refreshtoken 을 재발급합니다.",
+        responses = [
+            ApiResponse(responseCode = "200", description = "발급 완료"),
+            ApiResponse(responseCode = "403", description = "리프레시 토큰 만료"),
+        ]
+    )
+    @PostMapping("/refresh")
+    fun refresh(
+        @RequestBody request: ServiceToken,
+    ): CaramelApiResponse<ServiceToken> {
+        val serviceToken = authService.refresh(request)
+        return serviceToken.succeed()
     }
 }
