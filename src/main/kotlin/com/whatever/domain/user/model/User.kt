@@ -2,6 +2,8 @@ package com.whatever.domain.user.model
 
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.couple.model.Couple
+import com.whatever.domain.user.exception.UserExceptionCode
+import com.whatever.domain.user.exception.UserIllegalStateException
 import jakarta.persistence.*
 import java.time.LocalDate
 
@@ -40,7 +42,7 @@ class User(
 
     fun setCouple(couple: Couple) {
         if (_couple != null) {
-            throw IllegalStateException("Couple is already initialized")
+            throw UserIllegalStateException(UserExceptionCode.ALREADY_EXIST_COUPLE)
         }
         _couple = couple
         couple.addUsers(this)

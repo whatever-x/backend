@@ -1,6 +1,8 @@
 package com.whatever.domain.couple.model
 
 import com.whatever.domain.base.BaseEntity
+import com.whatever.domain.couple.exception.CoupleExceptionCode
+import com.whatever.domain.couple.exception.CoupleIllegalStateException
 import com.whatever.domain.user.model.User
 import jakarta.persistence.*
 import java.time.LocalDate
@@ -28,7 +30,10 @@ class Couple (
     @PreUpdate
     fun validateUsers() {
         if (mutableUsers.size != 2) {
-            throw IllegalStateException("커플에는 반드시 두 명의 유저가 있어야 합니다. 현재 등록된 유저 수: ${mutableUsers.size}")
+            throw CoupleIllegalStateException(
+                errorCode = CoupleExceptionCode.ILLEGAL_USER_SIZE,
+                detailMessage = "current user size: ${mutableUsers.size}"
+            )
         }
     }
 }
