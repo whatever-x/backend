@@ -31,6 +31,7 @@ class CoupleService(
 
     companion object {
         const val INVITATION_CODE_LENGTH = 10
+        const val INVITATION_CODE_REGENERATION_DEFAULT = 3
     }
 
     @Transactional
@@ -45,16 +46,13 @@ class CoupleService(
         }
 
         val hostUser = userRepository.findUserById(hostUserId, "host user not found")
-        isSingleUser(hostUser.userStatus)
+        validateSingleUser(hostUser.userStatus)
         val partnerUser = userRepository.findUserById(hostUserId, "partner user not found")
-        isSingleUser(partnerUser.userStatus)
+        validateSingleUser(partnerUser.userStatus)
 
-        hostUser.updateUserStatus(UserStatus.COUPLED)
-        partnerUser.updateUserStatus(UserStatus.COUPLED)
-        val newCouple = Couple(
-            startDate = null,
-            users = mutableListOf(hostUser, partnerUser)
-        )
+        val newCouple = Couple()
+        hostUser.setCouple(newCouple)
+        partnerUser.setCouple(newCouple)
 
         val savedCouple = coupleRepository.save(newCouple)
         redisUtil.deleteCoupleInvitationCode(invitationCode, hostUserId)
@@ -77,7 +75,7 @@ class CoupleService(
     }
 
     fun createInvitationCode(): CoupleInvitationCodeResponse {
-        isSingleUser(SecurityUtil.getCurrentUserStatus())
+        validateSingleUser(SecurityUtil.getCurrentUserStatus())
 
         val userId = SecurityUtil.getCurrentUserId()
 
@@ -107,7 +105,7 @@ class CoupleService(
         )
     }
 
-    private fun isSingleUser(userStatus: UserStatus) {
+    private fun validateSingleUser(userStatus: UserStatus) {
         if (userStatus != UserStatus.SINGLE) {
             throw CoupleException(
                 errorCode = INVALID_USER_STATUS,
@@ -116,7 +114,7 @@ class CoupleService(
         }
     }
 
-    private fun generateInvitationCode(maxRegeneration: Int = 3): String {
+    private fun generateInvitationCode(maxRegeneration: Int = INVITATION_CODE_REGENERATION_DEFAULT): String {
         require(maxRegeneration in 0..10) {
             "생성 시도 횟수는 최대 10까지 세팅할 수 있습니다."
         }

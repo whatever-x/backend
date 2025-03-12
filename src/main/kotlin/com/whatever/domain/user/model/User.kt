@@ -30,13 +30,23 @@ class User(
     @Enumerated(EnumType.STRING)
     var userStatus: UserStatus = UserStatus.NEW,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "couple_id", referencedColumnName = "id")
-    val couple: Couple? = null,
-
 //    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 //    val contents: MutableList<Content> = mutableListOf(),
 ) : BaseEntity() {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "couple_id", referencedColumnName = "id")
+    protected var _couple: Couple? = null
+    val couple: Couple? get() = _couple
+
+    fun setCouple(couple: Couple) {
+        if (_couple != null) {
+            throw IllegalStateException("Couple is already initialized")
+        }
+        _couple = couple
+        couple.addUsers(this)
+        updateUserStatus(UserStatus.COUPLED)
+    }
+
     fun updateUserStatus(newStatus: UserStatus) {
         userStatus = newStatus
     }
