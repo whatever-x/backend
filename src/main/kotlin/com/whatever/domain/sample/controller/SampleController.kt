@@ -78,7 +78,7 @@ class SampleController(
         description = "개발용 테스트 유저입니다."
     )
     @GetMapping("/test/sign-in")
-    fun testSignIn(@RequestParam gender: UserGender): CaramelApiResponse<SignInResponse> {
-        return sampleService.testSignIn(gender).succeed()
+    fun testSignIn(@RequestParam gender: UserGender, @RequestParam expSec: Long): CaramelApiResponse<SignInResponse> {
+        return sampleService.testSignIn(gender, expSec).succeed()
     }
 }
