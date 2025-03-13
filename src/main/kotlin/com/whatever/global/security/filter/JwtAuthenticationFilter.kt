@@ -3,8 +3,6 @@ package com.whatever.global.security.filter
 import com.whatever.domain.auth.service.JwtHelper
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.principal.CaramelUserDetails
-import com.whatever.global.security.exception.AuthenticationException
-import com.whatever.global.security.exception.SecurityExceptionCode
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -45,7 +43,7 @@ class JwtAuthenticationFilter(
         val user = userRepository.findByIdOrNull(userId) ?: return null
 
         val userDetails = CaramelUserDetails(
-            userId = user.id!!,
+            userId = user.id,
             status = user.userStatus
         )
 

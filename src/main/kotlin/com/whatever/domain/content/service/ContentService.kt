@@ -29,6 +29,6 @@ class ContentService(
 }
 
 private fun Content.toContentSummaryResponse() = ContentSummaryResponse(
-    contentId = id!!,
+    contentId = id,
     contentType = type
 )
