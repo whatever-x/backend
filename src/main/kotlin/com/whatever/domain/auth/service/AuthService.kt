@@ -3,6 +3,8 @@ package com.whatever.domain.auth.service
 import com.whatever.config.properties.JwtProperties
 import com.whatever.domain.auth.dto.ServiceToken
 import com.whatever.domain.auth.dto.SignInResponse
+import com.whatever.domain.auth.exception.AuthException
+import com.whatever.domain.auth.exception.AuthExceptionCode
 import com.whatever.domain.auth.service.provider.SocialUserProvider
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.global.exception.GlobalException
@@ -42,6 +44,21 @@ class AuthService(
             birthDay = user.birthDate,
             coupleId = coupleId,
         )
+    }
+
+    fun refresh(serviceToken: ServiceToken): ServiceToken {
+        val userId = jwtHelper.getUserId(serviceToken.accessToken)
+        val isValid = jwtHelper.isValidJwt(serviceToken.refreshToken)
+
+        if (isValid.not()) throw AuthException(errorCode = AuthExceptionCode.UNAUTHORIZED)
+
+        val refreshToken = redisUtil.getRefreshToken(userId = userId, deviceId = "tempDeviceId")
+
+        if (serviceToken.refreshToken != refreshToken) {
+            throw AuthException(errorCode = AuthExceptionCode.UNAUTHORIZED)
+        }
+
+        return createTokenAndSave(userId = userId)
     }
 
     private fun createTokenAndSave(userId: Long): ServiceToken {

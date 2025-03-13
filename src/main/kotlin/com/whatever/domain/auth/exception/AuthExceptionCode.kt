@@ -11,6 +11,7 @@ enum class AuthExceptionCode(
 
     UNKNOWN( "000", "알 수 없는 에러입니다. 담당자에게 문의해주세요.", HttpStatus.INTERNAL_SERVER_ERROR),
     USER_NOT_FOUND( "001", "해당 소셜 계정으로 가입된 유저가 없습니다.", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED("002", "발급받은 인증 정보가 유효하지 않습니다.", HttpStatus.UNAUTHORIZED),
     ;
 
     override val code = "AUTH$sequence"
