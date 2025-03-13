@@ -9,7 +9,7 @@ import java.time.LocalDate
 class Couple (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    val id: Long = 0L,
 
     var startDate: LocalDate? = null,
 

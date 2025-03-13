@@ -13,7 +13,7 @@ import jakarta.persistence.*
 class TagContentMapping(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    val id: Long = 0L,
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "tag_id", referencedColumnName = "id", nullable = false)

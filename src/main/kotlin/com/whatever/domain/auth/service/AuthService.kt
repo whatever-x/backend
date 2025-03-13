@@ -33,7 +33,7 @@ class AuthService(
             )
 
         val user = userProvider.findOrCreateUser(idToken)
-        val userId = user.id ?: throw GlobalException(GlobalExceptionCode.ARGS_VALIDATION_FAILED)
+        val userId = user.id
         val coupleId = user.couple?.id
 
         val serviceToken = createTokenAndSave(userId = userId)
