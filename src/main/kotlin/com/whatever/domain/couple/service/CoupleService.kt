@@ -19,6 +19,7 @@ import io.viascom.nanoid.NanoId
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
 
 private val logger = KotlinLogging.logger { }
 
@@ -32,6 +33,7 @@ class CoupleService(
     companion object {
         const val INVITATION_CODE_LENGTH = 10
         const val INVITATION_CODE_REGENERATION_DEFAULT = 3
+        const val INVITATION_CODE_EXPIRATION_DAY = 1L
     }
 
     @Transactional
@@ -88,9 +90,13 @@ class CoupleService(
         }
 
         val newInvitationCode = generateInvitationCode()
+        val expirationDateTime = DateTimeUtil.localNow().plusDays(INVITATION_CODE_EXPIRATION_DAY)
+
+        val expirationTime = Duration.between(DateTimeUtil.localNow(), expirationDateTime)
         val result = redisUtil.saveCoupleInvitationCode(
             userId = userId,
             invitationCode = newInvitationCode,
+            expirationTime = expirationTime
         )
         if (!result) {
             throw CoupleException(
@@ -101,7 +107,7 @@ class CoupleService(
 
         return CoupleInvitationCodeResponse(
             invitationCode = newInvitationCode,
-            expirationDateTime = DateTimeUtil.localNow().plusDays(1)
+            expirationDateTime = expirationDateTime
         )
     }
 
