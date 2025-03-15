@@ -13,7 +13,7 @@ enum class CoupleExceptionCode(
     INVITATION_CODE_GENERATION_FAIL("002","초대 코드 생성에 실패했습니다."),
     INVITATION_CODE_EXPIRED("003", "존재하지 않는 코드이거나, 만료되었습니다."),
     INVITATION_CODE_SELF_GENERATED("004", "스스로 생성한 코드는 사용할 수 없습니다."),
-    USER_NOT_FOUND("005", "존재하지 않는 유저입니다."),
+    MEMBER_NOT_FOUND("005", "존재하지 않는 유저입니다."),
     ;
 
     override val code = "USER$sequence"

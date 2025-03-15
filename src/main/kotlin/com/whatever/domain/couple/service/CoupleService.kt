@@ -145,5 +145,5 @@ class CoupleService(
 
 private fun UserRepository.findUserById(userId: Long, exceptionMessage: String): User {
     return findByIdOrNull(userId)
-        ?: throw CoupleException(errorCode = USER_NOT_FOUND, detailMessage = exceptionMessage)
+        ?: throw CoupleException(errorCode = MEMBER_NOT_FOUND, detailMessage = exceptionMessage)
 }
