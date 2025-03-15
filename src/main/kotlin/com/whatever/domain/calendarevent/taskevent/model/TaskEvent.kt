@@ -11,7 +11,7 @@ import java.time.LocalDate
 class TaskEvent(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    val id: Long = 0L,
 
     @Column(nullable = false)
     val uid: String,

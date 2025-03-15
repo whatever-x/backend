@@ -58,16 +58,16 @@ class CoupleService(
         redisUtil.deleteCoupleInvitationCode(invitationCode, hostUserId)
 
         return CoupleDetailResponse(
-            coupleId = savedCouple.id!!,
+            coupleId = savedCouple.id,
             startDate = savedCouple.startDate,
             sharedMessage = savedCouple.sharedMessage,
             hostInfo = CoupleUserInfoDto(
-                id = hostUser.id!!,
+                id = hostUser.id,
                 nickname = hostUser.nickname!!,
                 birthDate = hostUser.birthDate!!
             ),
             partnerInfo = CoupleUserInfoDto(
-                id = partnerUser.id!!,
+                id = partnerUser.id,
                 nickname = partnerUser.nickname!!,
                 birthDate = partnerUser.birthDate!!
             ),

@@ -36,7 +36,7 @@ class SampleService(
         val testUser = userRepository.findByPlatformUserId(testPlatformId)
             ?: throw SampleNotFoundException(SampleExceptionCode.SAMPLE_CODE, "테스트 유저를 찾을 수 없습니다. 관리자에게 문의해주세요.")
 
-        val serviceToken = createTokenAndSave(userId = testUser.id!!, expSec)
+        val serviceToken = createTokenAndSave(userId = testUser.id, expSec)
         return SignInResponse(
             serviceToken = serviceToken,
             userStatus = testUser.userStatus,

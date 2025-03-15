@@ -7,7 +7,7 @@ import jakarta.persistence.*
 class SampleEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    val id: Long = 0L,
 
     @Column(nullable = false, unique = true)
     val sampleAttribute: String,

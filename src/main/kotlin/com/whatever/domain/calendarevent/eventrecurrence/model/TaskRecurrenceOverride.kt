@@ -10,7 +10,7 @@ import java.time.LocalDate
 class TaskRecurrenceOverride(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    val id: Long = 0L,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

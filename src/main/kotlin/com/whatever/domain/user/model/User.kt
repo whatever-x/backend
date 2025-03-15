@@ -9,7 +9,7 @@ import java.time.LocalDate
 class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    val id: Long = 0L,
 
     @Column(unique = true)
     var email: String? = null,
