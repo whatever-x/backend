@@ -6,7 +6,14 @@ import com.whatever.domain.couple.controller.dto.response.CoupleInvitationCodeRe
 import com.whatever.domain.couple.controller.dto.response.CoupleUserInfoDto
 import com.whatever.domain.couple.exception.CoupleAccessDeniedException
 import com.whatever.domain.couple.exception.CoupleException
-import com.whatever.domain.couple.exception.CoupleExceptionCode.*
+import com.whatever.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
+import com.whatever.domain.couple.exception.CoupleExceptionCode.INVALID_USER_STATUS
+import com.whatever.domain.couple.exception.CoupleExceptionCode.INVITATION_CODE_EXPIRED
+import com.whatever.domain.couple.exception.CoupleExceptionCode.INVITATION_CODE_GENERATION_FAIL
+import com.whatever.domain.couple.exception.CoupleExceptionCode.INVITATION_CODE_SELF_GENERATED
+import com.whatever.domain.couple.exception.CoupleExceptionCode.MEMBER_NOT_FOUND
+import com.whatever.domain.couple.exception.CoupleExceptionCode.NOT_A_MEMBER
+import com.whatever.domain.couple.exception.CoupleIllegalStateException
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.User
@@ -40,25 +47,19 @@ class CoupleService(
     fun getCoupleInfo(coupleId: Long): CoupleDetailResponse {
         val currentUserId = SecurityUtil.getCurrentUserId()
         val couple = coupleRepository.findCoupleById(coupleId)
-        validateIsCoupleMember(couple, currentUserId)
 
-        val myUser = couple.members.first { it.id == currentUserId }
-        val partnerUser = couple.members.first { it.id != currentUserId }
-
-        return CoupleDetailResponse(
-            coupleId = couple.id,
-            startDate = couple.startDate,
-            sharedMessage = couple.sharedMessage,
-            myInfo = CoupleUserInfoDto(
-                id = myUser.id,
-                nickname = myUser.nickname!!,
-                birthDate = myUser.birthDate!!
-            ),
-            partnerInfo = CoupleUserInfoDto(
-                id = partnerUser.id,
-                nickname = partnerUser.nickname!!,
-                birthDate = partnerUser.birthDate!!
+        val myUser = couple.members.firstOrNull { it.id == currentUserId }
+            ?: throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
+        val partnerUser = couple.members.firstOrNull { it.id != currentUserId }
+            ?: throw CoupleIllegalStateException(
+                errorCode = MEMBER_NOT_FOUND,
+                detailMessage = "상대방 유저에 대한 정보가 존재하지 않습니다."
             )
+
+        return CoupleDetailResponse.from(
+            couple = couple,
+            myUser = myUser,
+            partnerUser = partnerUser
         )
     }
 
@@ -135,10 +136,6 @@ class CoupleService(
             invitationCode = newInvitationCode,
             expirationDateTime = expirationDateTime
         )
-    }
-
-    private fun validateIsCoupleMember(couple: Couple, currentUserId: Long) {
-        couple.members.find { it.id == currentUserId } ?: throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
     }
 
     private fun validateSingleUser(user: User) {
