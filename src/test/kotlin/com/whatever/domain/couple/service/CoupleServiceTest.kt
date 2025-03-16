@@ -1,6 +1,9 @@
 package com.whatever.domain.couple.service
 
+import com.whatever.domain.couple.exception.CoupleAccessDeniedException
 import com.whatever.domain.couple.exception.CoupleException
+import com.whatever.domain.couple.model.Couple
+import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
@@ -18,6 +21,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.reset
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.redis.core.RedisTemplate
@@ -31,6 +36,7 @@ class CoupleServiceTest @Autowired constructor(
     private val redisTemplate: RedisTemplate<String, String>,
     private val coupleService: CoupleService,
     private val userRepository: UserRepository,
+    private val coupleRepository: CoupleRepository,
 ) {
 
     @MockitoSpyBean
@@ -58,11 +64,13 @@ class CoupleServiceTest @Autowired constructor(
     @Test
     fun createInvitationCode_WithInvalidUserStatus() {
         // given
-        val user = userRepository.save(User(
-            platform = LoginPlatform.KAKAO,
-            platformUserId = "test-user-id",
-            userStatus = UserStatus.COUPLED
-        ))
+        val user = userRepository.save(
+            User(
+                platform = LoginPlatform.KAKAO,
+                platformUserId = "test-user-id",
+                userStatus = UserStatus.COUPLED
+            )
+        )
         securityUtilMock.apply {
             `when`(SecurityUtil.getCurrentUserStatus()).thenReturn(user.userStatus)
             `when`(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
@@ -78,11 +86,13 @@ class CoupleServiceTest @Autowired constructor(
     @Test
     fun createInvitationCode() {
         // given
-        val user = userRepository.save(User(
-            platform = LoginPlatform.KAKAO,
-            platformUserId = "test-user-id",
-            userStatus = UserStatus.SINGLE
-        ))
+        val user = userRepository.save(
+            User(
+                platform = LoginPlatform.KAKAO,
+                platformUserId = "test-user-id",
+                userStatus = UserStatus.SINGLE
+            )
+        )
         securityUtilMock.apply {
             `when`(SecurityUtil.getCurrentUserStatus()).thenReturn(user.userStatus)
             `when`(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
@@ -104,11 +114,13 @@ class CoupleServiceTest @Autowired constructor(
     @Test
     fun createInvitationCode_WithSameRequestBeforeExpiration() {
         // given
-        val user = userRepository.save(User(
-            platform = LoginPlatform.KAKAO,
-            platformUserId = "test-user-id",
-            userStatus = UserStatus.SINGLE
-        ))
+        val user = userRepository.save(
+            User(
+                platform = LoginPlatform.KAKAO,
+                platformUserId = "test-user-id",
+                userStatus = UserStatus.SINGLE
+            )
+        )
         securityUtilMock.apply {
             `when`(SecurityUtil.getCurrentUserStatus()).thenReturn(user.userStatus)
             `when`(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
@@ -131,5 +143,88 @@ class CoupleServiceTest @Autowired constructor(
             first.expirationDateTime,
             TemporalUnitWithinOffset(1L, ChronoUnit.SECONDS)
         )
+    }
+
+    @DisplayName("Couple의 member가 정보를 조회할 경우 멤버정보가 포함된 커플정보를 반환한다.")
+    @Test
+    fun getCoupleInfo() {
+        // given
+        val (myUser, partnerUser, savedCouple) = makeCouple()
+
+        securityUtilMock.apply {
+            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
+            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+        }
+
+        // when
+        val result = coupleService.getCoupleInfo(savedCouple.id)
+
+        // then
+        assertThat(result.coupleId).isEqualTo(savedCouple.id)
+        assertThat(result.myInfo.id).isEqualTo(myUser.id)
+        assertThat(result.partnerInfo.id).isEqualTo(partnerUser.id)
+    }
+
+    @DisplayName("Couple의 member가 아닌 유저가 정보를 조회할 경우 예외를 반환한다.")
+    @Test
+    fun getCoupleInfo_ByOtherUser() {
+        // given
+        val (myUser, partnerUser, savedCouple) = makeCouple()
+
+        val otherUser = userRepository.save(
+            User(
+                nickname = "other",
+                birthDate = DateTimeUtil.localNow().toLocalDate(),
+                platform = LoginPlatform.KAKAO,
+                platformUserId = "other-user-id",
+                userStatus = UserStatus.COUPLED
+            )
+        )
+
+        securityUtilMock.apply {
+            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(otherUser.userStatus)
+            whenever(SecurityUtil.getCurrentUserId()).doReturn(otherUser.id)
+        }
+
+        // when, then
+        assertThatThrownBy { coupleService.getCoupleInfo(savedCouple.id) }
+            .isInstanceOf(CoupleAccessDeniedException::class.java)
+            .hasMessage("커플에 속한 유저가 아닙니다.")
+    }
+
+    private fun makeCouple(): Triple<User, User, Couple> {
+        val myUser = userRepository.save(
+            User(
+                nickname = "my",
+                birthDate = DateTimeUtil.localNow().toLocalDate(),
+                platform = LoginPlatform.KAKAO,
+                platformUserId = "my-user-id",
+                userStatus = UserStatus.SINGLE
+            )
+        )
+        val partnerUser = userRepository.save(
+            User(
+                nickname = "partner",
+                birthDate = DateTimeUtil.localNow().toLocalDate(),
+                platform = LoginPlatform.KAKAO,
+                platformUserId = "partner-user-id",
+                userStatus = UserStatus.SINGLE
+            )
+        )
+
+        val startDate = DateTimeUtil.localNow().toLocalDate()
+        val sharedMessage = "test message"
+        val savedCouple = coupleRepository.save(
+            Couple(
+                startDate = startDate,
+                sharedMessage = sharedMessage
+            )
+        )
+        myUser.setCouple(savedCouple)
+        partnerUser.setCouple(savedCouple)
+
+        userRepository.save(myUser)
+        userRepository.save(partnerUser)
+        return Triple(myUser, partnerUser, savedCouple)
     }
 }

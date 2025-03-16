@@ -44,6 +44,7 @@ class CoupleService(
         const val INVITATION_CODE_EXPIRATION_DAY = 1L
     }
 
+    @Transactional(readOnly = true)
     fun getCoupleInfo(coupleId: Long): CoupleDetailResponse {
         val currentUserId = SecurityUtil.getCurrentUserId()
         val couple = coupleRepository.findCoupleById(coupleId)

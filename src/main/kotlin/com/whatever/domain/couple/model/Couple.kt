@@ -24,7 +24,6 @@ class Couple (
         mutableMembers.add(user)
     }
 
-    @PrePersist
     @PreUpdate
     protected fun validateMemberSize() {
         if (mutableMembers.size != 2) {
