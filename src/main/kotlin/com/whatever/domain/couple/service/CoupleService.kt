@@ -4,6 +4,7 @@ import com.whatever.domain.couple.controller.dto.request.CreateCoupleRequest
 import com.whatever.domain.couple.controller.dto.response.CoupleDetailResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleInvitationCodeResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleUserInfoDto
+import com.whatever.domain.couple.exception.CoupleAccessDeniedException
 import com.whatever.domain.couple.exception.CoupleException
 import com.whatever.domain.couple.exception.CoupleExceptionCode.*
 import com.whatever.domain.couple.model.Couple
@@ -11,6 +12,7 @@ import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
+import com.whatever.global.exception.dto.succeed
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.RedisUtil
@@ -34,6 +36,30 @@ class CoupleService(
         const val INVITATION_CODE_LENGTH = 10
         const val INVITATION_CODE_REGENERATION_DEFAULT = 3
         const val INVITATION_CODE_EXPIRATION_DAY = 1L
+    }
+
+    fun getCoupleInfo(coupleId: Long): CoupleDetailResponse {
+        val currentUserId = SecurityUtil.getCurrentUserId()
+        val couple = coupleRepository.findCoupleById(coupleId)
+        validateIsCoupleMember(couple, currentUserId)
+
+        val sortedMembers = couple.members.sortedBy { it.id }
+
+        return CoupleDetailResponse(
+            coupleId = couple.id,
+            startDate = couple.startDate,
+            sharedMessage = couple.sharedMessage,
+            hostInfo = CoupleUserInfoDto(
+                id = sortedMembers[0].id,
+                nickname = sortedMembers[0].nickname!!,
+                birthDate = sortedMembers[0].birthDate!!
+            ),
+            partnerInfo = CoupleUserInfoDto(
+                id = sortedMembers[1].id,
+                nickname = sortedMembers[1].nickname!!,
+                birthDate = sortedMembers[1].birthDate!!
+            )
+        )
     }
 
     @Transactional
@@ -111,6 +137,10 @@ class CoupleService(
         )
     }
 
+    private fun validateIsCoupleMember(couple: Couple, currentUserId: Long) {
+        couple.members.find { it.id == currentUserId } ?: throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
+    }
+
     private fun validateSingleUser(userStatus: UserStatus) {
         if (userStatus != UserStatus.SINGLE) {
             throw CoupleException(
@@ -143,7 +173,12 @@ class CoupleService(
 
 }
 
-private fun UserRepository.findUserById(userId: Long, exceptionMessage: String): User {
-    return findByIdOrNull(userId)
+private fun UserRepository.findUserById(id: Long, exceptionMessage: String? = null): User {
+    return findByIdOrNull(id)
         ?: throw CoupleException(errorCode = MEMBER_NOT_FOUND, detailMessage = exceptionMessage)
+}
+
+private fun CoupleRepository.findCoupleById(id: Long, exceptionMessage: String? = null): Couple {
+    return findByIdOrNull(id)
+        ?: throw CoupleException(errorCode = COUPLE_NOT_FOUND, detailMessage = exceptionMessage)
 }

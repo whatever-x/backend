@@ -38,23 +38,8 @@ class CoupleController(
     )
     @GetMapping("/{couple-id}")
     fun getCoupleInfo(@PathVariable("couple-id") coupleId: Long): CaramelApiResponse<CoupleDetailResponse> {
-
-        // TODO(준용): 구현 필요
-        return CoupleDetailResponse(
-            coupleId = coupleId,
-            startDate = DateTimeUtil.localNow().toLocalDate(),
-            sharedMessage = "공유메시지",
-            hostInfo = CoupleUserInfoDto(
-                id = 1L,
-                nickname = "내 닉네임",
-                birthDate = DateTimeUtil.localNow().toLocalDate()
-            ),
-            partnerInfo = CoupleUserInfoDto(
-                id = 2L,
-                nickname = "상대방 닉네임",
-                birthDate = DateTimeUtil.localNow().toLocalDate()
-            )
-        ).succeed()
+        val response = coupleService.getCoupleInfo(coupleId)
+        return response.succeed()
     }
 
     @Operation(
