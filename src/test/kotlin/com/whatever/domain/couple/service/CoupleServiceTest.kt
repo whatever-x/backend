@@ -1,5 +1,6 @@
 package com.whatever.domain.couple.service
 
+import com.whatever.domain.couple.controller.dto.request.CreateCoupleRequest
 import com.whatever.domain.couple.exception.CoupleAccessDeniedException
 import com.whatever.domain.couple.exception.CoupleException
 import com.whatever.domain.couple.model.Couple
@@ -190,6 +191,74 @@ class CoupleServiceTest @Autowired constructor(
         assertThatThrownBy { coupleService.getCoupleInfo(savedCouple.id) }
             .isInstanceOf(CoupleAccessDeniedException::class.java)
             .hasMessage("커플에 속한 유저가 아닙니다.")
+    }
+
+    @DisplayName("각각 Single인 초대유저의 코드로, 등록유저가 등록하면 커플이 생성된다.")
+    @Test
+    fun createCouple() {
+        // given
+        val myUser = userRepository.save(
+            User(
+                nickname = "my",
+                birthDate = DateTimeUtil.localNow().toLocalDate(),
+                platform = LoginPlatform.KAKAO,
+                platformUserId = "my-user-id",
+                userStatus = UserStatus.SINGLE
+            )
+        )
+        val hostUser = userRepository.save(
+            User(
+                nickname = "host",
+                birthDate = DateTimeUtil.localNow().toLocalDate(),
+                platform = LoginPlatform.KAKAO,
+                platformUserId = "host-user-id",
+                userStatus = UserStatus.SINGLE
+            )
+        )
+        val request = CreateCoupleRequest("test-invitation-code")
+
+        securityUtilMock.apply {
+            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
+            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+        }
+        whenever(redisUtil.getCoupleInvitationUser(request.invitationCode)).doReturn(hostUser.id)
+
+
+        // when
+        val result = coupleService.createCouple(request)
+
+
+        // then
+        assertThat(result.myInfo.id).isEqualTo(myUser.id)
+        assertThat(result.partnerInfo.id).isEqualTo(hostUser.id)
+    }
+
+    @DisplayName("자신이 만든 초대 코드를 등록시 예외를 반환한다.")
+    @Test
+    fun createCouple_BySelfCreateInvitationCode() {
+        // given
+        val hostUser = userRepository.save(
+            User(
+                nickname = "host",
+                birthDate = DateTimeUtil.localNow().toLocalDate(),
+                platform = LoginPlatform.KAKAO,
+                platformUserId = "host-user-id",
+                userStatus = UserStatus.SINGLE
+            )
+        )
+        val request = CreateCoupleRequest("test-invitation-code")
+
+        securityUtilMock.apply {
+            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(hostUser.userStatus)
+            whenever(SecurityUtil.getCurrentUserId()).doReturn(hostUser.id)
+        }
+        whenever(redisUtil.getCoupleInvitationUser(request.invitationCode)).doReturn(hostUser.id)
+
+
+        // when, then
+        assertThatThrownBy { coupleService.createCouple(request) }
+            .isInstanceOf(CoupleException::class.java)
+            .hasMessage("스스로 생성한 코드는 사용할 수 없습니다.")
     }
 
     private fun makeCouple(): Triple<User, User, Couple> {
