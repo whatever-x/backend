@@ -12,7 +12,6 @@ import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.exception.dto.succeed
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.RedisUtil
@@ -43,21 +42,22 @@ class CoupleService(
         val couple = coupleRepository.findCoupleById(coupleId)
         validateIsCoupleMember(couple, currentUserId)
 
-        val sortedMembers = couple.members.sortedBy { it.id }
+        val myUser = couple.members.first { it.id == currentUserId }
+        val partnerUser = couple.members.first { it.id != currentUserId }
 
         return CoupleDetailResponse(
             coupleId = couple.id,
             startDate = couple.startDate,
             sharedMessage = couple.sharedMessage,
-            hostInfo = CoupleUserInfoDto(
-                id = sortedMembers[0].id,
-                nickname = sortedMembers[0].nickname!!,
-                birthDate = sortedMembers[0].birthDate!!
+            myInfo = CoupleUserInfoDto(
+                id = myUser.id,
+                nickname = myUser.nickname!!,
+                birthDate = myUser.birthDate!!
             ),
             partnerInfo = CoupleUserInfoDto(
-                id = sortedMembers[1].id,
-                nickname = sortedMembers[1].nickname!!,
-                birthDate = sortedMembers[1].birthDate!!
+                id = partnerUser.id,
+                nickname = partnerUser.nickname!!,
+                birthDate = partnerUser.birthDate!!
             )
         )
     }
@@ -89,15 +89,15 @@ class CoupleService(
             coupleId = savedCouple.id,
             startDate = savedCouple.startDate,
             sharedMessage = savedCouple.sharedMessage,
-            hostInfo = CoupleUserInfoDto(
-                id = hostUser.id,
-                nickname = hostUser.nickname!!,
-                birthDate = hostUser.birthDate!!
-            ),
-            partnerInfo = CoupleUserInfoDto(
+            myInfo = CoupleUserInfoDto(
                 id = partnerUser.id,
                 nickname = partnerUser.nickname!!,
                 birthDate = partnerUser.birthDate!!
+            ),
+            partnerInfo = CoupleUserInfoDto(
+                id = hostUser.id,
+                nickname = hostUser.nickname!!,
+                birthDate = hostUser.birthDate!!
             ),
         )
     }
