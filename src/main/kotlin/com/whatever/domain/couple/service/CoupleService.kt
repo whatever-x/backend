@@ -75,16 +75,18 @@ class CoupleService(
             throw CoupleException(errorCode = INVITATION_CODE_SELF_GENERATED)
         }
 
-        val hostUser = userRepository.findUserById(hostUserId, "host user not found")
+        val users = userRepository.findUserByIdIn(setOf(hostUserId, partnerUserId))
+        val hostUser = users.find { it.id == hostUserId }
+            ?: throw CoupleException(errorCode = MEMBER_NOT_FOUND, detailMessage = "host user not found")
         validateSingleUser(hostUser)
-        val partnerUser = userRepository.findUserById(hostUserId, "partner user not found")
+        val partnerUser = users.find { it.id == partnerUserId }
+            ?: throw CoupleException(errorCode = MEMBER_NOT_FOUND, detailMessage = "partner user not found")
         validateSingleUser(partnerUser)
 
-        val newCouple = Couple()
-        hostUser.setCouple(newCouple)
-        partnerUser.setCouple(newCouple)
+        val savedCouple = coupleRepository.save(Couple())
+        hostUser.setCouple(savedCouple)
+        partnerUser.setCouple(savedCouple)
 
-        val savedCouple = coupleRepository.save(newCouple)
         redisUtil.deleteCoupleInvitationCode(invitationCode, hostUserId)
 
         return CoupleDetailResponse(
