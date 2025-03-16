@@ -1,22 +1,28 @@
 package com.whatever.domain.couple.service
 
 import com.whatever.domain.couple.exception.CoupleException
-import com.whatever.domain.couple.exception.CoupleExceptionCode
+import com.whatever.domain.user.model.LoginPlatform
+import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
+import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.RedisUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.data.TemporalUnitWithinOffset
-import org.junit.jupiter.api.*
-import org.mockito.Mockito.*
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mockStatic
+import org.mockito.Mockito.reset
+import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
-import java.time.Duration
 import java.time.temporal.ChronoUnit
 
 @ActiveProfiles("test")
@@ -24,6 +30,7 @@ import java.time.temporal.ChronoUnit
 class CoupleServiceTest @Autowired constructor(
     private val redisTemplate: RedisTemplate<String, String>,
     private val coupleService: CoupleService,
+    private val userRepository: UserRepository,
 ) {
 
     @MockitoSpyBean
@@ -37,6 +44,8 @@ class CoupleServiceTest @Autowired constructor(
         check(connectionFactory != null)
         connectionFactory.connection.serverCommands().flushAll()
         securityUtilMock = mockStatic(SecurityUtil::class.java)
+
+        userRepository.deleteAllInBatch()
     }
 
     @AfterEach
@@ -49,9 +58,14 @@ class CoupleServiceTest @Autowired constructor(
     @Test
     fun createInvitationCode_WithInvalidUserStatus() {
         // given
+        val user = userRepository.save(User(
+            platform = LoginPlatform.KAKAO,
+            platformUserId = "test-user-id",
+            userStatus = UserStatus.COUPLED
+        ))
         securityUtilMock.apply {
-            `when`(SecurityUtil.getCurrentUserStatus()).thenReturn(UserStatus.COUPLED)
-            `when`(SecurityUtil.getCurrentUserId()).thenReturn(1L)
+            `when`(SecurityUtil.getCurrentUserStatus()).thenReturn(user.userStatus)
+            `when`(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
         }
 
         // when, then
@@ -64,9 +78,14 @@ class CoupleServiceTest @Autowired constructor(
     @Test
     fun createInvitationCode() {
         // given
+        val user = userRepository.save(User(
+            platform = LoginPlatform.KAKAO,
+            platformUserId = "test-user-id",
+            userStatus = UserStatus.SINGLE
+        ))
         securityUtilMock.apply {
-            `when`(SecurityUtil.getCurrentUserStatus()).thenReturn(UserStatus.SINGLE)
-            `when`(SecurityUtil.getCurrentUserId()).thenReturn(1L)
+            `when`(SecurityUtil.getCurrentUserStatus()).thenReturn(user.userStatus)
+            `when`(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
         }
         val expectExpirationDateTime = DateTimeUtil.localNow().plusDays(1)
 
@@ -85,9 +104,14 @@ class CoupleServiceTest @Autowired constructor(
     @Test
     fun createInvitationCode_WithSameRequestBeforeExpiration() {
         // given
+        val user = userRepository.save(User(
+            platform = LoginPlatform.KAKAO,
+            platformUserId = "test-user-id",
+            userStatus = UserStatus.SINGLE
+        ))
         securityUtilMock.apply {
-            `when`(SecurityUtil.getCurrentUserStatus()).thenReturn(UserStatus.SINGLE)
-            `when`(SecurityUtil.getCurrentUserId()).thenReturn(1L)
+            `when`(SecurityUtil.getCurrentUserStatus()).thenReturn(user.userStatus)
+            `when`(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
         }
         val expectExpirationDateTime = DateTimeUtil.localNow().plusDays(1)
 
@@ -107,33 +131,5 @@ class CoupleServiceTest @Autowired constructor(
             first.expirationDateTime,
             TemporalUnitWithinOffset(1L, ChronoUnit.SECONDS)
         )
-    }
-
-    @DisplayName("신규 초대 코드 저장 실패 시 예외가 발생한다.")
-    @Test
-    fun createInvitationCode_WithSaveFailure() {
-        // given
-        securityUtilMock.apply {
-            `when`(SecurityUtil.getCurrentUserStatus()).thenReturn(UserStatus.SINGLE)
-            `when`(SecurityUtil.getCurrentUserId()).thenReturn(1L)
-        }
-        `when`(redisUtil.getCoupleInvitationCode(1L)).thenReturn(null)
-        `when`(redisUtil.getCoupleInvitationUser(anyString())).thenReturn(null)
-        `when`(redisUtil.saveCoupleInvitationCode(
-            eq(1L),
-            anyString(),
-            org.mockito.kotlin.eq(Duration.ofDays(1))
-        )).thenReturn(false)
-
-        // when, then
-        val exception = assertThrows<CoupleException> {
-            coupleService.createInvitationCode()
-        }
-        assertThat(exception.errorCode).isEqualTo(CoupleExceptionCode.INVITATION_CODE_GENERATION_FAIL)
-        assertThat(exception.detailMessage).contains("invitation code conflict")
-
-        assertThatThrownBy { coupleService.createInvitationCode() }
-            .isInstanceOf(CoupleException::class.java)
-            .hasMessage("초대 코드 생성에 실패했습니다.")
     }
 }

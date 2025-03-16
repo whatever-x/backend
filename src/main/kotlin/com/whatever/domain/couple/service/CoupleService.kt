@@ -74,9 +74,9 @@ class CoupleService(
         }
 
         val hostUser = userRepository.findUserById(hostUserId, "host user not found")
-        validateSingleUser(hostUser.userStatus)
+        validateSingleUser(hostUser)
         val partnerUser = userRepository.findUserById(hostUserId, "partner user not found")
-        validateSingleUser(partnerUser.userStatus)
+        validateSingleUser(partnerUser)
 
         val newCouple = Couple()
         hostUser.setCouple(newCouple)
@@ -103,9 +103,9 @@ class CoupleService(
     }
 
     fun createInvitationCode(): CoupleInvitationCodeResponse {
-        validateSingleUser(SecurityUtil.getCurrentUserStatus())
-
         val userId = SecurityUtil.getCurrentUserId()
+        val user = userRepository.findUserById(userId)
+        validateSingleUser(user)
 
         redisUtil.getCoupleInvitationCode(userId)?.let {
             val expirationTime = redisUtil.getCoupleInvitationExpirationTime(it)
@@ -141,11 +141,11 @@ class CoupleService(
         couple.members.find { it.id == currentUserId } ?: throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
     }
 
-    private fun validateSingleUser(userStatus: UserStatus) {
-        if (userStatus != UserStatus.SINGLE) {
+    private fun validateSingleUser(user: User) {
+        if (user.userStatus != UserStatus.SINGLE) {
             throw CoupleException(
                 errorCode = INVALID_USER_STATUS,
-                detailMessage = "user status: $userStatus"
+                detailMessage = "user status: ${user.userStatus}"
             )
         }
     }
