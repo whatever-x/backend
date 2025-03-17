@@ -63,7 +63,7 @@ class CoupleController(
     }
 
     @Operation(
-        summary = "더미 커플 시작일 수정",
+        summary = "커플 시작일 수정",
         description = "커플의 시작일을 수정합니다. 미래는 불가능합니다."
     )
     @PatchMapping("/{couple-id}/start-date")
@@ -76,7 +76,7 @@ class CoupleController(
     }
 
     @Operation(
-        summary = "더미 커플 공유 메시지 수정",
+        summary = "커플 공유 메시지 수정",
         description = "커플의 공유 메시지를 수정합니다."
     )
     @PatchMapping("/{couple-id}/shared-message")
