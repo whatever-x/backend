@@ -13,6 +13,9 @@ enum class GlobalExceptionCode(
     NO_RESOURCE( "001", "요청 경로가 잘못되었습니다."),
     ARGS_VALIDATION_FAILED( "002", "요청 형식이 올바르지 않습니다."),
     ARGS_TYPE_MISSMATCH( "003", "요청 타입이 올바르지 않습니다."),
+    INVALID_ARGUMENT("004", "잘못된 인자가 전달되었습니다."),
+    ILLEGAL_STATE("005", "잘못된 상태입니다."),
+    ACCESS_DENIED("006", "잘못된 접근 입니다."),
     ;
 
     override val code = "GLOBAL$sequence"

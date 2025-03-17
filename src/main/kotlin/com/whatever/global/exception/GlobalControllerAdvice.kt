@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException
 import jakarta.validation.ConstraintViolationException
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.security.authorization.AuthorizationDeniedException
 import org.springframework.validation.BindException
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -27,6 +28,33 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
     fun handleCaramelException(e: CaramelException): ResponseEntity<CaramelApiResponse<*>> {
         logger.error(e) { "예상하지 못한 예외가 발생했습니다." }
         return createExceptionResponse(errorCode = e.errorCode, debugMessage = e.detailMessage)
+    }
+
+    @ExceptionHandler(AccessDeniedException::class)
+    fun handleAccessDeniedException(e: AccessDeniedException): ResponseEntity<CaramelApiResponse<*>> {
+        logger.error(e) { "잘못된 접근 입니다." }
+        return createExceptionResponse(
+            errorCode = GlobalExceptionCode.ACCESS_DENIED,
+            debugMessage = e.message
+        )
+    }
+
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun handleIllegalArgumentException(e: IllegalArgumentException): ResponseEntity<CaramelApiResponse<*>> {
+        logger.error(e) { "잘못된 인자가 전달되었습니다." }
+        return createExceptionResponse(
+            errorCode = GlobalExceptionCode.INVALID_ARGUMENT,
+            debugMessage = e.message
+        )
+    }
+
+    @ExceptionHandler(IllegalStateException::class)
+    fun handleIllegalStateExceptionException(e: IllegalStateException): ResponseEntity<CaramelApiResponse<*>> {
+        logger.error(e) { "잘못된 상태입니다." }
+        return createExceptionResponse(
+            errorCode = GlobalExceptionCode.ILLEGAL_STATE,
+            debugMessage = e.message
+        )
     }
 
     @ExceptionHandler(
@@ -66,6 +94,10 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
 
     @ExceptionHandler(Exception::class)
     fun handleApplicationException(e: Exception): ResponseEntity<CaramelApiResponse<*>> {
+        if (e is AuthorizationDeniedException) {
+            // 이 예외는 전역 핸들러에서 처리하지 않고, 다시 던져서 스프링 시큐리티가 처리하도록 함
+            throw e
+        }
         logger.error(e) { "예상하지 못한 예외가 발생했습니다." }
         return createExceptionResponse(errorCode = GlobalExceptionCode.UNKNOWN)
     }
