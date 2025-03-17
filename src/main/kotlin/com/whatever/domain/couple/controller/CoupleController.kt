@@ -33,7 +33,7 @@ class CoupleController(
 ) {
 
     @Operation(
-        summary = "더미 커플 정보 조회",
+        summary = "커플 정보 조회",
         description = "커플 정보를 조회합니다."
     )
     @GetMapping("/{couple-id}")
@@ -53,7 +53,7 @@ class CoupleController(
     }
 
     @Operation(
-        summary = "더미 커플 연결",
+        summary = "커플 연결",
         description = "초대 코드를 사용해 커플을 연결(생성)합니다."
     )
     @PostMapping("/connect")
