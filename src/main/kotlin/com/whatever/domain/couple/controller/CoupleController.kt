@@ -84,15 +84,8 @@ class CoupleController(
         @PathVariable("couple-id") coupleId: Long,
         @RequestBody request: UpdateCoupleSharedMessageRequest,
     ): CaramelApiResponse<CoupleBasicResponse> {
-
-        // TODO(준용): 구현 필요
-        return CoupleBasicResponse(
-            coupleId = 1L,
-            startDate = null,
-            sharedMessage =
-                if (request.sharedMessage?.isBlank() == true) null
-                else request.sharedMessage,
-        ).succeed()
+        val response = coupleService.updateSharedMessage(request)
+        return response.succeed()
     }
 
     @Operation(

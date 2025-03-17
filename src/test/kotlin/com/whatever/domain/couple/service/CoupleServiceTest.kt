@@ -1,6 +1,7 @@
 package com.whatever.domain.couple.service
 
 import com.whatever.domain.couple.controller.dto.request.CreateCoupleRequest
+import com.whatever.domain.couple.controller.dto.request.UpdateCoupleSharedMessageRequest
 import com.whatever.domain.couple.controller.dto.request.UpdateCoupleStartDateRequest
 import com.whatever.domain.couple.exception.CoupleAccessDeniedException
 import com.whatever.domain.couple.exception.CoupleException
@@ -279,6 +280,63 @@ class CoupleServiceTest @Autowired constructor(
         // then
         assertThat(result.coupleId).isEqualTo(savedCouple.id)
         assertThat(result.startDate).isEqualTo(request.startDate)
+    }
+
+    @DisplayName("커플 공유메시지를 업데이트시 변경된 응답이 반환된다.")
+    @Test
+    fun updateSharedMessage() {
+        // given
+        val (myUser, partnerUser, savedCouple) = makeCouple()
+        securityUtilMock.apply {
+            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
+            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+        }
+        val request = UpdateCoupleSharedMessageRequest("new message")
+
+        // when
+        val result = coupleService.updateSharedMessage(request)
+
+        // then
+        assertThat(result.coupleId).isEqualTo(savedCouple.id)
+        assertThat(result.sharedMessage).isEqualTo(request.sharedMessage)
+    }
+
+    @DisplayName("Blank인 커플 공유메시지를 업데이트시 null인 공유 메시지가 반환된다.")
+    @Test
+    fun updateSharedMessage_WithBlankMessage() {
+        // given
+        val (myUser, partnerUser, savedCouple) = makeCouple()
+        securityUtilMock.apply {
+            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
+            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+        }
+        val request = UpdateCoupleSharedMessageRequest("           ")
+
+        // when
+        val result = coupleService.updateSharedMessage(request)
+
+        // then
+        assertThat(result.coupleId).isEqualTo(savedCouple.id)
+        assertThat(result.sharedMessage).isNull()
+    }
+
+    @DisplayName("null인 커플 공유메시지를 업데이트시 null인 공유 메시지가 반환된다.")
+    @Test
+    fun updateSharedMessage_WithNullMessage() {
+        // given
+        val (myUser, partnerUser, savedCouple) = makeCouple()
+        securityUtilMock.apply {
+            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
+            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+        }
+        val request = UpdateCoupleSharedMessageRequest(null)
+
+        // when
+        val result = coupleService.updateSharedMessage(request)
+
+        // then
+        assertThat(result.coupleId).isEqualTo(savedCouple.id)
+        assertThat(result.sharedMessage).isNull()
     }
 
     private fun makeCouple(): Triple<User, User, Couple> {

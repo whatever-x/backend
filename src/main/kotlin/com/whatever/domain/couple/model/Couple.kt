@@ -28,6 +28,10 @@ class Couple (
         startDate = newDate
     }
 
+    fun updateSharedMessage(newMessage: String?) {
+        sharedMessage = newMessage.takeUnless { it.isNullOrBlank() }
+    }
+
     @PreUpdate
     protected fun validateMemberSize() {
         if (mutableMembers.size != 2) {
