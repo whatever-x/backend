@@ -71,13 +71,8 @@ class CoupleController(
         @PathVariable("couple-id") coupleId: Long,
         @RequestBody request: UpdateCoupleStartDateRequest,
     ): CaramelApiResponse<CoupleBasicResponse> {
-
-        // TODO(준용): 구현 필요
-        return CoupleBasicResponse(
-            coupleId = 1L,
-            startDate = request.startDate,
-            sharedMessage = null,
-        ).succeed()
+        val response = coupleService.updateStartDate(request)
+        return response.succeed()
     }
 
     @Operation(

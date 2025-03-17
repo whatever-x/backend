@@ -34,7 +34,17 @@ data class CoupleBasicResponse(
     val coupleId: Long,
     val startDate: LocalDate?,
     val sharedMessage: String?,
-)
+) {
+    companion object {
+        fun from(couple: Couple): CoupleBasicResponse {
+            return CoupleBasicResponse(
+                coupleId = couple.id,
+                startDate = couple.startDate,
+                sharedMessage = couple.sharedMessage,
+            )
+        }
+    }
+}
 
 @Schema(description = "커플 유저 정보 모델")
 data class CoupleUserInfoDto(

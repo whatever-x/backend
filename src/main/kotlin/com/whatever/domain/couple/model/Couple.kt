@@ -24,6 +24,10 @@ class Couple (
         mutableMembers.add(user)
     }
 
+    fun updateStartDate(newDate: LocalDate) {
+        startDate = newDate
+    }
+
     @PreUpdate
     protected fun validateMemberSize() {
         if (mutableMembers.size != 2) {

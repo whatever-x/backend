@@ -1,6 +1,7 @@
 package com.whatever.domain.couple.service
 
 import com.whatever.domain.couple.controller.dto.request.CreateCoupleRequest
+import com.whatever.domain.couple.controller.dto.request.UpdateCoupleStartDateRequest
 import com.whatever.domain.couple.exception.CoupleAccessDeniedException
 import com.whatever.domain.couple.exception.CoupleException
 import com.whatever.domain.couple.model.Couple
@@ -259,6 +260,25 @@ class CoupleServiceTest @Autowired constructor(
         assertThatThrownBy { coupleService.createCouple(request) }
             .isInstanceOf(CoupleException::class.java)
             .hasMessage("스스로 생성한 코드는 사용할 수 없습니다.")
+    }
+
+    @DisplayName("커플 시작일을 업데이트시 변경된 응답이 반환된다.")
+    @Test
+    fun updateStartDate() {
+        // given
+        val (myUser, partnerUser, savedCouple) = makeCouple()
+        securityUtilMock.apply {
+            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
+            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+        }
+        val request = UpdateCoupleStartDateRequest(DateTimeUtil.localNow().toLocalDate())
+
+        // when
+        val result = coupleService.updateStartDate(request)
+
+        // then
+        assertThat(result.coupleId).isEqualTo(savedCouple.id)
+        assertThat(result.startDate).isEqualTo(request.startDate)
     }
 
     private fun makeCouple(): Triple<User, User, Couple> {

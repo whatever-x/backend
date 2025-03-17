@@ -1,6 +1,8 @@
 package com.whatever.domain.couple.service
 
 import com.whatever.domain.couple.controller.dto.request.CreateCoupleRequest
+import com.whatever.domain.couple.controller.dto.request.UpdateCoupleStartDateRequest
+import com.whatever.domain.couple.controller.dto.response.CoupleBasicResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleDetailResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleInvitationCodeResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleUserInfoDto
@@ -42,6 +44,18 @@ class CoupleService(
         const val INVITATION_CODE_LENGTH = 10
         const val INVITATION_CODE_REGENERATION_DEFAULT = 3
         const val INVITATION_CODE_EXPIRATION_DAY = 1L
+    }
+
+    @Transactional
+    fun updateStartDate(request: UpdateCoupleStartDateRequest): CoupleBasicResponse {
+        val currentUserId = SecurityUtil.getCurrentUserId()
+        val user = userRepository.findUserById(currentUserId)
+
+        val updatedCouple =  user.couple?.apply {
+            updateStartDate(request.startDate)
+        } ?: throw CoupleAccessDeniedException(COUPLE_NOT_FOUND)
+
+        return CoupleBasicResponse.from(updatedCouple)
     }
 
     @Transactional(readOnly = true)
