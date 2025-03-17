@@ -14,6 +14,7 @@ enum class UserExceptionCode(
     NICKNAME_REQUIRED("003", "닉네임은 필수 입력값입니다."),
     SERVICE_TERMS_AGREEMENT_REQUIRED("005", "서비스 이용약관 동의가 필요합니다."),
     PRIVATE_POLICY_AGREEMENT_REQUIRED("006", "개인정보 수집 및 이용 동의가 필요합니다."),
+    ALREADY_EXIST_COUPLE("007", "이미 커플에 소속된 유저 입니다."),
     ;
 
     override val code = "USER$sequence"

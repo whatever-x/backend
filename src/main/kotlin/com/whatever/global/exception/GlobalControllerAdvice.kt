@@ -29,6 +29,25 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
         return createExceptionResponse(errorCode = e.errorCode, debugMessage = e.detailMessage)
     }
 
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun handleIllegalArgumentException(e: IllegalArgumentException): ResponseEntity<CaramelApiResponse<*>> {
+        logger.error(e) { "잘못된 인자가 전달되었습니다." }
+        return createExceptionResponse(
+            errorCode = GlobalExceptionCode.INVALID_ARGUMENT,
+            debugMessage = e.message
+        )
+    }
+
+    @ExceptionHandler(IllegalStateException::class)
+    fun handleIllegalStateExceptionException(e: IllegalStateException): ResponseEntity<CaramelApiResponse<*>> {
+        logger.error(e) { "잘못된 상태입니다." }
+        return createExceptionResponse(
+            errorCode = GlobalExceptionCode.ILLEGAL_STATE,
+            debugMessage = e.message
+        )
+    }
+
+
     @ExceptionHandler(
         MethodArgumentNotValidException::class,
         HandlerMethodValidationException::class,
