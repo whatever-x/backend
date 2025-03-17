@@ -5,6 +5,7 @@ import com.whatever.domain.sample.exception.SampleExceptionCode
 import com.whatever.domain.sample.exception.SampleNotFoundException
 import com.whatever.domain.sample.service.SampleService
 import com.whatever.domain.user.model.UserGender
+import com.whatever.domain.user.model.UserStatus
 import com.whatever.global.annotation.DisableSwaggerAuthButton
 import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.ErrorResponse
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -84,5 +86,17 @@ class SampleController(
     @GetMapping("/test/sign-in")
     fun testSignIn(@RequestParam gender: UserGender, @RequestParam expSec: Long): CaramelApiResponse<SignInResponse> {
         return sampleService.testSignIn(gender, expSec).succeed()
+    }
+
+    @PreAuthorize("hasRole('SINGLE')")
+    @GetMapping("/is-single")
+    fun getSingle(): String {
+        return "single"
+    }
+
+    @PreAuthorize("hasRole('COUPLE')")
+    @GetMapping("/is-couple")
+    fun getCouple(): String {
+        return "couple"
     }
 }
