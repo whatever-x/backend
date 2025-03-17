@@ -5,6 +5,7 @@ import com.whatever.domain.sample.exception.SampleExceptionCode
 import com.whatever.domain.sample.exception.SampleNotFoundException
 import com.whatever.domain.sample.service.SampleService
 import com.whatever.domain.user.model.UserGender
+import com.whatever.global.annotation.DisableSwaggerAuthButton
 import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.ErrorResponse
 import com.whatever.global.exception.dto.succeed
@@ -30,6 +31,7 @@ class SampleController(
     private val sampleService: SampleService,
 ) {
 
+    @DisableSwaggerAuthButton
     @Operation(
         summary = "기능명 기재",
         description = "기능 설명 기재",
@@ -44,6 +46,7 @@ class SampleController(
         return ResponseEntity.ok(result)
     }
 
+    @DisableSwaggerAuthButton
     @Operation(
         summary = "기능명 기재",
         description = "기능 설명 기재",
@@ -73,6 +76,7 @@ class SampleController(
      * 개발용 테스트 유저 로그인입니다.
      * 사용에 주의해주세요.
      */
+    @DisableSwaggerAuthButton
     @Operation(
         summary = "개발용 테스트 유저 로그인",
         description = "개발용 테스트 유저입니다."

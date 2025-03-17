@@ -1,13 +1,17 @@
 package com.whatever.config
 
+import com.whatever.global.annotation.DisableSwaggerAuthButton
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.models.Components
 import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.Operation
 import io.swagger.v3.oas.models.security.SecurityRequirement
 import io.swagger.v3.oas.models.security.SecurityScheme
+import org.springdoc.core.customizers.OperationCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.web.method.HandlerMethod
 
 @OpenAPIDefinition(
     info = Info(
@@ -38,4 +42,13 @@ class SwaggerConfig {
             .components(components)
     }
 
+    @Bean
+    fun operationCustomizer(): OperationCustomizer {
+        return OperationCustomizer { operation: Operation, handlerMethod: HandlerMethod ->
+            if (handlerMethod.hasMethodAnnotation(DisableSwaggerAuthButton::class.java)) {
+                operation.security = emptyList()
+            }
+            operation
+        }
+    }
 }
