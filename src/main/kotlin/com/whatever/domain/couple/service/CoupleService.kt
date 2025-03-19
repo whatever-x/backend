@@ -48,25 +48,29 @@ class CoupleService(
     }
 
     @Transactional
-    fun updateSharedMessage(request: UpdateCoupleSharedMessageRequest): CoupleBasicResponse {
+    fun updateSharedMessage(coupleId: Long, request: UpdateCoupleSharedMessageRequest): CoupleBasicResponse {
         val currentUserId = SecurityUtil.getCurrentUserId()
-        val user = userRepository.findUserById(currentUserId)
+        val couple = coupleRepository.findCoupleById(coupleId)
+        couple.members.find { it.id == currentUserId }
+            ?: throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
 
-        val updatedCouple =  user.couple?.apply {
+        val updatedCouple =  couple.apply {
             updateSharedMessage(request.sharedMessage)
-        } ?: throw CoupleAccessDeniedException(COUPLE_NOT_FOUND)
+        }
 
         return CoupleBasicResponse.from(updatedCouple)
     }
 
     @Transactional
-    fun updateStartDate(request: UpdateCoupleStartDateRequest): CoupleBasicResponse {
+    fun updateStartDate(coupleId: Long, request: UpdateCoupleStartDateRequest): CoupleBasicResponse {
         val currentUserId = SecurityUtil.getCurrentUserId()
-        val user = userRepository.findUserById(currentUserId)
+        val couple = coupleRepository.findCoupleById(coupleId)
+        couple.members.find { it.id == currentUserId }
+            ?: throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
 
-        val updatedCouple =  user.couple?.apply {
+        val updatedCouple = couple.apply {
             updateStartDate(request.startDate)
-        } ?: throw CoupleAccessDeniedException(COUPLE_NOT_FOUND)
+        }
 
         return CoupleBasicResponse.from(updatedCouple)
     }

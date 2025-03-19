@@ -275,7 +275,7 @@ class CoupleServiceTest @Autowired constructor(
         val request = UpdateCoupleStartDateRequest(DateTimeUtil.localNow().toLocalDate())
 
         // when
-        val result = coupleService.updateStartDate(request)
+        val result = coupleService.updateStartDate(savedCouple.id, request)
 
         // then
         assertThat(result.coupleId).isEqualTo(savedCouple.id)
@@ -294,7 +294,7 @@ class CoupleServiceTest @Autowired constructor(
         val request = UpdateCoupleSharedMessageRequest("new message")
 
         // when
-        val result = coupleService.updateSharedMessage(request)
+        val result = coupleService.updateSharedMessage(savedCouple.id, request)
 
         // then
         assertThat(result.coupleId).isEqualTo(savedCouple.id)
@@ -313,7 +313,7 @@ class CoupleServiceTest @Autowired constructor(
         val request = UpdateCoupleSharedMessageRequest("           ")
 
         // when
-        val result = coupleService.updateSharedMessage(request)
+        val result = coupleService.updateSharedMessage(savedCouple.id, request)
 
         // then
         assertThat(result.coupleId).isEqualTo(savedCouple.id)
@@ -332,7 +332,7 @@ class CoupleServiceTest @Autowired constructor(
         val request = UpdateCoupleSharedMessageRequest(null)
 
         // when
-        val result = coupleService.updateSharedMessage(request)
+        val result = coupleService.updateSharedMessage(savedCouple.id, request)
 
         // then
         assertThat(result.coupleId).isEqualTo(savedCouple.id)

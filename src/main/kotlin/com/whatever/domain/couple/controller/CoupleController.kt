@@ -71,7 +71,7 @@ class CoupleController(
         @PathVariable("couple-id") coupleId: Long,
         @RequestBody request: UpdateCoupleStartDateRequest,
     ): CaramelApiResponse<CoupleBasicResponse> {
-        val response = coupleService.updateStartDate(request)
+        val response = coupleService.updateStartDate(coupleId, request)
         return response.succeed()
     }
 
@@ -84,7 +84,7 @@ class CoupleController(
         @PathVariable("couple-id") coupleId: Long,
         @RequestBody request: UpdateCoupleSharedMessageRequest,
     ): CaramelApiResponse<CoupleBasicResponse> {
-        val response = coupleService.updateSharedMessage(request)
+        val response = coupleService.updateSharedMessage(coupleId, request)
         return response.succeed()
     }
 
