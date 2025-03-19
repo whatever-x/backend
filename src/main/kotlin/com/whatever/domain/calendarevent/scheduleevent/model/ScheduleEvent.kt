@@ -36,7 +36,7 @@ class ScheduleEvent(
     var contentDetail: ContentDetail,
 
     @Embedded
-    var eventRecurrence: EventRecurrence,
+    var eventRecurrence: EventRecurrence? = null,
 
     @OneToMany(mappedBy = "scheduleEvent", fetch = FetchType.LAZY)
     val recurrenceOverrides: MutableList<ScheduleRecurrenceOverride> = mutableListOf(),

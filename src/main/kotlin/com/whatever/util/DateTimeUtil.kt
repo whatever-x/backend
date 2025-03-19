@@ -1,6 +1,7 @@
 package com.whatever.util
 
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
@@ -51,4 +52,11 @@ fun LocalDateTime.toDate(
 
 fun ZonedDateTime.toDate(): Date {
     return DateTimeUtil.toDate(toLocalDateTime(), zone)
+}
+
+val LocalDateTime.endOfDay: LocalDateTime
+    get() = toLocalDate().atTime(LocalTime.MAX)
+
+fun String.toZonId(): ZoneId {
+    return ZoneId.of(this)
 }

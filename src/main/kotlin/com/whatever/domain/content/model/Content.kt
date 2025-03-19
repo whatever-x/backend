@@ -3,7 +3,6 @@ package com.whatever.domain.content.model
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.user.model.User
 import jakarta.persistence.*
-import java.time.LocalDate
 
 @Entity
 class Content(
@@ -17,8 +16,6 @@ class Content(
 
     @Embedded
     val contentDetail: ContentDetail,
-
-    var wishDate: LocalDate? = null,
 
     @Enumerated(EnumType.STRING)
     var type: ContentType = ContentType.MEMO,
