@@ -152,7 +152,7 @@ class CoupleServiceTest @Autowired constructor(
     @Test
     fun getCoupleInfo() {
         // given
-        val (myUser, partnerUser, savedCouple) = makeCouple()
+        val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
 
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
@@ -172,7 +172,7 @@ class CoupleServiceTest @Autowired constructor(
     @Test
     fun getCoupleInfo_ByOtherUser() {
         // given
-        val (myUser, partnerUser, savedCouple) = makeCouple()
+        val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
 
         val otherUser = userRepository.save(
             User(
@@ -267,7 +267,7 @@ class CoupleServiceTest @Autowired constructor(
     @Test
     fun updateStartDate() {
         // given
-        val (myUser, partnerUser, savedCouple) = makeCouple()
+        val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
             whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
@@ -286,7 +286,7 @@ class CoupleServiceTest @Autowired constructor(
     @Test
     fun updateSharedMessage() {
         // given
-        val (myUser, partnerUser, savedCouple) = makeCouple()
+        val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
             whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
@@ -305,7 +305,7 @@ class CoupleServiceTest @Autowired constructor(
     @Test
     fun updateSharedMessage_WithBlankMessage() {
         // given
-        val (myUser, partnerUser, savedCouple) = makeCouple()
+        val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
             whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
@@ -324,7 +324,7 @@ class CoupleServiceTest @Autowired constructor(
     @Test
     fun updateSharedMessage_WithNullMessage() {
         // given
-        val (myUser, partnerUser, savedCouple) = makeCouple()
+        val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
             whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
@@ -338,40 +338,40 @@ class CoupleServiceTest @Autowired constructor(
         assertThat(result.coupleId).isEqualTo(savedCouple.id)
         assertThat(result.sharedMessage).isNull()
     }
+}
 
-    private fun makeCouple(): Triple<User, User, Couple> {
-        val myUser = userRepository.save(
-            User(
-                nickname = "my",
-                birthDate = DateTimeUtil.localNow().toLocalDate(),
-                platform = LoginPlatform.KAKAO,
-                platformUserId = "my-user-id",
-                userStatus = UserStatus.SINGLE
-            )
+private fun makeCouple(userRepository: UserRepository, coupleRepository: CoupleRepository): Triple<User, User, Couple> {
+    val myUser = userRepository.save(
+        User(
+            nickname = "my",
+            birthDate = DateTimeUtil.localNow().toLocalDate(),
+            platform = LoginPlatform.KAKAO,
+            platformUserId = "my-user-id",
+            userStatus = UserStatus.SINGLE
         )
-        val partnerUser = userRepository.save(
-            User(
-                nickname = "partner",
-                birthDate = DateTimeUtil.localNow().toLocalDate(),
-                platform = LoginPlatform.KAKAO,
-                platformUserId = "partner-user-id",
-                userStatus = UserStatus.SINGLE
-            )
+    )
+    val partnerUser = userRepository.save(
+        User(
+            nickname = "partner",
+            birthDate = DateTimeUtil.localNow().toLocalDate(),
+            platform = LoginPlatform.KAKAO,
+            platformUserId = "partner-user-id",
+            userStatus = UserStatus.SINGLE
         )
+    )
 
-        val startDate = DateTimeUtil.localNow().toLocalDate()
-        val sharedMessage = "test message"
-        val savedCouple = coupleRepository.save(
-            Couple(
-                startDate = startDate,
-                sharedMessage = sharedMessage
-            )
+    val startDate = DateTimeUtil.localNow().toLocalDate()
+    val sharedMessage = "test message"
+    val savedCouple = coupleRepository.save(
+        Couple(
+            startDate = startDate,
+            sharedMessage = sharedMessage
         )
-        myUser.setCouple(savedCouple)
-        partnerUser.setCouple(savedCouple)
+    )
+    myUser.setCouple(savedCouple)
+    partnerUser.setCouple(savedCouple)
 
-        userRepository.save(myUser)
-        userRepository.save(partnerUser)
-        return Triple(myUser, partnerUser, savedCouple)
-    }
+    userRepository.save(myUser)
+    userRepository.save(partnerUser)
+    return Triple(myUser, partnerUser, savedCouple)
 }
