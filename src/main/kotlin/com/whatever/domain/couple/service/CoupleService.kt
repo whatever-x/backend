@@ -16,6 +16,7 @@ import com.whatever.domain.couple.exception.CoupleExceptionCode.INVITATION_CODE_
 import com.whatever.domain.couple.exception.CoupleExceptionCode.INVITATION_CODE_SELF_GENERATED
 import com.whatever.domain.couple.exception.CoupleExceptionCode.MEMBER_NOT_FOUND
 import com.whatever.domain.couple.exception.CoupleExceptionCode.NOT_A_MEMBER
+import com.whatever.domain.couple.exception.CoupleExceptionCode.UPDATE_FAIL
 import com.whatever.domain.couple.exception.CoupleIllegalStateException
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
@@ -27,10 +28,16 @@ import com.whatever.util.DateTimeUtil
 import com.whatever.util.RedisUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.viascom.nanoid.NanoId
+import org.springframework.dao.ConcurrencyFailureException
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.retry.annotation.Backoff
+import org.springframework.retry.annotation.Recover
+import org.springframework.retry.annotation.Retryable
+import org.springframework.retry.support.RetrySynchronizationManager
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
+
 
 private val logger = KotlinLogging.logger { }
 
@@ -47,6 +54,11 @@ class CoupleService(
         const val INVITATION_CODE_EXPIRATION_DAY = 1L
     }
 
+    @Retryable(
+        retryFor = [ConcurrencyFailureException::class],
+        backoff = Backoff(delay = 100, maxDelay = 300),
+        maxAttempts = 3
+    )
     @Transactional
     fun updateSharedMessage(coupleId: Long, request: UpdateCoupleSharedMessageRequest): CoupleBasicResponse {
         val currentUserId = SecurityUtil.getCurrentUserId()
@@ -61,6 +73,12 @@ class CoupleService(
         return CoupleBasicResponse.from(updatedCouple)
     }
 
+    @Retryable(
+        retryFor = [ConcurrencyFailureException::class],
+        backoff = Backoff(delay = 100, maxDelay = 300),
+        maxAttempts = 3,
+        recover = "updateRecover"
+    )
     @Transactional
     fun updateStartDate(coupleId: Long, request: UpdateCoupleStartDateRequest): CoupleBasicResponse {
         val currentUserId = SecurityUtil.getCurrentUserId()
@@ -68,11 +86,18 @@ class CoupleService(
         couple.members.find { it.id == currentUserId }
             ?: throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
 
+        logger.info { "Retry Count:  ${RetrySynchronizationManager.getContext()?.retryCount} " }
         val updatedCouple = couple.apply {
             updateStartDate(request.startDate)
         }
 
         return CoupleBasicResponse.from(updatedCouple)
+    }
+
+    @Recover
+    fun updateRecover(e: ConcurrencyFailureException, coupleId: Long): CoupleBasicResponse {
+        logger.error { "couple info update fail. couple id: ${coupleId}" }
+        throw CoupleException(errorCode = UPDATE_FAIL)
     }
 
     @Transactional(readOnly = true)

@@ -1,7 +1,6 @@
 package com.whatever.domain.couple.model
 
 import com.whatever.domain.base.BaseEntity
-import com.whatever.domain.couple.exception.CoupleExceptionCode
 import com.whatever.domain.couple.exception.CoupleExceptionCode.ILLEGAL_MEMBER_SIZE
 import com.whatever.domain.couple.exception.CoupleIllegalStateException
 import com.whatever.domain.user.model.User
@@ -22,6 +21,9 @@ class Couple (
     @OneToMany(mappedBy = "_couple", fetch = FetchType.LAZY)
     protected val mutableMembers: MutableSet<User> = mutableSetOf()
     val members: Set<User> get() = mutableMembers.toSet()
+
+    @Version
+    private var version: Long = 0L
 
     fun addUsers(user: User) {
         mutableMembers.add(user)
