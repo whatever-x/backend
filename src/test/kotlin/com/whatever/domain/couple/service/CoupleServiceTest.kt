@@ -340,7 +340,7 @@ class CoupleServiceTest @Autowired constructor(
     }
 }
 
-private fun makeCouple(userRepository: UserRepository, coupleRepository: CoupleRepository): Triple<User, User, Couple> {
+internal fun makeCouple(userRepository: UserRepository, coupleRepository: CoupleRepository): Triple<User, User, Couple> {
     val myUser = userRepository.save(
         User(
             nickname = "my",

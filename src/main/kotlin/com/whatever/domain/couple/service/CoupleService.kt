@@ -86,7 +86,7 @@ class CoupleService(
         couple.members.find { it.id == currentUserId }
             ?: throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
 
-        logger.info { "Retry Count:  ${RetrySynchronizationManager.getContext()?.retryCount} " }
+        logger.info { "Retry Count:  ${RetrySynchronizationManager.getContext()?.retryCount}, Request: ${request}" }
         val updatedCouple = couple.apply {
             updateStartDate(request.startDate)
         }
@@ -97,7 +97,7 @@ class CoupleService(
     @Recover
     fun updateRecover(e: ConcurrencyFailureException, coupleId: Long): CoupleBasicResponse {
         logger.error { "couple info update fail. couple id: ${coupleId}" }
-        throw CoupleException(errorCode = UPDATE_FAIL)
+        throw CoupleIllegalStateException(errorCode = UPDATE_FAIL)
     }
 
     @Transactional(readOnly = true)
