@@ -7,7 +7,6 @@ import com.whatever.domain.couple.exception.CoupleIllegalStateException
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
-import com.whatever.util.RedisUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -18,18 +17,19 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.reset
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import java.time.LocalDate
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletionException
-import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 
 private val logger = KotlinLogging.logger { }
@@ -40,11 +40,10 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
     private val redisTemplate: RedisTemplate<String, String>,
     private val coupleService: CoupleService,
     private val userRepository: UserRepository,
-    private val coupleRepository: CoupleRepository,
 ) {
 
     @MockitoSpyBean
-    private lateinit var redisUtil: RedisUtil
+    private lateinit var coupleRepository: CoupleRepository
 
     private lateinit var securityUtilMock: AutoCloseable
 
@@ -61,7 +60,7 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
     @AfterEach
     fun tearDown() {
         securityUtilMock.close()  // static mock 초기화
-        reset(redisUtil)  // redisUtil mock 초기화
+        reset(coupleRepository)
     }
 
     @DisplayName("커플 시작일 업데이트 요청이 동시에 들어올 경우 요청이 모두 반영된다.")
@@ -104,35 +103,20 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
         // given
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
 
-        val members = listOf(myUser, partnerUser)
-        val threadCount = 50
-        val executor = Executors.newFixedThreadPool(threadCount)
-        val latch = CountDownLatch(1)
-
-        val startDates = List(threadCount) { idx ->
-            LocalDate.EPOCH.plusDays(idx.toLong())
+        securityUtilMock.apply {
+            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
         }
-        val requests = startDates.map { UpdateCoupleStartDateRequest(it) }
+        whenever(coupleRepository.findByIdOrNull(any())).doThrow(ObjectOptimisticLockingFailureException::class)
 
-        val futures = requests.mapIndexed { idx, request ->
-            CompletableFuture.supplyAsync({
-                latch.await()
-                mockStatic(SecurityUtil::class.java).use {
-                    it.apply { whenever(SecurityUtil.getCurrentUserId()).doReturn(members[idx.and(1)].id) }
-                    coupleService.updateStartDate(savedCouple.id, request)
-                }
-            }, executor)
-        }
-
-        latch.countDown()
+        val request = UpdateCoupleStartDateRequest(LocalDate.EPOCH)
 
         // when
-        val exception = assertThrows<CompletionException> {
-            futures.map { it.join() }
+        val exception = assertThrows<CoupleIllegalStateException> {
+            coupleService.updateStartDate(savedCouple.id, request)
         }
 
         // then
-        assertThat(exception.cause)
+        assertThat(exception)
             .isInstanceOf(CoupleIllegalStateException::class.java)
             .hasMessage(CoupleExceptionCode.UPDATE_FAIL.message)
     }
