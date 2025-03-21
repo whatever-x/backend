@@ -1,6 +1,6 @@
 package com.whatever.domain.couple.exception
 
-class CoupleIllegalStateException(
+class CoupleAccessDeniedException(
     errorCode: CoupleExceptionCode,
     detailMessage: String? = null
 ) : CoupleException(errorCode, detailMessage)

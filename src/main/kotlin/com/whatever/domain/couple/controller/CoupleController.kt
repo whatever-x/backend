@@ -33,28 +33,13 @@ class CoupleController(
 ) {
 
     @Operation(
-        summary = "더미 커플 정보 조회",
+        summary = "커플 정보 조회",
         description = "커플 정보를 조회합니다."
     )
     @GetMapping("/{couple-id}")
     fun getCoupleInfo(@PathVariable("couple-id") coupleId: Long): CaramelApiResponse<CoupleDetailResponse> {
-
-        // TODO(준용): 구현 필요
-        return CoupleDetailResponse(
-            coupleId = coupleId,
-            startDate = DateTimeUtil.localNow().toLocalDate(),
-            sharedMessage = "공유메시지",
-            hostInfo = CoupleUserInfoDto(
-                id = 1L,
-                nickname = "내 닉네임",
-                birthDate = DateTimeUtil.localNow().toLocalDate()
-            ),
-            partnerInfo = CoupleUserInfoDto(
-                id = 2L,
-                nickname = "상대방 닉네임",
-                birthDate = DateTimeUtil.localNow().toLocalDate()
-            )
-        ).succeed()
+        val response = coupleService.getCoupleInfo(coupleId)
+        return response.succeed()
     }
 
     @Operation(
@@ -68,7 +53,7 @@ class CoupleController(
     }
 
     @Operation(
-        summary = "더미 커플 연결",
+        summary = "커플 연결",
         description = "초대 코드를 사용해 커플을 연결(생성)합니다."
     )
     @PostMapping("/connect")
@@ -78,7 +63,7 @@ class CoupleController(
     }
 
     @Operation(
-        summary = "더미 커플 시작일 수정",
+        summary = "커플 시작일 수정",
         description = "커플의 시작일을 수정합니다. 미래는 불가능합니다."
     )
     @PatchMapping("/{couple-id}/start-date")
@@ -86,17 +71,12 @@ class CoupleController(
         @PathVariable("couple-id") coupleId: Long,
         @RequestBody request: UpdateCoupleStartDateRequest,
     ): CaramelApiResponse<CoupleBasicResponse> {
-
-        // TODO(준용): 구현 필요
-        return CoupleBasicResponse(
-            coupleId = 1L,
-            startDate = request.startDate,
-            sharedMessage = null,
-        ).succeed()
+        val response = coupleService.updateStartDate(coupleId, request)
+        return response.succeed()
     }
 
     @Operation(
-        summary = "더미 커플 공유 메시지 수정",
+        summary = "커플 공유 메시지 수정",
         description = "커플의 공유 메시지를 수정합니다."
     )
     @PatchMapping("/{couple-id}/shared-message")
@@ -104,15 +84,8 @@ class CoupleController(
         @PathVariable("couple-id") coupleId: Long,
         @RequestBody request: UpdateCoupleSharedMessageRequest,
     ): CaramelApiResponse<CoupleBasicResponse> {
-
-        // TODO(준용): 구현 필요
-        return CoupleBasicResponse(
-            coupleId = 1L,
-            startDate = null,
-            sharedMessage =
-                if (request.sharedMessage?.isBlank() == true) null
-                else request.sharedMessage,
-        ).succeed()
+        val response = coupleService.updateSharedMessage(coupleId, request)
+        return response.succeed()
     }
 
     @Operation(

@@ -35,6 +35,10 @@
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>
+
+        <logger level="DEBUG" name="org.hibernate.SQL" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
     </springProfile>
 
 
