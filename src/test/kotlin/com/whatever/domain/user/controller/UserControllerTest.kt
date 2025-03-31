@@ -3,6 +3,7 @@ package com.whatever.domain.user.controller
 import com.whatever.domain.ControllerTestSupport
 import com.whatever.domain.user.dto.PostUserProfileRequest
 import com.whatever.domain.user.dto.PutUserProfileRequest
+import com.whatever.domain.user.model.UserGender
 import com.whatever.global.exception.GlobalExceptionCode
 import com.whatever.util.DateTimeUtil
 import org.junit.jupiter.api.DisplayName
@@ -23,6 +24,7 @@ class UserControllerTest : ControllerTestSupport() {
             birthday = DateTimeUtil.localNow().toLocalDate(),
             agreementServiceTerms = true,
             agreementPrivatePolicy = true,
+            gender = UserGender.MALE
         )
 
         // when // then
@@ -45,6 +47,7 @@ class UserControllerTest : ControllerTestSupport() {
             birthday = DateTimeUtil.localNow().toLocalDate(),
             agreementServiceTerms = true,
             agreementPrivatePolicy = true,
+            gender = UserGender.MALE
         )
 
         // when // then
@@ -68,6 +71,7 @@ class UserControllerTest : ControllerTestSupport() {
             birthday = DateTimeUtil.localNow().toLocalDate(),
             agreementServiceTerms = true,
             agreementPrivatePolicy = true,
+            gender = UserGender.MALE
         )
 
         // when // then
@@ -91,6 +95,7 @@ class UserControllerTest : ControllerTestSupport() {
             birthday = DateTimeUtil.localNow().toLocalDate(),
             agreementServiceTerms = true,
             agreementPrivatePolicy = true,
+            gender = UserGender.MALE
         )
 
         // when // then
