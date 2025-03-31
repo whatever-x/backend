@@ -26,7 +26,11 @@
     <property name="CONSOLE_LOG_PATTERN"
               value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS, ${logback.timezone:-UTC}}){blue} [%thread] %clr(%-5level) %cyan(%logger{36}) - %msg%n"/>
     <property name="FILE_LOG_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS, ${logback.timezone:-UTC}} [%thread] %-5level %logger{36} - %msg%n"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS, ${logback.timezone:-UTC}} trace_id=%X{trace_id} span_id=%X{span_id} trace_flags=%X{trace_flags} | [%thread] %-5level %logger{36} - %msg%n"/>
+
+    <appender name="CONSOLE-OTEL" class="io.opentelemetry.instrumentation.logback.mdc.v1_0.OpenTelemetryAppender">
+        <appender-ref ref="CONSOLE"/>
+    </appender>
 
 
     <!--  =============== spring profile 별 로깅 전략 세팅 ===============  -->
@@ -40,7 +44,6 @@
             <appender-ref ref="CONSOLE"/>
         </logger>
     </springProfile>
-
 
     <springProfile name="local-mem">
         <include resource="console-appender.xml"/>
@@ -71,19 +74,19 @@
         <property name="LOG_PATH" value="${LOG_FILE_ROOT_PATH}/dev"/>
 
         <root level="INFO">
-            <appender-ref ref="FILE-INFO"/>
+            <appender-ref ref="FILE-INFO-OTEL"/>
         </root>
 
         <logger name="com.whatever.domain.auth.client" level="DEBUG" additivity="false">
-            <appender-ref ref="FILE-INFO"/>
+            <appender-ref ref="FILE-INFO-OTEL"/>
         </logger>
 
         <logger level="DEBUG" name="org.hibernate.SQL" additivity="false">
-            <appender-ref ref="FILE-INFO"/>
+            <appender-ref ref="FILE-INFO-OTEL"/>
         </logger>
 
         <logger level="TRACE" name="org.hibernate.type.descriptor.sql.BasicBinder" additivity="false">
-            <appender-ref ref="FILE-INFO"/>
+            <appender-ref ref="FILE-INFO-OTEL"/>
         </logger>
     </springProfile>
 
@@ -94,7 +97,7 @@
         <property name="LOG_PATH" value="${LOG_FILE_ROOT_PATH}/production"/>
 
         <root level="ERROR">
-            <appender-ref ref="FILE-ERROR"/>
+            <appender-ref ref="FILE-ERROR-OTEL"/>
         </root>
     </springProfile>
 

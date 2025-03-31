@@ -16,4 +16,8 @@
             <totalSizeCap>5GB</totalSizeCap>
         </rollingPolicy>
     </appender>
+
+    <appender name="FILE-INFO-OTEL" class="io.opentelemetry.instrumentation.logback.mdc.v1_0.OpenTelemetryAppender">
+        <appender-ref ref="FILE-INFO"/>
+    </appender>
 </included>

@@ -5,11 +5,15 @@
             <pattern>${FILE_LOG_PATTERN}</pattern>
         </encoder>
         <rollingPolicy class="SizeAndTimeBasedRollingPolicy">
-            <!-- 날짜별로 로그 파일을 롤오버하며, 파일 크기가 10MB를 초과하면 인덱스가 붙습니다. -->
+            <!-- 날짜별로 로그 파일을 롤오버하며, 파일 크기가 100MB를 초과하면 인덱스가 붙습니다. -->
             <fileNamePattern>${LOG_PATH}/${LOG_FILE_NAME}.%d{yyyy-MM-dd, UTC}_%i.gz</fileNamePattern>
             <maxFileSize>100MB</maxFileSize>
             <maxHistory>30</maxHistory>
             <totalSizeCap>10GB</totalSizeCap>
         </rollingPolicy>
+    </appender>
+
+    <appender name="FILE-INFO-OTEL" class="io.opentelemetry.instrumentation.logback.mdc.v1_0.OpenTelemetryAppender">
+        <appender-ref ref="FILE-INFO"/>
     </appender>
 </included>
