@@ -23,6 +23,7 @@ class UserService(
         val user = userRepository.findByIdOrNull(userId)?.apply {
             nickname = postUserProfileRequest.nickname
             birthDate = postUserProfileRequest.birthday
+            gender = postUserProfileRequest.gender
         }
 
         return PostUserProfileResponse(
