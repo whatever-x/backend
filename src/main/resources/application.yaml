@@ -120,6 +120,12 @@ logback:
     root: ${LOG_FILE_ROOT_PATH}
 
 management:
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            request: 'true'
   endpoints:
     web:
       exposure:
