@@ -46,6 +46,30 @@ jwt:
   access-expiration-sec: ${ACCESS_EXPIRATION_SEC}
   refresh-expiration-sec: ${REFRESH_EXPIRATION_SEC}
   issuer: Caramel
+otel:
+  sdk:
+    disabled: true
+  logs:
+    exporter: none
+  metrics:
+    exporter: none
+  traces:
+    exporter: none
+# Actuator Base Setting
+management:
+  metrics:
+    tags:
+      application: ${ACTUATOR_APPLICATION_NAME}
+  endpoints:
+    access:
+      default: none
+    jmx:
+      exposure:
+        exclude: '*'
+    web:
+      base-path: ${ACTUATOR_BASE_PATH}
+  server:
+    port: ${ACTUATOR_BASE_PORT}
 ---
 # Production
 spring:
@@ -94,6 +118,28 @@ spring:
 logback:
   path:
     root: ${LOG_FILE_ROOT_PATH}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ${ACTUATOR_EXPOSURE_API}
+    access:
+      default: read_only
+otel:
+  sdk:
+    disabled: false
+  service:
+    name: ${OTEL_SERVICE_NAME}
+  resource:
+    attributes:
+      deployment.environment: ${SPRING_PROFILES_ACTIVE}
+  traces:
+    exporter: ${OTEL_EXPORTER}
+  exporter:
+    otlp:
+      protocol: ${OTEL_EXPORTER_PROTOCOL}
+      endpoint: ${OTEL_EXPORTER_ENDPOINT}
 ---
 # Local-mem
 spring:
@@ -128,5 +174,5 @@ spring:
 #    type: redis
 
 logback:
-    path:
-      root: ${LOG_FILE_ROOT_PATH}
+  path:
+    root: ${LOG_FILE_ROOT_PATH}
