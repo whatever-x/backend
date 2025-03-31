@@ -6,15 +6,15 @@ import jakarta.persistence.AttributeConverter
 import jakarta.persistence.Converter
 
 @Converter
-class RecurrenceDaySetConverter : AttributeConverter<Set<RecurrenceDay>, String> {
+class RecurrenceDaySetConverter : AttributeConverter<Set<RecurrenceDay>?, String> {
 
     companion object {
         const val SEPARATOR = ","
         private val regex = Regex("""^(\d+)?([A-Z]+)$""")  // MO | 1SU | ...
     }
 
-    override fun convertToDatabaseColumn(attribute: Set<RecurrenceDay>): String? {
-        if (attribute.isEmpty())
+    override fun convertToDatabaseColumn(attribute: Set<RecurrenceDay>?): String? {
+        if (attribute.isNullOrEmpty())
             return null
         return attribute.joinToString(separator = SEPARATOR) { it.toString() }
     }

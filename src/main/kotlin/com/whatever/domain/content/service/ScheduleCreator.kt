@@ -67,15 +67,18 @@ class ScheduleCreator(
         scheduleEventRepository.save(scheduleEvent)
 
         if (tagIds.isNotEmpty()) {
-            val mappings = tagIds.map { tagId ->
-                val tag = tagRepository.getReferenceById(tagId)
-                TagContentMapping(
-                    tag = tag,
-                    content = savedContent
-                )
+            val mappings = tagIds.mapNotNull { tagId ->
+                tagRepository.findById(tagId).map { tag ->
+                    TagContentMapping(
+                        tag = tag,
+                        content = savedContent
+                    )
+                }.orElse(null)
             }
 
-            tagContentMappingRepository.saveAll(mappings)
+            if (mappings.isNotEmpty()) {
+                tagContentMappingRepository.saveAll(mappings)
+            }
         }
 
         return content

@@ -1,7 +1,10 @@
 package com.whatever.domain.calendarevent.eventrecurrence.model
 
 import com.whatever.domain.calendarevent.eventrecurrence.model.converter.RecurrenceDaySetConverter
-import jakarta.persistence.*
+import jakarta.persistence.Convert
+import jakarta.persistence.Embeddable
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import java.time.LocalDateTime
 
 /**
@@ -47,7 +50,6 @@ import java.time.LocalDateTime
 @Embeddable
 class EventRecurrence(
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     var frequency: RecurrenceFrequency,
 
     var interval: Int = 1,
@@ -57,7 +59,7 @@ class EventRecurrence(
     var count: Int? = null,
 
     @Convert(converter = RecurrenceDaySetConverter::class)
-    var byDay: Set<RecurrenceDay> = emptySet(),
+    var byDay: Set<RecurrenceDay>? = emptySet(),
 
     var byMonthDay: Int? = null,
 ) {
