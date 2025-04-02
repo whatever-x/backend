@@ -32,7 +32,7 @@ class ScheduleCreator(
         title: String?,
         description: String?,
         isCompleted: Boolean,
-        tagIds: List<Long>,
+        tagIds: Set<Long>,
         dateTimeInfo: DateTimeInfoDto,
     ): Content {
         val replacedTitle = when {
@@ -67,14 +67,8 @@ class ScheduleCreator(
         scheduleEventRepository.save(scheduleEvent)
 
         if (tagIds.isNotEmpty()) {
-            val mappings = tagIds.mapNotNull { tagId ->
-                tagRepository.findById(tagId).map { tag ->
-                    TagContentMapping(
-                        tag = tag,
-                        content = savedContent
-                    )
-                }.orElse(null)
-            }
+            val tags = tagRepository.findAllById(tagIds)
+            val mappings = tags.map { tag -> TagContentMapping(tag = tag, content = savedContent) }
 
             if (mappings.isNotEmpty()) {
                 tagContentMappingRepository.saveAll(mappings)

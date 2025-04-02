@@ -16,14 +16,14 @@ class ContentService(
                 title = contentRequest.title,
                 description = contentRequest.description,
                 isCompleted = contentRequest.isCompleted,
-                tagIds = contentRequest.tags.map { it.tagId },
+                tagIds = contentRequest.tags.map { it.tagId }.toSet(),
             )
         } else {
             scheduleCreator.createSchedule(
                 title = contentRequest.title,
                 description = contentRequest.description,
                 isCompleted = contentRequest.isCompleted,
-                tagIds = contentRequest.tags.map { it.tagId },
+                tagIds = contentRequest.tags.map { it.tagId }.toSet(),
                 dateTimeInfo = contentRequest.dateTimeInfo,
             )
         }.toContentSummaryResponse()
