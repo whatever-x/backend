@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping
 interface AppleOIDCClient {
 
     @Cacheable(
-        cacheNames = ["apple-oidc"],
+        cacheNames = ["oidc-public-key"],
+        key = "'APPLE'",
         cacheManager = "oidcCacheManager"
     )
     @GetMapping(
