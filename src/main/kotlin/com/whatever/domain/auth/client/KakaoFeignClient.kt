@@ -1,7 +1,7 @@
 package com.whatever.domain.auth.client
 
 import com.whatever.config.openfeign.KakaoKauthConfig
-import com.whatever.config.openfeign.KakaoOAuthConfig
+import com.whatever.config.openfeign.KakaoKapiConfig
 import com.whatever.domain.auth.client.dto.*
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.cloud.openfeign.FeignClient
@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
 
 @FeignClient(
-    name = "KakaoOAuthClient",
+    name = "KakaoKapiClient",
     url = "https://kapi.kakao.com",
-    configuration = [KakaoOAuthConfig::class]
+    configuration = [KakaoKapiConfig::class]
 )
-interface KakaoOAuthClient {
+interface KakaoKapiClient {
 
     @GetMapping(
         path = ["/v2/user/me"],
