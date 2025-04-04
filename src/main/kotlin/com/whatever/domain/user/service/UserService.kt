@@ -6,6 +6,7 @@ import com.whatever.domain.user.dto.PutUserProfileRequest
 import com.whatever.domain.user.dto.PutUserProfileResponse
 import com.whatever.domain.user.exception.UserException
 import com.whatever.domain.user.exception.UserExceptionCode
+import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import org.springframework.data.repository.findByIdOrNull
@@ -24,6 +25,7 @@ class UserService(
             nickname = postUserProfileRequest.nickname
             birthDate = postUserProfileRequest.birthday
             gender = postUserProfileRequest.gender
+            userStatus = UserStatus.SINGLE
         }
 
         return PostUserProfileResponse(
