@@ -1,8 +1,13 @@
 package com.whatever.domain.auth.client
 
-import com.whatever.config.openfeign.KakaoKauthConfig
 import com.whatever.config.openfeign.KakaoKapiConfig
-import com.whatever.domain.auth.client.dto.*
+import com.whatever.config.openfeign.KakaoKauthConfig
+import com.whatever.domain.auth.client.dto.KakaoIdTokenInfoRequest
+import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
+import com.whatever.domain.auth.client.dto.KakaoUnlinkUserRequest
+import com.whatever.domain.auth.client.dto.KakaoUnlinkUserResponse
+import com.whatever.domain.auth.client.dto.KakaoUserInfoResponse
+import com.whatever.domain.auth.client.dto.OIDCPublicKeysResponse
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.http.MediaType
