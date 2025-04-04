@@ -1,21 +1,11 @@
-package com.whatever.config
+package com.whatever.config.openfeign
 
-import feign.*
+import feign.FeignException
+import feign.Response
 import feign.codec.Encoder
 import feign.codec.ErrorDecoder
 import feign.form.FormEncoder
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-
-@Configuration
-class FeignClientGlobalConfig {
-
-    @Bean
-    fun feignLoggerLevel(): Logger.Level {
-        return Logger.Level.FULL
-    }
-
-}
 
 class KakaoOAuthConfig {
 
@@ -42,16 +32,6 @@ class KakaoResponseDecoder() : ErrorDecoder {
 //        }
         throw RuntimeException("kakao oauth exception")
 
-    }
-
-}
-
-
-class KakaoKauthConfig {
-
-    @Bean
-    fun formEncoder(): Encoder {
-        return FormEncoder()
     }
 
 }

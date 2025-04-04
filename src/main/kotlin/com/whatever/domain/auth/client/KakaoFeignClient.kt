@@ -1,7 +1,7 @@
 package com.whatever.domain.auth.client
 
-import com.whatever.config.KakaoKauthConfig
-import com.whatever.config.KakaoOAuthConfig
+import com.whatever.config.openfeign.KakaoKauthConfig
+import com.whatever.config.openfeign.KakaoOAuthConfig
 import com.whatever.domain.auth.client.dto.*
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.cloud.openfeign.FeignClient
