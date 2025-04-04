@@ -12,3 +12,12 @@ class AuthFailedException(
     detailMessage: String? = null
 ) : AuthException(errorCode, detailMessage)
 
+class IllegalOidcTokenException(
+    errorCode: AuthExceptionCode,
+    detailMessage: String? = null,
+) : AuthException(errorCode, detailMessage)
+
+class OidcPublicKeyMismatchException(
+    errorCode: AuthExceptionCode,
+    detailMessage: String? = null,
+) : AuthException(errorCode, detailMessage)

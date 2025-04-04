@@ -4,6 +4,8 @@ import com.whatever.config.properties.OauthProperties
 import com.whatever.domain.auth.client.dto.AppleIdTokenPayload
 import com.whatever.domain.auth.client.dto.JsonWebKey
 import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
+import com.whatever.domain.auth.exception.AuthExceptionCode
+import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
 import com.whatever.global.jwt.JwtProvider
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.InvalidClaimException
@@ -29,7 +31,10 @@ class OIDCHelper(
     ): AppleIdTokenPayload {
         val kid = getKid(idToken)
         val webKey = oidcPublicKeys.firstOrNull { jsonWebKey -> jsonWebKey.kid == kid }
-            ?: throw IllegalArgumentException("kid(${kid})에 해당하는 애플 공개키를 찾을 수 없습니다.")  // TODO(준용) CustomException으로 변경
+            ?: throw OidcPublicKeyMismatchException(
+                errorCode = AuthExceptionCode.ILLEGAL_KID,
+                detailMessage = "kid(${kid})에 해당하는 애플 공개키를 찾을 수 없습니다."
+            )
 
         val jws = parseIdToken(
             idToken = idToken,
@@ -47,7 +52,10 @@ class OIDCHelper(
     ): KakaoIdTokenPayload {
         val kid = getKid(idToken)
         val webKey = oidcPublicKeys.firstOrNull { jsonWebKey -> jsonWebKey.kid == kid }
-            ?: throw IllegalArgumentException("kid(${kid})에 해당하는 공개키를 찾을 수 없습니다.")  // TODO(준용) CustomException으로 변경
+            ?: throw OidcPublicKeyMismatchException(
+                errorCode = AuthExceptionCode.ILLEGAL_KID,
+                detailMessage = "kid(${kid})에 해당하는 카카오 공개키를 찾을 수 없습니다."
+            )
 
         val jws = parseIdToken(
             idToken = idToken,

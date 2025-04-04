@@ -5,13 +5,19 @@ import com.whatever.domain.auth.dto.ServiceToken
 import com.whatever.domain.auth.dto.SignInResponse
 import com.whatever.domain.auth.exception.AuthException
 import com.whatever.domain.auth.exception.AuthExceptionCode
+import com.whatever.domain.auth.exception.IllegalOidcTokenException
+import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
 import com.whatever.domain.auth.service.provider.SocialUserProvider
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.global.exception.GlobalException
 import com.whatever.global.exception.GlobalExceptionCode
 import com.whatever.util.RedisUtil
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.cache.CacheManager
 import org.springframework.stereotype.Service
 
+val logger = KotlinLogging.logger {  }
 
 @Service
 class AuthService(
@@ -19,6 +25,7 @@ class AuthService(
     private val jwtProperties: JwtProperties,
     userProviders: List<SocialUserProvider>,
     private val redisUtil: RedisUtil,
+    @Qualifier("oidcCacheManager") private val oidcCacheManager: CacheManager,
 ) {
     private val userProviderMap = userProviders.associateBy { it.platform }
 
@@ -32,7 +39,23 @@ class AuthService(
                 detailMessage = "일치하는 로그인 플랫폼이 없습니다. platform: $loginPlatform"
             )
 
-        val user = userProvider.findOrCreateUser(idToken)
+        val user = runCatching { userProvider.findOrCreateUser(idToken) }
+            .recoverCatching { exception ->
+                if (exception !is OidcPublicKeyMismatchException) {
+                    throw exception
+                }
+                oidcCacheManager.evictOidcPublicKeyCache(loginPlatform)
+                userProvider.findOrCreateUser(idToken)
+            }.getOrElse { exception ->
+                if (exception !is OidcPublicKeyMismatchException) {
+                    throw exception
+                }
+                throw IllegalOidcTokenException(
+                    errorCode = AuthExceptionCode.ILLEGAL_KID,
+                    detailMessage = "일치하는 Kid가 없는 idToken입니다."
+                )
+            }
+
         val userId = user.id
         val coupleId = user.couple?.id
 
@@ -75,4 +98,11 @@ class AuthService(
             refreshToken,
         )
     }
+}
+
+private fun CacheManager.evictOidcPublicKeyCache(loginPlatform: LoginPlatform) {
+    getCache("oidc-public-key")?.let {
+        it.evictIfPresent(loginPlatform.name)
+        logger.info { "${loginPlatform.name} OIDC Public Key cache eviction completed." }
+    } ?: logger.debug { "Cache 'oidc-public-key' not available. Skipping eviction for ${loginPlatform.name}." }
 }
