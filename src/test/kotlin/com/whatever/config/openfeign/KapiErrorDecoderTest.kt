@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 import java.nio.charset.StandardCharsets
 
-@DisplayName("KapiResponseDecoder 테스트")
 class KapiErrorDecoderTest {
 
     private val kapiErrorDecoder = KapiErrorDecoder()

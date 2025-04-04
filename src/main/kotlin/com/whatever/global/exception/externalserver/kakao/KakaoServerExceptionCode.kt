@@ -34,14 +34,23 @@ enum class KakaoServerExceptionCode(
     INVALID_USER_PROPERTY("015", (-201).toString(), "요청한 사용자 정보가 올바르지 않습니다."),
     CONSENT_REQUIRED("016", (-402).toString(), "추가 동의가 필요한 기능입니다. 동의 후 다시 시도해 주세요.", HttpStatus.FORBIDDEN),
     UNDERAGE_USER_NOT_ALLOWED("017", (-406).toString(), "서비스 이용이 제한된 연령입니다.", HttpStatus.UNAUTHORIZED),
+
+    // 카카오 OIDC 에러코드 https://developers.kakao.com/docs/latest/ko/kakaologin/trouble-shooting#oidc
+    INVALID_OIDC_TOKEN("018", "KOE400", "카카오 인증 토큰이 없거나, 올바른 형식이 아닙니다."),
+    INVALID_OIDC_ISS("019", "KOE401", "올바른 카카오 ID 토큰이 아닙니다."),
+    INVALID_OIDC_SIGNATURE("020", "KOE402", "올바른 카카오 ID 토큰이 아닙니다."),
+    EXPIRED_OIDC_TOKEN("021", "KOE403", "카카오 ID 토큰이 만료되었습니다."),
     ;
 
     override val code: String
-        get() = "KAKAO_SERVER$sequence"
+        get() = "KAKAO$sequence"
 
     companion object {
         fun fromKakaoErrorCode(kakaoErrorCode: Int): KakaoServerExceptionCode {
             return entries.firstOrNull { it.kakaoErrorCode == kakaoErrorCode.toString() } ?: UNKNOWN
+        }
+        fun fromKakaoErrorCode(kakaoErrorCode: String?): KakaoServerExceptionCode {
+            return entries.firstOrNull { it.kakaoErrorCode == kakaoErrorCode} ?: UNKNOWN
         }
     }
 }
