@@ -10,7 +10,7 @@ import java.time.LocalDate
 data class PostUserProfileRequest(
     @Schema(description = "닉네임")
     @field:NotBlank(message = "닉네임은 공백일 수 없습니다.")
-    @field:Size(min = 3, max = 10, message = "닉네임은 3~10자 이내로 입력해주세요.")
+    @field:Size(min = 2, max = 8, message = "닉네임은 2~8자 이내로 입력해주세요.")
     @field:Pattern(regexp = "^[가-힣a-zA-Z0-9]+$")
     val nickname: String,
     @Schema(description = "YYYY-MM-DD 형식의 생일")

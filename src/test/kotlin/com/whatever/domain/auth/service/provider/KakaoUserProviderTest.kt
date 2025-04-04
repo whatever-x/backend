@@ -48,7 +48,7 @@ class KakaoUserProviderTest @Autowired constructor(
                 iat = 1L,
                 exp = 1L,
                 authTime = 1L,
-                nickname = "test  nick",
+                nickname = "testnick",
             ))
 
         // given

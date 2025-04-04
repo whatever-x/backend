@@ -5,6 +5,7 @@ import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.user.exception.UserExceptionCode
 import com.whatever.domain.user.exception.UserIllegalStateException
 import jakarta.persistence.*
+import jakarta.validation.constraints.Size
 import java.time.LocalDate
 
 @Entity
@@ -24,6 +25,8 @@ class User(
     @Column(unique = true)
     val platformUserId: String,
 
+    @Size(min = 2, max = 8)
+    @Column(length = 8)
     var nickname: String? = null,
 
     @Enumerated(EnumType.STRING)
