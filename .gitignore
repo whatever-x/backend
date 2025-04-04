@@ -41,3 +41,4 @@ out/
 
 ### Custom ###
 .env
+src/main/resources/*.sql
