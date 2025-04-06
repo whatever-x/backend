@@ -84,7 +84,10 @@ class JwtHelper(
 
     fun getUserId(token: String): Long {
         return jwtProvider.getUnsecuredPayload(token)["userId"]?.toLong()
-            ?: throw IllegalArgumentException("userid require not null")
+            ?: throw JwtMissingClaimException(
+                errorCode = JwtExceptionCode.MISSING_CLAIM,
+                detailMessage = "Missing 'userId' claim. Please check your token."
+            )
     }
 
     private fun getJwtParser(): JwtParser {
