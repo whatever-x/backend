@@ -88,14 +88,10 @@ class JwtHelper(
     }
 
     private fun getJwtParser(): JwtParser {
-        try {
-            return Jwts.parser()
-                .requireIssuer(jwtProperties.issuer)
-                .verifyWith(jwtProperties.secretKey)
-                .build()
-        } catch (e: InvalidClaimException) {  // TODO(준용) CustomException으로 변경
-            throw IllegalArgumentException("JWT의 필수 클레임이 누락되었거나 올바르지 않습니다.")
-        }
+        return Jwts.parser()
+            .requireIssuer(jwtProperties.issuer)
+            .verifyWith(jwtProperties.secretKey)
+            .build()
     }
 
 }
