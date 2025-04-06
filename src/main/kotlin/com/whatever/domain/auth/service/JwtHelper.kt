@@ -5,7 +5,10 @@ import com.whatever.global.jwt.JwtProvider
 import com.whatever.global.jwt.exception.CaramelJwtException
 import com.whatever.global.jwt.exception.JwtExceptionCode
 import com.whatever.global.jwt.exception.JwtMissingClaimException
-import io.jsonwebtoken.*
+import io.jsonwebtoken.Claims
+import io.jsonwebtoken.Jws
+import io.jsonwebtoken.JwtParser
+import io.jsonwebtoken.Jwts
 import org.springframework.stereotype.Component
 
 @Component

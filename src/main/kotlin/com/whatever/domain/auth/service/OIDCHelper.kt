@@ -8,7 +8,6 @@ import com.whatever.domain.auth.exception.AuthExceptionCode
 import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
 import com.whatever.global.jwt.JwtProvider
 import io.jsonwebtoken.Claims
-import io.jsonwebtoken.InvalidClaimException
 import io.jsonwebtoken.Jws
 import io.jsonwebtoken.JwtParser
 import io.jsonwebtoken.Jwts
