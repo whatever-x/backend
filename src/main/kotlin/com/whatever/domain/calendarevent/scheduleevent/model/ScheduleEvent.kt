@@ -5,7 +5,16 @@ import com.whatever.domain.calendarevent.eventrecurrence.model.EventRecurrence
 import com.whatever.domain.calendarevent.eventrecurrence.model.ScheduleRecurrenceOverride
 import com.whatever.domain.calendarevent.scheduleevent.model.converter.ZonedIdConverter
 import com.whatever.domain.content.model.ContentDetail
-import jakarta.persistence.*
+import com.whatever.util.endOfDay
+import jakarta.persistence.Column
+import jakarta.persistence.Convert
+import jakarta.persistence.Embedded
+import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.OneToMany
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -19,18 +28,18 @@ class ScheduleEvent(
     val uid: String,
 
     @Column(nullable = false)
-    val startDateTime: LocalDateTime,
+    var startDateTime: LocalDateTime,
 
     @Column(nullable = false)
-    val endDateTime: LocalDateTime,
-
-    @Column(nullable = false)
-    @Convert(converter = ZonedIdConverter::class)
-    val startTimeZone: ZoneId,
+    var endDateTime: LocalDateTime,
 
     @Column(nullable = false)
     @Convert(converter = ZonedIdConverter::class)
-    val endTimeZone: ZoneId,
+    var startTimeZone: ZoneId,
+
+    @Column(nullable = false)
+    @Convert(converter = ZonedIdConverter::class)
+    var endTimeZone: ZoneId,
 
     @Embedded
     var contentDetail: ContentDetail,
@@ -42,4 +51,15 @@ class ScheduleEvent(
     val recurrenceOverrides: MutableList<ScheduleRecurrenceOverride> = mutableListOf(),
 ) : BaseEntity() {
 
+    fun updateDuration(
+        startDateTime: LocalDateTime,
+        startTimeZone: ZoneId,
+        endDateTime: LocalDateTime = startDateTime.endOfDay,
+        endTimeZone: ZoneId = startTimeZone,
+    ) {
+        this.startDateTime = startDateTime
+        this.startTimeZone = startTimeZone
+        this.endDateTime = endDateTime
+        this.endTimeZone = endTimeZone
+    }
 }
