@@ -20,10 +20,9 @@ class UserService(
     @Transactional
     fun createProfile(postUserProfileRequest: PostUserProfileRequest): PostUserProfileResponse {
         val userId = getCurrentUserId()
-        val user = userRepository.findByIdOrNull(userId)?.apply {
-            nickname = postUserProfileRequest.nickname
-            birthDate = postUserProfileRequest.birthday
-            gender = postUserProfileRequest.gender
+        val user = userRepository.findByIdOrNull(userId)
+        with(postUserProfileRequest) {
+            user?.register(nickname, birthday, gender)
         }
 
         return PostUserProfileResponse(

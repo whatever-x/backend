@@ -2,6 +2,7 @@ package com.whatever.domain.user.dto
 
 import com.whatever.domain.user.model.UserGender
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
@@ -18,7 +19,9 @@ data class PostUserProfileRequest(
     @Schema(description = "성별")
     val gender: UserGender,
     @Schema(description = "서비스/약관 동의 여부")
+    @field:AssertTrue(message = "서비스 이용 약관에 동의해야 합니다.")
     val agreementServiceTerms: Boolean,
     @Schema(description = "개인정보 수집/이용 동의")
+    @field:AssertTrue(message = "개인정보 수집 및 이용에 동의해야 합니다.")
     val agreementPrivatePolicy: Boolean,
 )
