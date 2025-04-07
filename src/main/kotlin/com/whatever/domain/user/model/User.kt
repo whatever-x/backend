@@ -52,4 +52,15 @@ class User(
     fun updateUserStatus(newStatus: UserStatus) {
         userStatus = newStatus
     }
+
+    fun register(
+        nickname: String,
+        birthday: LocalDate,
+        gender: UserGender,
+    ) {
+        this.nickname = nickname
+        this.birthDate = birthday
+        this.gender = gender
+        this.userStatus = UserStatus.SINGLE
+    }
 }

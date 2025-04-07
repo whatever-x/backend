@@ -6,7 +6,6 @@ import com.whatever.domain.user.dto.PutUserProfileRequest
 import com.whatever.domain.user.dto.PutUserProfileResponse
 import com.whatever.domain.user.exception.UserException
 import com.whatever.domain.user.exception.UserExceptionCode
-import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import org.springframework.data.repository.findByIdOrNull
@@ -21,11 +20,9 @@ class UserService(
     @Transactional
     fun createProfile(postUserProfileRequest: PostUserProfileRequest): PostUserProfileResponse {
         val userId = getCurrentUserId()
-        val user = userRepository.findByIdOrNull(userId)?.apply {
-            nickname = postUserProfileRequest.nickname
-            birthDate = postUserProfileRequest.birthday
-            gender = postUserProfileRequest.gender
-            userStatus = UserStatus.SINGLE
+        val user = userRepository.findByIdOrNull(userId)
+        with(postUserProfileRequest) {
+            user?.register(nickname, birthday, gender)
         }
 
         return PostUserProfileResponse(
