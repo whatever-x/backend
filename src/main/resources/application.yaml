@@ -168,8 +168,8 @@ spring:
     defer-datasource-initialization: true
   sql:
     init:
-      mode: always
-      data-locations: classpath:initial-data-local.sql
+      mode: embedded
+#      data-locations: classpath:initial-data-local.sql
   data:
     redis:
       host: ${REDIS_HOST}
