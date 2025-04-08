@@ -5,9 +5,10 @@ import com.whatever.domain.calendarevent.scheduleevent.model.converter.ZonedIdCo
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
 import com.whatever.util.endOfDay
+import com.whatever.util.toZonId
+import com.whatever.util.withoutNano
 import jakarta.persistence.Column
 import jakarta.persistence.Convert
-import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
@@ -27,11 +28,9 @@ class ScheduleEvent(
     @Column(nullable = false)
     val uid: String,
 
-    @Column(nullable = false)
-    var startDateTime: LocalDateTime,
+    startDateTime: LocalDateTime,
 
-    @Column(nullable = false)
-    var endDateTime: LocalDateTime,
+    endDateTime: LocalDateTime,
 
     @Column(nullable = false)
     @Convert(converter = ZonedIdConverter::class)
@@ -51,15 +50,44 @@ class ScheduleEvent(
 //    val recurrenceOverrides: MutableList<ScheduleRecurrenceOverride> = mutableListOf(),
 ) : BaseEntity() {
 
+    @Column(nullable = false)
+    var startDateTime: LocalDateTime = startDateTime.withoutNano
+        set(value) {
+            field = value.withoutNano
+        }
+
+    @Column(nullable = false)
+    var endDateTime: LocalDateTime = startDateTime.withoutNano
+        set(value) {
+            field = value.withoutNano
+        }
+
     fun updateDuration(
         startDateTime: LocalDateTime,
-        startTimeZone: ZoneId,
-        endDateTime: LocalDateTime = startDateTime.endOfDay,
-        endTimeZone: ZoneId = startTimeZone,
+        startTimeZone: String,
+        endDateTime: LocalDateTime? = null,
+        endTimeZone: String? = null,
     ) {
-        this.startDateTime = startDateTime
-        this.startTimeZone = startTimeZone
-        this.endDateTime = endDateTime
-        this.endTimeZone = endTimeZone
+        this.startDateTime = startDateTime.withoutNano
+        this.startTimeZone = startTimeZone.toZonId()
+        this.endDateTime = endDateTime ?: startDateTime.endOfDay.withoutNano
+        this.endTimeZone = endTimeZone?.toZonId() ?: startTimeZone.toZonId()
+    }
+
+    fun updateEvent(
+        contentDetail: ContentDetail,
+        startDateTime: LocalDateTime,
+        startTimeZone: String,
+        endDateTime: LocalDateTime? = null,
+        endTimeZone: String? = null,
+    ) {
+        content.updateContentDetail(contentDetail)
+
+        updateDuration(
+            startDateTime = startDateTime,
+            startTimeZone = startTimeZone,
+            endDateTime = endDateTime,
+            endTimeZone = endTimeZone,
+        )
     }
 }

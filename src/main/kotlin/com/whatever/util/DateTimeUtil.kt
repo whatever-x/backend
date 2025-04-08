@@ -57,6 +57,9 @@ fun ZonedDateTime.toDate(): Date {
 val LocalDateTime.endOfDay: LocalDateTime
     get() = toLocalDate().atTime(LocalTime.MAX)
 
+val LocalDateTime.withoutNano: LocalDateTime
+    get() = withNano(0)
+
 fun String.toZonId(): ZoneId {
     return ZoneId.of(this)
 }

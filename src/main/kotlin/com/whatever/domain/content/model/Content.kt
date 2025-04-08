@@ -2,7 +2,16 @@ package com.whatever.domain.content.model
 
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.user.model.User
-import jakarta.persistence.*
+import jakarta.persistence.Embedded
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 
 @Entity
 class Content(
@@ -19,6 +28,14 @@ class Content(
 
     @Enumerated(EnumType.STRING)
     var type: ContentType = ContentType.MEMO,
+) : BaseEntity() {
 
-    ) : BaseEntity() {
+    fun updateContentDetail(newContentDetail: ContentDetail) {
+        with(contentDetail) {
+            title = newContentDetail.title
+            description = newContentDetail.description
+            isCompleted = newContentDetail.isCompleted
+        }
+    }
+
 }
