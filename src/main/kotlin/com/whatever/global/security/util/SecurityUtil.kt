@@ -11,6 +11,11 @@ import org.springframework.security.core.context.SecurityContextHolder
 object SecurityUtil {
 
     @JvmStatic
+    fun getCurrentUserCoupleId(): Long {
+        return getUserDetails().coupleId
+    }
+
+    @JvmStatic
     fun getCurrentUserStatus(): UserStatus {
         return getUserDetails().status
     }

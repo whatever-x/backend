@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails
 class CaramelUserDetails(
     val userId: Long,
     val status: UserStatus,
+    val coupleId: Long = 0L,
 ) : UserDetails {
 
     private val userIdStr = userId.toString()

@@ -44,7 +44,8 @@ class JwtAuthenticationFilter(
 
         val userDetails = CaramelUserDetails(
             userId = user.id,
-            status = user.userStatus
+            status = user.userStatus,
+            coupleId = user.couple?.id ?: 0L
         )
 
         return UsernamePasswordAuthenticationToken(
