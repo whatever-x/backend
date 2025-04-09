@@ -1,9 +1,11 @@
 package com.whatever.domain.calendarevent.scheduleevent.controller
 
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
+import com.whatever.domain.calendarevent.scheduleevent.service.ScheduleEventService
 import com.whatever.global.exception.dto.CaramelApiResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
 
 @Tag(
@@ -12,19 +14,23 @@ import org.springframework.web.bind.annotation.*
 )
 @RestController
 @RequestMapping("/v1/calendar/schedules")
-class ScheduleController {
+class ScheduleController(
+    private val scheduleEventService: ScheduleEventService
+) {
 
     @Operation(
-        summary = "더미 일정 수정",
+        summary = "일정 수정",
         description = "일정을 수정합니다.",
     )
     @PutMapping("/{schedule-id}")
     fun updateSchedule(
         @PathVariable("schedule-id") scheduleId: Long,
-        @RequestBody request: UpdateScheduleRequest,
+        @Valid @RequestBody request: UpdateScheduleRequest,
     ): CaramelApiResponse<Unit> {
-
-        // TODO(준용): 구현 필요
+        scheduleEventService.updateSchedule(
+            scheduleId = scheduleId,
+            request = request,
+        )
         return CaramelApiResponse.succeed()
     }
 

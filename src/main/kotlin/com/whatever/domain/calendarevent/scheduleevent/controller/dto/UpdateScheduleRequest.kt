@@ -32,5 +32,8 @@ data class UpdateScheduleRequest(
     val endDateTime: LocalDateTime? = null,
 
     @Schema(description = "종료일 타임존", example = "Asia/Seoul")
-    val endTimeZone: String? = null
+    val endTimeZone: String? = null,
+
+    @Schema(description = "태그 번호 리스트")
+    val tagIds: Set<Long> = emptySet(),
 )
