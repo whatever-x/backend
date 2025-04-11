@@ -40,7 +40,7 @@ class ScheduleEvent(
     @Convert(converter = ZonedIdConverter::class)
     var endTimeZone: ZoneId,
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "content_id", nullable = false)
     var content: Content,
 

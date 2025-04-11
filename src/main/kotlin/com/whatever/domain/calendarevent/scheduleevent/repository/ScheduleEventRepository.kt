@@ -8,8 +8,17 @@ interface ScheduleEventRepository : JpaRepository<ScheduleEvent, Long> {
     @Query("""
         select se from ScheduleEvent se
             join fetch se.content c
-            join fetch c.user
+            join fetch c.user u
         where se.id = :scheduleId
+            and se.isDeleted = false 
     """)
     fun findByIdWithContentAndUser(scheduleId: Long): ScheduleEvent?
+
+    @Query("""
+        select se from ScheduleEvent se
+            join fetch se.content c
+        where se.id = :scheduleId
+            and se.isDeleted = false 
+    """)
+    fun findByIdWithContent(scheduleId: Long): ScheduleEvent?
 }

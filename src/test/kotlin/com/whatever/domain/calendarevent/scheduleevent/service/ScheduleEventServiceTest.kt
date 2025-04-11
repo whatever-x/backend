@@ -36,6 +36,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.web.servlet.error.DefaultErrorViewResolver
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.ActiveProfiles
@@ -55,6 +56,9 @@ class ScheduleEventServiceTest @Autowired constructor(
     companion object {
         val NOW = DateTimeUtil.localNow()
     }
+
+    @Autowired
+    private lateinit var conventionErrorViewResolver: DefaultErrorViewResolver
 
     @Autowired
     private lateinit var tagContentMappingRepository: TagContentMappingRepository
@@ -121,7 +125,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         )
 
         // then
-        val updatedScheduleEvent = scheduleEventRepository.findByIdOrNull(oldSchedule.id)!!
+        val updatedScheduleEvent = scheduleEventRepository.findByIdWithContent(oldSchedule.id)!!
         updatedScheduleEvent.run {
             assertThat(id).isEqualTo(oldSchedule.id)
             assertThat(content.contentDetail.title).isEqualTo(request.title)
@@ -172,7 +176,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         )
 
         // then
-        val updatedScheduleEvent = scheduleEventRepository.findByIdOrNull(oldSchedule.id)!!
+        val updatedScheduleEvent = scheduleEventRepository.findByIdWithContent(oldSchedule.id)!!
         updatedScheduleEvent.run {
             assertThat(id).isEqualTo(oldSchedule.id)
             assertThat(content.contentDetail.title).isEqualTo(request.title)

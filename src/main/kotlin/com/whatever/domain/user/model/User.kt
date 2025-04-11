@@ -38,7 +38,7 @@ class User(
 //    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 //    val contents: MutableList<Content> = mutableListOf(),
 ) : BaseEntity() {
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "couple_id", referencedColumnName = "id")
     protected var _couple: Couple? = null
     val couple: Couple? get() = _couple
