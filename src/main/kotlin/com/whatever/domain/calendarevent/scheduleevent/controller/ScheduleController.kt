@@ -35,13 +35,12 @@ class ScheduleController(
     }
 
     @Operation(
-        summary = "더미 일정 삭제",
+        summary = "일정 삭제",
         description = "일정을 삭제합니다.",
     )
     @DeleteMapping("/{schedule-id}")
     fun deleteSchedule(@PathVariable("schedule-id") scheduleId: Long): CaramelApiResponse<Unit> {
-
-        // TODO(준용): 구현 필요
+        scheduleEventService.deleteSchedule(scheduleId)
         return CaramelApiResponse.succeed()
     }
 }

@@ -63,6 +63,14 @@ class ScheduleEventService(
         }
     }
 
+    @Transactional
+    fun deleteSchedule(scheduleId: Long) {
+        val scheduleEvent = scheduleEventRepository.findByIdWithContentAndUser(scheduleId)
+            ?: throw ScheduleNotFoundException(errorCode = SCHEDULE_NOT_FOUND)
+        validateUserAccess(scheduleEvent)
+        scheduleEvent.deleteEntity()
+    }
+
     private fun validateUpdateRequest(request: UpdateScheduleRequest) {
         with(request) {
             if (title == null && description == null) {

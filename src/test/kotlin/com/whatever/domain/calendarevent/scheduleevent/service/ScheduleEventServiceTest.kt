@@ -41,7 +41,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.ActiveProfiles
 import java.time.ZoneId
-import kotlin.system.measureTimeMillis
 import kotlin.test.Test
 
 @ActiveProfiles("test")
@@ -509,6 +508,38 @@ class ScheduleEventServiceTest @Autowired constructor(
         val updatedTagLabels = updatedTagMappings.map { it.tag.label }
         val expectedTagLabels = newTags.map { it.label }
         assertThat(updatedTagLabels).containsExactlyInAnyOrderElementsOf(expectedTagLabels)
+    }
+
+    @DisplayName("내가 업로드한 스케줄을 삭제하면 조회할 수 없다.")
+    @Test
+    fun deleteSchedule() {
+        // given
+        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        val content = contentRepository.save(createContent(partnerUser, ContentType.SCHEDULE))
+        val schedule = scheduleEventRepository.save(
+            ScheduleEvent(
+                uid = "test-uuid4-value",
+                startDateTime = NOW.minusDays(5),
+                startTimeZone = ZoneId.of("Asia/Seoul"),
+                endDateTime = NOW.minusDays(3),
+                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
+                content = content,
+            )
+        )
+        securityUtilMock.apply {
+            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
+            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
+        }
+
+        // when
+        scheduleEventService.deleteSchedule(schedule.id)
+
+        // then
+        val deletedSchedule = scheduleEventRepository.findByIdAndIsDeleted(schedule.id, false)
+        assertThat(deletedSchedule).isNull()
+
+        val deletedScheduleForCheck = scheduleEventRepository.findByIdAndIsDeleted(schedule.id, true)
+        assertThat(deletedScheduleForCheck!!.id).isEqualTo(schedule.id)
     }
 }
 

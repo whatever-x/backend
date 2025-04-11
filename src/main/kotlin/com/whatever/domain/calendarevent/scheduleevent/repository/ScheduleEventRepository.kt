@@ -21,4 +21,6 @@ interface ScheduleEventRepository : JpaRepository<ScheduleEvent, Long> {
             and se.isDeleted = false 
     """)
     fun findByIdWithContent(scheduleId: Long): ScheduleEvent?
+
+    fun findByIdAndIsDeleted(id: Long, deleted: Boolean = false): ScheduleEvent?
 }
