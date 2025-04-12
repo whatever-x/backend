@@ -34,6 +34,8 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.NullSource
+import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.NullString
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
@@ -265,15 +267,16 @@ class ScheduleEventServiceTest @Autowired constructor(
             .hasMessage(ScheduleExceptionCode.ILLEGAL_CONTENT_DETAIL.message)
     }
 
-    @DisplayName("Schedule 업데이트 시 Title과 Description 둘 중 하나라도 Blank라면 예외가 발생한다.")
+    @DisplayName("Schedule 업데이트 시 Title과 Description 둘 중 하나라도 Blank거나, 모두 nul이라면 예외가 발생한다.")
     @ParameterizedTest
     @CsvSource(
         "test title, '      '",
         "test title, ''",
         "'        ', test description",
         "''        , test description",
+        "          ,                 ",
     )
-    fun updateSchedule_WithBothBlankTitleAndDescription(title: String, description: String) {
+    fun updateSchedule_WithBlankOrNullTitleAndDescription(title: String?, description: String?) {
         // given
         val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
         val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))

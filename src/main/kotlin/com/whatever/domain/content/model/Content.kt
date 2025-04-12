@@ -1,6 +1,8 @@
 package com.whatever.domain.content.model
 
 import com.whatever.domain.base.BaseEntity
+import com.whatever.domain.content.exception.ContentExceptionCode.ILLEGAL_CONTENT_DETAIL
+import com.whatever.domain.content.exception.ContentIllegalArgumentException
 import com.whatever.domain.user.model.User
 import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
@@ -31,6 +33,12 @@ class Content(
 ) : BaseEntity() {
 
     fun updateContentDetail(newContentDetail: ContentDetail) {
+        if (newContentDetail.title == null && newContentDetail.description == null) {
+            throw ContentIllegalArgumentException(
+                errorCode = ILLEGAL_CONTENT_DETAIL,
+                detailMessage = "Both title and description cannot be Null."
+            )
+        }
         with(contentDetail) {
             title = newContentDetail.title
             description = newContentDetail.description

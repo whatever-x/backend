@@ -45,7 +45,7 @@ class ScheduleEventService(
 
         with(request) {
             val contentDetail = ContentDetail(
-                title = title ?: description!!,
+                title = title,
                 description = description,
                 isCompleted = isCompleted
             )
