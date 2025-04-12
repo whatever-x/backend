@@ -13,7 +13,7 @@ enum class ScheduleExceptionCode(
     ILLEGAL_CONTENT_DETAIL("001", "입력할 수 없는 제목, 혹은 본문 내용입니다."),
     ILLEGAL_DURATION("002", "잘못된 기간 설정입니다."),
     SCHEDULE_NOT_FOUND("003", "스케줄을 찾을 수 없습니다."),
-    ILLEGAL_OWNER_STATUS("004", "일정 작성자의 커플 정보를 확인할 수 없습니다."),
+    ILLEGAL_PARTNER_STATUS("004", "파트너의 커플 정보를 확인할 수 없습니다."),
     COUPLE_NOT_MATCHED("005", "수정할 수 없는 일정입니다."),
     ;
 

@@ -1,5 +1,6 @@
 package com.whatever.util
 
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
@@ -42,6 +43,10 @@ object DateTimeUtil {
         val instant = ZonedDateTime.of(sourceLocalDateTime, sourceZone).toInstant()
         return Date.from(instant)
     }
+}
+
+fun LocalDate.toDateTime(localTime: LocalTime = LocalTime.MIDNIGHT): LocalDateTime {
+    return LocalDateTime.of(this, localTime)
 }
 
 fun LocalDateTime.toDate(

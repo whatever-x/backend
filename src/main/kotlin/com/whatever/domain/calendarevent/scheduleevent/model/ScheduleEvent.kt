@@ -58,7 +58,7 @@ class ScheduleEvent(
         }
 
     @Column(nullable = false)
-    var endDateTime: LocalDateTime = startDateTime.withoutNano
+    var endDateTime: LocalDateTime = endDateTime.withoutNano
         set(value) {
             field = value.withoutNano
         }

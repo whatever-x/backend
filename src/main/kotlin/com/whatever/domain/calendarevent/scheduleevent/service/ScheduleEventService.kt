@@ -1,11 +1,12 @@
 package com.whatever.domain.calendarevent.scheduleevent.service
 
+import com.whatever.domain.calendarevent.controller.dto.response.ScheduleDetailDto
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleAccessDeniedException
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.COUPLE_NOT_MATCHED
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_CONTENT_DETAIL
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_DURATION
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_OWNER_STATUS
+import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_PARTNER_STATUS
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.SCHEDULE_NOT_FOUND
 import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
 import com.whatever.domain.content.model.ContentDetail
@@ -18,18 +19,65 @@ import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
-import com.whatever.domain.user.model.UserStatus
+import com.whatever.domain.couple.exception.CoupleException
+import com.whatever.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
+import com.whatever.domain.couple.repository.CoupleRepository
+import com.whatever.domain.user.model.UserStatus.SINGLE
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
+import com.whatever.util.toDateTime
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Service
 class ScheduleEventService(
     private val scheduleEventRepository: ScheduleEventRepository,
     private val tagContentMappingRepository: TagContentMappingRepository,
     private val tagRepository: TagRepository,
+    private val coupleRepository: CoupleRepository,
 ) {
+
+    fun getSchedule(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        userTimeZone: String
+    ): List<ScheduleDetailDto> {
+        validateRequestDuration(
+            startDateTime = startDate.toDateTime(),
+            endDateTime = endDate.toDateTime()
+        )
+
+        val currentUserCoupleId = SecurityUtil.getCurrentUserCoupleId()
+        val couple = coupleRepository.findByIdWithMembers(currentUserCoupleId)
+            ?: throw CoupleException(errorCode = COUPLE_NOT_FOUND)
+
+        if (couple.members.any { it.userStatus == SINGLE }) {
+            throw ScheduleAccessDeniedException(errorCode = ILLEGAL_PARTNER_STATUS)
+        }
+
+        val memberIds = couple.members.map { it.id }.toSet()
+        val coupleSchedules = scheduleEventRepository.findAllByDurationAndUsers(
+            startDateTime = startDate.toDateTime(),
+            endDateTime = endDate.toDateTime(),
+            memberIds = memberIds
+        )
+
+        return coupleSchedules.map { se ->
+            ScheduleDetailDto(
+                scheduleId = se.id,
+                startDateTime = se.startDateTime,
+                endDateTime = se.endDateTime,
+                startDateTimezone = se.startTimeZone.id,
+                endDateTimezone = se.endTimeZone.id,
+                isCompleted = se.content.contentDetail.isCompleted,
+                title = se.content.contentDetail.title,
+                description = se.content.contentDetail.description,
+            )
+        }
+
+    }
 
     @Transactional
     fun updateSchedule(
@@ -97,12 +145,16 @@ class ScheduleEventService(
                     detailMessage = "Title and description must not be blank."
                 )
             }
-            if (startDateTime != null && endDateTime?.isBefore(startDateTime) == true) {
-                throw ScheduleIllegalArgumentException(
-                    errorCode = ILLEGAL_DURATION,
-                    detailMessage = "EndDateTime must not be before startDateTime."
-                )
-            }
+            validateRequestDuration(startDateTime, endDateTime)
+        }
+    }
+
+    private fun validateRequestDuration(startDateTime: LocalDateTime?, endDateTime: LocalDateTime?) {
+        if (startDateTime != null && endDateTime?.isBefore(startDateTime) == true) {
+            throw ScheduleIllegalArgumentException(
+                errorCode = ILLEGAL_DURATION,
+                detailMessage = "EndDateTime must not be before startDateTime."
+            )
         }
     }
 
@@ -112,16 +164,16 @@ class ScheduleEventService(
 
         if (currentUserId != scheduleOwnerUser.id) {
             val currentUserCoupleId = SecurityUtil.getCurrentUserCoupleId()
-            if (scheduleOwnerUser.userStatus == UserStatus.SINGLE) {
+            if (scheduleOwnerUser.userStatus == SINGLE) {
                 throw ScheduleIllegalStateException(
-                    errorCode = ILLEGAL_OWNER_STATUS,
+                    errorCode = ILLEGAL_PARTNER_STATUS,
                     detailMessage = "Schedule owner is single now."
                 )
             }
 
             val scheduleOwnerCoupleId = scheduleOwnerUser.couple?.id
                 ?: throw ScheduleIllegalStateException(
-                    errorCode = ILLEGAL_OWNER_STATUS,
+                    errorCode = ILLEGAL_PARTNER_STATUS,
                     detailMessage = "Schedule owner's couple data is missing."
                 )
 

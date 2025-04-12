@@ -2,6 +2,7 @@ package com.whatever.domain.calendarevent.controller
 
 import com.whatever.domain.calendarevent.controller.dto.request.GetCalendarQueryParameter
 import com.whatever.domain.calendarevent.controller.dto.response.*
+import com.whatever.domain.calendarevent.scheduleevent.service.ScheduleEventService
 import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.succeed
 import io.swagger.v3.oas.annotations.Operation
@@ -19,37 +20,21 @@ import java.time.LocalTime
 )
 @RestController
 @RequestMapping("/v1/calendar")
-class CalendarController {
+class CalendarController(private val scheduleEventService: ScheduleEventService) {
 
     @Operation(
-        summary = "더미 캘린더 조회",
+        summary = "캘린더 조회",
         description = "캘린더 이벤트들을 조회합니다.",
     )
     @GetMapping
     fun getCalendar(@ParameterObject queryParameter: GetCalendarQueryParameter): CaramelApiResponse<CalendarDetailResponse> {
+        val schedules = scheduleEventService.getSchedule(
+            startDate = queryParameter.startDate,
+            endDate = queryParameter.endDate,
+            userTimeZone = queryParameter.userTimeZone
+        )
 
-        // TODO(준용): 구현 필요
-        val scheduleList = mutableListOf<ScheduleDetailDto>()
-        var currentDate = queryParameter.startDate
-        var idCnt = 1L
-        while (currentDate <= queryParameter.endDate) {
-            scheduleList.add(
-                ScheduleDetailDto(
-                    scheduleId = idCnt++,
-                    startDateTime = currentDate.atStartOfDay(),
-                    endDateTime = currentDate.atTime(LocalTime.MAX),
-                    startDateTimezone = queryParameter.userTimeZone,
-                    endDateTimezone = queryParameter.userTimeZone,
-                    isCompleted = false,
-                    parentScheduleId = null,
-                    title = "캘린더에 표시되는 제목 - $currentDate",
-                    description = "본문입니다."
-                )
-            )
-            currentDate = currentDate.plusDays(2)
-        }
-
-        val calendarResult = CalendarEventsDto(scheduleList = scheduleList)
+        val calendarResult = CalendarEventsDto(scheduleList = schedules)
         return CalendarDetailResponse(calendarResult = calendarResult).succeed()
     }
 

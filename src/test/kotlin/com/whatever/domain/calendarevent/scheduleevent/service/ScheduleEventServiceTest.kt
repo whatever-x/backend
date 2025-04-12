@@ -1,5 +1,6 @@
 package com.whatever.domain.calendarevent.scheduleevent.service
 
+import com.whatever.domain.calendarevent.controller.dto.request.GetCalendarQueryParameter
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleAccessDeniedException
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode
@@ -25,6 +26,7 @@ import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.endOfDay
 import com.whatever.util.findByIdAndNotDeleted
+import com.whatever.util.toDateTime
 import com.whatever.util.toZonId
 import com.whatever.util.withoutNano
 import org.assertj.core.api.Assertions.assertThat
@@ -34,15 +36,13 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.junit.jupiter.params.provider.NullSource
-import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.NullString
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.web.servlet.error.DefaultErrorViewResolver
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.ActiveProfiles
+import java.time.LocalDate
 import java.time.ZoneId
 import kotlin.test.Test
 import kotlin.test.assertNotNull
@@ -81,11 +81,29 @@ class ScheduleEventServiceTest @Autowired constructor(
         coupleRepository.deleteAllInBatch()
     }
 
+    private fun setUpCouple(
+        myPlatformId: String = "my-user-id",
+        partnerPlatformId: String = "partner-user-id"
+    ): Triple<User, User, Couple> {
+        return createCouple(userRepository, coupleRepository, myPlatformId, partnerPlatformId)
+    }
+    private fun setUpCoupleAndSecurity(
+        myPlatformId: String = "my-user-id",
+        partnerPlatformId: String = "partner-user-id"
+    ): Triple<User, User, Couple> {
+        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository, myPlatformId, partnerPlatformId)
+        securityUtilMock.apply {
+            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
+            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
+        }
+        return Triple(myUser, partnerUser, couple)
+    }
+
     @DisplayName("나의 Schedule 업데이트 시 request 값들이 정상적으로 반영된다.")
     @Test
     fun updateSchedule() {
         // given
-        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
         val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
         val oldSchedule = scheduleEventRepository.save(
             ScheduleEvent(
@@ -107,10 +125,6 @@ class ScheduleEventServiceTest @Autowired constructor(
             endDateTime = NOW,
             endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
         )
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-        }
 
         // when
         scheduleEventService.updateSchedule(
@@ -136,7 +150,7 @@ class ScheduleEventServiceTest @Autowired constructor(
     @Test
     fun updateSchedule_WithPartnerSchedule() {
         // given
-        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
         val oldContent = contentRepository.save(createContent(partnerUser, ContentType.SCHEDULE))
         val oldSchedule = scheduleEventRepository.save(
             ScheduleEvent(
@@ -158,10 +172,6 @@ class ScheduleEventServiceTest @Autowired constructor(
             endDateTime = NOW,
             endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
         )
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-        }
 
         // when
         scheduleEventService.updateSchedule(
@@ -187,7 +197,7 @@ class ScheduleEventServiceTest @Autowired constructor(
     @Test
     fun updateSchedule_WithoutEndDateData() {
         // given
-        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
         val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
         val oldSchedule = scheduleEventRepository.save(
             ScheduleEvent(
@@ -207,10 +217,6 @@ class ScheduleEventServiceTest @Autowired constructor(
             startDateTime = NOW.minusDays(2),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
         )
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-        }
 
         // when
         scheduleEventService.updateSchedule(
@@ -231,7 +237,7 @@ class ScheduleEventServiceTest @Autowired constructor(
     @Test
     fun updateSchedule_WithoutTitleAndDescription() {
         // given
-        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
         val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
         val oldSchedule = scheduleEventRepository.save(
             ScheduleEvent(
@@ -251,10 +257,6 @@ class ScheduleEventServiceTest @Autowired constructor(
             startDateTime = NOW.minusDays(2),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
         )
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-        }
 
         // when, then
         val exception = assertThrows<ScheduleIllegalArgumentException> {
@@ -278,7 +280,7 @@ class ScheduleEventServiceTest @Autowired constructor(
     )
     fun updateSchedule_WithBlankOrNullTitleAndDescription(title: String?, description: String?) {
         // given
-        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
         val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
         val oldSchedule = scheduleEventRepository.save(
             ScheduleEvent(
@@ -298,10 +300,6 @@ class ScheduleEventServiceTest @Autowired constructor(
             startDateTime = NOW.minusDays(2),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
         )
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-        }
 
         // when, then
         val exception = assertThrows<ScheduleIllegalArgumentException> {
@@ -318,7 +316,7 @@ class ScheduleEventServiceTest @Autowired constructor(
     @Test
     fun updateSchedule_WithInvalidDuration() {
         // given
-        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
         val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
         val oldSchedule = scheduleEventRepository.save(
             ScheduleEvent(
@@ -340,10 +338,6 @@ class ScheduleEventServiceTest @Autowired constructor(
             endDateTime = NOW.minusDays(1),  // 유효하지 않은 endDateTime.
             endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
         )
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-        }
 
         // when, then
         val exception = assertThrows<ScheduleIllegalArgumentException> {
@@ -360,7 +354,7 @@ class ScheduleEventServiceTest @Autowired constructor(
     @Test
     fun updateSchedule_WithDifferentCouple() {
         // given
-        val (ownerUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        val (ownerUser, partnerUser, couple) = setUpCouple()
         val oldContent = contentRepository.save(createContent(ownerUser, ContentType.SCHEDULE))
         val oldSchedule = scheduleEventRepository.save(
             ScheduleEvent(
@@ -408,7 +402,7 @@ class ScheduleEventServiceTest @Autowired constructor(
     @Test
     fun updateSchedule_WhenOwnerHasNoCouple() {
         // given
-        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
         val oldContent = contentRepository.save(createContent(partnerUser, ContentType.SCHEDULE))
         val oldSchedule = scheduleEventRepository.save(
             ScheduleEvent(
@@ -433,11 +427,6 @@ class ScheduleEventServiceTest @Autowired constructor(
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
         )
 
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-        }
-
         // when, then
         val exception = assertThrows<ScheduleIllegalStateException> {
             scheduleEventService.updateSchedule(
@@ -446,14 +435,14 @@ class ScheduleEventServiceTest @Autowired constructor(
             )
         }
         assertThat(exception)
-            .hasMessage(ScheduleExceptionCode.ILLEGAL_OWNER_STATUS.message)
+            .hasMessage(ScheduleExceptionCode.ILLEGAL_PARTNER_STATUS.message)
     }
 
     @DisplayName("Schedule의 Content Tag 업데이트 시 Tag의 삭제와 추가가 모두 반영된다.")
     @Test
     fun updateSchedule_WithTags() {
         // given
-        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
         val oldContent = contentRepository.save(createContent(partnerUser, ContentType.SCHEDULE))
         val tagCount = 20
         val tagNamesSet = (1..tagCount).map { "testTag${it}" }.toSet()
@@ -486,11 +475,6 @@ class ScheduleEventServiceTest @Autowired constructor(
             tagIds = newTagIds
         )
 
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-        }
-
         // when
         scheduleEventService.updateSchedule(
             scheduleId = oldSchedule.id,
@@ -510,7 +494,7 @@ class ScheduleEventServiceTest @Autowired constructor(
     @Test
     fun updateSchedule_WithoutStartDateTime() {
         // given
-        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
         val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
         val oldSchedule = scheduleEventRepository.save(
             ScheduleEvent(
@@ -532,10 +516,6 @@ class ScheduleEventServiceTest @Autowired constructor(
             endDateTime = NOW,
             endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
         )
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-        }
 
         // when
         scheduleEventService.updateSchedule(
@@ -557,7 +537,7 @@ class ScheduleEventServiceTest @Autowired constructor(
     @Test
     fun deleteSchedule() {
         // given
-        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
         val content = contentRepository.save(createContent(partnerUser, ContentType.SCHEDULE))
         val tagCount = 20
         val tagNamesSet = (1..tagCount).map { "testTag${it}" }.toSet()
@@ -573,10 +553,6 @@ class ScheduleEventServiceTest @Autowired constructor(
                 content = content,
             )
         )
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-        }
 
         // when
         scheduleEventService.deleteSchedule(schedule.id)
@@ -588,6 +564,96 @@ class ScheduleEventServiceTest @Autowired constructor(
         assertThat(deletedSchedule).isNull()
         assertThat(deletedContent).isNull()
         assertThat(deletedTagContentMappings).isEmpty()
+    }
+
+    @DisplayName("스케줄 조회 시 커플의 삭제되지 않은 스케줄이 모두 조회된다.")
+    @Test
+    fun getSchedule() {
+        // given
+        val startDate = LocalDate.of(2025, 4, 1)
+        val endDate = LocalDate.of(2025, 4, 30)
+        val userTimeZone = ZoneId.of("Asia/Seoul")
+
+        fun createScheduleEvents(
+            numberOfEvents: Int,
+            uidPrefix: String,
+            ownerSelector: (Int) -> User,
+            startDate: LocalDate,
+            timeZone: ZoneId,
+        ): List<ScheduleEvent> {
+            val scheduleEvents = mutableListOf<ScheduleEvent>()
+            repeat(numberOfEvents) { idx ->
+                val content = contentRepository.save(createContent(ownerSelector(idx), ContentType.SCHEDULE))
+                val eventStart = startDate.plusDays((idx % 30L))
+                val eventEnd = eventStart.plusDays(5)
+                val event = scheduleEventRepository.save(
+                    ScheduleEvent(
+                        uid = "$uidPrefix$idx",
+                        startDateTime = eventStart.toDateTime(),
+                        startTimeZone = timeZone,
+                        endDateTime = eventEnd.toDateTime(),
+                        endTimeZone = timeZone,
+                        content = content
+                    )
+                )
+                scheduleEvents.add(event)
+            }
+            return scheduleEvents
+        }
+
+        // 조회 대상 커플 데이터 생성
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
+        val numberOfEvents = 100
+        val contents = mutableListOf<Content>()
+        val scheduleEvents = createScheduleEvents(
+            numberOfEvents = numberOfEvents,
+            uidPrefix = "test-uuid-",
+            ownerSelector = { idx -> if (idx % 2 == 0) myUser else partnerUser },
+            startDate = startDate,
+            timeZone = userTimeZone
+        )
+
+        // 조회 대상의 삭제된 커플 데이터 생성
+        createScheduleEvents(
+            numberOfEvents = numberOfEvents,
+            uidPrefix = "test-uuid-",
+            ownerSelector = { idx -> if (idx % 2 == 0) myUser else partnerUser },
+            startDate = startDate,
+            timeZone = userTimeZone
+        ).forEach { scheduleEventService.deleteSchedule(it.id) }
+
+        // 조회 대상이 아닌, 다른 커플 데이터 생성
+        val (otherUser, otherPartner, otherCouple) = setUpCouple(
+            myPlatformId = "other-user-id",
+            partnerPlatformId = "other-partner-id"
+        )
+        createScheduleEvents(
+            numberOfEvents = 100,
+            uidPrefix = "other-test-uuid-",
+            ownerSelector = { idx -> if (idx % 2 == 0) otherUser else otherPartner },
+            startDate = startDate,
+            timeZone = userTimeZone
+        )
+
+        val request = GetCalendarQueryParameter(
+            startDate = startDate,
+            endDate = endDate,
+            userTimeZone = userTimeZone.id
+        )
+
+        // when
+        val result = scheduleEventService.getSchedule(
+            startDate = request.startDate,
+            endDate = request.endDate,
+            userTimeZone = request.userTimeZone
+        )
+
+        // then
+        assertThat(result).hasSize(numberOfEvents)
+
+        val resultScheduleIds = result.map { it.scheduleId }
+        val savedScheduleIds = scheduleEvents.map { it.id }
+        assertThat(resultScheduleIds).containsExactlyInAnyOrderElementsOf(savedScheduleIds)
     }
 }
 
