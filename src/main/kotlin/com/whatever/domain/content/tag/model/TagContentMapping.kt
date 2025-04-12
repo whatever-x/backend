@@ -15,11 +15,11 @@ class TagContentMapping(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L,
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id", referencedColumnName = "id", nullable = false)
     val tag: Tag,
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "content_id", referencedColumnName = "id", nullable = false)
     val content: Content,
 ) : BaseEntity() {
