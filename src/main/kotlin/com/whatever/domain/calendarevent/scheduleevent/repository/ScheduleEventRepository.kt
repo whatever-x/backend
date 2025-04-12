@@ -1,5 +1,6 @@
 package com.whatever.domain.calendarevent.scheduleevent.repository
 
+import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -22,5 +23,4 @@ interface ScheduleEventRepository : JpaRepository<ScheduleEvent, Long> {
     """)
     fun findByIdWithContent(scheduleId: Long): ScheduleEvent?
 
-    fun findByIdAndIsDeleted(id: Long, deleted: Boolean = false): ScheduleEvent?
 }

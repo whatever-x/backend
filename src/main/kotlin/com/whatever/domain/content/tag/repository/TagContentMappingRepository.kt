@@ -10,6 +10,9 @@ interface TagContentMappingRepository : JpaRepository<TagContentMapping, Long> {
         select tcm from TagContentMapping tcm
             join fetch tcm.tag t
         where tcm.content.id = :contentId
+            and tcm.isDeleted = false
     """)
-    fun findAllByContentId(contentId: Long): MutableList<TagContentMapping>
+    fun findAllByContentIdWithTag(contentId: Long): List<TagContentMapping>
+
+    fun findAllByContent_IdAndIsDeleted(contentId: Long, isDeleted: Boolean = false): List<TagContentMapping>
 }

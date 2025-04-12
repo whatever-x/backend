@@ -68,7 +68,12 @@ class ScheduleEventService(
         val scheduleEvent = scheduleEventRepository.findByIdWithContentAndUser(scheduleId)
             ?: throw ScheduleNotFoundException(errorCode = SCHEDULE_NOT_FOUND)
         validateUserAccess(scheduleEvent)
-        scheduleEvent.deleteEntity()
+        scheduleEvent.apply {
+            deleteEntity()
+            content.deleteEntity()
+            val tagMappings = tagContentMappingRepository.findAllByContent_IdAndIsDeleted(id)
+            tagMappings.forEach(TagContentMapping::deleteEntity)
+        }
     }
 
     private fun validateUpdateRequest(request: UpdateScheduleRequest) {
@@ -123,7 +128,7 @@ class ScheduleEventService(
     }
 
     private fun updateTags(content: Content, newTags: Set<Tag>) {
-        val existingMappings = tagContentMappingRepository.findAllByContentId(content.id)
+        val existingMappings = tagContentMappingRepository.findAllByContentIdWithTag(content.id)
         val currentTags = existingMappings.map { mapping -> mapping.tag }.toSet()
 
         val mappingToRemove = existingMappings.filter { mapping -> mapping.tag !in newTags }

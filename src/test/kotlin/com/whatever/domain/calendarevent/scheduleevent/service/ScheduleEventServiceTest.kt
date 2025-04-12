@@ -24,6 +24,7 @@ import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.endOfDay
+import com.whatever.util.findByIdAndNotDeleted
 import com.whatever.util.toZonId
 import com.whatever.util.withoutNano
 import org.assertj.core.api.Assertions.assertThat
@@ -502,7 +503,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         )
 
         // then
-        val updatedTagMappings = tagContentMappingRepository.findAllByContentId(oldContent.id)
+        val updatedTagMappings = tagContentMappingRepository.findAllByContentIdWithTag(oldContent.id)
         assertThat(updatedTagMappings).hasSize(newTags.size)
 
         val updatedTagLabels = updatedTagMappings.map { it.tag.label }
@@ -510,12 +511,16 @@ class ScheduleEventServiceTest @Autowired constructor(
         assertThat(updatedTagLabels).containsExactlyInAnyOrderElementsOf(expectedTagLabels)
     }
 
-    @DisplayName("내가 업로드한 스케줄을 삭제하면 조회할 수 없다.")
+    @DisplayName("내가 업로드한 스케줄을 삭제하면 연관된 데이터들이 모두 삭제된다.")
     @Test
     fun deleteSchedule() {
         // given
         val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
         val content = contentRepository.save(createContent(partnerUser, ContentType.SCHEDULE))
+        val tagCount = 20
+        val tagNamesSet = (1..tagCount).map { "testTag${it}" }.toSet()
+        val tags = createTags(tagNamesSet, tagRepository)
+        addTags(content, tags, tagContentMappingRepository)
         val schedule = scheduleEventRepository.save(
             ScheduleEvent(
                 uid = "test-uuid4-value",
@@ -535,11 +540,12 @@ class ScheduleEventServiceTest @Autowired constructor(
         scheduleEventService.deleteSchedule(schedule.id)
 
         // then
-        val deletedSchedule = scheduleEventRepository.findByIdAndIsDeleted(schedule.id, false)
+        val deletedSchedule = scheduleEventRepository.findByIdAndNotDeleted(schedule.id)
+        val deletedContent = contentRepository.findByIdAndNotDeleted(content.id)
+        val deletedTagContentMappings = tagContentMappingRepository.findAllByContent_IdAndIsDeleted(content.id)
         assertThat(deletedSchedule).isNull()
-
-        val deletedScheduleForCheck = scheduleEventRepository.findByIdAndIsDeleted(schedule.id, true)
-        assertThat(deletedScheduleForCheck!!.id).isEqualTo(schedule.id)
+        assertThat(deletedContent).isNull()
+        assertThat(deletedTagContentMappings).isEmpty()
     }
 }
 
