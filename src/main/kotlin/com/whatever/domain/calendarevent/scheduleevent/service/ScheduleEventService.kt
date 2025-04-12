@@ -135,7 +135,7 @@ class ScheduleEventService(
         val tagsToAdd = newTags - currentTags
 
         if (mappingToRemove.isNotEmpty()) {
-            tagContentMappingRepository.deleteAllInBatch(mappingToRemove)
+            mappingToRemove.forEach(TagContentMapping::deleteEntity)
         }
 
         if (tagsToAdd.isNotEmpty()) {
