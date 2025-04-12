@@ -4,6 +4,7 @@ import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.calendarevent.scheduleevent.model.converter.ZonedIdConverter
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
+import com.whatever.domain.content.model.ContentType
 import com.whatever.util.endOfDay
 import com.whatever.util.toZonId
 import com.whatever.util.withoutNano
@@ -89,5 +90,11 @@ class ScheduleEvent(
             endDateTime = endDateTime,
             endTimeZone = endTimeZone,
         )
+    }
+
+    fun convertToMemo(contentDetail: ContentDetail) {
+        content.updateContentDetail(contentDetail)
+        content.updateType(ContentType.MEMO)
+        this.deleteEntity()
     }
 }

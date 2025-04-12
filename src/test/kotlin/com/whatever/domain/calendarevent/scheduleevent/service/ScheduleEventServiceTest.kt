@@ -43,6 +43,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.ActiveProfiles
 import java.time.ZoneId
 import kotlin.test.Test
+import kotlin.test.assertNotNull
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -50,24 +51,15 @@ class ScheduleEventServiceTest @Autowired constructor(
     private val coupleRepository: CoupleRepository,
     private val userRepository: UserRepository,
     private val scheduleEventRepository: ScheduleEventRepository,
-    private val contentRepository: ContentRepository
+    private val contentRepository: ContentRepository,
+    private val tagContentMappingRepository: TagContentMappingRepository,
+    private val tagRepository: TagRepository,
+    private val scheduleEventService: ScheduleEventService,
 ) {
 
     companion object {
         val NOW = DateTimeUtil.localNow()
     }
-
-    @Autowired
-    private lateinit var conventionErrorViewResolver: DefaultErrorViewResolver
-
-    @Autowired
-    private lateinit var tagContentMappingRepository: TagContentMappingRepository
-
-    @Autowired
-    private lateinit var tagRepository: TagRepository
-
-    @Autowired
-    private lateinit var scheduleEventService: ScheduleEventService
 
     private lateinit var securityUtilMock: AutoCloseable
 
@@ -131,8 +123,8 @@ class ScheduleEventServiceTest @Autowired constructor(
             assertThat(content.contentDetail.title).isEqualTo(request.title)
             assertThat(content.contentDetail.description).isEqualTo(request.description)
             assertThat(content.contentDetail.isCompleted).isTrue()
-            assertThat(startTimeZone).isEqualTo(request.startTimeZone.toZonId())
-            assertThat(startDateTime).isEqualTo(request.startDateTime.withoutNano)
+            assertThat(startTimeZone).isEqualTo(request.startTimeZone!!.toZonId())
+            assertThat(startDateTime).isEqualTo(request.startDateTime!!.withoutNano)
             assertThat(endTimeZone).isEqualTo(request.endTimeZone!!.toZonId())
             assertThat(endDateTime).isEqualTo(request.endDateTime!!.withoutNano)
         }
@@ -182,8 +174,8 @@ class ScheduleEventServiceTest @Autowired constructor(
             assertThat(content.contentDetail.title).isEqualTo(request.title)
             assertThat(content.contentDetail.description).isEqualTo(request.description)
             assertThat(content.contentDetail.isCompleted).isTrue()
-            assertThat(startTimeZone).isEqualTo(request.startTimeZone.toZonId())
-            assertThat(startDateTime).isEqualTo(request.startDateTime.withoutNano)
+            assertThat(startTimeZone).isEqualTo(request.startTimeZone!!.toZonId())
+            assertThat(startDateTime).isEqualTo(request.startDateTime!!.withoutNano)
             assertThat(endTimeZone).isEqualTo(request.endTimeZone!!.toZonId())
             assertThat(endDateTime).isEqualTo(request.endDateTime!!.withoutNano)
         }
@@ -228,8 +220,8 @@ class ScheduleEventServiceTest @Autowired constructor(
         val updatedScheduleEvent = scheduleEventRepository.findByIdOrNull(oldSchedule.id)!!
         updatedScheduleEvent.run {
             assertThat(id).isEqualTo(oldSchedule.id)
-            assertThat(endDateTime).isEqualTo(request.startDateTime.endOfDay.withoutNano)
-            assertThat(endTimeZone).isEqualTo(request.startTimeZone.toZonId())
+            assertThat(endDateTime).isEqualTo(request.startDateTime!!.endOfDay.withoutNano)
+            assertThat(endTimeZone).isEqualTo(request.startTimeZone!!.toZonId())
         }
     }
 
@@ -509,6 +501,53 @@ class ScheduleEventServiceTest @Autowired constructor(
         val updatedTagLabels = updatedTagMappings.map { it.tag.label }
         val expectedTagLabels = newTags.map { it.label }
         assertThat(updatedTagLabels).containsExactlyInAnyOrderElementsOf(expectedTagLabels)
+    }
+
+    @DisplayName("나의 Schedule 업데이트 시 StartDateTime이 null이라면 Content는 Memo로 복구된다.")
+    @Test
+    fun updateSchedule_WithoutStartDateTime() {
+        // given
+        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
+        val oldSchedule = scheduleEventRepository.save(
+            ScheduleEvent(
+                uid = "test-uuid4-value",
+                startDateTime = NOW.minusDays(7),
+                startTimeZone = ZoneId.of("Asia/Seoul"),
+                endDateTime = NOW.minusDays(3),
+                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
+                content = oldContent,
+            )
+        )
+        val request = UpdateScheduleRequest(
+            selectedDate = DateTimeUtil.localNow().toLocalDate(),
+            title = "updated title",
+            description = "updated description",
+            isCompleted = true,
+            startDateTime = null,  // Content를 Memo로 복구하기 위해 nul로 설정
+            startTimeZone = null,
+            endDateTime = NOW,
+            endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+        )
+        securityUtilMock.apply {
+            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
+            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
+        }
+
+        // when
+        scheduleEventService.updateSchedule(
+            scheduleId = oldSchedule.id,
+            request = request
+        )
+
+        // then
+        val deletedSchedule = scheduleEventRepository.findByIdAndNotDeleted(oldSchedule.id)
+        assertThat(deletedSchedule).isNull()
+        val content = contentRepository.findByIdAndNotDeleted(oldContent.id)
+        assertNotNull(content)
+        assertThat(content.type).isEqualTo(ContentType.MEMO)
+        assertThat(content.contentDetail.title).isEqualTo(request.title)
+        assertThat(content.contentDetail.description).isEqualTo(request.description)
     }
 
     @DisplayName("내가 업로드한 스케줄을 삭제하면 연관된 데이터들이 모두 삭제된다.")

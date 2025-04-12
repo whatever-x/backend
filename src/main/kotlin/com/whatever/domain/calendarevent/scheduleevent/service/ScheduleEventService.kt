@@ -20,6 +20,7 @@ import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.global.security.util.SecurityUtil
+import com.whatever.util.DateTimeUtil
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -48,17 +49,23 @@ class ScheduleEventService(
                 description = description,
                 isCompleted = isCompleted
             )
-            scheduleEvent.updateEvent(
-                contentDetail = contentDetail,
-                startDateTime = startDateTime,
-                startTimeZone = startTimeZone,
-                endDateTime = endDateTime,
-                endTimeZone = endTimeZone,
-            )
 
             if (tagIds.isNotEmpty()) {
                 val newTags = tagRepository.findAllByIdInAndIsDeleted(tagIds).toSet()
                 updateTags(scheduleEvent.content, newTags)
+            }
+
+            when (startDateTime) {
+                null -> scheduleEvent.convertToMemo(
+                    contentDetail = contentDetail
+                )
+                else -> scheduleEvent.updateEvent(
+                    contentDetail = contentDetail,
+                    startDateTime = startDateTime,
+                    startTimeZone = startTimeZone ?: DateTimeUtil.UTC_ZONE_ID.id,
+                    endDateTime = endDateTime,
+                    endTimeZone = endTimeZone,
+                )
             }
         }
     }
@@ -90,7 +97,7 @@ class ScheduleEventService(
                     detailMessage = "Title and description must not be blank."
                 )
             }
-            if (endDateTime?.isBefore(startDateTime) == true) {
+            if (startDateTime != null && endDateTime?.isBefore(startDateTime) == true) {
                 throw ScheduleIllegalArgumentException(
                     errorCode = ILLEGAL_DURATION,
                     detailMessage = "EndDateTime must not be before startDateTime."

@@ -38,4 +38,8 @@ class Content(
         }
     }
 
+    fun updateType(type: ContentType) {
+        this.type = type
+    }
+
 }
