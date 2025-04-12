@@ -57,7 +57,7 @@ class ScheduleEventService(
             )
 
             if (tagIds.isNotEmpty()) {
-                val newTags = tagRepository.findAllById(tagIds).toSet()
+                val newTags = tagRepository.findAllByIdInAndIsDeleted(tagIds).toSet()
                 updateTags(scheduleEvent.content, newTags)
             }
         }
