@@ -8,13 +8,14 @@ import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExcepti
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_DURATION
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_PARTNER_STATUS
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.SCHEDULE_NOT_FOUND
-import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
-import com.whatever.domain.content.model.ContentDetail
+import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.UPDATE_CONFLICT
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalArgumentException
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalStateException
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleNotFoundException
 import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
+import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
 import com.whatever.domain.content.model.Content
+import com.whatever.domain.content.model.ContentDetail
 import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
@@ -23,13 +24,21 @@ import com.whatever.domain.couple.exception.CoupleException
 import com.whatever.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.UserStatus.SINGLE
+import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.toDateTime
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.dao.OptimisticLockingFailureException
+import org.springframework.retry.annotation.Backoff
+import org.springframework.retry.annotation.Recover
+import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.LocalDateTime
+
+private val logger = KotlinLogging.logger {  }
 
 @Service
 class ScheduleEventService(
@@ -79,6 +88,12 @@ class ScheduleEventService(
 
     }
 
+    @Retryable(
+        retryFor = [OptimisticLockingFailureException::class],
+        notRecoverable = [CaramelException::class],
+        maxAttempts = 1,
+        recover = "updateRecover",
+    )
     @Transactional
     fun updateSchedule(
         scheduleId: Long,
@@ -107,6 +122,7 @@ class ScheduleEventService(
                 null -> scheduleEvent.convertToMemo(
                     contentDetail = contentDetail
                 )
+
                 else -> scheduleEvent.updateEvent(
                     contentDetail = contentDetail,
                     startDateTime = startDateTime,
@@ -118,6 +134,13 @@ class ScheduleEventService(
         }
     }
 
+    @Retryable(
+        retryFor = [OptimisticLockingFailureException::class],
+        notRecoverable = [CaramelException::class],
+        backoff = Backoff(delay = 100, maxDelay = 300),
+        maxAttempts = 3,
+        recover = "deleteRecover",
+    )
     @Transactional
     fun deleteSchedule(scheduleId: Long) {
         val scheduleEvent = scheduleEventRepository.findByIdWithContentAndUser(scheduleId)
@@ -129,6 +152,24 @@ class ScheduleEventService(
             val tagMappings = tagContentMappingRepository.findAllByContent_IdAndIsDeleted(id)
             tagMappings.forEach(TagContentMapping::deleteEntity)
         }
+    }
+
+    @Recover
+    fun updateRecover(
+        e: OptimisticLockingFailureException,
+        scheduleId: Long,
+    ) {
+        logger.error { "schedule update fail. couple id: ${scheduleId}" }
+        throw ScheduleIllegalStateException(errorCode = UPDATE_CONFLICT)
+    }
+
+    @Recover
+    fun deleteRecover(
+        e: OptimisticLockingFailureException,
+        scheduleId: Long,
+    ) {
+        logger.error { "schedule delete fail. couple id: ${scheduleId}" }
+        throw ScheduleIllegalStateException(errorCode = UPDATE_CONFLICT)
     }
 
     private fun validateUpdateRequest(request: UpdateScheduleRequest) {

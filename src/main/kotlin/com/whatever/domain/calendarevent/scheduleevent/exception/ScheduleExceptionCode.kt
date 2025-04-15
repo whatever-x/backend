@@ -15,6 +15,7 @@ enum class ScheduleExceptionCode(
     SCHEDULE_NOT_FOUND("003", "스케줄을 찾을 수 없습니다."),
     ILLEGAL_PARTNER_STATUS("004", "파트너의 커플 정보를 확인할 수 없습니다."),
     COUPLE_NOT_MATCHED("005", "수정할 수 없는 일정입니다."),
+    UPDATE_CONFLICT("006", "상대방이 수정 중인 일정입니다. 잠시 후 재시도 해주세요.", HttpStatus.CONFLICT),
     ;
 
     override val code = "SCHEDULE$sequence"
