@@ -23,12 +23,13 @@ import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
+import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.RedisUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.viascom.nanoid.NanoId
-import org.springframework.dao.ConcurrencyFailureException
+import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Recover
@@ -55,9 +56,11 @@ class CoupleService(
     }
 
     @Retryable(
-        retryFor = [ConcurrencyFailureException::class],
+        retryFor = [OptimisticLockingFailureException::class],
+        notRecoverable = [CaramelException::class],
         backoff = Backoff(delay = 100, maxDelay = 300),
-        maxAttempts = 3
+        maxAttempts = 3,
+        recover = "updateRecover",
     )
     @Transactional
     fun updateSharedMessage(coupleId: Long, request: UpdateCoupleSharedMessageRequest): CoupleBasicResponse {
@@ -74,10 +77,11 @@ class CoupleService(
     }
 
     @Retryable(
-        retryFor = [ConcurrencyFailureException::class],
+        retryFor = [OptimisticLockingFailureException::class],
+        notRecoverable = [CaramelException::class],
         backoff = Backoff(delay = 100, maxDelay = 300),
         maxAttempts = 3,
-        recover = "updateRecover"
+        recover = "updateRecover",
     )
     @Transactional
     fun updateStartDate(coupleId: Long, request: UpdateCoupleStartDateRequest): CoupleBasicResponse {
@@ -95,7 +99,7 @@ class CoupleService(
     }
 
     @Recover
-    fun updateRecover(e: ConcurrencyFailureException, coupleId: Long): CoupleBasicResponse {
+    fun updateRecover(e: OptimisticLockingFailureException, coupleId: Long): CoupleBasicResponse {
         logger.error { "couple info update fail. couple id: ${coupleId}" }
         throw CoupleIllegalStateException(errorCode = UPDATE_FAIL)
     }
