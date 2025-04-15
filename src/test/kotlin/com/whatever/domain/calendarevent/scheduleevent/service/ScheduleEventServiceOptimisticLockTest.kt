@@ -38,16 +38,19 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.reset
+import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.test.Test
 import kotlin.test.assertNotNull
@@ -183,9 +186,26 @@ class ScheduleEventServiceOptimisticLockTest @Autowired constructor(
         }
     }
 
-    @DisplayName("Schedule 업데이트 시 request 값들이 정상적으로 반영된다.")
+    @DisplayName("Schedule 삭제 시 충돌이 발생해도 최대 3회까지 재시도 후 반영된다.")
     @Test
-    fun updateSchedule_WithOptimisticLockFail() {
+    fun deleteSchedule_WithOptimisticLock() {
+        fun makeFuture(
+            currentUser: User,
+            currentCouple: Couple,
+            serviceMethod: () -> Unit,
+            executor: ExecutorService,
+        ): CompletableFuture<Unit> {
+            return CompletableFuture.supplyAsync({
+                mockStatic(SecurityUtil::class.java).use {
+                    it.apply {
+                        whenever(SecurityUtil.getCurrentUserId()).thenReturn(currentUser.id)
+                        whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(currentCouple.id)
+                    }
+                    serviceMethod.invoke()
+                }
+            }, executor)
+        }
+
         // given
         val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
         val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
@@ -214,48 +234,63 @@ class ScheduleEventServiceOptimisticLockTest @Autowired constructor(
         val executor = Executors.newFixedThreadPool(threadCount)
 
         val futures = mutableListOf<CompletableFuture<Unit>>()
-        for (i in 1..threadCount) {
-            val future = CompletableFuture.supplyAsync({
-                mockStatic(SecurityUtil::class.java).use {
-                    it.apply {
-                        whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-                        whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-                    }
-                    scheduleEventService.updateSchedule(
-                        scheduleId = oldSchedule.id,
-                        request = request
-                    )
-                }
-            }, executor)
-            futures.add(future)
-        }
+        futures.add(makeFuture(
+            currentUser = myUser,
+            currentCouple = couple,
+            serviceMethod = { scheduleEventService.updateSchedule(oldSchedule.id, request) },
+            executor = executor
+        ))
+        futures.add(makeFuture(
+            currentUser = myUser,
+            currentCouple = couple,
+            serviceMethod = { scheduleEventService.deleteSchedule(oldSchedule.id) },
+            executor = executor
+        ))
 
         // when
-        val completionException = assertThrows<CompletionException> {
-            futures.forEach { it.join() }
-        }
-        val resultException = completionException.cause
+        futures.forEach { it.join() }
 
         // then
+        val deletedSchedule = scheduleEventRepository.findByIdAndNotDeleted(oldSchedule.id)
+        assertThat(deletedSchedule).isNull()
+    }
 
-        // 한 요청은 반려된다.
+    @DisplayName("Schedule 삭제 시 3번 초과로 시도하면 예외를 반환한다.")
+    @Test
+    fun deleteSchedule_WithOptimisticLockFail() {
+        // given
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
+        val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
+        val oldSchedule = scheduleEventRepository.save(
+            ScheduleEvent(
+                uid = "test-uuid4-value",
+                startDateTime = NOW.minusDays(7),
+                startTimeZone = ZoneId.of("Asia/Seoul"),
+                endDateTime = NOW.minusDays(3),
+                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
+                content = oldContent,
+            )
+        )
+        securityUtilMock.apply {
+            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
+            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
+        }
+        whenever(scheduleEventRepository.findByIdWithContentAndUser(any()))
+            .thenThrow(ObjectOptimisticLockingFailureException::class.java)
+
+        // when
+        val resultException = assertThrows<ScheduleIllegalStateException> {
+            scheduleEventService.deleteSchedule(oldSchedule.id)
+        }
+
+        // then
         assertThat(resultException).run {
             isInstanceOf(ScheduleIllegalStateException::class.java)
             hasMessage(ScheduleExceptionCode.UPDATE_CONFLICT.message)
         }
 
-        // 한 요청은 성공한다.
-        val updatedScheduleEvent = scheduleEventRepository.findByIdWithContent(oldSchedule.id)!!
-        updatedScheduleEvent.run {
-            assertThat(id).isEqualTo(oldSchedule.id)
-            assertThat(content.contentDetail.title).isEqualTo(request.title)
-            assertThat(content.contentDetail.description).isEqualTo(request.description)
-            assertThat(content.contentDetail.isCompleted).isTrue()
-            assertThat(startTimeZone).isEqualTo(request.startTimeZone!!.toZonId())
-            assertThat(startDateTime).isEqualTo(request.startDateTime!!.withoutNano)
-            assertThat(endTimeZone).isEqualTo(request.endTimeZone!!.toZonId())
-            assertThat(endDateTime).isEqualTo(request.endDateTime!!.withoutNano)
-        }
+        val unDeletedSchedule = scheduleEventRepository.findByIdAndNotDeleted(oldSchedule.id)
+        assertThat(unDeletedSchedule).isNotNull
     }
 
 }

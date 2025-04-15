@@ -159,7 +159,7 @@ class ScheduleEventService(
         e: OptimisticLockingFailureException,
         scheduleId: Long,
     ) {
-        logger.error { "schedule update fail. couple id: ${scheduleId}" }
+        logger.error { "update schedule fail. schedule id: ${scheduleId}" }
         throw ScheduleIllegalStateException(errorCode = UPDATE_CONFLICT)
     }
 
@@ -168,7 +168,7 @@ class ScheduleEventService(
         e: OptimisticLockingFailureException,
         scheduleId: Long,
     ) {
-        logger.error { "schedule delete fail. couple id: ${scheduleId}" }
+        logger.error { "delete schedule fail. schedule id: ${scheduleId}" }
         throw ScheduleIllegalStateException(errorCode = UPDATE_CONFLICT)
     }
 
