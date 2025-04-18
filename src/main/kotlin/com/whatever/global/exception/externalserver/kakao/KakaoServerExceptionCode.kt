@@ -1,6 +1,7 @@
 package com.whatever.global.exception.externalserver.kakao
 
 import com.whatever.global.exception.common.CaramelExceptionCode
+import com.whatever.global.exception.externalserver.ExternalServerExceptionCode
 import org.springframework.http.HttpStatus
 
 enum class KakaoServerExceptionCode(
@@ -8,7 +9,7 @@ enum class KakaoServerExceptionCode(
     val kakaoErrorCode: String,
     override val message: String,
     override val status: HttpStatus = HttpStatus.BAD_REQUEST,
-) : CaramelExceptionCode {
+) : ExternalServerExceptionCode {
 
     // 알 수 없는 오류 (기본값)
     UNKNOWN("000", 0.toString(), "알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."),

@@ -2,7 +2,7 @@ package com.whatever.global.exception.externalserver
 
 import com.whatever.global.exception.common.CaramelException
 
-open class ExternalServerException(
+abstract class ExternalServerException(
     errorCode: ExternalServerExceptionCode,
-    detailMessage: String? = null
+    detailMessage: String? = null,
 ) : CaramelException(errorCode, detailMessage)
