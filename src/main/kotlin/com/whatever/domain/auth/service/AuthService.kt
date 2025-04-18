@@ -101,7 +101,7 @@ class AuthService(
 }
 
 private fun CacheManager.evictOidcPublicKeyCache(loginPlatform: LoginPlatform) {
-    getCache("oidc-public-key")?.let {
+    getCache("oidc-public-key")?.also {
         it.evictIfPresent(loginPlatform.name)
         logger.info { "${loginPlatform.name} OIDC Public Key cache eviction completed." }
     } ?: logger.debug { "Cache 'oidc-public-key' not available. Skipping eviction for ${loginPlatform.name}." }
