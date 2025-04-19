@@ -192,4 +192,43 @@ class UserControllerTest : ControllerTestSupport() {
                 jsonPath("$.error.code") { value(GlobalExceptionCode.ARGS_VALIDATION_FAILED.code) }
             }
     }
+
+    @DisplayName("프로필 수정 시 nickname이 null이고 birthday만 있을 경우 생일만 업데이트된다.")
+    @Test
+    fun updateProfile_OnlyBirthday() {
+        // given
+        val request = PutUserProfileRequest(
+            nickname = null,
+            birthday = DateTimeUtil.localNow().toLocalDate().plusDays(2),
+        )
+
+        // when // then
+        mockMvc.put("/v1/user/profile") {
+            content = objectMapper.writeValueAsString(request)
+            contentType = MediaType.APPLICATION_JSON
+        }
+            .andDo { print() }
+            .andExpect {
+                status { isOk() }
+            }
+    }
+
+    @DisplayName("프로필 수정 시 birthday가 null이고 nickname만 있을 경우 닉네임만 업데이트된다.")
+    @Test
+    fun updateProfile_OnlyNickname() {
+        val request = PutUserProfileRequest(
+            nickname = "새닉네임",
+            birthday = null,
+        )
+
+        // when // then
+        mockMvc.put("/v1/user/profile") {
+            content = objectMapper.writeValueAsString(request)
+            contentType = MediaType.APPLICATION_JSON
+        }
+            .andDo { print() }
+            .andExpect {
+                status { isOk() }
+            }
+    }
 }
