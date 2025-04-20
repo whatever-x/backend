@@ -3,15 +3,18 @@ package com.whatever.domain.user.controller
 import com.whatever.domain.ControllerTestSupport
 import com.whatever.domain.user.dto.PostUserProfileRequest
 import com.whatever.domain.user.dto.PutUserProfileRequest
+import com.whatever.domain.user.dto.PutUserProfileResponse
 import com.whatever.domain.user.model.UserGender
 import com.whatever.global.exception.GlobalExceptionCode
 import com.whatever.util.DateTimeUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.given
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
-
+import java.time.LocalDate
 
 class UserControllerTest : ControllerTestSupport() {
 
@@ -230,5 +233,40 @@ class UserControllerTest : ControllerTestSupport() {
             .andExpect {
                 status { isOk() }
             }
+    }
+
+
+    @DisplayName("프로필 수정 시 nickname이 비어있을 경우 변경되지 않는다.")
+    @Test
+    fun updateProfile_WithBlankNickname_NoChange() {
+        @Test
+        fun updateProfile_WithBlankNickname_NoChange() {
+            val originalNickname = "변경전닉네임"
+            val originalBirthday = LocalDate.of(2025, 4, 20)
+            given(userService.updateProfile(any()))
+                .willReturn(
+                    PutUserProfileResponse(
+                        id = 1,
+                        nickname = originalNickname,
+                        birthday = originalBirthday
+                    )
+                )
+
+            val updateRequest = PutUserProfileRequest(
+                nickname = "",
+                birthday = null
+            )
+
+            // when // then
+            mockMvc.put("/v1/user/profile") {
+                content = objectMapper.writeValueAsString(updateRequest)
+                contentType = MediaType.APPLICATION_JSON
+            }
+                .andDo { print() }
+                .andExpect {
+                    status { isOk() }
+                    jsonPath("$.data.nickname") { value(originalNickname) }
+                }
+        }
     }
 }
