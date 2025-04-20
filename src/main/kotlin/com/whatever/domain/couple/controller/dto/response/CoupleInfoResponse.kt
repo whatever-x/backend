@@ -2,6 +2,7 @@ package com.whatever.domain.couple.controller.dto.response
 
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.user.model.User
+import com.whatever.domain.user.model.UserGender
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
@@ -50,14 +51,16 @@ data class CoupleBasicResponse(
 data class CoupleUserInfoDto(
     val id: Long,
     val nickname: String,
-    val birthDate: LocalDate
+    val birthDate: LocalDate,
+    val gender: UserGender,
 ) {
     companion object {
         fun from(user: User): CoupleUserInfoDto {
             return CoupleUserInfoDto(
                 id = user.id,
                 nickname = user.nickname!!,
-                birthDate = user.birthDate!!
+                birthDate = user.birthDate!!,
+                gender = user.gender!!,
             )
         }
     }

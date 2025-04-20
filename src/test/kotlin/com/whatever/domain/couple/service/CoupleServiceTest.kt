@@ -9,6 +9,7 @@ import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
+import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
@@ -165,7 +166,9 @@ class CoupleServiceTest @Autowired constructor(
         // then
         assertThat(result.coupleId).isEqualTo(savedCouple.id)
         assertThat(result.myInfo.id).isEqualTo(myUser.id)
+        assertThat(result.myInfo.gender).isEqualTo(myUser.gender!!)
         assertThat(result.partnerInfo.id).isEqualTo(partnerUser.id)
+        assertThat(result.partnerInfo.gender).isEqualTo(partnerUser.gender!!)
     }
 
     @DisplayName("Couple의 member가 아닌 유저가 정보를 조회할 경우 예외를 반환한다.")
@@ -347,7 +350,8 @@ internal fun makeCouple(userRepository: UserRepository, coupleRepository: Couple
             birthDate = DateTimeUtil.localNow().toLocalDate(),
             platform = LoginPlatform.KAKAO,
             platformUserId = "my-user-id",
-            userStatus = UserStatus.SINGLE
+            userStatus = UserStatus.SINGLE,
+            gender = UserGender.MALE,
         )
     )
     val partnerUser = userRepository.save(
@@ -356,7 +360,8 @@ internal fun makeCouple(userRepository: UserRepository, coupleRepository: Couple
             birthDate = DateTimeUtil.localNow().toLocalDate(),
             platform = LoginPlatform.KAKAO,
             platformUserId = "partner-user-id",
-            userStatus = UserStatus.SINGLE
+            userStatus = UserStatus.SINGLE,
+            gender = UserGender.FEMALE,
         )
     )
 

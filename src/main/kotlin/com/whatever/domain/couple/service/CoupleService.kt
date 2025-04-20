@@ -6,7 +6,6 @@ import com.whatever.domain.couple.controller.dto.request.UpdateCoupleStartDateRe
 import com.whatever.domain.couple.controller.dto.response.CoupleBasicResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleDetailResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleInvitationCodeResponse
-import com.whatever.domain.couple.controller.dto.response.CoupleUserInfoDto
 import com.whatever.domain.couple.exception.CoupleAccessDeniedException
 import com.whatever.domain.couple.exception.CoupleException
 import com.whatever.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
@@ -123,42 +122,32 @@ class CoupleService(
     @Transactional
     fun createCouple(request: CreateCoupleRequest): CoupleDetailResponse {
         val invitationCode = request.invitationCode
-        val hostUserId = redisUtil.getCoupleInvitationUser(invitationCode)
+        val creatorUserId = redisUtil.getCoupleInvitationUser(invitationCode)
             ?: throw CoupleException(errorCode = INVITATION_CODE_EXPIRED)
-        val partnerUserId = SecurityUtil.getCurrentUserId()
+        val joinerUserId = SecurityUtil.getCurrentUserId()
 
-        if (hostUserId == partnerUserId) {
+        if (creatorUserId == joinerUserId) {
             throw CoupleException(errorCode = INVITATION_CODE_SELF_GENERATED)
         }
 
-        val users = userRepository.findUserByIdIn(setOf(hostUserId, partnerUserId))
-        val hostUser = users.find { it.id == hostUserId }
+        val users = userRepository.findUserByIdIn(setOf(creatorUserId, joinerUserId))
+        val creatorUser = users.find { it.id == creatorUserId }
             ?: throw CoupleException(errorCode = MEMBER_NOT_FOUND, detailMessage = "host user not found")
-        validateSingleUser(hostUser)
-        val partnerUser = users.find { it.id == partnerUserId }
+        validateSingleUser(creatorUser)
+        val joinerUser = users.find { it.id == joinerUserId }
             ?: throw CoupleException(errorCode = MEMBER_NOT_FOUND, detailMessage = "partner user not found")
-        validateSingleUser(partnerUser)
+        validateSingleUser(joinerUser)
 
         val savedCouple = coupleRepository.save(Couple())
-        hostUser.setCouple(savedCouple)
-        partnerUser.setCouple(savedCouple)
+        creatorUser.setCouple(savedCouple)
+        joinerUser.setCouple(savedCouple)
 
-        redisUtil.deleteCoupleInvitationCode(invitationCode, hostUserId)
+        redisUtil.deleteCoupleInvitationCode(invitationCode, creatorUserId)
 
-        return CoupleDetailResponse(
-            coupleId = savedCouple.id,
-            startDate = savedCouple.startDate,
-            sharedMessage = savedCouple.sharedMessage,
-            myInfo = CoupleUserInfoDto(
-                id = partnerUser.id,
-                nickname = partnerUser.nickname!!,
-                birthDate = partnerUser.birthDate!!
-            ),
-            partnerInfo = CoupleUserInfoDto(
-                id = hostUser.id,
-                nickname = hostUser.nickname!!,
-                birthDate = hostUser.birthDate!!
-            ),
+        return CoupleDetailResponse.from(
+            couple = savedCouple,
+            myUser = joinerUser,
+            partnerUser = creatorUser
         )
     }
 
