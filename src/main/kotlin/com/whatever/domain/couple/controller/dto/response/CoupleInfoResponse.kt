@@ -1,7 +1,9 @@
 package com.whatever.domain.couple.controller.dto.response
 
 import com.whatever.domain.couple.model.Couple
+import com.whatever.domain.couple.model.CoupleStatus
 import com.whatever.domain.user.model.User
+import com.whatever.domain.user.model.UserGender
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
@@ -11,6 +13,7 @@ data class CoupleDetailResponse(
     @Schema(description = "커플 시작일")
     val startDate: LocalDate?,
     val sharedMessage: String?,
+    val status: CoupleStatus,
     @Schema(description = "내 정보")
     val myInfo: CoupleUserInfoDto,
     @Schema(description = "상대방 정보")
@@ -22,6 +25,7 @@ data class CoupleDetailResponse(
                 coupleId = couple.id,
                 startDate = couple.startDate,
                 sharedMessage = couple.sharedMessage,
+                status = couple.status,
                 myInfo = CoupleUserInfoDto.from(myUser),
                 partnerInfo = CoupleUserInfoDto.from(partnerUser),
             )
@@ -34,6 +38,7 @@ data class CoupleBasicResponse(
     val coupleId: Long,
     val startDate: LocalDate?,
     val sharedMessage: String?,
+    val status: CoupleStatus,
 ) {
     companion object {
         fun from(couple: Couple): CoupleBasicResponse {
@@ -41,6 +46,7 @@ data class CoupleBasicResponse(
                 coupleId = couple.id,
                 startDate = couple.startDate,
                 sharedMessage = couple.sharedMessage,
+                status = couple.status,
             )
         }
     }
@@ -50,14 +56,16 @@ data class CoupleBasicResponse(
 data class CoupleUserInfoDto(
     val id: Long,
     val nickname: String,
-    val birthDate: LocalDate
+    val birthDate: LocalDate,
+    val gender: UserGender,
 ) {
     companion object {
         fun from(user: User): CoupleUserInfoDto {
             return CoupleUserInfoDto(
                 id = user.id,
                 nickname = user.nickname!!,
-                birthDate = user.birthDate!!
+                birthDate = user.birthDate!!,
+                gender = user.gender!!,
             )
         }
     }

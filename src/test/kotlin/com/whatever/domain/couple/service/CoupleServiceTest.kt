@@ -5,15 +5,20 @@ import com.whatever.domain.couple.controller.dto.request.UpdateCoupleSharedMessa
 import com.whatever.domain.couple.controller.dto.request.UpdateCoupleStartDateRequest
 import com.whatever.domain.couple.exception.CoupleAccessDeniedException
 import com.whatever.domain.couple.exception.CoupleException
+import com.whatever.domain.couple.exception.CoupleExceptionCode
+import com.whatever.domain.couple.exception.CoupleIllegalArgumentException
 import com.whatever.domain.couple.model.Couple
+import com.whatever.domain.couple.model.CoupleStatus
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
+import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.RedisUtil
+import com.whatever.util.toZonId
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.data.TemporalUnitWithinOffset
@@ -21,6 +26,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.reset
 import org.mockito.Mockito.`when`
@@ -165,7 +171,9 @@ class CoupleServiceTest @Autowired constructor(
         // then
         assertThat(result.coupleId).isEqualTo(savedCouple.id)
         assertThat(result.myInfo.id).isEqualTo(myUser.id)
+        assertThat(result.myInfo.gender).isEqualTo(myUser.gender!!)
         assertThat(result.partnerInfo.id).isEqualTo(partnerUser.id)
+        assertThat(result.partnerInfo.gender).isEqualTo(partnerUser.gender!!)
     }
 
     @DisplayName("Couple의 member가 아닌 유저가 정보를 조회할 경우 예외를 반환한다.")
@@ -205,7 +213,8 @@ class CoupleServiceTest @Autowired constructor(
                 birthDate = DateTimeUtil.localNow().toLocalDate(),
                 platform = LoginPlatform.KAKAO,
                 platformUserId = "my-user-id",
-                userStatus = UserStatus.SINGLE
+                userStatus = UserStatus.SINGLE,
+                gender = UserGender.MALE,
             )
         )
         val hostUser = userRepository.save(
@@ -214,7 +223,8 @@ class CoupleServiceTest @Autowired constructor(
                 birthDate = DateTimeUtil.localNow().toLocalDate(),
                 platform = LoginPlatform.KAKAO,
                 platformUserId = "host-user-id",
-                userStatus = UserStatus.SINGLE
+                userStatus = UserStatus.SINGLE,
+                gender = UserGender.FEMALE,
             )
         )
         val request = CreateCoupleRequest("test-invitation-code")
@@ -225,12 +235,11 @@ class CoupleServiceTest @Autowired constructor(
         }
         whenever(redisUtil.getCoupleInvitationUser(request.invitationCode)).doReturn(hostUser.id)
 
-
         // when
         val result = coupleService.createCouple(request)
 
-
         // then
+        assertThat(result.status).isEqualTo(CoupleStatus.ACTIVE)
         assertThat(result.myInfo.id).isEqualTo(myUser.id)
         assertThat(result.partnerInfo.id).isEqualTo(hostUser.id)
     }
@@ -273,13 +282,42 @@ class CoupleServiceTest @Autowired constructor(
             whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
         }
         val request = UpdateCoupleStartDateRequest(DateTimeUtil.localNow().toLocalDate())
-
+        val timeZone = "Asia/Seoul"
         // when
-        val result = coupleService.updateStartDate(savedCouple.id, request)
+        val result = coupleService.updateStartDate(savedCouple.id, request, timeZone)
 
         // then
         assertThat(result.coupleId).isEqualTo(savedCouple.id)
         assertThat(result.startDate).isEqualTo(request.startDate)
+    }
+
+    @DisplayName("커플 시작일을 업데이트시 미래가 주어진다면 예외가 반환된다.")
+    @Test
+    fun updateStartDate_WithFutureDate() {
+        // given
+        val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
+        securityUtilMock.apply {
+            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
+            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+        }
+
+        // 미래 시간으로 설정
+        val zonedStartDateTime = DateTimeUtil.zonedNow("Asia/Seoul".toZonId()).plusDays(1)
+        val request = UpdateCoupleStartDateRequest(
+            startDate = zonedStartDateTime.toLocalDate()
+        )
+
+        // when, then
+        val exception = assertThrows<CoupleIllegalArgumentException> {
+            coupleService.updateStartDate(
+                coupleId = savedCouple.id,
+                request = request,
+                timeZone = zonedStartDateTime.zone.id
+            )
+        }
+
+        // then
+        assertThat(exception).hasMessage(CoupleExceptionCode.ILLEGAL_START_DATE.message)
     }
 
     @DisplayName("커플 공유메시지를 업데이트시 변경된 응답이 반환된다.")
@@ -347,7 +385,8 @@ internal fun makeCouple(userRepository: UserRepository, coupleRepository: Couple
             birthDate = DateTimeUtil.localNow().toLocalDate(),
             platform = LoginPlatform.KAKAO,
             platformUserId = "my-user-id",
-            userStatus = UserStatus.SINGLE
+            userStatus = UserStatus.SINGLE,
+            gender = UserGender.MALE,
         )
     )
     val partnerUser = userRepository.save(
@@ -356,7 +395,8 @@ internal fun makeCouple(userRepository: UserRepository, coupleRepository: Couple
             birthDate = DateTimeUtil.localNow().toLocalDate(),
             platform = LoginPlatform.KAKAO,
             platformUserId = "partner-user-id",
-            userStatus = UserStatus.SINGLE
+            userStatus = UserStatus.SINGLE,
+            gender = UserGender.FEMALE,
         )
     )
 

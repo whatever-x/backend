@@ -6,7 +6,6 @@ import com.whatever.domain.couple.controller.dto.request.UpdateCoupleStartDateRe
 import com.whatever.domain.couple.controller.dto.response.CoupleBasicResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleDetailResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleInvitationCodeResponse
-import com.whatever.domain.couple.controller.dto.response.CoupleUserInfoDto
 import com.whatever.domain.couple.exception.CoupleAccessDeniedException
 import com.whatever.domain.couple.exception.CoupleException
 import com.whatever.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
@@ -23,17 +22,18 @@ import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
+import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.RedisUtil
+import com.whatever.util.toZonId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.viascom.nanoid.NanoId
-import org.springframework.dao.ConcurrencyFailureException
+import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Recover
 import org.springframework.retry.annotation.Retryable
-import org.springframework.retry.support.RetrySynchronizationManager
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -55,9 +55,11 @@ class CoupleService(
     }
 
     @Retryable(
-        retryFor = [ConcurrencyFailureException::class],
+        retryFor = [OptimisticLockingFailureException::class],
         backoff = Backoff(delay = 100, maxDelay = 300),
-        maxAttempts = 3
+        maxAttempts = 3,
+        recover = "updateSharedMessageRecover",
+        notRecoverable = [CaramelException::class],
     )
     @Transactional
     fun updateSharedMessage(coupleId: Long, request: UpdateCoupleSharedMessageRequest): CoupleBasicResponse {
@@ -74,29 +76,46 @@ class CoupleService(
     }
 
     @Retryable(
-        retryFor = [ConcurrencyFailureException::class],
+        retryFor = [OptimisticLockingFailureException::class],
         backoff = Backoff(delay = 100, maxDelay = 300),
         maxAttempts = 3,
-        recover = "updateRecover"
+        recover = "updateStartDateRecover",
+        notRecoverable = [CaramelException::class],
     )
     @Transactional
-    fun updateStartDate(coupleId: Long, request: UpdateCoupleStartDateRequest): CoupleBasicResponse {
+    fun updateStartDate(
+        coupleId: Long,
+        request: UpdateCoupleStartDateRequest,
+        timeZone: String,
+    ): CoupleBasicResponse {
         val currentUserId = SecurityUtil.getCurrentUserId()
         val couple = coupleRepository.findCoupleById(coupleId)
         couple.members.find { it.id == currentUserId }
             ?: throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
 
-        logger.info { "Retry Count:  ${RetrySynchronizationManager.getContext()?.retryCount}, Request: ${request}" }
         val updatedCouple = couple.apply {
-            updateStartDate(request.startDate)
+            updateStartDate(
+                newDate = request.startDate,
+                userZoneId = timeZone.toZonId()
+            )
         }
 
         return CoupleBasicResponse.from(updatedCouple)
     }
 
     @Recover
-    fun updateRecover(e: ConcurrencyFailureException, coupleId: Long): CoupleBasicResponse {
-        logger.error { "couple info update fail. couple id: ${coupleId}" }
+    fun updateSharedMessageRecover(e: OptimisticLockingFailureException, coupleId: Long): CoupleBasicResponse {
+        logger.error { "couple shared message update fail. couple id: ${coupleId}" }
+        throw CoupleIllegalStateException(errorCode = UPDATE_FAIL)
+    }
+
+    @Recover
+    fun updateStartDateRecover(
+        e: OptimisticLockingFailureException,
+        coupleId: Long,
+        request: UpdateCoupleStartDateRequest,
+    ): CoupleBasicResponse {
+        logger.error { "couple start date update fail. couple id: ${coupleId}" }
         throw CoupleIllegalStateException(errorCode = UPDATE_FAIL)
     }
 
@@ -123,42 +142,32 @@ class CoupleService(
     @Transactional
     fun createCouple(request: CreateCoupleRequest): CoupleDetailResponse {
         val invitationCode = request.invitationCode
-        val hostUserId = redisUtil.getCoupleInvitationUser(invitationCode)
+        val creatorUserId = redisUtil.getCoupleInvitationUser(invitationCode)
             ?: throw CoupleException(errorCode = INVITATION_CODE_EXPIRED)
-        val partnerUserId = SecurityUtil.getCurrentUserId()
+        val joinerUserId = SecurityUtil.getCurrentUserId()
 
-        if (hostUserId == partnerUserId) {
+        if (creatorUserId == joinerUserId) {
             throw CoupleException(errorCode = INVITATION_CODE_SELF_GENERATED)
         }
 
-        val users = userRepository.findUserByIdIn(setOf(hostUserId, partnerUserId))
-        val hostUser = users.find { it.id == hostUserId }
+        val users = userRepository.findUserByIdIn(setOf(creatorUserId, joinerUserId))
+        val creatorUser = users.find { it.id == creatorUserId }
             ?: throw CoupleException(errorCode = MEMBER_NOT_FOUND, detailMessage = "host user not found")
-        validateSingleUser(hostUser)
-        val partnerUser = users.find { it.id == partnerUserId }
+        validateSingleUser(creatorUser)
+        val joinerUser = users.find { it.id == joinerUserId }
             ?: throw CoupleException(errorCode = MEMBER_NOT_FOUND, detailMessage = "partner user not found")
-        validateSingleUser(partnerUser)
+        validateSingleUser(joinerUser)
 
         val savedCouple = coupleRepository.save(Couple())
-        hostUser.setCouple(savedCouple)
-        partnerUser.setCouple(savedCouple)
+        creatorUser.setCouple(savedCouple)
+        joinerUser.setCouple(savedCouple)
 
-        redisUtil.deleteCoupleInvitationCode(invitationCode, hostUserId)
+        redisUtil.deleteCoupleInvitationCode(invitationCode, creatorUserId)
 
-        return CoupleDetailResponse(
-            coupleId = savedCouple.id,
-            startDate = savedCouple.startDate,
-            sharedMessage = savedCouple.sharedMessage,
-            myInfo = CoupleUserInfoDto(
-                id = partnerUser.id,
-                nickname = partnerUser.nickname!!,
-                birthDate = partnerUser.birthDate!!
-            ),
-            partnerInfo = CoupleUserInfoDto(
-                id = hostUser.id,
-                nickname = hostUser.nickname!!,
-                birthDate = hostUser.birthDate!!
-            ),
+        return CoupleDetailResponse.from(
+            couple = savedCouple,
+            myUser = joinerUser,
+            partnerUser = creatorUser
         )
     }
 
