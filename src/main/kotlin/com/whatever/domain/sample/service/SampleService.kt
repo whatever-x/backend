@@ -56,6 +56,7 @@ class SampleService(
         )
     }
 
+    @Transactional
     fun createNewDummyAccount(testEmail: String?): String {
         val dummyUser = User(
             platform = LoginPlatform.TEST,
@@ -66,6 +67,7 @@ class SampleService(
         return dummyUser.email!!
     }
 
+    @Transactional
     fun createSingleDummyAccount(
         testEmail: String?,
         testNickname: String?,
