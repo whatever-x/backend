@@ -5,7 +5,10 @@ import com.whatever.global.jwt.JwtProvider
 import com.whatever.global.jwt.exception.CaramelJwtException
 import com.whatever.global.jwt.exception.JwtExceptionCode
 import com.whatever.global.jwt.exception.JwtMissingClaimException
-import io.jsonwebtoken.*
+import io.jsonwebtoken.Claims
+import io.jsonwebtoken.Jws
+import io.jsonwebtoken.JwtParser
+import io.jsonwebtoken.Jwts
 import org.springframework.stereotype.Component
 
 @Component
@@ -84,18 +87,17 @@ class JwtHelper(
 
     fun getUserId(token: String): Long {
         return jwtProvider.getUnsecuredPayload(token)["userId"]?.toLong()
-            ?: throw IllegalArgumentException("userid require not null")
+            ?: throw JwtMissingClaimException(
+                errorCode = JwtExceptionCode.MISSING_CLAIM,
+                detailMessage = "Missing 'userId' claim. Please check your token."
+            )
     }
 
     private fun getJwtParser(): JwtParser {
-        try {
-            return Jwts.parser()
-                .requireIssuer(jwtProperties.issuer)
-                .verifyWith(jwtProperties.secretKey)
-                .build()
-        } catch (e: InvalidClaimException) {  // TODO(준용) CustomException으로 변경
-            throw IllegalArgumentException("JWT의 필수 클레임이 누락되었거나 올바르지 않습니다.")
-        }
+        return Jwts.parser()
+            .requireIssuer(jwtProperties.issuer)
+            .verifyWith(jwtProperties.secretKey)
+            .build()
     }
 
 }
