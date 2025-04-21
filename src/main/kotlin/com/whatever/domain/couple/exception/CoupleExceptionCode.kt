@@ -18,6 +18,7 @@ enum class CoupleExceptionCode(
     NOT_A_MEMBER("007", "커플에 속한 유저가 아닙니다."),
     ILLEGAL_MEMBER_SIZE("008", "커플에는 반드시 두 명의 유저가 있어야 합니다."),
     UPDATE_FAIL("009", "상대방이 수정 중입니다. 잠시 후 재시도 해주세요."),
+    ILLEGAL_START_DATE("010", "커플 시작일은 오늘 이전이어야 합니다."),
     ;
 
     override val code = "COUPLE$sequence"
