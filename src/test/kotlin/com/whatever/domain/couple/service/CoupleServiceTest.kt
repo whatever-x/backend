@@ -208,7 +208,8 @@ class CoupleServiceTest @Autowired constructor(
                 birthDate = DateTimeUtil.localNow().toLocalDate(),
                 platform = LoginPlatform.KAKAO,
                 platformUserId = "my-user-id",
-                userStatus = UserStatus.SINGLE
+                userStatus = UserStatus.SINGLE,
+                gender = UserGender.MALE,
             )
         )
         val hostUser = userRepository.save(
@@ -217,7 +218,8 @@ class CoupleServiceTest @Autowired constructor(
                 birthDate = DateTimeUtil.localNow().toLocalDate(),
                 platform = LoginPlatform.KAKAO,
                 platformUserId = "host-user-id",
-                userStatus = UserStatus.SINGLE
+                userStatus = UserStatus.SINGLE,
+                gender = UserGender.FEMALE,
             )
         )
         val request = CreateCoupleRequest("test-invitation-code")
@@ -276,9 +278,9 @@ class CoupleServiceTest @Autowired constructor(
             whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
         }
         val request = UpdateCoupleStartDateRequest(DateTimeUtil.localNow().toLocalDate())
-
+        val timeZone = "Asia/Seoul"
         // when
-        val result = coupleService.updateStartDate(savedCouple.id, request)
+        val result = coupleService.updateStartDate(savedCouple.id, request, timeZone)
 
         // then
         assertThat(result.coupleId).isEqualTo(savedCouple.id)

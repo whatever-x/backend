@@ -1,11 +1,16 @@
 package com.whatever.domain.couple.model
 
 import com.whatever.domain.base.BaseEntity
+import com.whatever.domain.couple.exception.CoupleExceptionCode
 import com.whatever.domain.couple.exception.CoupleExceptionCode.ILLEGAL_MEMBER_SIZE
+import com.whatever.domain.couple.exception.CoupleExceptionCode.ILLEGAL_START_DATE
+import com.whatever.domain.couple.exception.CoupleIllegalArgumentException
 import com.whatever.domain.couple.exception.CoupleIllegalStateException
 import com.whatever.domain.user.model.User
+import com.whatever.util.DateTimeUtil
 import jakarta.persistence.*
 import java.time.LocalDate
+import java.time.ZoneId
 
 @Entity
 class Couple (
@@ -29,7 +34,12 @@ class Couple (
         mutableMembers.add(user)
     }
 
-    fun updateStartDate(newDate: LocalDate) {
+    fun updateStartDate(newDate: LocalDate, userZoneId: ZoneId) {
+        val todayInUserZone = DateTimeUtil.zonedNow(userZoneId).toLocalDate()
+        if (newDate.isAfter(todayInUserZone)) {
+            throw CoupleIllegalArgumentException(errorCode = ILLEGAL_START_DATE)
+        }
+
         startDate = newDate
     }
 

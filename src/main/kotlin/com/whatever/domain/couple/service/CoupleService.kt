@@ -22,17 +22,18 @@ import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
+import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.RedisUtil
+import com.whatever.util.toZonId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.viascom.nanoid.NanoId
-import org.springframework.dao.ConcurrencyFailureException
+import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Recover
 import org.springframework.retry.annotation.Retryable
-import org.springframework.retry.support.RetrySynchronizationManager
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -54,9 +55,11 @@ class CoupleService(
     }
 
     @Retryable(
-        retryFor = [ConcurrencyFailureException::class],
+        retryFor = [OptimisticLockingFailureException::class],
         backoff = Backoff(delay = 100, maxDelay = 300),
-        maxAttempts = 3
+        maxAttempts = 3,
+        recover = "updateSharedMessageRecover",
+        notRecoverable = [CaramelException::class],
     )
     @Transactional
     fun updateSharedMessage(coupleId: Long, request: UpdateCoupleSharedMessageRequest): CoupleBasicResponse {
@@ -73,29 +76,46 @@ class CoupleService(
     }
 
     @Retryable(
-        retryFor = [ConcurrencyFailureException::class],
+        retryFor = [OptimisticLockingFailureException::class],
         backoff = Backoff(delay = 100, maxDelay = 300),
         maxAttempts = 3,
-        recover = "updateRecover"
+        recover = "updateStartDateRecover",
+        notRecoverable = [CaramelException::class],
     )
     @Transactional
-    fun updateStartDate(coupleId: Long, request: UpdateCoupleStartDateRequest): CoupleBasicResponse {
+    fun updateStartDate(
+        coupleId: Long,
+        request: UpdateCoupleStartDateRequest,
+        timeZone: String,
+    ): CoupleBasicResponse {
         val currentUserId = SecurityUtil.getCurrentUserId()
         val couple = coupleRepository.findCoupleById(coupleId)
         couple.members.find { it.id == currentUserId }
             ?: throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
 
-        logger.info { "Retry Count:  ${RetrySynchronizationManager.getContext()?.retryCount}, Request: ${request}" }
         val updatedCouple = couple.apply {
-            updateStartDate(request.startDate)
+            updateStartDate(
+                newDate = request.startDate,
+                userZoneId = timeZone.toZonId()
+            )
         }
 
         return CoupleBasicResponse.from(updatedCouple)
     }
 
     @Recover
-    fun updateRecover(e: ConcurrencyFailureException, coupleId: Long): CoupleBasicResponse {
-        logger.error { "couple info update fail. couple id: ${coupleId}" }
+    fun updateSharedMessageRecover(e: OptimisticLockingFailureException, coupleId: Long): CoupleBasicResponse {
+        logger.error { "couple shared message update fail. couple id: ${coupleId}" }
+        throw CoupleIllegalStateException(errorCode = UPDATE_FAIL)
+    }
+
+    @Recover
+    fun updateStartDateRecover(
+        e: OptimisticLockingFailureException,
+        coupleId: Long,
+        request: UpdateCoupleStartDateRequest,
+    ): CoupleBasicResponse {
+        logger.error { "couple start date update fail. couple id: ${coupleId}" }
         throw CoupleIllegalStateException(errorCode = UPDATE_FAIL)
     }
 
