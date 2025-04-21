@@ -1,8 +1,13 @@
 package com.whatever.domain.auth.client
 
-import com.whatever.config.KakaoKauthConfig
-import com.whatever.config.KakaoOAuthConfig
-import com.whatever.domain.auth.client.dto.*
+import com.whatever.config.openfeign.KakaoKapiConfig
+import com.whatever.config.openfeign.KakaoKauthConfig
+import com.whatever.domain.auth.client.dto.KakaoIdTokenInfoRequest
+import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
+import com.whatever.domain.auth.client.dto.KakaoUnlinkUserRequest
+import com.whatever.domain.auth.client.dto.KakaoUnlinkUserResponse
+import com.whatever.domain.auth.client.dto.KakaoUserInfoResponse
+import com.whatever.domain.auth.client.dto.OIDCPublicKeysResponse
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.http.MediaType
@@ -12,11 +17,11 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
 
 @FeignClient(
-    name = "KakaoOAuthClient",
+    name = "KakaoKapiClient",
     url = "https://kapi.kakao.com",
-    configuration = [KakaoOAuthConfig::class]
+    configuration = [KakaoKapiConfig::class]
 )
-interface KakaoOAuthClient {
+interface KakaoKapiClient {
 
     @GetMapping(
         path = ["/v2/user/me"],
@@ -49,7 +54,8 @@ interface KakaoOAuthClient {
 interface KakaoOIDCClient {
 
     @Cacheable(
-        cacheNames = ["kakao-oidc"],
+        cacheNames = ["oidc-public-key"],
+        key = "'KAKAO'",
         cacheManager = "oidcCacheManager"
     )
     @GetMapping(

@@ -5,12 +5,11 @@ import com.whatever.domain.couple.controller.dto.request.UpdateCoupleSharedMessa
 import com.whatever.domain.couple.controller.dto.request.UpdateCoupleStartDateRequest
 import com.whatever.domain.couple.controller.dto.response.CoupleBasicResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleInvitationCodeResponse
-import com.whatever.domain.couple.controller.dto.response.CoupleUserInfoDto
 import com.whatever.domain.couple.controller.dto.response.CoupleDetailResponse
 import com.whatever.domain.couple.service.CoupleService
+import com.whatever.global.constants.CaramelHttpHeaders.TIME_ZONE
 import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.succeed
-import com.whatever.util.DateTimeUtil
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -70,8 +70,9 @@ class CoupleController(
     fun updateCoupleStartDate(
         @PathVariable("couple-id") coupleId: Long,
         @RequestBody request: UpdateCoupleStartDateRequest,
+        @RequestHeader(TIME_ZONE) timeZone: String,
     ): CaramelApiResponse<CoupleBasicResponse> {
-        val response = coupleService.updateStartDate(coupleId, request)
+        val response = coupleService.updateStartDate(coupleId, request, timeZone)
         return response.succeed()
     }
 

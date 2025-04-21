@@ -76,12 +76,13 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
             LocalDate.EPOCH.plusDays(idx.toLong())
         }
         val requests = startDates.map { UpdateCoupleStartDateRequest(it) }
+        val timeZone = "Asia/Seoul"
 
         val futures = requests.mapIndexed { idx, request ->
             CompletableFuture.supplyAsync({
                 mockStatic(SecurityUtil::class.java).use {
                     it.apply { whenever(SecurityUtil.getCurrentUserId()).doReturn(members[idx].id) }
-                    coupleService.updateStartDate(savedCouple.id, request)
+                    coupleService.updateStartDate(savedCouple.id, request, timeZone)
                 }
             }, executor)
         }
@@ -109,10 +110,11 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
         whenever(coupleRepository.findByIdOrNull(any())).doThrow(ObjectOptimisticLockingFailureException::class)
 
         val request = UpdateCoupleStartDateRequest(LocalDate.EPOCH)
+        val timeZone = "Asia/Seoul"
 
         // when
         val exception = assertThrows<CoupleIllegalStateException> {
-            coupleService.updateStartDate(savedCouple.id, request)
+            coupleService.updateStartDate(savedCouple.id, request, timeZone)
         }
 
         // then
@@ -165,12 +167,13 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
 
         val updateStartDateRequest = UpdateCoupleStartDateRequest(LocalDate.EPOCH)
         val updateSharedMessageRequest = UpdateCoupleSharedMessageRequest("updated sharedMessage")
+        val timeZone = "Asia/Seoul"
 
         val futures = listOf(
             CompletableFuture.supplyAsync({
                 mockStatic(SecurityUtil::class.java).use {
                     it.apply { whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id) }
-                    coupleService.updateStartDate(savedCouple.id, updateStartDateRequest)
+                    coupleService.updateStartDate(savedCouple.id, updateStartDateRequest, timeZone)
                 }
             }, executor),
             CompletableFuture.supplyAsync({

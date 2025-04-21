@@ -6,3 +6,18 @@ open class CoupleException(
     errorCode: CoupleExceptionCode,
     detailMessage: String? = null
 ) : CaramelException(errorCode, detailMessage)
+
+class CoupleAccessDeniedException(
+    errorCode: CoupleExceptionCode,
+    detailMessage: String? = null
+) : CoupleException(errorCode, detailMessage)
+
+class CoupleIllegalStateException(
+    errorCode: CoupleExceptionCode,
+    detailMessage: String? = null
+) : CoupleException(errorCode, detailMessage)
+
+class CoupleIllegalArgumentException(
+    errorCode: CoupleExceptionCode,
+    detailMessage: String? = null
+) : CoupleException(errorCode, detailMessage)
