@@ -22,6 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @Profile("dev", "local-mem")
 @Tag(
@@ -74,6 +75,40 @@ class SampleController(
         return ResponseEntity.ok("exception not found")
     }
 
+    @DisableSwaggerAuthButton
+    @Operation(
+        summary = "개발용 테스트 유저 생성",
+        description = "개발용 테스트 유저입니다."
+    )
+    @GetMapping("/test/sign-up/new")
+    fun testSignUpNew(
+        @RequestParam(required = false) testEmail: String? = null,
+    ): CaramelApiResponse<String> {
+        val email = sampleService.createNewDummyAccount(testEmail)
+        return email.succeed()
+    }
+
+    @DisableSwaggerAuthButton
+    @Operation(
+        summary = "개발용 테스트 유저 생성",
+        description = "개발용 테스트 유저입니다."
+    )
+    @GetMapping("/test/sign-up/single")
+    fun testSignUpSingle(
+        @RequestParam(required = false) testEmail: String? = null,
+        @RequestParam(required = false) testNickname: String? = null,
+        @RequestParam(required = false) testBirthDate: LocalDate? = null,
+        @RequestParam(required = false) testGender: UserGender? = null,
+    ): CaramelApiResponse<String> {
+        val email = sampleService.createSingleDummyAccount(
+            testEmail,
+            testNickname,
+            testBirthDate,
+            testGender,
+        )
+        return email.succeed()
+    }
+
     /**
      * 개발용 테스트 유저 로그인입니다.
      * 사용에 주의해주세요.
@@ -84,8 +119,8 @@ class SampleController(
         description = "개발용 테스트 유저입니다."
     )
     @GetMapping("/test/sign-in")
-    fun testSignIn(@RequestParam gender: UserGender, @RequestParam expSec: Long): CaramelApiResponse<SignInResponse> {
-        return sampleService.testSignIn(gender, expSec).succeed()
+    fun testSignIn(@RequestParam email: String, @RequestParam expSec: Long): CaramelApiResponse<SignInResponse> {
+        return sampleService.testSignIn(email, expSec).succeed()
     }
 
     @PreAuthorize("hasRole('SINGLE')")
