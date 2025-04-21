@@ -1,6 +1,7 @@
 package com.whatever.domain.couple.controller.dto.response
 
 import com.whatever.domain.couple.model.Couple
+import com.whatever.domain.couple.model.CoupleStatus
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
 import io.swagger.v3.oas.annotations.media.Schema
@@ -12,6 +13,7 @@ data class CoupleDetailResponse(
     @Schema(description = "커플 시작일")
     val startDate: LocalDate?,
     val sharedMessage: String?,
+    val status: CoupleStatus,
     @Schema(description = "내 정보")
     val myInfo: CoupleUserInfoDto,
     @Schema(description = "상대방 정보")
@@ -23,6 +25,7 @@ data class CoupleDetailResponse(
                 coupleId = couple.id,
                 startDate = couple.startDate,
                 sharedMessage = couple.sharedMessage,
+                status = couple.status,
                 myInfo = CoupleUserInfoDto.from(myUser),
                 partnerInfo = CoupleUserInfoDto.from(partnerUser),
             )
@@ -35,6 +38,7 @@ data class CoupleBasicResponse(
     val coupleId: Long,
     val startDate: LocalDate?,
     val sharedMessage: String?,
+    val status: CoupleStatus,
 ) {
     companion object {
         fun from(couple: Couple): CoupleBasicResponse {
@@ -42,6 +46,7 @@ data class CoupleBasicResponse(
                 coupleId = couple.id,
                 startDate = couple.startDate,
                 sharedMessage = couple.sharedMessage,
+                status = couple.status,
             )
         }
     }

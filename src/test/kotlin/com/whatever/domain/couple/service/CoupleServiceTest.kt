@@ -8,6 +8,7 @@ import com.whatever.domain.couple.exception.CoupleException
 import com.whatever.domain.couple.exception.CoupleExceptionCode
 import com.whatever.domain.couple.exception.CoupleIllegalArgumentException
 import com.whatever.domain.couple.model.Couple
+import com.whatever.domain.couple.model.CoupleStatus
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
@@ -234,12 +235,11 @@ class CoupleServiceTest @Autowired constructor(
         }
         whenever(redisUtil.getCoupleInvitationUser(request.invitationCode)).doReturn(hostUser.id)
 
-
         // when
         val result = coupleService.createCouple(request)
 
-
         // then
+        assertThat(result.status).isEqualTo(CoupleStatus.ACTIVE)
         assertThat(result.myInfo.id).isEqualTo(myUser.id)
         assertThat(result.partnerInfo.id).isEqualTo(hostUser.id)
     }

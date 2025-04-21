@@ -21,6 +21,9 @@ class Couple (
     var startDate: LocalDate? = null,
 
     var sharedMessage: String? = null,
+
+    @Enumerated(EnumType.STRING)
+    var status: CoupleStatus = CoupleStatus.ACTIVE,
 ) : BaseEntity() {
 
     @OneToMany(mappedBy = "_couple", fetch = FetchType.LAZY)
