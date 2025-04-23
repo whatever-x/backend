@@ -56,10 +56,10 @@ class CoupleService(
 
     @Retryable(
         retryFor = [OptimisticLockingFailureException::class],
+        notRecoverable = [CaramelException::class],
         backoff = Backoff(delay = 100, maxDelay = 300),
         maxAttempts = 3,
         recover = "updateSharedMessageRecover",
-        notRecoverable = [CaramelException::class],
     )
     @Transactional
     fun updateSharedMessage(coupleId: Long, request: UpdateCoupleSharedMessageRequest): CoupleBasicResponse {
@@ -77,10 +77,10 @@ class CoupleService(
 
     @Retryable(
         retryFor = [OptimisticLockingFailureException::class],
+        notRecoverable = [CaramelException::class],
         backoff = Backoff(delay = 100, maxDelay = 300),
         maxAttempts = 3,
         recover = "updateStartDateRecover",
-        notRecoverable = [CaramelException::class],
     )
     @Transactional
     fun updateStartDate(

@@ -34,10 +34,10 @@ data class ScheduleDetailDto(
     val parentScheduleId: Long? = null,
 
     @Schema(description = "캘린더에 표시되는 제목", example = "캘린더에 표시되는 제목")
-    val title: String,
+    val title: String?,
 
     @Schema(description = "캘린더 본문", example = "본문입니다.")
-    val description: String? = null
+    val description: String?
 )
 
 data class ScheduleDetailDtoV2(  // 반복 도입후 해당 response dto로 교체

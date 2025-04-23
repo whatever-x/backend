@@ -40,11 +40,12 @@ class JwtAuthenticationFilter(
 
     private fun getAuthentication(accessToken: String): UsernamePasswordAuthenticationToken? {
         val userId = jwtHelper.parseAccessToken(accessToken)
-        val user = userRepository.findByIdOrNull(userId) ?: return null
+        val user = userRepository.findByIdWithCouple(userId) ?: return null
 
         val userDetails = CaramelUserDetails(
             userId = user.id,
-            status = user.userStatus
+            status = user.userStatus,
+            coupleId = user.couple?.id ?: 0L
         )
 
         return UsernamePasswordAuthenticationToken(

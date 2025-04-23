@@ -1,5 +1,6 @@
 package com.whatever.util
 
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
@@ -44,6 +45,10 @@ object DateTimeUtil {
     }
 }
 
+fun LocalDate.toDateTime(localTime: LocalTime = LocalTime.MIDNIGHT): LocalDateTime {
+    return LocalDateTime.of(this, localTime)
+}
+
 fun LocalDateTime.toDate(
     sourceZone: ZoneId = DateTimeUtil.UTC_ZONE_ID
 ): Date {
@@ -56,6 +61,9 @@ fun ZonedDateTime.toDate(): Date {
 
 val LocalDateTime.endOfDay: LocalDateTime
     get() = toLocalDate().atTime(LocalTime.MAX)
+
+val LocalDateTime.withoutNano: LocalDateTime
+    get() = withNano(0)
 
 fun String.toZonId(): ZoneId {
     return ZoneId.of(this)

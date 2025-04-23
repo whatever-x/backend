@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException
 import jakarta.validation.ConstraintViolationException
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.retry.ExhaustedRetryException
 import org.springframework.security.authorization.AuthorizationDeniedException
 import org.springframework.validation.BindException
 import org.springframework.web.HttpRequestMethodNotSupportedException
@@ -28,6 +29,14 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
     fun handleCaramelException(e: CaramelException): ResponseEntity<CaramelApiResponse<*>> {
         logger.error(e) { "예상하지 못한 예외가 발생했습니다." }
         return createExceptionResponse(errorCode = e.errorCode, debugMessage = e.detailMessage)
+    }
+
+    @ExceptionHandler(ExhaustedRetryException::class)
+    fun handleExhaustedRetryException(e: ExhaustedRetryException): ResponseEntity<CaramelApiResponse<*>> {
+        throw e.cause ?: return createExceptionResponse(
+            errorCode = GlobalExceptionCode.ACCESS_DENIED,
+            debugMessage = e.message
+        )
     }
 
     @ExceptionHandler(AccessDeniedException::class)

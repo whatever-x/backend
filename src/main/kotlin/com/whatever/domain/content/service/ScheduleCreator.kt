@@ -45,15 +45,6 @@ class ScheduleCreator(
             isCompleted = isCompleted
         )
 
-        val scheduleEvent = ScheduleEvent(
-            contentDetail = contentDetail,
-            uid = UUID.randomUUID().toString(),
-            startDateTime = dateTimeInfo.startDateTime,
-            endDateTime = dateTimeInfo.endDateTime ?: dateTimeInfo.startDateTime.endOfDay,
-            startTimeZone = dateTimeInfo.startTimezone.toZonId(),
-            endTimeZone = dateTimeInfo.endTimezone?.toZonId() ?: dateTimeInfo.startTimezone.toZonId(),
-        )
-
         val userId = getCurrentUserId()
         val user = userRepository.getReferenceById(userId)
 
@@ -62,8 +53,16 @@ class ScheduleCreator(
             contentDetail = contentDetail,
             type = ContentType.SCHEDULE
         )
-
         val savedContent = contentRepository.save(content)
+
+        val scheduleEvent = ScheduleEvent(
+            content = savedContent,
+            uid = UUID.randomUUID().toString(),
+            startDateTime = dateTimeInfo.startDateTime,
+            endDateTime = dateTimeInfo.endDateTime ?: dateTimeInfo.startDateTime.endOfDay,
+            startTimeZone = dateTimeInfo.startTimezone.toZonId(),
+            endTimeZone = dateTimeInfo.endTimezone?.toZonId() ?: dateTimeInfo.startTimezone.toZonId(),
+        )
         scheduleEventRepository.save(scheduleEvent)
 
         if (tagIds.isNotEmpty()) {

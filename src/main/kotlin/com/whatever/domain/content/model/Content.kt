@@ -1,8 +1,19 @@
 package com.whatever.domain.content.model
 
 import com.whatever.domain.base.BaseEntity
+import com.whatever.domain.content.exception.ContentExceptionCode.ILLEGAL_CONTENT_DETAIL
+import com.whatever.domain.content.exception.ContentIllegalArgumentException
 import com.whatever.domain.user.model.User
-import jakarta.persistence.*
+import jakarta.persistence.Embedded
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 
 @Entity
 class Content(
@@ -19,6 +30,24 @@ class Content(
 
     @Enumerated(EnumType.STRING)
     var type: ContentType = ContentType.MEMO,
+) : BaseEntity() {
 
-    ) : BaseEntity() {
+    fun updateContentDetail(newContentDetail: ContentDetail) {
+        if (newContentDetail.title == null && newContentDetail.description == null) {
+            throw ContentIllegalArgumentException(
+                errorCode = ILLEGAL_CONTENT_DETAIL,
+                detailMessage = "Both title and description cannot be Null."
+            )
+        }
+        with(contentDetail) {
+            title = newContentDetail.title
+            description = newContentDetail.description
+            isCompleted = newContentDetail.isCompleted
+        }
+    }
+
+    fun updateType(type: ContentType) {
+        this.type = type
+    }
+
 }
