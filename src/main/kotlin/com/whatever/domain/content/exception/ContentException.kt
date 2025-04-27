@@ -11,3 +11,13 @@ class ContentIllegalArgumentException(
     errorCode: ContentExceptionCode,
     detailMessage: String? = null
 ) : ContentException(errorCode, detailMessage)
+
+class ContentNotFoundException(
+    errorCode: ContentExceptionCode,
+    detailMessage: String? = null
+) : ContentException(errorCode, detailMessage)
+
+class ContentIllegalStateException(
+    errorCode: ContentExceptionCode,
+    detailMessage: String? = null
+) : ContentException(errorCode, detailMessage)

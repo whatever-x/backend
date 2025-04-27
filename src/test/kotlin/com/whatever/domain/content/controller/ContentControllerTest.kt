@@ -4,12 +4,15 @@ import com.whatever.domain.ControllerTestSupport
 import com.whatever.domain.content.controller.dto.request.CreateContentRequest
 import com.whatever.domain.content.controller.dto.request.DateTimeInfoDto
 import com.whatever.domain.content.controller.dto.request.TagIdDto
+import com.whatever.domain.content.controller.dto.request.UpdateContentRequest
 import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.util.DateTimeUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
+import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.post
+import org.springframework.test.web.servlet.put
 
 class ContentControllerTest : ControllerTestSupport() {
 
@@ -86,6 +89,42 @@ class ContentControllerTest : ControllerTestSupport() {
             .andExpect {
                 status { isBadRequest() }
                 jsonPath("$.error.code") { value(ContentExceptionCode.TITLE_OR_DESCRIPTION_REQUIRED.code) }
+            }
+    }
+
+
+    @DisplayName("콘텐츠를 업데이트한다.")
+    @Test
+    fun updateContent() {
+        // given
+        val request = UpdateContentRequest(
+            title = "수정된 제목",
+            description = "수정된 설명",
+            isCompleted = true,
+            tagList = listOf(TagIdDto(tagId = 1L))
+        )
+
+        // when // then
+        mockMvc.put("/v1/content/{contentId}", 1L) {
+            content = objectMapper.writeValueAsString(request)
+            contentType = MediaType.APPLICATION_JSON
+        }
+            .andDo { print() }
+            .andExpect {
+                status { isOk() }
+            }
+    }
+
+    @DisplayName("콘텐츠를 삭제한다.")
+    @Test
+    fun deleteContent() {
+        // when // then
+        mockMvc.delete("/v1/content/{contentId}", 1L) {
+            contentType = MediaType.APPLICATION_JSON
+        }
+            .andDo { print() }
+            .andExpect {
+                status { isOk() }
             }
     }
 
