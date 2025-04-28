@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-@Schema(description = "콘텐츠 생성 요청 모델")
+@Schema(description = "일정 업데이트 요청 모델")
 data class UpdateScheduleRequest(
 
     @Schema(description = "선택한 일자", example = "2025-02-16")
