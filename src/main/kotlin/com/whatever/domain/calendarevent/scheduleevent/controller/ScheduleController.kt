@@ -1,8 +1,11 @@
 package com.whatever.domain.calendarevent.scheduleevent.controller
 
+import com.whatever.domain.calendarevent.scheduleevent.controller.dto.CreateScheduleRequest
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
 import com.whatever.domain.calendarevent.scheduleevent.service.ScheduleEventService
+import com.whatever.domain.content.controller.dto.response.ContentSummaryResponse
 import com.whatever.global.exception.dto.CaramelApiResponse
+import com.whatever.global.exception.dto.succeed
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
@@ -17,6 +20,20 @@ import org.springframework.web.bind.annotation.*
 class ScheduleController(
     private val scheduleEventService: ScheduleEventService
 ) {
+
+    @Operation(
+        summary = "일정 생성",
+        description = "일정을 생성합니다.",
+    )
+    @PostMapping
+    fun createSchedule(
+        @Valid @RequestBody request: CreateScheduleRequest,
+    ): CaramelApiResponse<ContentSummaryResponse> {
+        val response = scheduleEventService.createSchedule(
+            request = request,
+        )
+        return response.succeed()
+    }
 
     @Operation(
         summary = "일정 수정",
