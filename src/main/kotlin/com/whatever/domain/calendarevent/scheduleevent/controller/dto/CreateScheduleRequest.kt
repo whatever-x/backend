@@ -2,7 +2,6 @@ package com.whatever.domain.calendarevent.scheduleevent.controller.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Schema(description = "일정 생성 요청 모델")
@@ -10,9 +9,6 @@ data class CreateScheduleRequest(
 
     @Schema(description = "콘텐츠(메모) id", example = "1")
     val contentId: Long,
-
-    @Schema(description = "선택한 일자", example = "2025-02-16")
-    val selectedDate: LocalDate,
 
     @Schema(description = "콘텐츠 제목. title, description 둘 중 하나는 필수입니다.", example = "맛집 리스트", nullable = true)
     @field:NotBlank(message = "제목은 공백일 수 없습니다.")
