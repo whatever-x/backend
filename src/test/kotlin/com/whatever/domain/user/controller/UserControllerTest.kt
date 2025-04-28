@@ -154,12 +154,12 @@ class UserControllerTest : ControllerTestSupport() {
             }
     }
 
-    @DisplayName("프로필을 수정할 때 닉네임은 3~10자여야 한다. (최소 길이 미만)")
+    @DisplayName("프로필을 수정할 때 닉네임은 2~8자여야 한다. (최소 길이 미만)")
     @Test
     fun updateProfile_WithBelowMinLengthNickname() {
         // given
         val request = PutUserProfileRequest(
-            nickname = "ab",  // 2자
+            nickname = "a",  // 1자
             birthday = DateTimeUtil.localNow().toLocalDate(),
         )
 
@@ -175,12 +175,12 @@ class UserControllerTest : ControllerTestSupport() {
             }
     }
 
-    @DisplayName("프로필을 수정할 때 닉네임은 11자 미만이어야 한다. (최대 길이 초과)")
+    @DisplayName("프로필을 수정할 때 닉네임은 9자 미만이어야 한다. (최대 길이 초과)")
     @Test
     fun updateProfile_WithExceedingMaxLengthNickname() {
         // given
         val request = PutUserProfileRequest(
-            nickname = "12345678901",  // 11자
+            nickname = "123456789",  // 9자
             birthday = DateTimeUtil.localNow().toLocalDate(),
         )
 
