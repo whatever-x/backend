@@ -23,7 +23,7 @@ class ScheduleController(
 
     @Operation(
         summary = "일정 생성",
-        description = "일정을 생성합니다.",
+        description = "기존에 존재하던 콘텐츠(MEMO)를 바탕으로 일정을 생성합니다.",
     )
     @PostMapping
     fun createSchedule(
