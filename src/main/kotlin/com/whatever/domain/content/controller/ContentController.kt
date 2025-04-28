@@ -34,7 +34,6 @@ class ContentController(
     fun getContents(
         @ParameterObject queryParameter: GetContentListQueryParameter,
     ): CaramelApiResponse<ContentDetailListResponse> {
-        // TODO(준용): getContentList 메서드 구현 필요
         return contentService.getContentList(queryParameter).succeed()
     }
 

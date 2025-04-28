@@ -12,6 +12,7 @@ import com.whatever.domain.content.exception.ContentIllegalStateException
 import com.whatever.domain.content.exception.ContentNotFoundException
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
+import com.whatever.domain.content.model.ContentType
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
@@ -35,7 +36,6 @@ class ContentService(
     private val tagRepository: TagRepository,
     private val tagContentMappingRepository: TagContentMappingRepository,
 ) {
-    @Transactional
     fun getContentList(queryParameter: GetContentListQueryParameter): ContentDetailListResponse {
         val start = queryParameter.lastId + 1
         val end = start + queryParameter.pageSize
@@ -79,8 +79,10 @@ class ContentService(
     )
     @Transactional
     fun updateContent(contentId: Long, request: UpdateContentRequest): ContentSummaryResponse {
-        val content = contentRepository.findMemoContentById(contentId)
-            ?: throw ContentNotFoundException(ContentExceptionCode.CONTENT_NOT_FOUND)
+        val content = contentRepository.findContentByIdAndType(
+            id = contentId,
+            type = ContentType.MEMO
+        ) ?: throw ContentNotFoundException(ContentExceptionCode.CONTENT_NOT_FOUND)
 
         val newContentDetail = ContentDetail(
             title = request.title,
@@ -103,8 +105,10 @@ class ContentService(
     )
     @Transactional
     fun deleteContent(contentId: Long) {
-        val content = contentRepository.findMemoContentById(contentId)
-            ?: throw ContentNotFoundException(ContentExceptionCode.CONTENT_NOT_FOUND)
+        val content = contentRepository.findContentByIdAndType(
+            id = contentId,
+            type = ContentType.MEMO
+        ) ?: throw ContentNotFoundException(ContentExceptionCode.CONTENT_NOT_FOUND)
 
         val tagMappings = tagContentMappingRepository.findAllByContent_IdAndIsDeleted(contentId)
         tagMappings.forEach(TagContentMapping::deleteEntity)
