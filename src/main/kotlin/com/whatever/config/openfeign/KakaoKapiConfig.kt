@@ -8,7 +8,6 @@ import com.whatever.global.exception.externalserver.kakao.KakaoServerExceptionCo
 import com.whatever.global.exception.externalserver.kakao.KakaoServerExceptionCode.UNKNOWN
 import com.whatever.global.exception.externalserver.kakao.KakaoServiceUnavailableException
 import com.whatever.global.exception.externalserver.kakao.KakaoUnauthorizedException
-import feign.FeignException
 import feign.Response
 import feign.codec.Encoder
 import feign.codec.ErrorDecoder
@@ -34,9 +33,9 @@ class KakaoKapiConfig {
 }
 
 class KapiErrorDecoder() : ErrorDecoder {
-    override fun decode(methodKey: String?, response: Response?): Exception {
-        if (response == null || response.status() < 400) {
-            return FeignException.errorStatus(methodKey, response)
+    override fun decode(methodKey: String, response: Response): Exception {
+        if (response.status() < 400) {
+            return ErrorDecoder.Default().decode(methodKey, response)
         }
 
         val errorResponse = response.toObject(KapiErrorResponse::class)
