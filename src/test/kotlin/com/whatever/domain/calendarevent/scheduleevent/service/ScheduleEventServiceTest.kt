@@ -604,7 +604,6 @@ class ScheduleEventServiceTest @Autowired constructor(
         // 조회 대상 커플 데이터 생성
         val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
         val numberOfEvents = 100
-        val contents = mutableListOf<Content>()
         val scheduleEvents = createScheduleEvents(
             numberOfEvents = numberOfEvents,
             uidPrefix = "test-uuid-",
@@ -654,6 +653,61 @@ class ScheduleEventServiceTest @Autowired constructor(
         val resultScheduleIds = result.map { it.scheduleId }
         val savedScheduleIds = scheduleEvents.map { it.id }
         assertThat(resultScheduleIds).containsExactlyInAnyOrderElementsOf(savedScheduleIds)
+    }
+
+    @DisplayName("스케줄 조회 시 날짜 범위에 맞는 일정들이 조회된다.")
+    @Test
+    fun getSchedule_WithDailyAndWeeklyRequest() {
+        // given
+        val startDate = LocalDate.of(2025, 4, 1)
+        val userTimeZone = ZoneId.of("Asia/Seoul")
+
+        // 조회 대상 커플 데이터 생성
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
+        val numberOfEvents = 30
+        val scheduleEvents = mutableListOf<ScheduleEvent>()
+        repeat(numberOfEvents) { idx ->
+            val content = contentRepository.save(createContent(if (idx % 2 == 0) myUser else partnerUser, ContentType.SCHEDULE))
+            val eventStartDate = startDate.plusDays(idx.toLong())
+            val event = scheduleEventRepository.save(
+                ScheduleEvent(
+                    uid = "test-uid-${idx}",
+                    startDateTime = eventStartDate.toDateTime(),
+                    startTimeZone = userTimeZone,
+                    endDateTime = eventStartDate.toDateTime().endOfDay,
+                    endTimeZone = userTimeZone,
+                    content = content
+                )
+            )
+            scheduleEvents.add(event)
+        }
+
+        val requestDaily = GetCalendarQueryParameter(
+            startDate = startDate,
+            endDate = startDate,
+            userTimeZone = userTimeZone.id
+        )
+        val requestWeekly = GetCalendarQueryParameter(
+            startDate = startDate,
+            endDate = startDate.plusDays(6),
+            userTimeZone = userTimeZone.id
+        )
+
+        // when
+        val resultDaily = scheduleEventService.getSchedule(
+            startDate = requestDaily.startDate,
+            endDate = requestDaily.endDate,
+            userTimeZone = requestDaily.userTimeZone
+        )
+        val resultWeekly = scheduleEventService.getSchedule(
+            startDate = requestWeekly.startDate,
+            endDate = requestWeekly.endDate,
+            userTimeZone = requestWeekly.userTimeZone
+        )
+
+        // then
+        assertThat(resultDaily).hasSize(1)
+        assertThat(resultWeekly).hasSize(7)
     }
 }
 

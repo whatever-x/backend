@@ -11,7 +11,7 @@ interface ScheduleEventRepository : JpaRepository<ScheduleEvent, Long> {
             join fetch se.content c
             join c.user u
         where se.isDeleted = false
-            and (se.startDateTime >= :startDateTime or se.endDateTime <= :endDateTime)
+            and (se.startDateTime <= :endDateTime and se.endDateTime >= :startDateTime)
             and u.id in :memberIds
         order by se.startDateTime
     """)
