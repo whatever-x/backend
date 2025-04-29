@@ -1,9 +1,12 @@
 package com.whatever.domain.calendarevent.specialday.service
 
 import com.whatever.config.properties.SpecialDayApiProperties
+import com.whatever.domain.calendarevent.controller.dto.response.HolidayDetailDto
+import com.whatever.domain.calendarevent.controller.dto.response.HolidayDetailListResponse
 import com.whatever.domain.calendarevent.specialday.client.SpecialDayApiFeignClient
 import com.whatever.domain.calendarevent.specialday.client.dto.request.HolidayInfoRequestParams
 import com.whatever.domain.calendarevent.specialday.client.dto.response.HolidayApiResponse
+import com.whatever.domain.calendarevent.specialday.model.SpecialDayType
 import com.whatever.domain.calendarevent.specialday.repository.SpecialDayRepository
 import com.whatever.global.exception.externalserver.specialday.SpecialDayApiExceptionCode.EMPTY_HEADER
 import com.whatever.global.exception.externalserver.specialday.SpecialDayApiExceptionCode.FAILED_RESPONSE_CODE
@@ -25,6 +28,19 @@ class SpecialDayService(
 ) {
     companion object {
         private const val HOLIDAY_INFO_SUCCESS_CODE = "00"
+    }
+
+    fun getHolidays(yearMonth: YearMonth): HolidayDetailListResponse {
+        val startDate = yearMonth.atDay(1)
+        val endDate = yearMonth.atEndOfMonth()
+        val holidays = specialDayRepository.findAllByTypeAndBetweenStartDateAndEndDate(
+            SpecialDayType.HOLI,
+            startDate,
+            endDate,
+        )
+
+        val holidayDetailDtos = holidays.mapNotNull { HolidayDetailDto.from(it) }
+        return HolidayDetailListResponse(holidayList = holidayDetailDtos)
     }
 
     private fun getHolidayInfo(yearMonth: YearMonth): HolidayApiResponse {
