@@ -1,9 +1,15 @@
 package com.whatever.domain.calendarevent.specialday.client.dto.response
 
 import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer
+import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.IOException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -24,6 +30,7 @@ data class HolidayHeader(
 )
 
 data class HolidayBody(
+    @JsonDeserialize(using = EmptyStringToEmptyListHolidayItemsContainerDeserializer::class)
     val items: HolidayItemsContainer,
     val numOfRows: Int,
     val pageNo: Int,
@@ -43,7 +50,7 @@ data class HolidayItem(
     val seq: Int,  // ex) 1
 )
 
-private class BasicIsoDateDeserializer : JsonDeserializer<LocalDate>() {
+private class BasicIsoDateDeserializer : StdDeserializer<LocalDate>(LocalDate::class.java) {
     companion object {
         private val FORMATTER = DateTimeFormatter.BASIC_ISO_DATE
     }
@@ -59,5 +66,21 @@ private class BasicIsoDateDeserializer : JsonDeserializer<LocalDate>() {
         } catch (e: DateTimeParseException) {
             null
         }
+    }
+}
+
+private class EmptyStringToEmptyListHolidayItemsContainerDeserializer : StdDeserializer<HolidayItemsContainer>(HolidayItemsContainer::class.java) {
+
+    @Throws(IOException::class)
+    override fun deserialize(parser: JsonParser, context: DeserializationContext): HolidayItemsContainer {
+        if (parser.currentToken == JsonToken.VALUE_STRING && parser.text.isNullOrBlank()) {
+            return HolidayItemsContainer(item = emptyList())
+        }
+        if (parser !is ObjectMapper) {
+            return parser.codec.readValue(parser, HolidayItemsContainer::class.java)
+        }
+
+        val objectMapper = parser.codec as ObjectMapper
+        return objectMapper.readValue<HolidayItemsContainer>(parser)
     }
 }
