@@ -1,14 +1,12 @@
 package com.whatever.domain.calendarevent.specialday.client.dto.response
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
-import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.IOException
 import java.time.LocalDate
@@ -38,6 +36,7 @@ data class HolidayBody(
 )
 
 data class HolidayItemsContainer(
+    @JsonFormat(with = [JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY])
     val item: List<HolidayItem> = arrayListOf(),
 )
 
@@ -47,8 +46,12 @@ data class HolidayItem(
     val isHoliday: String,  // ex) "Y" or "N"
     @JsonDeserialize(using = BasicIsoDateDeserializer::class)
     val locdate: LocalDate,  // ex) 20250505 (YYYYMMDD format)
+    val remarks: String? = null,
     val seq: Int,  // ex) 1
-)
+) {
+    val isHolidayBoolean: Boolean
+        get() = isHoliday == "Y"
+}
 
 private class BasicIsoDateDeserializer : StdDeserializer<LocalDate>(LocalDate::class.java) {
     companion object {

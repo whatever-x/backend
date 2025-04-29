@@ -14,7 +14,7 @@ import java.time.LocalDate
 
 @Entity
 @Table(
-    uniqueConstraints = [UniqueConstraint(columnNames = ["date", "date_name"])]
+    uniqueConstraints = [UniqueConstraint(columnNames = ["loc_date", "date_name"])]
 )
 class SpecialDay(
     @Id
@@ -23,10 +23,10 @@ class SpecialDay(
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)
-    val category: SpecialDayType,
+    val type: SpecialDayType,
 
     @Column(nullable = false)
-    var date: LocalDate,
+    var locDate: LocalDate,
 
     @Column(length = 100, nullable = false)
     var dateName: String,  // ex: "삼일절", "춘분"

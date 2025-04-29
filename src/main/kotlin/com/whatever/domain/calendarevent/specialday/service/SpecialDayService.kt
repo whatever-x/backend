@@ -4,7 +4,7 @@ import com.whatever.config.properties.SpecialDayApiProperties
 import com.whatever.domain.calendarevent.specialday.client.SpecialDayApiFeignClient
 import com.whatever.domain.calendarevent.specialday.client.dto.request.HolidayInfoRequestParams
 import com.whatever.domain.calendarevent.specialday.client.dto.response.HolidayApiResponse
-import com.whatever.global.exception.externalserver.specialday.SpecialDayApiExceptionCode
+import com.whatever.domain.calendarevent.specialday.repository.SpecialDayRepository
 import com.whatever.global.exception.externalserver.specialday.SpecialDayApiExceptionCode.EMPTY_HEADER
 import com.whatever.global.exception.externalserver.specialday.SpecialDayApiExceptionCode.FAILED_RESPONSE_CODE
 import com.whatever.global.exception.externalserver.specialday.SpecialDayApiExceptionCode.RESPONSE_TYPE_UNMATCHED
@@ -21,6 +21,7 @@ private val logger = KotlinLogging.logger {  }
 class SpecialDayService(
     private val apiProperties: SpecialDayApiProperties,
     private val specialDayFeignClient: SpecialDayApiFeignClient,
+    private val specialDayRepository: SpecialDayRepository,
 ) {
     companion object {
         private const val HOLIDAY_INFO_SUCCESS_CODE = "00"
