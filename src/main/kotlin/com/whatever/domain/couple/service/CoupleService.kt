@@ -26,6 +26,7 @@ import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.RedisUtil
+import com.whatever.util.findByIdAndNotDeleted
 import com.whatever.util.toZonId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.viascom.nanoid.NanoId
@@ -239,11 +240,11 @@ class CoupleService(
 }
 
 private fun UserRepository.findUserById(id: Long, exceptionMessage: String? = null): User {
-    return findByIdOrNull(id)
+    return findByIdAndNotDeleted(id)
         ?: throw CoupleException(errorCode = MEMBER_NOT_FOUND, detailMessage = exceptionMessage)
 }
 
 private fun CoupleRepository.findCoupleById(id: Long, exceptionMessage: String? = null): Couple {
-    return findByIdOrNull(id)
+    return findByIdAndNotDeleted(id)
         ?: throw CoupleException(errorCode = COUPLE_NOT_FOUND, detailMessage = exceptionMessage)
 }
