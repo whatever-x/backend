@@ -24,7 +24,6 @@ private val logger = KotlinLogging.logger {  }
 @RestControllerAdvice
 class GlobalControllerAdvice : CaramelControllerAdvice() {
 
-    // TODO: 로깅처리 필수
     @ExceptionHandler(CaramelException::class)
     fun handleCaramelException(e: CaramelException): ResponseEntity<CaramelApiResponse<*>> {
         logger.error(e) { "예상하지 못한 예외가 발생했습니다." }
@@ -34,7 +33,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
     @ExceptionHandler(ExhaustedRetryException::class)
     fun handleExhaustedRetryException(e: ExhaustedRetryException): ResponseEntity<CaramelApiResponse<*>> {
         throw e.cause ?: return createExceptionResponse(
-            errorCode = GlobalExceptionCode.ACCESS_DENIED,
+            errorCode = GlobalExceptionCode.ILLEGAL_STATE,
             debugMessage = e.message
         )
     }
@@ -96,7 +95,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
     )
     fun handleMethodArgumentTypeMismatchException(e: Exception): ResponseEntity<CaramelApiResponse<*>> {
         return createExceptionResponse(
-            errorCode = GlobalExceptionCode.ARGS_TYPE_MISSMATCH,
+            errorCode = GlobalExceptionCode.ARGS_TYPE_MISMATCH,
             debugMessage = null
         )
     }
