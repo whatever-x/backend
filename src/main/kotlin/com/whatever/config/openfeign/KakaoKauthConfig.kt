@@ -2,7 +2,6 @@ package com.whatever.config.openfeign
 
 import com.whatever.global.exception.externalserver.kakao.KakaoServerException
 import com.whatever.global.exception.externalserver.kakao.KakaoServerExceptionCode
-import feign.FeignException
 import feign.Response
 import feign.codec.Encoder
 import feign.codec.ErrorDecoder
@@ -26,9 +25,9 @@ class KakaoKauthConfig {
 }
 
 class KauthErrorDecoder() : ErrorDecoder {
-    override fun decode(methodKey: String?, response: Response?): Exception {
-        if (response == null || response.status() < 400) {
-            return FeignException.errorStatus(methodKey, response)
+    override fun decode(methodKey: String, response: Response): Exception {
+        if (response.status() < 400) {
+            return ErrorDecoder.Default().decode(methodKey, response)
         }
 
         val errorResponse = response.toObject(KauthErrorResponse::class)

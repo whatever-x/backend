@@ -75,6 +75,10 @@ management:
       base-path: ${ACTUATOR_BASE_PATH}
   server:
     port: ${ACTUATOR_BASE_PORT}
+kor:  # Kor Open Api Key
+  openapi:
+    specialday:
+      key: ${OPENAPI_SPECIALDAY_KEY}
 ---
 # Production
 spring:
