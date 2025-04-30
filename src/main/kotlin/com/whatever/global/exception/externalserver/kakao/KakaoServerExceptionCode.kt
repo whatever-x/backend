@@ -1,6 +1,5 @@
 package com.whatever.global.exception.externalserver.kakao
 
-import com.whatever.global.exception.common.CaramelExceptionCode
 import com.whatever.global.exception.externalserver.ExternalServerExceptionCode
 import org.springframework.http.HttpStatus
 
@@ -18,13 +17,13 @@ enum class KakaoServerExceptionCode(
     INTERNAL_PROCESSING_ERROR_RETRY("001", (-1).toString(), "처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."),
     MISSING_OR_INVALID_PARAMETER("002", (-2).toString(), "요청에 필요한 정보가 누락되었거나 잘못되었습니다. 입력 내용을 확인해 주세요."),
     ACCOUNT_SUSPENDED("003", (-4).toString(), "계정에 이용 제한이 있습니다. 카카오 고객센터에 문의해 주세요.", HttpStatus.FORBIDDEN),
-    SERVICE_CHECK("004", (-7).toString(), "카카오 서버의 서비스 점검 중이거나 내부 문제로 오류가 발생했습니다."),
+    SERVICE_CHECK("004", (-7).toString(), "카카오 서버의 서비스 점검 중이거나 내부 문제로 오류가 발생했습니다.", HttpStatus.BAD_GATEWAY),
     INVALID_HEADER("005", (-8).toString(), "잘못된 요청 헤더입니다. 요청 정보를 확인해 주세요."),
     DEPRECATED_API("006", (-9).toString(), "더 이상 지원되지 않는 API를 호출하였습니다."),
-    QUOTA_EXCEEDED("007", (-10).toString(), "요청 횟수를 초과했습니다. 잠시 후 다시 시도해 주세요."),
+    QUOTA_EXCEEDED("007", (-10).toString(), "요청 횟수를 초과했습니다. 잠시 후 다시 시도해 주세요.", HttpStatus.TOO_MANY_REQUESTS),
     INVALID_APPKEY_OR_TOKEN("008", (-401).toString(), "카카오 인증 정보가 유효하지 않습니다.", HttpStatus.UNAUTHORIZED),
     KAKAO_TALK_NOT_SIGNED("009", (-501).toString(), "카카오톡 가입 이력이 없습니다. 카카오톡 회원가입 후 다시 시도해 주세요."),
-    INTERNAL_TIMEOUT("010", (-603).toString(), "요청 처리 중 타임아웃이 발생했습니다. 다시 시도해 주세요."),
+    INTERNAL_TIMEOUT("010", (-603).toString(), "요청 처리 중 타임아웃이 발생했습니다. 다시 시도해 주세요.", HttpStatus.GATEWAY_TIMEOUT),
     SERVICE_UNDER_MAINTENANCE("011", (-9798).toString(), "서비스가 점검 중입니다. 잠시 후 다시 시도해 주세요.", HttpStatus.SERVICE_UNAVAILABLE),
 
 
@@ -40,7 +39,7 @@ enum class KakaoServerExceptionCode(
     INVALID_OIDC_TOKEN("018", "KOE400", "카카오 인증 토큰이 없거나, 올바른 형식이 아닙니다."),
     INVALID_OIDC_ISS("019", "KOE401", "올바른 카카오 ID 토큰이 아닙니다."),
     INVALID_OIDC_SIGNATURE("020", "KOE402", "올바른 카카오 ID 토큰이 아닙니다."),
-    EXPIRED_OIDC_TOKEN("021", "KOE403", "카카오 ID 토큰이 만료되었습니다."),
+    EXPIRED_OIDC_TOKEN("021", "KOE403", "카카오 ID 토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED),
     ;
 
     override val code: String
