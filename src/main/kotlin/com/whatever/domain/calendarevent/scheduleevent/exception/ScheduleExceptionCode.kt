@@ -16,6 +16,7 @@ enum class ScheduleExceptionCode(
     ILLEGAL_PARTNER_STATUS("004", "파트너의 커플 정보를 확인할 수 없습니다.", HttpStatus.NOT_FOUND),
     COUPLE_NOT_MATCHED("005", "수정할 수 없는 일정입니다.", HttpStatus.FORBIDDEN),
     UPDATE_CONFLICT("006", "상대방이 수정 중인 일정입니다. 잠시 후 재시도 해주세요.", HttpStatus.CONFLICT),
+    ILLEGAL_CONTENT_ID("007", "사용할 수 없는 콘텐츠입니다."),
     ;
 
     override val code = "SCHEDULE$sequence"

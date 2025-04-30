@@ -87,6 +87,11 @@ class SecurityConfig(
                 authorize("/v1/couples/connect", hasAnyRole(SINGLE.name))
                 authorize("/v1/couples/**", hasAnyRole(COUPLED.name))
 
+                authorize("/v1/calendar/holidays", hasAnyRole(COUPLED.name))
+                authorize("/v1/calendar/schedules/**", hasAnyRole(COUPLED.name))
+
+                authorize("/v1/calendar/**", hasAnyRole(COUPLED.name))
+
                 authorize(anyRequest, permitAll)  // TODO(준용) API에 따른 Role 추가 필요, 현재 임시로 모두 허용
             }
         }
