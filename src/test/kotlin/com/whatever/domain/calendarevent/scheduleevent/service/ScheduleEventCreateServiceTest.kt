@@ -90,7 +90,6 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
 
         val request = CreateScheduleRequest(
             contentId = memo.id,
-            selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = "Schedule Title",
             description = "Description Content",
             isCompleted = false,
@@ -121,7 +120,6 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         setUpCoupleAndSecurity()
         val request = CreateScheduleRequest(
             contentId = 0L, // 존재하지 않는 ID
-            selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = "title",
             description = "desc",
             isCompleted = false,
@@ -143,7 +141,6 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         val nonMemo = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
         val request = CreateScheduleRequest(
             contentId = nonMemo.id,
-            selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = "title",
             description = "desc",
             isCompleted = false,
@@ -170,7 +167,6 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         }
         val request = CreateScheduleRequest(
             contentId = memo.id,
-            selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = "title",
             description = "desc",
             isCompleted = false,
@@ -199,7 +195,6 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         val memo = contentRepository.save(createContent(myUser, ContentType.MEMO))
         val request = CreateScheduleRequest(
             contentId = memo.id,
-            selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = title,
             description = description,
             isCompleted = false,
@@ -221,7 +216,6 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         val memo = contentRepository.save(createContent(myUser, ContentType.MEMO))
         val request = CreateScheduleRequest(
             contentId = memo.id,
-            selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = "title",
             description = "desc",
             isCompleted = false,
