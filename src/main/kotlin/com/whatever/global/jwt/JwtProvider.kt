@@ -48,13 +48,13 @@ class JwtProvider(
             throw JwtMalformedException(JwtExceptionCode.PARSE_FAILED)
         } catch (e: SignatureException) {
             logger.error(e) { "SignatureException 발생 - JWT 서명 검증에 실패했습니다. 토큰: ${token}" }
-            throw JwtSignatureException(JwtExceptionCode.PARSE_FAILED)
+            throw JwtSignatureException(JwtExceptionCode.SIGNATURE_INVALID)
         } catch (e: SecurityException) {
             logger.error(e) { "SecurityException 발생 - JWT 암호 해독에 실패했습니다. 토큰: ${token}" }
-            throw JwtSecurityException(JwtExceptionCode.PARSE_FAILED)
+            throw JwtSecurityException(JwtExceptionCode.SECURITY_FAILURE)
         } catch (e: ExpiredJwtException) {
             logger.error(e) { "ExpiredJwtException 발생 - JWT가 만료되었습니다. 종류: ${e.claims.subject} 만료시간: ${e.claims.expiration}" }
-            throw JwtExpiredException(JwtExceptionCode.PARSE_FAILED)
+            throw JwtExpiredException(JwtExceptionCode.EXPIRED)
         } catch (e: UnsupportedJwtException) {
             logger.error(e) { "UnsupportedJwtException 발생 - 지원되지 않는 JWT 형식입니다. 토큰: ${token}" }
             throw JwtUnsupportedException(JwtExceptionCode.PARSE_FAILED)
