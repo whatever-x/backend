@@ -44,6 +44,8 @@ springdoc:
 swagger:
   user: ${SWAGGER_USER}
   password: ${SWAGGER_PASSWORD}
+  local-server-url: ${LOCAL_SERVER_URL}
+  dev-server-url: ${DEV_SERVER_URL}
 jwt:
   secret-key-str: ${SECRET_KEY_STR}
   access-expiration-sec: ${ACCESS_EXPIRATION_SEC}
