@@ -310,7 +310,7 @@ class ScheduleEventService(
 
 private fun CreateScheduleRequest.toUpdateRequest(): UpdateScheduleRequest {
     return UpdateScheduleRequest(
-        selectedDate = selectedDate,
+        selectedDate = startDateTime.toLocalDate(),
         title = title,
         description = description,
         isCompleted = isCompleted,
