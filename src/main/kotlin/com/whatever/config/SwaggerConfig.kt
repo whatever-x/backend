@@ -48,9 +48,9 @@ class SwaggerConfig {
             .addSecurityItem(securityRequirement)
             .components(components)
             .servers(
-                arrayListOf(
-                    getServer(devServerUrl, "for dev"),
-                    getServer(localServerUrl, "for local"),
+                listOf(
+                    Server(devServerUrl, "for dev"),
+                    Server(localServerUrl, "for local"),
                 )
             )
     }
@@ -65,11 +65,10 @@ class SwaggerConfig {
         }
     }
 
-    private fun getServer(url: String, description: String): Server {
-        val server = Server().apply {
+    private fun Server(url: String, description: String): Server {
+        return Server().apply {
             this.url = url
             this.description = description
         }
-        return server
     }
 }
