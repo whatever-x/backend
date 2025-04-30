@@ -127,8 +127,8 @@ class ScheduleEventService(
             )
         }
 
+        content.type = ContentType.SCHEDULE
         val scheduleEvent = with(request) {
-            content.type = ContentType.SCHEDULE
             ScheduleEvent(
                 content = content,
                 uid = UUID.randomUUID().toString(),
