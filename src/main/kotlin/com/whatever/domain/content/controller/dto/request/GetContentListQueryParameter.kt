@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Min
 data class GetContentListQueryParameter(
     @field:Parameter(
         name = "pageSize",
-        description = "조회할 크기(5 ~ 20). 기본 10",
+        description = "조회할 크기(5 ~ 30). 기본 30",
         `in` = ParameterIn.QUERY,
         required = false,
     )
