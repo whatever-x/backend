@@ -1,23 +1,27 @@
 package com.whatever.domain.content.controller.dto.response
 
+import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentType
 import io.swagger.v3.oas.annotations.media.Schema
-import java.time.LocalDate
 
-@Schema(description = "콘텐츠 리스트 응답 모델")
-data class ContentDetailListResponse(
-    val contentList: List<ContentDetailResponse>
-)
-
-@Schema(description = "콘텐츠 상세 응답 모델")
-data class ContentDetailResponse(
+@Schema(description = "메모 목록 응답 모델")
+data class ContentResponse(
     val contentId: Long,
     val title: String,
     val description: String,
-    val wishDate: LocalDate?,
     val isCompleted: Boolean,
     val tagList: List<TagDto> = emptyList()
-)
+) {
+    companion object {
+        fun from(content: Content) = ContentResponse(
+            contentId = content.id,
+            title = content.contentDetail.title ?: "",
+            description = content.contentDetail.description ?: "",
+            isCompleted = content.contentDetail.isCompleted,
+            tagList = listOf()
+        )
+    }
+}
 
 data class TagDto(
     val tagId: Long,
@@ -28,7 +32,7 @@ data class TagDto(
 data class ContentSummaryResponse(
     @Schema(description = "콘텐츠 id")
     val contentId: Long,
-    
+
     @Schema(description = "콘텐츠 타입 표시 (예: MEMO, SCHEDULE)")
     val contentType: ContentType
 )

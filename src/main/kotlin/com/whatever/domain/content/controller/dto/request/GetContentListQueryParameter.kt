@@ -1,5 +1,9 @@
 package com.whatever.domain.content.controller.dto.request
 
+import com.whatever.global.cursor.CursorRequest
+import com.whatever.global.cursor.DescOrder
+import com.whatever.global.cursor.Sortable
+import com.whatever.global.cursor.Sortables
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
 import jakarta.validation.constraints.Max
@@ -12,15 +16,22 @@ data class GetContentListQueryParameter(
         `in` = ParameterIn.QUERY,
         required = false,
     )
-    @field:Min(5) @field:Max(20)
-    val pageSize: Int = 10,
+    @field:Min(5)
+    @field:Max(30)
+    override val size: Int = 30,
 
     @field:Parameter(
-        name = "lastId",
-        description = "이전 리스트의 마지막 id. 기본 -1",
+        name = "cursor",
+        description = "다음 페이지에 대한 커서",
         `in` = ParameterIn.QUERY,
         required = false,
     )
-    @field:Min(-1)
-    val lastId: Long = -1
-)
+    override val cursor: String?,
+    override val sortType: ContentListSortType = ContentListSortType.ID_DESC,
+) : CursorRequest
+
+enum class ContentListSortType : Sortables {
+    ID_DESC {
+        override val sortables: List<Sortable> = listOf(DescOrder("id"))
+    };
+}

@@ -3,11 +3,12 @@ package com.whatever.domain.content.controller
 import com.whatever.domain.content.controller.dto.request.CreateContentRequest
 import com.whatever.domain.content.controller.dto.request.GetContentListQueryParameter
 import com.whatever.domain.content.controller.dto.request.UpdateContentRequest
-import com.whatever.domain.content.controller.dto.response.ContentDetailListResponse
+import com.whatever.domain.content.controller.dto.response.ContentResponse
 import com.whatever.domain.content.controller.dto.response.ContentSummaryResponse
 import com.whatever.domain.content.exception.ContentException
 import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.service.ContentService
+import com.whatever.global.cursor.CursoredResponse
 import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.succeed
 import io.swagger.v3.oas.annotations.Operation
@@ -33,7 +34,7 @@ class ContentController(
     @GetMapping
     fun getContents(
         @ParameterObject queryParameter: GetContentListQueryParameter,
-    ): CaramelApiResponse<ContentDetailListResponse> {
+    ): CaramelApiResponse<CursoredResponse<ContentResponse>> {
         return contentService.getContentList(queryParameter).succeed()
     }
 

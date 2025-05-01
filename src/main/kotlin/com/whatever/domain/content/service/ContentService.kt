@@ -3,10 +3,8 @@ package com.whatever.domain.content.service
 import com.whatever.domain.content.controller.dto.request.CreateContentRequest
 import com.whatever.domain.content.controller.dto.request.GetContentListQueryParameter
 import com.whatever.domain.content.controller.dto.request.UpdateContentRequest
-import com.whatever.domain.content.controller.dto.response.ContentDetailListResponse
-import com.whatever.domain.content.controller.dto.response.ContentDetailResponse
+import com.whatever.domain.content.controller.dto.response.ContentResponse
 import com.whatever.domain.content.controller.dto.response.ContentSummaryResponse
-import com.whatever.domain.content.controller.dto.response.TagDto
 import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.exception.ContentIllegalStateException
 import com.whatever.domain.content.exception.ContentNotFoundException
@@ -17,7 +15,9 @@ import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
+import com.whatever.global.cursor.CursoredResponse
 import com.whatever.global.exception.common.CaramelException
+import com.whatever.util.CursorUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.retry.annotation.Backoff
@@ -36,20 +36,22 @@ class ContentService(
     private val tagRepository: TagRepository,
     private val tagContentMappingRepository: TagContentMappingRepository,
 ) {
-    fun getContentList(queryParameter: GetContentListQueryParameter): ContentDetailListResponse {
-        val start = queryParameter.lastId + 1
-        val end = start + queryParameter.pageSize
-        val contentList = (start..end).map { id ->
-            ContentDetailResponse(
-                contentId = id,
-                title = "Title $id",
-                description = "Description for content $id",
-                wishDate = null, // wishDate는 ScheduleEvent에서 관리될 수 있음
-                isCompleted = false,
-                tagList = if (id % 2L == 0L) listOf(TagDto(tagId = id, tagLabel = "Tag for $id")) else emptyList()
+    @Transactional(readOnly = true) // 읽기 전용 트랜잭션
+    fun getContentList(queryParameter: GetContentListQueryParameter): CursoredResponse<ContentResponse> {
+        return contentRepository.findByTypeWithCursor(
+            type = ContentType.MEMO,
+            queryParameter = queryParameter,
+        ).let { contents ->
+            CursoredResponse.from(
+                list = contents,
+                size = queryParameter.size,
+                cursor = {
+                    CursorUtil.toHash(it)
+                }
             )
+        }.map {
+            ContentResponse.from(it)
         }
-        return ContentDetailListResponse(contentList = contentList)
     }
 
     fun createContent(contentRequest: CreateContentRequest): ContentSummaryResponse {
