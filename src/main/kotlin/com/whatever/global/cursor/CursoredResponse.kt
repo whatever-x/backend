@@ -22,7 +22,7 @@ data class CursoredResponse<T>(
         fun <T> from(
             list: List<T>,
             size: Int,
-            cursor: ((T) -> String),
+            generateCursor: ((T) -> String),
         ): CursoredResponse<T> {
             return when {
                 size <= 0 -> empty()
@@ -37,7 +37,7 @@ data class CursoredResponse<T>(
                     val subList = list.take(size)
                     // 다음 커서는 현재 서브리스트의 마지막 요소를 기준으로 만들어짐!
                     val nextCursor = Cursor(
-                        next = cursor(subList.last())
+                        next = generateCursor(subList.last())
                     )
                     CursoredResponse(
                         list = subList,

@@ -38,15 +38,16 @@ class ContentService(
 ) {
     @Transactional(readOnly = true) // 읽기 전용 트랜잭션
     fun getContentList(queryParameter: GetContentListQueryParameter): CursoredResponse<ContentResponse> {
+
         return contentRepository.findByTypeWithCursor(
             type = ContentType.MEMO,
             queryParameter = queryParameter,
-        ).let { contents ->
+        ).let { contents: List<Content> ->
             CursoredResponse.from(
                 list = contents,
                 size = queryParameter.size,
-                cursor = {
-                    CursorUtil.toHash(it)
+                generateCursor = { content: Content ->
+                    CursorUtil.toHash(content.id)
                 }
             )
         }.map {
