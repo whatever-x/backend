@@ -10,6 +10,7 @@ import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 import java.time.ZoneId
 
 @Service
@@ -24,11 +25,8 @@ class BalanceGameService(
     }
 
     @Transactional(readOnly = true)
-    fun getTodayBalanceGame(): GetBalanceGameResponse {
-        val now = DateTimeUtil.localNow(TARGET_ZONE_ID).toLocalDate()
-
-        val todayGame = balanceGameRepository.findByGameDateAndIsDeleted(gameDate = now)
-            ?: throw RuntimeException() // TODO(준용) NFE
+    fun getTodayBalanceGameInfo(): GetBalanceGameResponse {
+        val todayGame = getBalanceGame()
         if (todayGame.options.size < 2) {
             throw RuntimeException()  // TODO(준용) ISE
         }
@@ -49,9 +47,16 @@ class BalanceGameService(
         )
     }
 
+    private fun getBalanceGame(
+        date: LocalDate = DateTimeUtil.localNow(TARGET_ZONE_ID).toLocalDate()
+    ): BalanceGame {
+        return balanceGameRepository.findByGameDateAndIsDeleted(gameDate = date)
+            ?: throw RuntimeException() // TODO(준용) NFE
+    }
+
     private fun getCoupleMemberChoices(
         coupleId:Long,
-        game: BalanceGame
+        game: BalanceGame,
     ): List<UserChoiceOption> {
         val memberIds = coupleRepository.findByIdWithMembers(coupleId)?.members?.map { it.id }
             ?: emptyList()
