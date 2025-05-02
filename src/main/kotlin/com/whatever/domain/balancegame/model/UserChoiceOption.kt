@@ -1,7 +1,5 @@
-package com.whatever.domain.balancegame.userchoice.model
+package com.whatever.domain.balancegame.model
 
-import com.whatever.domain.balancegame.gameoption.model.BalanceGameOption
-import com.whatever.domain.balancegame.model.BalanceGame
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.user.model.User
 import jakarta.persistence.Entity
