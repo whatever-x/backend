@@ -2,20 +2,27 @@ package com.whatever.domain.balancegame.controller.dto.response
 
 import com.whatever.domain.balancegame.model.BalanceGame
 import com.whatever.domain.balancegame.model.BalanceGameOption
+import com.whatever.domain.balancegame.model.UserChoiceOption
 import java.time.LocalDate
 
 data class GetBalanceGameResponse(
     val gameInfo: BalanceGameInfo,
     val options: List<OptionInfo>,
+    val myChoice: UserChoiceInfo?,
+    val partnerChoice: UserChoiceInfo?,
 ) {
     companion object {
         fun of(
             game: BalanceGame,
-            options: List<BalanceGameOption>
+            options: List<BalanceGameOption>,
+            myChoice: UserChoiceOption?,
+            partnerChoice: UserChoiceOption?,
         ): GetBalanceGameResponse {
             return GetBalanceGameResponse(
                 gameInfo = BalanceGameInfo.from(game),
-                options = options.map { OptionInfo.from(it) }
+                options = options.map { OptionInfo.from(it) },
+                myChoice = myChoice?.let { UserChoiceInfo.from(it) },
+                partnerChoice = partnerChoice?.let { UserChoiceInfo.from(it) }
             )
         }
     }
@@ -46,6 +53,20 @@ data class OptionInfo(
             return OptionInfo(
                 id = option.id,
                 text = option.optionText
+            )
+        }
+    }
+}
+
+data class UserChoiceInfo(
+    val userId: Long,
+    val optionId: Long,
+) {
+    companion object {
+        fun from(userChoice: UserChoiceOption): UserChoiceInfo {
+            return UserChoiceInfo(
+                userId = userChoice.user.id,
+                optionId = userChoice.balanceGameOption.id,
             )
         }
     }
