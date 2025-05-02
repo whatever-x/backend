@@ -1,6 +1,8 @@
 package com.whatever.domain.balancegame.service
 
 import com.whatever.domain.balancegame.controller.dto.response.GetBalanceGameResponse
+import com.whatever.domain.balancegame.model.BalanceGame
+import com.whatever.domain.balancegame.model.UserChoiceOption
 import com.whatever.domain.balancegame.repository.BalanceGameRepository
 import com.whatever.domain.balancegame.repository.UserChoiceOptionRepository
 import com.whatever.domain.couple.repository.CoupleRepository
@@ -34,13 +36,9 @@ class BalanceGameService(
         val sortedOptions = todayGame.options
             .filter { !it.isDeleted }
             .sortedBy { it.id }
-
-        val coupleId = SecurityUtil.getCurrentUserCoupleId()
-        val memberIds = coupleRepository.findByIdWithMembers(coupleId)?.members?.map { it.id }
-            ?: emptyList()
-        val memberChoices = userChoiceOptionRepository.findByBalanceGame_IdAndUser_IdIn(
-            gameId = todayGame.id,
-            userIds = memberIds,
+        val memberChoices = getCoupleMemberChoices(
+            coupleId = SecurityUtil.getCurrentUserCoupleId(),
+            game = todayGame,
         )
 
         return GetBalanceGameResponse.of(
@@ -49,5 +47,18 @@ class BalanceGameService(
             myChoice = memberChoices.find { it.user.id == SecurityUtil.getCurrentUserId() },
             partnerChoice = memberChoices.find { it.user.id != SecurityUtil.getCurrentUserId() },
         )
+    }
+
+    private fun getCoupleMemberChoices(
+        coupleId:Long,
+        game: BalanceGame
+    ): List<UserChoiceOption> {
+        val memberIds = coupleRepository.findByIdWithMembers(coupleId)?.members?.map { it.id }
+            ?: emptyList()
+        val memberChoices = userChoiceOptionRepository.findByBalanceGame_IdAndUser_IdIn(
+            gameId = game.id,
+            userIds = memberIds,
+        )
+        return memberChoices
     }
 }
