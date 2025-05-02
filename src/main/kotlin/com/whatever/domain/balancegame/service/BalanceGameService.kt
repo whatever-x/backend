@@ -65,30 +65,24 @@ class BalanceGameService(
             game = balanceGame,
         )
 
-        val myChoice = memberChoices.find { it.user.id == requestUserId }
         val partnerChoice = memberChoices.find { it.user.id != requestUserId }
-        if (myChoice != null) {
-            return ChooseBalanceGameOptionResponse.of(
-                game = balanceGame,
-                myChoice = myChoice,
-                partnerChoice = partnerChoice,
-            )
-        }
-        
-        val selectedOption = balanceGame.options.find { it.id == request.optionId }
-            ?: throw RuntimeException() // TODO(준용) IAE-잘못된 옵션 선택
+        val myChoice = memberChoices.find { it.user.id == requestUserId }
+            ?: run {
+                val selectedOption = balanceGame.options.find { it.id == request.optionId }
+                    ?: throw RuntimeException() // TODO(준용) IAE-잘못된 옵션 선택
 
-        val requestUser = userRepository.getReferenceById(requestUserId)
-        val newChoice = UserChoiceOption(
-            balanceGame = balanceGame,
-            balanceGameOption = selectedOption,
-            user = requestUser,
-        )
-        val savedChoice = userChoiceOptionRepository.save(newChoice)
+                val requestUser = userRepository.getReferenceById(requestUserId)
+                val newChoice = UserChoiceOption(
+                    balanceGame = balanceGame,
+                    balanceGameOption = selectedOption,
+                    user = requestUser,
+                )
+                userChoiceOptionRepository.save(newChoice)
+            }
 
         return ChooseBalanceGameOptionResponse.of(
             game = balanceGame,
-            myChoice = savedChoice,
+            myChoice = myChoice,
             partnerChoice = partnerChoice,
         )
     }
