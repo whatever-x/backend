@@ -3,6 +3,15 @@ package com.whatever.domain.balancegame.service
 import com.whatever.domain.balancegame.controller.dto.request.ChooseBalanceGameOptionRequest
 import com.whatever.domain.balancegame.controller.dto.response.ChooseBalanceGameOptionResponse
 import com.whatever.domain.balancegame.controller.dto.response.GetBalanceGameResponse
+import com.whatever.domain.balancegame.exception.BalanceGameExceptionCode
+import com.whatever.domain.balancegame.exception.BalanceGameExceptionCode.GAME_CHANGED
+import com.whatever.domain.balancegame.exception.BalanceGameExceptionCode.GAME_NOT_EXISTS
+import com.whatever.domain.balancegame.exception.BalanceGameExceptionCode.GAME_OPTION_NOT_ENOUGH
+import com.whatever.domain.balancegame.exception.BalanceGameExceptionCode.ILLEGAL_OPTION
+import com.whatever.domain.balancegame.exception.BalanceGameIllegalArgumentException
+import com.whatever.domain.balancegame.exception.BalanceGameIllegalStateException
+import com.whatever.domain.balancegame.exception.BalanceGameNotFoundException
+import com.whatever.domain.balancegame.exception.BalanceGameOptionNotFoundException
 import com.whatever.domain.balancegame.model.BalanceGame
 import com.whatever.domain.balancegame.model.UserChoiceOption
 import com.whatever.domain.balancegame.repository.BalanceGameRepository
@@ -32,7 +41,7 @@ class BalanceGameService(
     fun getTodayBalanceGameInfo(): GetBalanceGameResponse {
         val todayGame = getBalanceGame()
         if (todayGame.options.size < 2) {
-            throw RuntimeException()  // TODO(준용) ISE
+            throw BalanceGameIllegalStateException(errorCode = GAME_OPTION_NOT_ENOUGH)
         }
 
         val sortedOptions = todayGame.options
@@ -55,7 +64,7 @@ class BalanceGameService(
     fun chooseBalanceGameOption(request: ChooseBalanceGameOptionRequest): ChooseBalanceGameOptionResponse {
         val balanceGame = getBalanceGame()
         if (balanceGame.id != request.gameId) {
-            throw RuntimeException()  // TODO(준용) IAE-잘못된 게임 선택(게임 변경됨)
+            throw BalanceGameIllegalArgumentException(errorCode = GAME_CHANGED)
         }
 
         val coupleId = SecurityUtil.getCurrentUserCoupleId()
@@ -69,7 +78,7 @@ class BalanceGameService(
         val myChoice = memberChoices.find { it.user.id == requestUserId }
             ?: run {
                 val selectedOption = balanceGame.options.find { it.id == request.optionId }
-                    ?: throw RuntimeException() // TODO(준용) IAE-잘못된 옵션 선택
+                    ?: throw BalanceGameOptionNotFoundException(errorCode = ILLEGAL_OPTION)
 
                 val requestUser = userRepository.getReferenceById(requestUserId)
                 val newChoice = UserChoiceOption(
@@ -91,7 +100,7 @@ class BalanceGameService(
         date: LocalDate = DateTimeUtil.localNow(TARGET_ZONE_ID).toLocalDate()
     ): BalanceGame {
         return balanceGameRepository.findByGameDateAndIsDeleted(gameDate = date)
-            ?: throw RuntimeException() // TODO(준용) NFE
+            ?: throw BalanceGameNotFoundException(errorCode = GAME_NOT_EXISTS)
     }
 
     private fun getCoupleMemberChoices(
