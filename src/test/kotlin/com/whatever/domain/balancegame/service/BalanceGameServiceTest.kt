@@ -201,16 +201,14 @@ class BalanceGameServiceTest @Autowired constructor(
         mockStatic(DateTimeUtil::class.java).use {
             whenever(DateTimeUtil.localNow(any())).thenReturn(now)
             val gameInfo = makeBalanceGame(1, now.toLocalDate()).first()
-            val request = ChooseBalanceGameOptionRequest(
-                gameId = gameInfo.first.id,
-                optionId = gameInfo.second.first().id,
-            )
+            val gameId = gameInfo.first.id
+            val request = ChooseBalanceGameOptionRequest(optionId = gameInfo.second.first().id)
 
             // when
-            val result = balanceGameService.chooseBalanceGameOption(request)
+            val result = balanceGameService.chooseBalanceGameOption(gameId, request)
 
             // then
-            assertThat(result.gameId).isEqualTo(request.gameId)
+            assertThat(result.gameId).isEqualTo(gameId)
             assertThat(result.myChoice?.userId).isEqualTo(myUser.id)
             assertThat(result.myChoice?.optionId).isEqualTo(request.optionId)
             assertThat(result.partnerChoice).isNull()
@@ -234,16 +232,14 @@ class BalanceGameServiceTest @Autowired constructor(
             ))
 
             val secondChoiceOption = gameInfo.second.last()
-            val request = ChooseBalanceGameOptionRequest(
-                gameId = gameInfo.first.id,
-                optionId = secondChoiceOption.id,
-            )
+            val gameId = gameInfo.first.id
+            val request = ChooseBalanceGameOptionRequest(optionId = secondChoiceOption.id)
 
             // when
-            val result = balanceGameService.chooseBalanceGameOption(request)
+            val result = balanceGameService.chooseBalanceGameOption(gameId, request)
 
             // then
-            assertThat(result.gameId).isEqualTo(request.gameId)
+            assertThat(result.gameId).isEqualTo(gameId)
             assertThat(result.myChoice?.userId).isEqualTo(myUser.id)
             assertThat(result.myChoice?.optionId).isEqualTo(firstChoiceOption.id)
             assertThat(result.partnerChoice).isNull()
@@ -267,16 +263,14 @@ class BalanceGameServiceTest @Autowired constructor(
             ))
 
             val myChoiceOption = gameInfo.second.last()
-            val request = ChooseBalanceGameOptionRequest(
-                gameId = gameInfo.first.id,
-                optionId = myChoiceOption.id,
-            )
+            val gameId = gameInfo.first.id
+            val request = ChooseBalanceGameOptionRequest(optionId = myChoiceOption.id)
 
             // when
-            val result = balanceGameService.chooseBalanceGameOption(request)
+            val result = balanceGameService.chooseBalanceGameOption(gameId, request)
 
             // then
-            assertThat(result.gameId).isEqualTo(request.gameId)
+            assertThat(result.gameId).isEqualTo(gameId)
             assertThat(result.myChoice?.userId).isEqualTo(myUser.id)
             assertThat(result.myChoice?.optionId).isEqualTo(myChoiceOption.id)
             assertThat(result.partnerChoice?.userId).isEqualTo(partnerUser.id)
@@ -298,14 +292,12 @@ class BalanceGameServiceTest @Autowired constructor(
             makeBalanceGame(2, before.toLocalDate())
             val beforeGame = balanceGameService.getTodayBalanceGameInfo()
 
-            val request = ChooseBalanceGameOptionRequest(
-                gameId = beforeGame.gameInfo.id,
-                optionId = beforeGame.options.first().id,
-            )
+            val beforeGameId = beforeGame.gameInfo.id
+            val request = ChooseBalanceGameOptionRequest(optionId = beforeGame.options.first().id)
 
             // when
             val result = assertThrows<BalanceGameIllegalArgumentException> {
-                balanceGameService.chooseBalanceGameOption(request)
+                balanceGameService.chooseBalanceGameOption(beforeGameId, request)
             }
 
             // then
@@ -323,15 +315,12 @@ class BalanceGameServiceTest @Autowired constructor(
             whenever(DateTimeUtil.localNow(any())).thenReturn(now)
             makeBalanceGame(1, now.toLocalDate())
             val beforeGame = balanceGameService.getTodayBalanceGameInfo()
-
-            val request = ChooseBalanceGameOptionRequest(
-                gameId = beforeGame.gameInfo.id,
-                optionId = 0L,
-            )
+            val gameId = beforeGame.gameInfo.id
+            val request = ChooseBalanceGameOptionRequest(optionId = 0L)
 
             // when
             val result = assertThrows<BalanceGameOptionNotFoundException> {
-                balanceGameService.chooseBalanceGameOption(request)
+                balanceGameService.chooseBalanceGameOption(gameId, request)
             }
 
             // then

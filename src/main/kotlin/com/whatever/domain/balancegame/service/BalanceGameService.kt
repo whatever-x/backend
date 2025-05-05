@@ -61,9 +61,12 @@ class BalanceGameService(
     }
 
     @Transactional
-    fun chooseBalanceGameOption(request: ChooseBalanceGameOptionRequest): ChooseBalanceGameOptionResponse {
+    fun chooseBalanceGameOption(
+        gameId: Long,
+        request: ChooseBalanceGameOptionRequest
+    ): ChooseBalanceGameOptionResponse {
         val balanceGame = getBalanceGame()
-        if (balanceGame.id != request.gameId) {
+        if (balanceGame.id != gameId) {
             throw BalanceGameIllegalArgumentException(errorCode = GAME_CHANGED)
         }
 
