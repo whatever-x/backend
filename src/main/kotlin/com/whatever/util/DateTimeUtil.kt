@@ -10,14 +10,17 @@ import java.util.*
 object DateTimeUtil {
     val UTC_ZONE_ID: ZoneId = ZoneId.of("UTC")
 
+    @JvmStatic
     fun localNow(zoneId: ZoneId = UTC_ZONE_ID): LocalDateTime {
         return LocalDateTime.now(zoneId)
     }
 
+    @JvmStatic
     fun zonedNow(zoneId: ZoneId = UTC_ZONE_ID): ZonedDateTime {
         return ZonedDateTime.now(zoneId)
     }
 
+    @JvmStatic
     fun changeTimeZone(
         sourceLocalDateTime: LocalDateTime,
         sourceZone: ZoneId,
@@ -28,6 +31,7 @@ object DateTimeUtil {
             .toLocalDateTime()
     }
 
+    @JvmStatic
     fun changeTimeZone(
         sourceZonedDateTime: ZonedDateTime,
         targetZone: ZoneId = UTC_ZONE_ID,
@@ -36,6 +40,7 @@ object DateTimeUtil {
             .withZoneSameInstant(targetZone)
     }
 
+    @JvmStatic
     fun toDate(
         sourceLocalDateTime: LocalDateTime,
         sourceZone: ZoneId = UTC_ZONE_ID,
