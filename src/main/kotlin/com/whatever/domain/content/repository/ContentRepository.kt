@@ -7,6 +7,7 @@ import com.whatever.domain.content.controller.dto.request.ContentListSortType
 import com.whatever.domain.content.controller.dto.request.GetContentListQueryParameter
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentType
+import com.whatever.domain.user.model.User
 import com.whatever.util.CursorUtil
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -21,7 +22,8 @@ interface ContentRepository : JpaRepository<Content, Long>, ContentRepositoryCus
 interface ContentRepositoryCustom {
     fun findByTypeWithCursor(
         type: ContentType,
-        queryParameter: GetContentListQueryParameter
+        queryParameter: GetContentListQueryParameter,
+        memberIds: List<Long>,
     ): List<Content>
 }
 
@@ -32,7 +34,8 @@ class ContentRepositoryCustomImpl(
 
     override fun findByTypeWithCursor(
         type: ContentType,
-        queryParameter: GetContentListQueryParameter
+        queryParameter: GetContentListQueryParameter,
+        memberIds: List<Long>,
     ): List<Content> {
         return jpqlExecutor.findAll(queryParameter.toPageable()) {
             select(
@@ -42,6 +45,7 @@ class ContentRepositoryCustomImpl(
             ).whereAnd(
                 path(Content::type).equal(type),
                 path(Content::isDeleted).equal(false),
+                path(Content::user)(User::id).`in`(memberIds),
                 applyCursor(queryParameter)
             )
         }.filterNotNull()

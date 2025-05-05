@@ -15,8 +15,10 @@ import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
+import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.global.cursor.CursoredResponse
 import com.whatever.global.exception.common.CaramelException
+import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.CursorUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.dao.OptimisticLockingFailureException
@@ -35,13 +37,17 @@ class ContentService(
     private val contentRepository: ContentRepository,
     private val tagRepository: TagRepository,
     private val tagContentMappingRepository: TagContentMappingRepository,
+    private val coupleRepository: CoupleRepository,
 ) {
     @Transactional(readOnly = true) // 읽기 전용 트랜잭션
     fun getContentList(queryParameter: GetContentListQueryParameter): CursoredResponse<ContentResponse> {
-
+        val coupleId = SecurityUtil.getCurrentUserCoupleId()
+        val memberIds = coupleRepository.findByIdWithMembers(coupleId)?.members?.map { it.id }
+            ?: emptyList()
         return contentRepository.findByTypeWithCursor(
             type = ContentType.MEMO,
             queryParameter = queryParameter,
+            memberIds = memberIds,
         ).let { contents: List<Content> ->
             CursoredResponse.from(
                 list = contents,
