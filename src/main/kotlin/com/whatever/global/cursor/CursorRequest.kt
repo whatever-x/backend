@@ -10,6 +10,6 @@ interface CursorRequest {
     fun cursorAwarePageSize(): Int = size + 1
 
     fun toPageable(): PageRequest {
-        return PageRequest.of(0, cursorAwarePageSize())
+        return PageRequest.of(0, cursorAwarePageSize(), sortType.toSort())
     }
 }
