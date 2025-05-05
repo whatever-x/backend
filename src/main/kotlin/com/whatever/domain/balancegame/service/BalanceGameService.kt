@@ -108,8 +108,8 @@ class BalanceGameService(
         game: BalanceGame,
     ): List<UserChoiceOption> {
         val memberIds = coupleRepository.findByIdWithMembers(coupleId)?.members?.map { it.id }
-            ?: emptyList()
-        val memberChoices = userChoiceOptionRepository.findByBalanceGame_IdAndUser_IdIn(
+            ?: return emptyList()
+        val memberChoices = userChoiceOptionRepository.findByBalanceGame_IdAndUser_IdInAndIsDeleted(
             gameId = game.id,
             userIds = memberIds,
         )
