@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "메모 목록 응답 모델")
 data class ContentResponse(
-    val contentId: Long,
+    val id: Long,
     val title: String,
     val description: String,
     val isCompleted: Boolean,
@@ -14,7 +14,7 @@ data class ContentResponse(
 ) {
     companion object {
         fun from(content: Content) = ContentResponse(
-            contentId = content.id,
+            id = content.id,
             title = content.contentDetail.title ?: "",
             description = content.contentDetail.description ?: "",
             isCompleted = content.contentDetail.isCompleted,
