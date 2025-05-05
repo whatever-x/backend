@@ -1,7 +1,10 @@
 package com.whatever.domain.balancegame.service
 
+import com.whatever.domain.balancegame.controller.dto.request.ChooseBalanceGameOptionRequest
 import com.whatever.domain.balancegame.exception.BalanceGameExceptionCode
+import com.whatever.domain.balancegame.exception.BalanceGameIllegalArgumentException
 import com.whatever.domain.balancegame.exception.BalanceGameIllegalStateException
+import com.whatever.domain.balancegame.exception.BalanceGameOptionNotFoundException
 import com.whatever.domain.balancegame.model.BalanceGame
 import com.whatever.domain.balancegame.model.BalanceGameOption
 import com.whatever.domain.balancegame.model.UserChoiceOption
@@ -81,7 +84,7 @@ class BalanceGameServiceTest @Autowired constructor(
 
     @DisplayName("밸러스 게임을 조회 시 커플 멤버중 나만 선택했을 경우 내 선택 정보도 함께 반환된다.")
     @Test
-    fun getTodayBalanceGameInfo_WithIHaveChosen() {
+    fun getTodayBalanceGameInfo_WhenIHaveChosen() {
         // given
         val (myUser, _, _) = setUpCoupleAndSecurity()
         val now = LocalDateTime.of(2025, 5, 5, 9, 0)
@@ -186,6 +189,153 @@ class BalanceGameServiceTest @Autowired constructor(
 
             // then
             assertThat(result.errorCode).isEqualTo(BalanceGameExceptionCode.GAME_OPTION_NOT_ENOUGH)
+        }
+    }
+
+    @DisplayName("밸런스게임 선택 시 아무도 입력하지 않았다면 나의 선택 결과만 반환된다.")
+    @Test
+    fun chooseBalanceGameOption_WithNoMemberChoices() {
+        // given
+        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val now = LocalDateTime.of(2025, 5, 5, 9, 0)
+        mockStatic(DateTimeUtil::class.java).use {
+            whenever(DateTimeUtil.localNow(any())).thenReturn(now)
+            val gameInfo = makeBalanceGame(1, now.toLocalDate()).first()
+            val request = ChooseBalanceGameOptionRequest(
+                gameId = gameInfo.first.id,
+                optionId = gameInfo.second.first().id,
+            )
+
+            // when
+            val result = balanceGameService.chooseBalanceGameOption(request)
+
+            // then
+            assertThat(result.gameId).isEqualTo(request.gameId)
+            assertThat(result.myChoice?.userId).isEqualTo(myUser.id)
+            assertThat(result.myChoice?.optionId).isEqualTo(request.optionId)
+            assertThat(result.partnerChoice).isNull()
+        }
+    }
+
+    @DisplayName("밸런스게임 선택 시 내가 이미 선택했다면 초기 선택 결과가 반환된다.")
+    @Test
+    fun chooseBalanceGameOption_WhenIHaveChosen() {
+        // given
+        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val now = LocalDateTime.of(2025, 5, 5, 9, 0)
+        mockStatic(DateTimeUtil::class.java).use {
+            whenever(DateTimeUtil.localNow(any())).thenReturn(now)
+            val gameInfo = makeBalanceGame(1, now.toLocalDate()).first()
+            val firstChoiceOption = gameInfo.second.first()
+            userChoiceOptionRepository.save(UserChoiceOption(
+                balanceGame = gameInfo.first,
+                balanceGameOption = firstChoiceOption,
+                user = myUser,
+            ))
+
+            val secondChoiceOption = gameInfo.second.last()
+            val request = ChooseBalanceGameOptionRequest(
+                gameId = gameInfo.first.id,
+                optionId = secondChoiceOption.id,
+            )
+
+            // when
+            val result = balanceGameService.chooseBalanceGameOption(request)
+
+            // then
+            assertThat(result.gameId).isEqualTo(request.gameId)
+            assertThat(result.myChoice?.userId).isEqualTo(myUser.id)
+            assertThat(result.myChoice?.optionId).isEqualTo(firstChoiceOption.id)
+            assertThat(result.partnerChoice).isNull()
+        }
+    }
+
+    @DisplayName("밸런스게임 선택 시 파트너가 이미 선택했다면 커플멤버 모두의 선택 결과가 반환된다.")
+    @Test
+    fun chooseBalanceGameOption_WhenPartnerChosen() {
+        // given
+        val (myUser, partnerUser, _) = setUpCoupleAndSecurity()
+        val now = LocalDateTime.of(2025, 5, 5, 9, 0)
+        mockStatic(DateTimeUtil::class.java).use {
+            whenever(DateTimeUtil.localNow(any())).thenReturn(now)
+            val gameInfo = makeBalanceGame(1, now.toLocalDate()).first()
+            val partnerChoiceOption = gameInfo.second.first()
+            userChoiceOptionRepository.save(UserChoiceOption(
+                balanceGame = gameInfo.first,
+                balanceGameOption = partnerChoiceOption,
+                user = partnerUser,
+            ))
+
+            val myChoiceOption = gameInfo.second.last()
+            val request = ChooseBalanceGameOptionRequest(
+                gameId = gameInfo.first.id,
+                optionId = myChoiceOption.id,
+            )
+
+            // when
+            val result = balanceGameService.chooseBalanceGameOption(request)
+
+            // then
+            assertThat(result.gameId).isEqualTo(request.gameId)
+            assertThat(result.myChoice?.userId).isEqualTo(myUser.id)
+            assertThat(result.myChoice?.optionId).isEqualTo(myChoiceOption.id)
+            assertThat(result.partnerChoice?.userId).isEqualTo(partnerUser.id)
+            assertThat(result.partnerChoice?.optionId).isEqualTo(partnerChoiceOption.id)
+        }
+    }
+
+    @DisplayName("밸런스게임 조회 후 자정을 지나 선택했다면 게임이 바뀌어 예외가 발생한다.")
+    @Test
+    fun chooseBalanceGameOption_WhenOverMidnight() {
+        // given
+        val (_, _, _) = setUpCoupleAndSecurity()
+        val before = LocalDateTime.of(2025, 5, 4, 23, 59, 59)
+        val now = LocalDateTime.of(2025, 5, 5, 0, 0)
+        mockStatic(DateTimeUtil::class.java).use {
+            whenever(DateTimeUtil.localNow(any()))
+                .thenReturn(before)
+                .thenReturn(now)
+            makeBalanceGame(2, before.toLocalDate())
+            val beforeGame = balanceGameService.getTodayBalanceGameInfo()
+
+            val request = ChooseBalanceGameOptionRequest(
+                gameId = beforeGame.gameInfo.id,
+                optionId = beforeGame.options.first().id,
+            )
+
+            // when
+            val result = assertThrows<BalanceGameIllegalArgumentException> {
+                balanceGameService.chooseBalanceGameOption(request)
+            }
+
+            // then
+            assertThat(result.errorCode).isEqualTo(BalanceGameExceptionCode.GAME_CHANGED)
+        }
+    }
+
+    @DisplayName("밸런스게임의 선택지가 아닌 id를 잘못 요청하면 예외가 발생한다.")
+    @Test
+    fun chooseBalanceGameOption_WithIllegalOptionId() {
+        // given
+        val (_, _, _) = setUpCoupleAndSecurity()
+        val now = LocalDateTime.of(2025, 5, 5, 0, 0)
+        mockStatic(DateTimeUtil::class.java).use {
+            whenever(DateTimeUtil.localNow(any())).thenReturn(now)
+            makeBalanceGame(1, now.toLocalDate())
+            val beforeGame = balanceGameService.getTodayBalanceGameInfo()
+
+            val request = ChooseBalanceGameOptionRequest(
+                gameId = beforeGame.gameInfo.id,
+                optionId = 0L,
+            )
+
+            // when
+            val result = assertThrows<BalanceGameOptionNotFoundException> {
+                balanceGameService.chooseBalanceGameOption(request)
+            }
+
+            // then
+            assertThat(result.errorCode).isEqualTo(BalanceGameExceptionCode.ILLEGAL_OPTION)
         }
     }
 
