@@ -1,4 +1,4 @@
-package com.whatever.domain.balancegame.controller.dto
+package com.whatever.domain.balancegame.controller
 
 import com.whatever.domain.balancegame.controller.dto.request.ChooseBalanceGameOptionRequest
 import com.whatever.domain.balancegame.controller.dto.response.ChooseBalanceGameOptionResponse
