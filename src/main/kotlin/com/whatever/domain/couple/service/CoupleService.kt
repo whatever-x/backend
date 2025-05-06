@@ -160,8 +160,7 @@ class CoupleService(
         validateSingleUser(joinerUser)
 
         val savedCouple = coupleRepository.save(Couple())
-        creatorUser.setCouple(savedCouple)
-        joinerUser.setCouple(savedCouple)
+        savedCouple.addMembers(creatorUser, joinerUser)
 
         redisUtil.deleteCoupleInvitationCode(invitationCode, creatorUserId)
 

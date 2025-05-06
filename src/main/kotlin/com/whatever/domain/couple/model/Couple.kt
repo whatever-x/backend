@@ -32,18 +32,17 @@ class Couple (
     @Version
     private var version: Long = 0L
 
-    fun addMember(user: User) {
-        if (mutableMembers.size > 1) {
+    fun addMembers(user1: User, user2: User) {
+        if (mutableMembers.isNotEmpty()) {
             throw CoupleIllegalStateException(
                 errorCode = ILLEGAL_MEMBER_SIZE,
                 detailMessage = "커플에는 반드시 두 명의 유저가 있어야 합니다. 현재 등록된 유저 수: ${mutableMembers.size}"
             )
         }
-        mutableMembers.add(user)
-    }
-
-    fun removeMember(user: User) {
-
+        user1.setCouple(this)
+        user2.setCouple(this)
+        mutableMembers.add(user1)
+        mutableMembers.add(user2)
     }
 
     fun updateStartDate(newDate: LocalDate, userZoneId: ZoneId) {

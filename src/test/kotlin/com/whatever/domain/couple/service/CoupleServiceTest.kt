@@ -408,8 +408,7 @@ internal fun makeCouple(userRepository: UserRepository, coupleRepository: Couple
             sharedMessage = sharedMessage
         )
     )
-    myUser.setCouple(savedCouple)
-    partnerUser.setCouple(savedCouple)
+    savedCouple.addMembers(myUser, partnerUser)
 
     userRepository.save(myUser)
     userRepository.save(partnerUser)
