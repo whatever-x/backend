@@ -4,6 +4,8 @@ import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.user.exception.UserExceptionCode
 import com.whatever.domain.user.exception.UserIllegalStateException
+import com.whatever.domain.user.model.UserStatus.COUPLED
+import com.whatever.domain.user.model.UserStatus.SINGLE
 import jakarta.persistence.*
 import jakarta.validation.constraints.Size
 import java.time.LocalDate
@@ -44,11 +46,16 @@ class User(
     val couple: Couple? get() = _couple
 
     fun setCouple(couple: Couple) {
-        if (_couple != null) {
+        if (userStatus != SINGLE) {
             throw UserIllegalStateException(UserExceptionCode.ALREADY_EXIST_COUPLE)
         }
         _couple = couple
-        updateUserStatus(UserStatus.COUPLED)
+        updateUserStatus(COUPLED)
+    }
+
+    fun leaveFromCouple() {
+        this._couple = null
+        updateUserStatus(SINGLE)
     }
 
     fun updateUserStatus(newStatus: UserStatus) {
@@ -63,6 +70,6 @@ class User(
         this.nickname = nickname
         this.birthDate = birthday
         this.gender = gender
-        this.userStatus = UserStatus.SINGLE
+        this.userStatus = SINGLE
     }
 }
