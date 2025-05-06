@@ -75,6 +75,11 @@ class CoupleService(
 
         return CoupleBasicResponse.from(updatedCouple)
     }
+    @Recover
+    fun updateSharedMessageRecover(e: OptimisticLockingFailureException, coupleId: Long): CoupleBasicResponse {
+        logger.error { "couple shared message update fail. couple id: ${coupleId}" }
+        throw CoupleIllegalStateException(errorCode = UPDATE_FAIL)
+    }
 
     @Retryable(
         retryFor = [OptimisticLockingFailureException::class],
@@ -103,13 +108,6 @@ class CoupleService(
 
         return CoupleBasicResponse.from(updatedCouple)
     }
-
-    @Recover
-    fun updateSharedMessageRecover(e: OptimisticLockingFailureException, coupleId: Long): CoupleBasicResponse {
-        logger.error { "couple shared message update fail. couple id: ${coupleId}" }
-        throw CoupleIllegalStateException(errorCode = UPDATE_FAIL)
-    }
-
     @Recover
     fun updateStartDateRecover(
         e: OptimisticLockingFailureException,
