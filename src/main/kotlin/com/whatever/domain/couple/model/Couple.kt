@@ -34,6 +34,12 @@ class Couple (
     private var version: Long = 0L
 
     fun addMembers(user1: User, user2: User) {
+        if (user1.id == user2.id) {
+            throw CoupleIllegalArgumentException(
+                errorCode = ILLEGAL_MEMBER_SIZE,
+
+            )
+        }
         if (mutableMembers.isNotEmpty()) {
             throw CoupleIllegalStateException(
                 errorCode = ILLEGAL_MEMBER_SIZE,
