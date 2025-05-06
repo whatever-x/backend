@@ -3,6 +3,7 @@ package com.whatever.domain.user.model
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.user.exception.UserExceptionCode
+import com.whatever.domain.user.exception.UserExceptionCode.INVALID_USER_STATUS_FOR_COUPLING
 import com.whatever.domain.user.exception.UserIllegalStateException
 import com.whatever.domain.user.model.UserStatus.COUPLED
 import com.whatever.domain.user.model.UserStatus.SINGLE
@@ -47,7 +48,10 @@ class User(
 
     fun setCouple(couple: Couple) {
         if (userStatus != SINGLE) {
-            throw UserIllegalStateException(UserExceptionCode.ALREADY_EXIST_COUPLE)
+            throw UserIllegalStateException(
+                errorCode = INVALID_USER_STATUS_FOR_COUPLING,
+                detailMessage = "Current user status is '${userStatus}'. To be coupled, the user status must be '${SINGLE}'."
+            )
         }
         _couple = couple
         updateUserStatus(COUPLED)
