@@ -19,6 +19,7 @@ import com.whatever.domain.couple.exception.CoupleExceptionCode.UPDATE_FAIL
 import com.whatever.domain.couple.exception.CoupleIllegalStateException
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
+import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
@@ -30,8 +31,8 @@ import com.whatever.util.findByIdAndNotDeleted
 import com.whatever.util.toZonId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.viascom.nanoid.NanoId
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.OptimisticLockingFailureException
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Recover
 import org.springframework.retry.annotation.Retryable
@@ -47,6 +48,7 @@ class CoupleService(
     private val redisUtil: RedisUtil,
     private val userRepository: UserRepository,
     private val coupleRepository: CoupleRepository,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
 
     companion object {
@@ -136,6 +138,20 @@ class CoupleService(
             myUser = myUser,
             partnerUser = partnerUser
         )
+    }
+
+    @Transactional
+    fun leaveCouple(
+        coupleId: Long,
+        userId: Long = SecurityUtil.getCurrentUserId(),
+    ) {
+        val couple = coupleRepository.findByIdWithMembers(coupleId)
+            ?: throw RuntimeException()  // TODO(준용) NFE
+        val user = couple.members.find { it.id == userId }
+            ?: throw RuntimeException()  // TODO(준용) IAE
+
+        couple.removeMember(user)
+        applicationEventPublisher.publishEvent(CoupleMemberLeaveEvent(coupleId, userId))
     }
 
     @Transactional
