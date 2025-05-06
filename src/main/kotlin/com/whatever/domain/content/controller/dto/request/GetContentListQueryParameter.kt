@@ -28,6 +28,7 @@ data class GetContentListQueryParameter(
     )
     override val cursor: String?,
     override val sortType: ContentListSortType = ContentListSortType.ID_DESC,
+    val tagId: Long? = null,
 ) : CursorRequest
 
 enum class ContentListSortType : Sortables {

@@ -10,22 +10,25 @@ data class ContentResponse(
     val title: String,
     val description: String,
     val isCompleted: Boolean,
-    val tagList: List<TagDto> = emptyList()
+    val tagList: List<TagDto>,
 ) {
     companion object {
-        fun from(content: Content) = ContentResponse(
+        fun from(
+            content: Content,
+            tagList: List<TagDto>
+        ) = ContentResponse(
             id = content.id,
             title = content.contentDetail.title ?: "",
             description = content.contentDetail.description ?: "",
             isCompleted = content.contentDetail.isCompleted,
-            tagList = listOf()
+            tagList = tagList,
         )
     }
 }
 
 data class TagDto(
-    val tagId: Long,
-    val tagLabel: String
+    val id: Long,
+    val label: String
 )
 
 @Schema(description = "콘텐츠 요약 응답 모델")

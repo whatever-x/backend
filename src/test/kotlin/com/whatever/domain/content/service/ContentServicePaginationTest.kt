@@ -6,6 +6,10 @@ import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
 import com.whatever.domain.content.model.ContentType
 import com.whatever.domain.content.repository.ContentRepository
+import com.whatever.domain.content.tag.model.Tag
+import com.whatever.domain.content.tag.model.TagContentMapping
+import com.whatever.domain.content.tag.repository.TagContentMappingRepository
+import com.whatever.domain.content.tag.repository.TagRepository
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.LoginPlatform
@@ -34,6 +38,8 @@ class ContentServicePaginationTest @Autowired constructor(
     private val userRepository: UserRepository,
     private val contentRepository: ContentRepository,
     private val contentService: ContentService,
+    private val tagRepository: TagRepository,
+    private val tagContentMappingRepository: TagContentMappingRepository,
 ) {
 
     private lateinit var securityUtilMock: AutoCloseable
@@ -46,6 +52,8 @@ class ContentServicePaginationTest @Autowired constructor(
     @AfterEach
     fun tearDown() {
         securityUtilMock.close()
+        tagContentMappingRepository.deleteAllInBatch()
+        tagRepository.deleteAllInBatch()
         contentRepository.deleteAllInBatch()
         userRepository.deleteAllInBatch()
         coupleRepository.deleteAllInBatch()
@@ -160,6 +168,55 @@ class ContentServicePaginationTest @Autowired constructor(
         whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
         whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
         return Triple(myUser, partnerUser, couple)
+    }
+
+    @DisplayName("메모 목록 조회 시 tagId 가 주어지면 해당 태그가 포함된 컨텐츠만 내려온다")
+    @Test
+    fun getContentList_WithTagId_FiltersByTag() {
+        // given
+        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val contentA = contentRepository.save(createContent(myUser, ContentType.MEMO, "A"))
+        val contentB = contentRepository.save(createContent(myUser, ContentType.MEMO, "B"))
+
+        val tag1 = tagRepository.save(Tag(label = "Tag1"))
+        val tag2 = tagRepository.save(Tag(label = "Tag2"))
+
+        tagContentMappingRepository.save(TagContentMapping(tag = tag1, content = contentA))
+        tagContentMappingRepository.save(TagContentMapping(tag = tag2, content = contentB))
+
+        val queryParameter = GetContentListQueryParameter(size = 10, cursor = null, tagId = tag1.id)
+
+        // when
+        val result = contentService.getContentList(queryParameter)
+
+        // then
+        assertThat(result.list).hasSize(1)
+        assertThat(result.list.first().id).isEqualTo(contentA.id)
+    }
+
+    @DisplayName("메모 목록 조회 시 각 컨텐츠에 해당하는 태그들도 같이 내려온다")
+    @Test
+    fun getContentList_IncludesTags() {
+        // given
+        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val content = contentRepository.save(createContent(myUser, ContentType.MEMO, "C"))
+
+        val tag1 = tagRepository.save(Tag(label = "Tag1"))
+        val tag2 = tagRepository.save(Tag(label = "Tag2"))
+
+        tagContentMappingRepository.save(TagContentMapping(tag = tag1, content = content))
+        tagContentMappingRepository.save(TagContentMapping(tag = tag2, content = content))
+
+        val queryParameter = GetContentListQueryParameter(size = 10, cursor = null)
+
+        // when
+        val result = contentService.getContentList(queryParameter)
+
+        // then
+        val response = result.list.find { it.id == content.id }!!
+        assertThat(response.tagList).hasSize(2)
+        assertThat(response.tagList.map { it.id }).containsExactlyInAnyOrder(tag1.id, tag2.id)
+        assertThat(response.tagList.map { it.label }).containsExactlyInAnyOrder(tag1.label, tag2.label)
     }
 
 }

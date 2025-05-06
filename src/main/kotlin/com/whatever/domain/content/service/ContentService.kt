@@ -5,6 +5,7 @@ import com.whatever.domain.content.controller.dto.request.GetContentListQueryPar
 import com.whatever.domain.content.controller.dto.request.UpdateContentRequest
 import com.whatever.domain.content.controller.dto.response.ContentResponse
 import com.whatever.domain.content.controller.dto.response.ContentSummaryResponse
+import com.whatever.domain.content.controller.dto.response.TagDto
 import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.exception.ContentIllegalStateException
 import com.whatever.domain.content.exception.ContentNotFoundException
@@ -12,6 +13,7 @@ import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
 import com.whatever.domain.content.model.ContentType
 import com.whatever.domain.content.repository.ContentRepository
+import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
@@ -44,10 +46,12 @@ class ContentService(
         val coupleId = SecurityUtil.getCurrentUserCoupleId()
         val memberIds = coupleRepository.findByIdWithMembers(coupleId)?.members?.map { it.id }
             ?: emptyList()
+
         return contentRepository.findByTypeWithCursor(
             type = ContentType.MEMO,
             queryParameter = queryParameter,
             memberIds = memberIds,
+            tagId = queryParameter.tagId,
         ).let { contents: List<Content> ->
             CursoredResponse.from(
                 list = contents,
@@ -56,8 +60,10 @@ class ContentService(
                     CursorUtil.toHash(content.id)
                 }
             )
-        }.map {
-            ContentResponse.from(it)
+        }.map { content ->
+            val existingMappings = tagContentMappingRepository.findAllByContent_IdAndIsDeleted(content.id)
+            val existingTags = existingMappings.map { it.tag.toTagDto() }
+            ContentResponse.from(content, existingTags)
         }
     }
 
@@ -162,4 +168,9 @@ class ContentService(
 private fun Content.toContentSummaryResponse() = ContentSummaryResponse(
     contentId = id,
     contentType = type
+)
+
+private fun Tag.toTagDto() = TagDto(
+    id = id,
+    label = label,
 )

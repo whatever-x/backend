@@ -7,6 +7,8 @@ import com.whatever.domain.content.controller.dto.request.ContentListSortType
 import com.whatever.domain.content.controller.dto.request.GetContentListQueryParameter
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentType
+import com.whatever.domain.content.tag.model.Tag
+import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.user.model.User
 import com.whatever.util.CursorUtil
 import org.springframework.data.jpa.repository.JpaRepository
@@ -24,6 +26,7 @@ interface ContentRepositoryCustom {
         type: ContentType,
         queryParameter: GetContentListQueryParameter,
         memberIds: List<Long>,
+        tagId: Long?,
     ): List<Content>
 }
 
@@ -36,17 +39,23 @@ class ContentRepositoryCustomImpl(
         type: ContentType,
         queryParameter: GetContentListQueryParameter,
         memberIds: List<Long>,
+        tagId: Long?,
     ): List<Content> {
         return jpqlExecutor.findAll(queryParameter.toPageable()) {
             select(
                 entity(Content::class)
             ).from(
-                entity(Content::class)
+                entity(Content::class),
+                tagId?.let {
+                    join(entity(TagContentMapping::class))
+                        .on(path(TagContentMapping::content)(Content::id).equal(path(Content::id)))
+                }
             ).whereAnd(
                 path(Content::type).equal(type),
                 path(Content::isDeleted).equal(false),
                 path(Content::user)(User::id).`in`(memberIds),
-                applyCursor(queryParameter)
+                tagId?.let { path(TagContentMapping::tag)(Tag::id).equal(it) },
+                applyCursor(queryParameter),
             )
         }.filterNotNull()
     }
