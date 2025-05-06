@@ -5,6 +5,7 @@ import com.whatever.domain.couple.exception.CoupleExceptionCode.ILLEGAL_MEMBER_S
 import com.whatever.domain.couple.exception.CoupleExceptionCode.ILLEGAL_START_DATE
 import com.whatever.domain.couple.exception.CoupleIllegalArgumentException
 import com.whatever.domain.couple.exception.CoupleIllegalStateException
+import com.whatever.domain.couple.model.CoupleStatus.INACTIVE
 import com.whatever.domain.user.model.User
 import com.whatever.util.DateTimeUtil
 import jakarta.persistence.*
@@ -45,7 +46,22 @@ class Couple (
         mutableMembers.add(user2)
     }
 
+    fun removeMember(user: User) {
+        if (!mutableMembers.removeIf { it.id == user.id }) {
+            throw RuntimeException("커플 멤버가 아님")  // TODO(준용) IAE
+        }
+
+        user.leaveFromCouple()
+        status = INACTIVE
+        if (mutableMembers.isEmpty()) {
+            this.deleteEntity()
+        }
+    }
+
     fun updateStartDate(newDate: LocalDate, userZoneId: ZoneId) {
+        if (status == INACTIVE) {
+            throw RuntimeException()  // TODO ISE
+        }
         val todayInUserZone = DateTimeUtil.zonedNow(userZoneId).toLocalDate()
         if (newDate.isAfter(todayInUserZone)) {
             throw CoupleIllegalArgumentException(errorCode = ILLEGAL_START_DATE)
@@ -55,6 +71,9 @@ class Couple (
     }
 
     fun updateSharedMessage(newMessage: String?) {
+        if (status == INACTIVE) {
+            throw RuntimeException()  // TODO ISE
+        }
         sharedMessage = newMessage.takeUnless { it.isNullOrBlank() }
     }
 }
