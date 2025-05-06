@@ -48,7 +48,7 @@ class User(
             throw UserIllegalStateException(UserExceptionCode.ALREADY_EXIST_COUPLE)
         }
         _couple = couple
-        couple.addUsers(this)
+        couple.addMember(this)
         updateUserStatus(UserStatus.COUPLED)
     }
 
