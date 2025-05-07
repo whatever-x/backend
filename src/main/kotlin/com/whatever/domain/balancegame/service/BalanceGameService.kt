@@ -36,13 +36,14 @@ class BalanceGameService(
     @Transactional(readOnly = true)
     fun getTodayBalanceGameInfo(): GetBalanceGameResponse {
         val todayGame = getBalanceGame()
-        if (todayGame.options.size < 2) {
-            throw BalanceGameIllegalStateException(errorCode = GAME_OPTION_NOT_ENOUGH)
-        }
-
         val sortedOptions = todayGame.options
             .filter { !it.isDeleted }
             .sortedBy { it.id }
+
+        if (sortedOptions.size < 2) {
+            throw BalanceGameIllegalStateException(errorCode = GAME_OPTION_NOT_ENOUGH)
+        }
+
         val memberChoices = getCoupleMemberChoices(
             coupleId = SecurityUtil.getCurrentUserCoupleId(),
             game = todayGame,
