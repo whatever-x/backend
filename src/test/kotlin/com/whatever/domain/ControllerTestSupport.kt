@@ -1,7 +1,7 @@
 package com.whatever.domain
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.whatever.domain.balancegame.controller.dto.BalanceGameController
+import com.whatever.domain.balancegame.controller.BalanceGameController
 import com.whatever.domain.balancegame.service.BalanceGameService
 import com.whatever.domain.calendarevent.scheduleevent.controller.ScheduleController
 import com.whatever.domain.calendarevent.scheduleevent.service.ScheduleEventService
