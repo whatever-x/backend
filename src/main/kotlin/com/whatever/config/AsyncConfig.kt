@@ -1,17 +1,18 @@
 package com.whatever.config
 
-import org.springframework.context.annotation.Bean
+import com.whatever.global.exception.CaramelAsyncExceptionHandler
+import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.task.TaskExecutor
+import org.springframework.scheduling.annotation.AsyncConfigurer
 import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
+import java.util.concurrent.Executor
 
 
 @Configuration
 @EnableAsync
-class AsyncConfig {
-    @Bean(name = ["taskExecutor"])
-    fun taskExecutor(): TaskExecutor {
+class AsyncConfig : AsyncConfigurer {
+    override fun getAsyncExecutor(): Executor {
         val executor = ThreadPoolTaskExecutor()
         executor.corePoolSize = 10
         executor.queueCapacity = 50
@@ -19,5 +20,9 @@ class AsyncConfig {
         executor.setThreadNamePrefix("async-task-")
         executor.initialize()
         return executor
+    }
+
+    override fun getAsyncUncaughtExceptionHandler(): AsyncUncaughtExceptionHandler {
+        return CaramelAsyncExceptionHandler()
     }
 }
