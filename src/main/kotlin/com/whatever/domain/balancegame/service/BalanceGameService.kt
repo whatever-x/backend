@@ -33,10 +33,6 @@ class BalanceGameService(
     private val userRepository: UserRepository
 ) {
 
-    companion object {
-        private val TARGET_ZONE_ID: ZoneId = ZoneId.of("Asia/Seoul")
-    }
-
     @Transactional(readOnly = true)
     fun getTodayBalanceGameInfo(): GetBalanceGameResponse {
         val todayGame = getBalanceGame()
@@ -117,5 +113,9 @@ class BalanceGameService(
             userIds = memberIds,
         )
         return memberChoices
+    }
+
+    companion object {
+        private val TARGET_ZONE_ID: ZoneId = ZoneId.of("Asia/Seoul")
     }
 }
