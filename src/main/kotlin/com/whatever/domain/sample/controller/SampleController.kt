@@ -129,7 +129,7 @@ class SampleController(
         return "single"
     }
 
-    @PreAuthorize("hasRole('COUPLE')")
+    @PreAuthorize("hasRole('COUPLED')")
     @GetMapping("/is-couple")
     fun getCouple(): String {
         return "couple"
