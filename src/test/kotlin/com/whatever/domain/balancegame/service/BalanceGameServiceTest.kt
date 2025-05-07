@@ -104,6 +104,7 @@ class BalanceGameServiceTest @Autowired constructor(
 
             // then
             assertThat(result.myChoice?.userId).isEqualTo(myChoice.user.id)
+            assertThat(result.myChoice?.nickname).isEqualTo(myUser.nickname)
             assertThat(result.myChoice?.optionId).isEqualTo(myChoice.balanceGameOption.id)
             assertThat(result.partnerChoice).isNull()
         }
@@ -132,6 +133,7 @@ class BalanceGameServiceTest @Autowired constructor(
             // then
             assertThat(result.myChoice).isNull()
             assertThat(result.partnerChoice?.userId).isEqualTo(partnerChoice.user.id)
+            assertThat(result.partnerChoice?.nickname).isEqualTo(partnerUser.nickname)
             assertThat(result.partnerChoice?.optionId).isEqualTo(partnerChoice.balanceGameOption.id)
         }
     }
@@ -165,8 +167,10 @@ class BalanceGameServiceTest @Autowired constructor(
 
             // then
             assertThat(result.myChoice?.userId).isEqualTo(myChoice.user.id)
+            assertThat(result.myChoice?.nickname).isEqualTo(myUser.nickname)
             assertThat(result.myChoice?.optionId).isEqualTo(myChoice.balanceGameOption.id)
             assertThat(result.partnerChoice?.userId).isEqualTo(partnerChoice.user.id)
+            assertThat(result.partnerChoice?.nickname).isEqualTo(partnerUser.nickname)
             assertThat(result.partnerChoice?.optionId).isEqualTo(partnerChoice.balanceGameOption.id)
         }
     }

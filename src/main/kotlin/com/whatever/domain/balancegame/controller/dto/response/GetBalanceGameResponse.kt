@@ -3,6 +3,10 @@ package com.whatever.domain.balancegame.controller.dto.response
 import com.whatever.domain.balancegame.model.BalanceGame
 import com.whatever.domain.balancegame.model.BalanceGameOption
 import com.whatever.domain.balancegame.model.UserChoiceOption
+import com.whatever.domain.user.exception.UserExceptionCode
+import com.whatever.domain.user.exception.UserIllegalStateException
+import com.whatever.global.exception.GlobalException
+import com.whatever.global.exception.GlobalExceptionCode
 import java.time.LocalDate
 
 data class GetBalanceGameResponse(
@@ -60,12 +64,18 @@ data class OptionInfo(
 
 data class UserChoiceInfo(
     val userId: Long,
+    val nickname: String,
     val optionId: Long,
 ) {
     companion object {
         fun from(userChoice: UserChoiceOption): UserChoiceInfo {
             return UserChoiceInfo(
                 userId = userChoice.user.id,
+                nickname = userChoice.user.nickname
+                    ?: throw GlobalException(
+                        errorCode = GlobalExceptionCode.ILLEGAL_STATE,
+                        detailMessage = "Illegal User Status. Nickname is null. user id: ${userChoice.user.id}"
+                    ),
                 optionId = userChoice.balanceGameOption.id,
             )
         }
