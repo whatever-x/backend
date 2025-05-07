@@ -4,6 +4,7 @@ import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.model.CoupleStatus
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
+import com.whatever.domain.user.model.UserStatus
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
@@ -55,6 +56,7 @@ data class CoupleBasicResponse(
 @Schema(description = "커플 유저 정보 모델")
 data class CoupleUserInfoDto(
     val id: Long,
+    val userStatus: UserStatus,
     val nickname: String,
     val birthDate: LocalDate,
     val gender: UserGender,
@@ -63,6 +65,7 @@ data class CoupleUserInfoDto(
         fun from(user: User): CoupleUserInfoDto {
             return CoupleUserInfoDto(
                 id = user.id,
+                userStatus = user.userStatus,
                 nickname = user.nickname!!,
                 birthDate = user.birthDate!!,
                 gender = user.gender!!,
