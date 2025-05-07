@@ -18,7 +18,6 @@ interface TagContentMappingRepository : JpaRepository<TagContentMapping, Long> {
 
     fun findAllByContent_IdAndIsDeleted(contentId: Long, isDeleted: Boolean = false): List<TagContentMapping>
 
-    @Transactional
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("""
         update TagContentMapping tcm

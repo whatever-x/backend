@@ -1,6 +1,5 @@
 package com.whatever.domain.calendarevent.scheduleevent.service.event
 
-import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
 import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.scheduling.annotation.Async
@@ -12,13 +11,18 @@ private val logger = KotlinLogging.logger {  }
 
 @Component
 class ScheduleEventListener(
-    private val schedulerEventRepository: ScheduleEventRepository,
+    private val scheduleEventCleanupService: ScheduleEventCleanupService,
 ) {
-
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Async("taskExecutor")
+    @Async
     fun deleteAllSchedule(event: CoupleMemberLeaveEvent) {
-        val effectedRow = schedulerEventRepository.softDeleteAllByUserIdInBulk(event.userId)
-        logger.info { "${effectedRow} delete Schedule" }
+        scheduleEventCleanupService.cleanupEntity(
+            userId = event.userId,
+            entityName = ENTITY_NAME
+        )
+    }
+
+    companion object {
+        const val ENTITY_NAME = "Schedule"
     }
 }

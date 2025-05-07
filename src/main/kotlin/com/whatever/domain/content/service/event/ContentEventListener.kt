@@ -1,6 +1,5 @@
 package com.whatever.domain.content.service.event
 
-import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.scheduling.annotation.Async
@@ -12,13 +11,18 @@ private val logger = KotlinLogging.logger {  }
 
 @Component
 class ContentEventListener(
-    private val contentRepository: ContentRepository
+    private val contentCleanupService: ContentCleanupService
 ) {
-
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Async("taskExecutor")
+    @Async
     fun deleteAllContent(event: CoupleMemberLeaveEvent) {
-        val effectedRow = contentRepository.softDeleteAllByUserIdInBulk(event.userId)
-        logger.info { "${effectedRow} delete Content" }
+        contentCleanupService.cleanupEntity(
+            userId = event.userId,
+            entityName = ENTITY_NAME
+        )
+    }
+
+    companion object {
+        const val ENTITY_NAME = "Content"
     }
 }

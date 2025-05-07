@@ -22,7 +22,6 @@ interface ContentRepository : JpaRepository<Content, Long>, ContentRepositoryCus
     @Query("SELECT c FROM Content c WHERE c.id = :id AND c.type = :type AND c.isDeleted = false")
     fun findContentByIdAndType(id: Long, type: ContentType): Content?
 
-    @Transactional
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("""
         update Content c

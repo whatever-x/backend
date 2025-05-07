@@ -40,7 +40,6 @@ interface ScheduleEventRepository : JpaRepository<ScheduleEvent, Long> {
     """)
     fun findByIdWithContent(scheduleId: Long): ScheduleEvent?
 
-    @Transactional
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(
         """
