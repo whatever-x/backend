@@ -1,0 +1,15 @@
+package com.whatever.global.cursor
+
+import org.springframework.data.domain.PageRequest
+
+interface CursorRequest {
+    val cursor: String?
+    val size: Int
+    val sortType: Sortables
+
+    fun cursorAwarePageSize(): Int = size + 1
+
+    fun toPageable(): PageRequest {
+        return PageRequest.of(0, cursorAwarePageSize(), sortType.toSort())
+    }
+}
