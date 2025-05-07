@@ -98,7 +98,7 @@ class ContentServicePaginationTest @Autowired constructor(
                 // 마지막 페이지라면, 남은 아이템 수만큼 조회되어야 함
                 val expectedLastPageSize = totalItems % pageSize
                 assertThat(response.list).hasSize(expectedLastPageSize)
-                assertThat(response.cursor.next).isNull()
+                assertThat(response.cursor.next as String?).isNull()
             }
 
         } while (currentCursor != null)
@@ -227,8 +227,8 @@ internal fun createCouple(
     myPlatformUserId: String = "me",
     partnerPlatformUserId: String = "partner",
 ): Triple<User, User, Couple> {
-    val myUser = userRepository.save(createUser("my}", myPlatformUserId))
-    val partnerUser = userRepository.save(createUser("partner", partnerPlatformUserId))
+    val myUser = userRepository.save(createUser("my}", myPlatformUserId, UserStatus.SINGLE))
+    val partnerUser = userRepository.save(createUser("partner", partnerPlatformUserId, UserStatus.SINGLE))
 
     val startDate = DateTimeUtil.localNow().toLocalDate()
     val savedCouple = coupleRepository.save(
@@ -237,8 +237,7 @@ internal fun createCouple(
             sharedMessage = "test message for $myPlatformUserId"
         )
     )
-    myUser.setCouple(savedCouple)
-    partnerUser.setCouple(savedCouple)
+    savedCouple.addMembers(myUser, partnerUser)
 
     userRepository.save(myUser)
     userRepository.save(partnerUser)
