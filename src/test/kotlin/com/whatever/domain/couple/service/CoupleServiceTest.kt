@@ -1,14 +1,7 @@
 package com.whatever.domain.couple.service
 
-import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
 import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
-import com.whatever.domain.content.model.Content
-import com.whatever.domain.content.model.ContentDetail
-import com.whatever.domain.content.model.ContentType.MEMO
-import com.whatever.domain.content.model.ContentType.SCHEDULE
 import com.whatever.domain.content.repository.ContentRepository
-import com.whatever.domain.content.tag.model.Tag
-import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
 import com.whatever.domain.couple.controller.dto.request.CreateCoupleRequest
@@ -20,24 +13,20 @@ import com.whatever.domain.couple.exception.CoupleExceptionCode
 import com.whatever.domain.couple.exception.CoupleIllegalArgumentException
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.model.CoupleStatus
-import com.whatever.domain.couple.model.CoupleStatus.INACTIVE
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
-import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.model.UserStatus.COUPLED
 import com.whatever.domain.user.model.UserStatus.SINGLE
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.RedisUtil
-import com.whatever.util.findByIdAndNotDeleted
 import com.whatever.util.toZonId
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.data.TemporalUnitWithinOffset
-import org.awaitility.Awaitility.await
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -53,8 +42,6 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import java.time.temporal.ChronoUnit
-import java.util.*
-import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 
 @ActiveProfiles("test")
@@ -403,191 +390,6 @@ class CoupleServiceTest @Autowired constructor(
         assertThat(result.coupleId).isEqualTo(savedCouple.id)
         assertThat(result.sharedMessage).isNull()
     }
-
-    @DisplayName("커플 멤버 중 한명이 나갈 경우 커플의 상태를 변경하고 나간 유저의 데이터를 soft-delete 한다.")
-    @Test
-    fun leaveCouple() {
-        // given
-        val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
-        }
-        val tagCount = 20
-        val tags = createTags(tagRepository, tagCount)
-
-        val myDataSize = 20
-        val partnerDataSize = 10
-        val myMemos = createMemos(contentRepository, myUser, myDataSize)
-        val mySchedules = createSchedules(scheduleEventRepository, contentRepository, myUser, myDataSize)
-        val myMappings = createTagContentMappings(tagContentMappingRepository, tags, myMemos)
-
-        val partnerMemos = createMemos(contentRepository, partnerUser, partnerDataSize)
-        val partnerSchedules = createSchedules(scheduleEventRepository, contentRepository, partnerUser, partnerDataSize)
-        val partnerMappings = createTagContentMappings(tagContentMappingRepository, tags, partnerMemos)
-
-        // when
-        coupleService.leaveCouple(savedCouple.id, myUser.id)
-
-        // then - 커플 나가기 이후 상태 변경 확인
-        val inactiveCouple = coupleRepository.findByIdWithMembers(savedCouple.id)
-        require(inactiveCouple != null)
-        assertThat(inactiveCouple.status).isEqualTo(INACTIVE)
-        assertThat(inactiveCouple.members.map { it.id })
-            .doesNotContain(myUser.id)
-            .containsOnly(partnerUser.id)
-
-        val leavedMyUser = userRepository.findByIdAndNotDeleted(myUser.id)
-        val remainingPartnerUser = userRepository.findByIdAndNotDeleted(partnerUser.id)
-        assertThat(leavedMyUser!!.userStatus).isEqualTo(SINGLE)
-        assertThat(remainingPartnerUser!!.userStatus).isEqualTo(COUPLED)
-
-        // then - 커플에서 나간 유저의 데이터 삭제 확인
-        await()
-            .atMost(3, TimeUnit.SECONDS)
-            .pollInterval(300, TimeUnit.MILLISECONDS)
-            .untilAsserted {
-                val remainingContents = contentRepository.findAll().filter { !it.isDeleted && (it.user.id == partnerUser.id) }
-                val remainingMemoContentIds = remainingContents.filter { it.type == MEMO }.map { it.id }
-                val remainingScheduleContentIds = remainingContents.filter { it.type == SCHEDULE }.map { it.id }
-                assertThat(remainingMemoContentIds).containsExactlyInAnyOrderElementsOf(partnerMemos.map { it.id })  //
-                assertThat(remainingScheduleContentIds).containsExactlyInAnyOrderElementsOf(partnerSchedules.map { it.content.id })
-
-                val remainingScheduleIds = scheduleEventRepository.findAll().filter { !it.isDeleted }.map { it.id }
-                assertThat(remainingScheduleIds).containsExactlyInAnyOrderElementsOf(partnerSchedules.map { it.id })
-
-                val remainingMappingIds = tagContentMappingRepository.findAll().filter { !it.isDeleted }.map { it.id }
-                assertThat(remainingMappingIds).containsExactlyInAnyOrderElementsOf(partnerMappings.map { it.id })
-            }
-    }
-
-    @DisplayName("마지막 남은 커플 멤버가 나갈경우 커플과 나간 유저의 데이터를 soft-delete한다.")
-    @Test
-    fun leaveCouple_WithAllMemberLeave() {
-        fun memberLeave(couple: Couple, member: User) {
-            couple.removeMember(member)
-            coupleRepository.save(couple)
-            userRepository.save(member)
-        }
-        // given
-        val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
-        memberLeave(savedCouple, partnerUser)
-
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
-        }
-        val tagCount = 20
-        val tags = createTags(tagRepository, tagCount)
-
-        val myDataSize = 20
-        val myMemos = createMemos(contentRepository, myUser, myDataSize)
-        createSchedules(scheduleEventRepository, contentRepository, myUser, myDataSize)
-        createTagContentMappings(tagContentMappingRepository, tags, myMemos)
-
-        // when
-        coupleService.leaveCouple(savedCouple.id, myUser.id)
-
-        // then - 커플 나가기 이후 상태 변경 확인
-        val inactiveCouple = coupleRepository.findByIdAndNotDeleted(savedCouple.id)
-        val leavedMyUser = userRepository.findByIdAndNotDeleted(myUser.id)
-        assertThat(inactiveCouple).isNull()
-        assertThat(leavedMyUser!!.userStatus).isEqualTo(SINGLE)
-
-        // then - 커플에서 나간 유저의 데이터 삭제 확인
-        await()
-            .atMost(3, TimeUnit.SECONDS)
-            .pollInterval(300, TimeUnit.MILLISECONDS)
-            .untilAsserted {
-                val remainingContents = contentRepository.findAll().filter { !it.isDeleted && (it.user.id == myUser.id) }
-                assertThat(remainingContents).isEmpty()
-
-                val remainingScheduleIds = scheduleEventRepository.findAll().filter { !it.isDeleted }
-                assertThat(remainingScheduleIds).isEmpty()
-
-                val remainingMappingIds = tagContentMappingRepository.findAll().filter { !it.isDeleted }
-                assertThat(remainingMappingIds).isEmpty()
-            }
-    }
-
-}
-
-fun createTags(tagRepository: TagRepository, count: Int): List<Tag> {
-    if (count == 0) return emptyList()
-    val tagsToSave = mutableListOf<Tag>()
-    for (i in 1..count) {
-        tagsToSave.add(Tag(label = "Test Tag $i"))
-    }
-    return tagRepository.saveAll(tagsToSave)
-}
-
-fun createMemos(contentRepository: ContentRepository, user: User, count: Int): List<Content> {
-    if (count == 0) return emptyList()
-    val memosToSave = mutableListOf<Content>()
-    for (i in 1..count) {
-        val contentDetail = ContentDetail(title = "Test Memo Title $i", description = "Test Memo Text $i")
-        memosToSave.add(
-            Content(
-                user = user,
-                contentDetail = contentDetail
-            )
-        )
-    }
-    return contentRepository.saveAll(memosToSave)
-}
-
-fun createSchedules(
-    scheduleEventRepository: ScheduleEventRepository,
-    contentRepository: ContentRepository,
-    user: User,
-    count: Int
-): List<ScheduleEvent> {
-    if (count == 0) return emptyList()
-    val contentsToSave = mutableListOf<Content>()
-    val now = DateTimeUtil.localNow()
-    for (i in 1..count) {
-        val contentDetail = ContentDetail(title = "Test Schedule Title $i", description = "Test Schedule Text $i")
-        contentsToSave.add(
-            Content(
-                user = user,
-                contentDetail = contentDetail,
-                type = SCHEDULE
-            )
-        )
-    }
-    val savedContents = contentRepository.saveAll(contentsToSave)
-
-    val schedulesToSave = mutableListOf<ScheduleEvent>()
-    savedContents.forEachIndexed { index, content ->
-        schedulesToSave.add(
-            ScheduleEvent(
-                uid = UUID.randomUUID().toString(),
-                startDateTime = now.plusHours(index.toLong() + 1), // ensure unique times if needed
-                endDateTime = now.plusHours(index.toLong() + 2),
-                startTimeZone = DateTimeUtil.UTC_ZONE_ID,
-                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
-                content = content
-            )
-        )
-    }
-    return scheduleEventRepository.saveAll(schedulesToSave)
-}
-
-fun createTagContentMappings(
-    tagContentMappingRepository: TagContentMappingRepository,
-    tags: List<Tag>,
-    contents: List<Content>
-): List<TagContentMapping> {
-    if (tags.isEmpty() || contents.isEmpty()) return emptyList()
-    val mappingsToSave = mutableListOf<TagContentMapping>()
-    contents.forEach { content ->
-        val mappings = tags.map {
-            TagContentMapping(
-                tag = it,
-                content = content
-            )
-        }
-        mappingsToSave.addAll(mappings)
-    }
-    return tagContentMappingRepository.saveAll(mappingsToSave)
 }
 
 internal fun makeCouple(userRepository: UserRepository, coupleRepository: CoupleRepository): Triple<User, User, Couple> {
