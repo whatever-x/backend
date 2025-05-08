@@ -16,7 +16,9 @@ import com.whatever.domain.couple.exception.CoupleExceptionCode.INVITATION_CODE_
 import com.whatever.domain.couple.exception.CoupleExceptionCode.MEMBER_NOT_FOUND
 import com.whatever.domain.couple.exception.CoupleExceptionCode.NOT_A_MEMBER
 import com.whatever.domain.couple.exception.CoupleExceptionCode.UPDATE_FAIL
+import com.whatever.domain.couple.exception.CoupleIllegalArgumentException
 import com.whatever.domain.couple.exception.CoupleIllegalStateException
+import com.whatever.domain.couple.exception.CoupleNotFoundException
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
@@ -146,9 +148,9 @@ class CoupleService(
         userId: Long = SecurityUtil.getCurrentUserId(),
     ) {
         val couple = coupleRepository.findByIdWithMembers(coupleId)
-            ?: throw RuntimeException()  // TODO(준용) NFE
+            ?: throw CoupleNotFoundException(errorCode = COUPLE_NOT_FOUND)
         val user = couple.members.find { it.id == userId }
-            ?: throw RuntimeException()  // TODO(준용) IAE
+            ?: throw CoupleIllegalArgumentException(errorCode = NOT_A_MEMBER)
 
         couple.removeMember(user)
         applicationEventPublisher.publishEvent(CoupleMemberLeaveEvent(coupleId, userId))
@@ -254,10 +256,10 @@ class CoupleService(
 
 private fun UserRepository.findUserById(id: Long, exceptionMessage: String? = null): User {
     return findByIdAndNotDeleted(id)
-        ?: throw CoupleException(errorCode = MEMBER_NOT_FOUND, detailMessage = exceptionMessage)
+        ?: throw CoupleIllegalArgumentException(errorCode = MEMBER_NOT_FOUND, detailMessage = exceptionMessage)
 }
 
 private fun CoupleRepository.findCoupleById(id: Long, exceptionMessage: String? = null): Couple {
     return findByIdAndNotDeleted(id)
-        ?: throw CoupleException(errorCode = COUPLE_NOT_FOUND, detailMessage = exceptionMessage)
+        ?: throw CoupleNotFoundException(errorCode = COUPLE_NOT_FOUND, detailMessage = exceptionMessage)
 }

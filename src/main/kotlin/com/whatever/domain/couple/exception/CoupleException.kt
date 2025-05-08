@@ -21,3 +21,8 @@ class CoupleIllegalArgumentException(
     errorCode: CoupleExceptionCode,
     detailMessage: String? = null
 ) : CoupleException(errorCode, detailMessage)
+
+class CoupleNotFoundException(
+    errorCode: CoupleExceptionCode,
+    detailMessage: String? = null
+) : CoupleException(errorCode, detailMessage)

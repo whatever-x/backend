@@ -1,6 +1,7 @@
 package com.whatever.domain.couple.model
 
 import com.whatever.domain.base.BaseEntity
+import com.whatever.domain.couple.exception.CoupleExceptionCode
 import com.whatever.domain.couple.exception.CoupleExceptionCode.ILLEGAL_MEMBER_SIZE
 import com.whatever.domain.couple.exception.CoupleExceptionCode.ILLEGAL_START_DATE
 import com.whatever.domain.couple.exception.CoupleIllegalArgumentException
@@ -54,7 +55,7 @@ class Couple (
 
     fun removeMember(user: User) {
         if (!mutableMembers.removeIf { it.id == user.id }) {
-            throw RuntimeException("커플 멤버가 아님")  // TODO(준용) IAE
+            throw CoupleIllegalArgumentException(errorCode = CoupleExceptionCode.NOT_A_MEMBER)
         }
 
         user.leaveFromCouple()
@@ -66,7 +67,7 @@ class Couple (
 
     fun updateStartDate(newDate: LocalDate, userZoneId: ZoneId) {
         if (status == INACTIVE) {
-            throw RuntimeException()  // TODO ISE
+            throw CoupleIllegalStateException(errorCode = CoupleExceptionCode.ILLEGAL_COUPLE_STATUS)
         }
         val todayInUserZone = DateTimeUtil.zonedNow(userZoneId).toLocalDate()
         if (newDate.isAfter(todayInUserZone)) {
@@ -78,7 +79,7 @@ class Couple (
 
     fun updateSharedMessage(newMessage: String?) {
         if (status == INACTIVE) {
-            throw RuntimeException()  // TODO ISE
+            throw CoupleIllegalStateException(errorCode = CoupleExceptionCode.ILLEGAL_COUPLE_STATUS)
         }
         sharedMessage = newMessage.takeUnless { it.isNullOrBlank() }
     }
