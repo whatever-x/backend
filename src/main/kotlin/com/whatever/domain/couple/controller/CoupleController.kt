@@ -90,13 +90,12 @@ class CoupleController(
     }
 
     @Operation(
-        summary = "더미 커플 삭제",
-        description = "커플을 삭제하고, 관련 정보를 모두 삭제합니다."
+        summary = "커플 나가기",
+        description = "커플을 나가고, 지금까지 작성한 모든 데이터를 삭제합니다."
     )
-    @DeleteMapping("/{couple-id}")
-    fun deleteCouple(@PathVariable("couple-id") coupleId: Long): CaramelApiResponse<Unit> {
-
-        // TODO(준용): 구현 필요
+    @DeleteMapping("/{couple-id}/members/me")
+    fun leaveCouple(@PathVariable("couple-id") coupleId: Long): CaramelApiResponse<Unit> {
+        coupleService.leaveCouple(coupleId)
         return CaramelApiResponse.succeed()
     }
 }
