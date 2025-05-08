@@ -68,6 +68,12 @@ class CoupleServiceTest @Autowired constructor(
         check(connectionFactory != null)
         connectionFactory.connection.serverCommands().flushAll()
         securityUtilMock = mockStatic(SecurityUtil::class.java)
+    }
+
+    @AfterEach
+    fun tearDown() {
+        securityUtilMock.close()  // static mock 초기화
+        reset(redisUtil)  // redisUtil mock 초기화
 
         tagContentMappingRepository.deleteAllInBatch()
         scheduleEventRepository.deleteAllInBatch()
@@ -75,12 +81,6 @@ class CoupleServiceTest @Autowired constructor(
         userRepository.deleteAllInBatch()
         coupleRepository.deleteAllInBatch()
         tagRepository.deleteAllInBatch()
-    }
-
-    @AfterEach
-    fun tearDown() {
-        securityUtilMock.close()  // static mock 초기화
-        reset(redisUtil)  // redisUtil mock 초기화
     }
 
     @DisplayName("사용자 상태가 SINGLE이 아니면 예외가 발생한다.")
