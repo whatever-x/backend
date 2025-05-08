@@ -1,6 +1,8 @@
 package com.whatever.domain.couple.service.event
 
 import com.whatever.config.AsyncConfig
+import com.whatever.domain.balancegame.service.event.UserChoiceOptionCleanupService
+import com.whatever.domain.balancegame.service.event.UserChoiceOptionEventListener
 import com.whatever.domain.calendarevent.scheduleevent.service.event.ScheduleEventCleanupService
 import com.whatever.domain.calendarevent.scheduleevent.service.event.ScheduleEventListener
 import com.whatever.domain.content.service.event.ContentCleanupService
@@ -40,6 +42,8 @@ class CoupleMemberLeaveEventPublishTest @Autowired constructor(
     private lateinit var contentCleanupService: ContentCleanupService
     @MockitoBean
     private lateinit var tagContentMappingCleanupService: TagContentMappingCleanupService
+    @MockitoBean
+    private lateinit var userChoiceOptionCleanupService: UserChoiceOptionCleanupService
 
     @DisplayName("CoupleMemberLeaveEvent가 발행되고, commit이 완료되면 각 도메인의 cleanup 서비스가 실행된다.")
     @Test
@@ -62,6 +66,8 @@ class CoupleMemberLeaveEventPublishTest @Autowired constructor(
             .cleanupEntity(userId, ContentEventListener.ENTITY_NAME)
         verify(tagContentMappingCleanupService, times(1))
             .cleanupEntity(userId, TagContentMappingEventListener.ENTITY_NAME)
+        verify(userChoiceOptionCleanupService, times(1))
+            .cleanupEntity(userId, UserChoiceOptionEventListener.ENTITY_NAME)
     }
 
     @DisplayName("CoupleMemberLeaveEvent가 발행되고, rollback이 진행된다면 cleanup을 진행하지 않는다.")
@@ -85,6 +91,8 @@ class CoupleMemberLeaveEventPublishTest @Autowired constructor(
             .cleanupEntity(userId, ContentEventListener.ENTITY_NAME)
         verify(tagContentMappingCleanupService, never())
             .cleanupEntity(userId, TagContentMappingEventListener.ENTITY_NAME)
+        verify(userChoiceOptionCleanupService, never())
+            .cleanupEntity(userId, UserChoiceOptionEventListener.ENTITY_NAME)
     }
 }
 
