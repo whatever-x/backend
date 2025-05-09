@@ -12,6 +12,7 @@ enum class UserExceptionCode(
     INVALID_NICKNAME_CHARACTER("002", "닉네임은 한글, 영문, 숫자만 사용 가능합니다."),
     INVALID_USER_STATUS_FOR_COUPLING("003", "커플이 될 수 없는 유저 상태입니다."),
     ALREADY_EXIST_COUPLE("007", "이미 커플에 소속된 유저 입니다."),
+    NOT_FOUND("008", "존재하지 않는 유저입니다.", HttpStatus.NOT_FOUND),
     ;
 
     override val code = "USER$sequence"

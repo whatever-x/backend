@@ -6,3 +6,8 @@ open class UserException(
     errorCode: UserExceptionCode,
     detailMessage: String? = null
 ) : CaramelException(errorCode, detailMessage)
+
+open class UserNotFoundException(
+    errorCode: UserExceptionCode,
+    detailMessage: String? = null
+) : UserException(errorCode, detailMessage)
