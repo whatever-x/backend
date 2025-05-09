@@ -1,12 +1,13 @@
 package com.whatever.global.security.filter
 
 import com.whatever.domain.auth.service.JwtHelper
+import com.whatever.domain.auth.service.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.domain.user.repository.UserRepository
+import com.whatever.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
 import com.whatever.global.security.principal.CaramelUserDetails
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
@@ -17,11 +18,6 @@ class JwtAuthenticationFilter(
     private val jwtHelper: JwtHelper,
     private val userRepository: UserRepository,
 ) : OncePerRequestFilter() {
-
-    companion object {
-        private const val AUTH_JWT_HEADER = "Authorization"
-        private const val BEARER_TYPE = "Bearer "
-    }
 
     override fun doFilterInternal(
         request: HttpServletRequest,

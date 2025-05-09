@@ -16,11 +16,6 @@ class JwtHelper(
     private val jwtProvider: JwtProvider,
     private val jwtProperties: JwtProperties,
 ) {
-    companion object {
-        private const val USER_ID_CLAIM_KEY = "userId"
-        private const val ACCESS_SUBJECT_NAME = "access"
-        private const val REFRESH_SUBJECT_NAME = "refresh"
-    }
 
     // TODO(준용) accessToken에 넣을 User 정보 Claim 상의 후 DTO로 전환
     fun createAccessToken(userId: Long): String {
@@ -98,6 +93,13 @@ class JwtHelper(
             .requireIssuer(jwtProperties.issuer)
             .verifyWith(jwtProperties.secretKey)
             .build()
+    }
+
+    companion object {
+        private const val USER_ID_CLAIM_KEY = "userId"
+        private const val ACCESS_SUBJECT_NAME = "access"
+        private const val REFRESH_SUBJECT_NAME = "refresh"
+        const val BEARER_TYPE = "Bearer "
     }
 
 }
