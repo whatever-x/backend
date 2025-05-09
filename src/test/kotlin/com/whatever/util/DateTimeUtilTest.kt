@@ -2,10 +2,17 @@ package com.whatever.util
 
 import org.assertj.core.api.AssertionsForInterfaceTypes.assertThat
 import org.assertj.core.data.TemporalUnitWithinOffset
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import org.mockito.Mockito.CALLS_REAL_METHODS
+import org.mockito.Mockito.mockStatic
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.whenever
 import java.time.*
 import java.time.temporal.ChronoUnit
 import java.util.Date
@@ -121,4 +128,56 @@ class DateTimeUtilTest {
             )
     }
 
+    @DisplayName("두 시간의 차이를 반환한다.")
+    @Test
+    fun getDuration() {
+        // given
+        val baseDateTime = LocalDateTime.of(2025, 5, 9, 0, 0, 0)
+        val baseZone = DateTimeUtil.UTC_ZONE_ID
+        val startDateTime = baseDateTime.atZone(baseZone)
+        val endDateTime = baseDateTime.plusSeconds(10).atZone(baseZone)
+
+        // when
+        val duration = DateTimeUtil.getDuration(endDateTime, startDateTime)
+
+        // then
+        assertThat(duration.seconds).isEqualTo(10)
+    }
+
+    @DisplayName("startDateTime이 nul일 경우 현재 시간과 종료 시간의 차이를 반환한다.")
+    @Test
+    fun getDuration_WithNullStartDateTime() {
+        // given
+        val baseTime = DateTimeUtil.zonedNow()
+        val startDateTime = null
+        val endDateTime = baseTime.plusSeconds(10)
+
+        mockStatic(DateTimeUtil::class.java, CALLS_REAL_METHODS).use { mockedDateTimeUtil ->
+            mockedDateTimeUtil.`when`<ZonedDateTime> {  // zonedNow만 부분 모킹
+                DateTimeUtil.zonedNow(any())
+            }.doReturn(baseTime)
+
+            // when
+            // 실제 DateTimeUtil.getDuration 메소드 호출
+            val duration = DateTimeUtil.getDuration(endDateTime, startDateTime)
+
+            // then
+            assertThat(duration.seconds).isEqualTo(10)
+        }
+    }
+
+    @DisplayName("두 시간의 zone이 다를 경우 Duration.ZERO를 반환한다.")
+    @Test
+    fun getDuration_WithDifferentZone() {
+        // given
+        val baseDateTime = LocalDateTime.of(2025, 5, 9, 0, 0, 0)
+        val startDateTime = baseDateTime.atZone(DateTimeUtil.UTC_ZONE_ID)
+        val endDateTime = baseDateTime.plusSeconds(10).atZone(ZoneId.of("Asia/Seoul"))
+
+        // when
+        val duration = DateTimeUtil.getDuration(endDateTime, startDateTime)
+
+        // then
+        assertThat(duration).isEqualTo(Duration.ZERO)
+    }
 }

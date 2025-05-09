@@ -201,9 +201,9 @@ class CoupleService(
         }
 
         val newInvitationCode = generateInvitationCode()
-        val expirationDateTime = DateTimeUtil.localNow().plusDays(INVITATION_CODE_EXPIRATION_DAY)
+        val expirationDateTime = DateTimeUtil.zonedNow().plusDays(INVITATION_CODE_EXPIRATION_DAY)
 
-        val expirationTime = Duration.between(DateTimeUtil.localNow(), expirationDateTime)
+        val expirationTime = DateTimeUtil.getDuration(expirationDateTime)
         val result = inviCodeRedisRepository.saveInvitationCode(
             userId = userId,
             invitationCode = newInvitationCode,
@@ -218,7 +218,7 @@ class CoupleService(
 
         return CoupleInvitationCodeResponse(
             invitationCode = newInvitationCode,
-            expirationDateTime = expirationDateTime
+            expirationDateTime = expirationDateTime.toLocalDateTime()
         )
     }
 

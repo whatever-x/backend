@@ -1,5 +1,6 @@
 package com.whatever.util
 
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -47,6 +48,24 @@ object DateTimeUtil {
     ): Date {
         val instant = ZonedDateTime.of(sourceLocalDateTime, sourceZone).toInstant()
         return Date.from(instant)
+    }
+
+    /**
+     * 같은 zone을 가진 두 시간의 Duration를 반환합니다.
+     * @param startDateTime 시작 시간. null일 경우 endDateTime.zone의 현재 시간을 사용합니다.
+     * @param endDateTime 종료 시간.
+     * @return 두 시간의 Duration. 두 시간의 zone이 다를 경우 Duration.ZERO를 반환.
+     */
+    @JvmStatic
+    fun getDuration(
+        endDateTime: ZonedDateTime,
+        startDateTime: ZonedDateTime? = null,
+    ): Duration {
+        val nonNullStartDateTime = startDateTime ?: zonedNow(endDateTime.zone)
+        if (nonNullStartDateTime.zone != endDateTime.zone) {
+            return Duration.ZERO
+        }
+        return Duration.between(nonNullStartDateTime, endDateTime)
     }
 }
 
