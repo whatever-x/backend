@@ -18,6 +18,7 @@ enum class JwtExceptionCode(
     MISSING_CLAIM("006", "JWT에 필요한 정보가 없습니다."),
     PARSE_FAILED("007", "인증 토큰이 유효하지 않습니다."),
     MISSING_JTI("008", "JWT에 필요한 id 정보가 없습니다."),
+    MISSING_EXP_DATE("009", "JWT에 필요한 만료 정보가 없습니다."),
     ;
 
     override val code = "JWT$sequence"

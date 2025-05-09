@@ -1,19 +1,24 @@
 package com.whatever.domain.auth.service
 
 import com.whatever.config.properties.JwtProperties
-import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.dto.ServiceToken
 import com.whatever.domain.auth.dto.SignInResponse
 import com.whatever.domain.auth.exception.AuthException
 import com.whatever.domain.auth.exception.AuthExceptionCode
 import com.whatever.domain.auth.exception.IllegalOidcTokenException
 import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
+import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.service.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.domain.auth.service.provider.SocialUserProvider
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.global.exception.GlobalException
 import com.whatever.global.exception.GlobalExceptionCode
+import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
+import com.whatever.util.DateTimeUtil
+import com.whatever.util.DateTimeUtil.KST_ZONE_ID
+import com.whatever.util.DateTimeUtil.changeTimeZone
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.jsonwebtoken.ExpiredJwtException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.cache.CacheManager
 import org.springframework.stereotype.Service
@@ -68,6 +73,30 @@ class AuthService(
             birthDay = user.birthDate,
             coupleId = coupleId,
         )
+    }
+
+    fun signOut(
+        bearerAccessToken: String,
+        deviceId: String,
+    ) {
+        val userId = getCurrentUserId()
+        logger.debug { "SignOut Start - UserId: $userId, DeviceId: $deviceId" }
+
+        val accessToken = bearerAccessToken.substring(BEARER_TYPE.length)
+
+        try {
+            val jti = jwtHelper.extractJti(accessToken)
+            val expDateTime = jwtHelper.extractExpDate(accessToken).toInstant().atZone(DateTimeUtil.UTC_ZONE_ID)
+            val expirationDuration = DateTimeUtil.getDuration(endDateTime = expDateTime)
+
+            authRedisRepository.saveSignOutJti(jti = jti, expirationDuration = expirationDuration)
+        } catch (e: ExpiredJwtException) {
+            logger.debug { "Access Token is already expired - UserId: $userId" }
+        }
+
+        authRedisRepository.deleteRefreshToken(userId = userId, deviceId = deviceId)
+
+        logger.debug { "SignOut End - UserId: $userId, DeviceId: $deviceId" }
     }
 
     fun refresh(serviceToken: ServiceToken): ServiceToken {

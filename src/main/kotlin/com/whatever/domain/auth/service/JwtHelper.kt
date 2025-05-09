@@ -10,6 +10,7 @@ import io.jsonwebtoken.Jws
 import io.jsonwebtoken.JwtParser
 import io.jsonwebtoken.Jwts
 import org.springframework.stereotype.Component
+import java.util.Date
 
 @Component
 class JwtHelper(
@@ -42,6 +43,19 @@ class JwtHelper(
         )
 
         return jwt.payload.id
+            ?: throw JwtMissingClaimException(
+                errorCode = JwtExceptionCode.MISSING_JTI,
+                detailMessage = "AccessToken에서 token id 정보를 찾을 수 없습니다."
+            )
+    }
+
+    fun extractExpDate(token: String): Date {
+        val jwt = jwtProvider.parseJwt(
+            jwtParser = getJwtParser(),
+            token = token,
+        )
+
+        return jwt.payload.expiration
             ?: throw JwtMissingClaimException(
                 errorCode = JwtExceptionCode.MISSING_JTI,
                 detailMessage = "AccessToken에서 token id 정보를 찾을 수 없습니다."

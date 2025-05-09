@@ -10,6 +10,7 @@ import java.util.*
 
 object DateTimeUtil {
     val UTC_ZONE_ID: ZoneId = ZoneId.of("UTC")
+    val KST_ZONE_ID: ZoneId = ZoneId.of("Asia/Seoul")
 
     @JvmStatic
     fun localNow(zoneId: ZoneId = UTC_ZONE_ID): LocalDateTime {
