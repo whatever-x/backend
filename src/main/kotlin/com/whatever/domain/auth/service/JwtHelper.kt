@@ -17,7 +17,6 @@ class JwtHelper(
     private val jwtProperties: JwtProperties,
 ) {
 
-    // TODO(준용) accessToken에 넣을 User 정보 Claim 상의 후 DTO로 전환
     fun createAccessToken(userId: Long): String {
         val claims = mutableMapOf<String, String>()
         claims[USER_ID_CLAIM_KEY] = userId.toString()
@@ -36,7 +35,6 @@ class JwtHelper(
         )
     }
 
-    // TODO(준용) User 정보 DTO 반환으로 전환
     fun parseAccessToken(token: String): Long {
         val jwt = jwtProvider.parseJwt(
             jwtParser = getJwtParser(),
