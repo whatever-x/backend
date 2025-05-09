@@ -22,7 +22,7 @@ class UserService(
     @Transactional
     fun createProfile(postUserProfileRequest: PostUserProfileRequest): PostUserProfileResponse {
         val userId = getCurrentUserId()
-        val user = userRepository.findByIdOrNull(userId)
+        val user = userRepository.findByIdAndNotDeleted(userId)
         with(postUserProfileRequest) {
             user?.register(nickname, birthday, gender)
         }
@@ -37,7 +37,7 @@ class UserService(
     @Transactional
     fun updateProfile(putUserProfileRequest: PutUserProfileRequest): PutUserProfileResponse {
         val userId = getCurrentUserId()
-        val user = userRepository.findByIdOrNull(userId)?.apply {
+        val user = userRepository.findByIdAndNotDeleted(userId)?.apply {
             if (putUserProfileRequest.nickname.isNullOrBlank().not()) {
                 nickname = putUserProfileRequest.nickname
             }
