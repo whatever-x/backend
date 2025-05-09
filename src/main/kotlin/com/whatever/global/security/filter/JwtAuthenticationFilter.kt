@@ -35,7 +35,7 @@ class JwtAuthenticationFilter(
     }
 
     private fun getAuthentication(accessToken: String): UsernamePasswordAuthenticationToken? {
-        val userId = jwtHelper.parseAccessToken(accessToken)
+        val userId = jwtHelper.extractUserId(accessToken)
         val user = userRepository.findByIdWithCouple(userId) ?: return null
 
         val userDetails = CaramelUserDetails(

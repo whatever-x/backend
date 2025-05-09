@@ -35,7 +35,7 @@ class JwtHelper(
         )
     }
 
-    fun parseAccessToken(token: String): Long {
+    fun extractUserId(token: String): Long {
         val jwt = jwtProvider.parseJwt(
             jwtParser = getJwtParser(),
             token = token,
@@ -78,7 +78,7 @@ class JwtHelper(
         }
     }
 
-    fun getUserId(token: String): Long {
+    fun extractUserIdIgnoringSignature(token: String): Long {
         return jwtProvider.getUnsecuredPayload(token)["userId"]?.toLong()
             ?: throw JwtMissingClaimException(
                 errorCode = JwtExceptionCode.MISSING_CLAIM,

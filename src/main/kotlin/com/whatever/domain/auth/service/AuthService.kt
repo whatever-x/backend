@@ -70,7 +70,7 @@ class AuthService(
     }
 
     fun refresh(serviceToken: ServiceToken): ServiceToken {
-        val userId = jwtHelper.getUserId(serviceToken.accessToken)
+        val userId = jwtHelper.extractUserIdIgnoringSignature(serviceToken.accessToken)
         val isValid = jwtHelper.isValidJwt(serviceToken.refreshToken)
 
         if (isValid.not()) throw AuthException(errorCode = AuthExceptionCode.UNAUTHORIZED)

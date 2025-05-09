@@ -76,7 +76,7 @@ class AuthServiceTest @Autowired constructor(
         // given
         val serviceToken = ServiceToken(accessToken = "accessToken", refreshToken = "invalidRefreshToken")
         val userId = 1L
-        `when`(jwtHelper.getUserId(serviceToken.accessToken)).thenReturn(userId)
+        `when`(jwtHelper.extractUserIdIgnoringSignature(serviceToken.accessToken)).thenReturn(userId)
         `when`(jwtHelper.isValidJwt(serviceToken.refreshToken)).thenReturn(false)
 
         // when, then
@@ -91,7 +91,7 @@ class AuthServiceTest @Autowired constructor(
         val serviceToken = ServiceToken(accessToken = "accessToken", refreshToken = "refreshToken")
         val userId = 1L
         val storedRefreshToken = "differentRefreshToken"
-        `when`(jwtHelper.getUserId(serviceToken.accessToken)).thenReturn(userId)
+        `when`(jwtHelper.extractUserIdIgnoringSignature(serviceToken.accessToken)).thenReturn(userId)
         `when`(jwtHelper.isValidJwt(serviceToken.refreshToken)).thenReturn(true)
         `when`(redisUtil.getRefreshToken(userId = userId, deviceId = "tempDeviceIds")).thenReturn(storedRefreshToken)
 
