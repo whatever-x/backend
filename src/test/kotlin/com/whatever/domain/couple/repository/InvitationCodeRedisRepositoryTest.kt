@@ -1,5 +1,6 @@
-package com.whatever.util
+package com.whatever.domain.couple.repository
 
+import com.whatever.util.DateTimeUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.TemporalUnitWithinOffset
 import org.junit.jupiter.api.BeforeEach
@@ -12,12 +13,11 @@ import org.springframework.test.context.ActiveProfiles
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 
-
 @ActiveProfiles("test")
 @SpringBootTest
-class RedisUtilTest @Autowired constructor(
+class InvitationCodeRedisRepositoryTest @Autowired constructor(
     private val redisTemplate: RedisTemplate<String, String>,
-    private val redisUtil: RedisUtil,
+    private val inviCodeRedisRepository: InvitationCodeRedisRepository,
 ) {
 
     @BeforeEach
@@ -38,7 +38,7 @@ class RedisUtilTest @Autowired constructor(
         val userKey = "couple:invitation:user$userId"
 
         // when
-        val result = redisUtil.saveCoupleInvitationCode(userId, invitationCode, expiration)
+        val result = inviCodeRedisRepository.saveInvitationCode(userId, invitationCode, expiration)
 
         // then
         assertThat(result).isTrue()
@@ -59,7 +59,7 @@ class RedisUtilTest @Autowired constructor(
         redisTemplate.opsForValue().set(userKey, invitationCode, expiration)
 
         // when
-        val retrievedCode = redisUtil.getCoupleInvitationCode(userId)
+        val retrievedCode = inviCodeRedisRepository.getInvitationCode(userId)
 
         // then
         assertThat(retrievedCode).isEqualTo(invitationCode)
@@ -76,7 +76,7 @@ class RedisUtilTest @Autowired constructor(
         redisTemplate.opsForValue().set(invitationKey, userId.toString(), expiration)
 
         // when
-        val retrievedUserId = redisUtil.getCoupleInvitationUser(invitationCode)
+        val retrievedUserId = inviCodeRedisRepository.getInvitationUser(invitationCode)
 
         // then
         assertThat(retrievedUserId).isEqualTo(userId)
@@ -91,10 +91,10 @@ class RedisUtilTest @Autowired constructor(
         val expirationSec: Long = 10L
         val expiration = Duration.ofSeconds(expirationSec)
         val issueDateTime = DateTimeUtil.localNow()
-        redisUtil.saveCoupleInvitationCode(userId, invitationCode, expiration)
+        inviCodeRedisRepository.saveInvitationCode(userId, invitationCode, expiration)
 
         // when
-        val result = redisUtil.getCoupleInvitationExpirationTime(invitationCode)
+        val result = inviCodeRedisRepository.getInvitationExpirationTime(invitationCode)
 
         // then
         assertThat(result).isNotNull()
@@ -113,102 +113,15 @@ class RedisUtilTest @Autowired constructor(
         val invitationCode = "EXPIRED_CODE"
         val expirationMillis = 500L
         val expiration = Duration.ofMillis(expirationMillis)
-        redisUtil.saveCoupleInvitationCode(userId, invitationCode, expiration)
+        inviCodeRedisRepository.saveInvitationCode(userId, invitationCode, expiration)
 
         // when
         Thread.sleep(expirationMillis)
-        val expirationDateTime = redisUtil.getCoupleInvitationExpirationTime(invitationCode)
+        val expirationDateTime = inviCodeRedisRepository.getInvitationExpirationTime(invitationCode)
 
         // then
         assertThat(expirationDateTime).isNull()
     }
 
-    @Test
-    @DisplayName("refresh token을 저장한다.")
-    fun saveRefreshToken() {
-        // given
-        val userId = 1L
-        val deviceId = "test-device"
-        val expectedKey = "token:refresh:${userId}:${deviceId}"
-        val refreshToken = "test.refresh.token"
 
-        // when
-        redisUtil.saveRefreshToken(userId, deviceId, refreshToken)
-
-        // then
-        val savedToken = redisTemplate.opsForValue().get(expectedKey)
-        assertThat(savedToken).isEqualTo(refreshToken)
-    }
-
-    @Test
-    @DisplayName("같은 key로 토큰 재저장 시 기존 토큰을 대체한다.")
-    fun saveRefreshToken_OverrideExistingToken() {
-        // given
-        val userId = 1L
-        val deviceId = "test-device"
-        val expectedKey = "token:refresh:${userId}:${deviceId}"
-
-        val oldRefreshToken = "test.refresh.oldToken"
-        val newRefreshToken = "test.refresh.newToken"
-        redisUtil.saveRefreshToken(userId, deviceId, oldRefreshToken)
-
-        // when
-        redisUtil.saveRefreshToken(userId, deviceId, newRefreshToken)
-
-        // then
-        val savedToken = redisTemplate.opsForValue().get(expectedKey)
-        assertThat(savedToken).isEqualTo(newRefreshToken)
-    }
-
-    @Test
-    @DisplayName("저장된 토큰을 조회한다")
-    fun getRefreshToken() {
-        // given
-        val userId = 1L
-        val deviceId = "test-device"
-        val refreshToken = "test.refresh.token"
-        redisUtil.saveRefreshToken(userId, deviceId, refreshToken)
-
-        // when
-        val savedToken = redisUtil.getRefreshToken(userId, deviceId)
-
-        // then
-        assertThat(savedToken).isEqualTo(refreshToken)
-    }
-
-    @DisplayName("만료된 토큰을 조회하면 null을 반환한다.")
-    @Test
-    fun getRefreshToken_WithExpiredToken() {
-        // given
-        val userId = 1L
-        val deviceId = "test-device"
-        val refreshToken = "test.refresh.token"
-        val ttlSeconds = 1L
-        redisUtil.saveRefreshToken(userId, deviceId, refreshToken, ttlSeconds)
-
-        // when
-        Thread.sleep(Duration.ofMillis(1200))
-        val retrievedToken = redisUtil.getRefreshToken(userId, deviceId)
-
-        // then
-        assertThat(retrievedToken).isNull()
-    }
-
-    @DisplayName("토큰이 삭제되면 null을 반환한다.")
-    @Test
-    fun deleteRefreshToken() {
-        // given
-        val userId = 1L
-        val deviceId = "test-device"
-        val refreshToken = "test.refresh.token"
-        val ttlSeconds = 1L
-        redisUtil.saveRefreshToken(userId, deviceId, refreshToken, ttlSeconds)
-
-        // when
-        redisUtil.deleteRefreshToken(userId, deviceId)
-
-        // then
-        val savedToken = redisUtil.getRefreshToken(userId, deviceId)
-        assertThat(savedToken).isNull()
-    }
 }

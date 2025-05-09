@@ -14,6 +14,7 @@ import com.whatever.domain.couple.exception.CoupleIllegalArgumentException
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.model.CoupleStatus
 import com.whatever.domain.couple.repository.CoupleRepository
+import com.whatever.domain.couple.repository.InvitationCodeRedisRepository
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
@@ -22,7 +23,6 @@ import com.whatever.domain.user.model.UserStatus.SINGLE
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
-import com.whatever.util.RedisUtil
 import com.whatever.util.toZonId
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -58,7 +58,7 @@ class CoupleServiceTest @Autowired constructor(
 ) {
 
     @MockitoSpyBean
-    private lateinit var redisUtil: RedisUtil
+    private lateinit var inviCodeRedisRepository: InvitationCodeRedisRepository
 
     private lateinit var securityUtilMock: AutoCloseable
 
@@ -73,7 +73,7 @@ class CoupleServiceTest @Autowired constructor(
     @AfterEach
     fun tearDown() {
         securityUtilMock.close()  // static mock 초기화
-        reset(redisUtil)  // redisUtil mock 초기화
+        reset(inviCodeRedisRepository)  // redisUtil mock 초기화
 
         tagContentMappingRepository.deleteAllInBatch()
         scheduleEventRepository.deleteAllInBatch()
@@ -247,7 +247,7 @@ class CoupleServiceTest @Autowired constructor(
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
             whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
         }
-        whenever(redisUtil.getCoupleInvitationUser(request.invitationCode)).doReturn(hostUser.id)
+        whenever(inviCodeRedisRepository.getInvitationUser(request.invitationCode)).doReturn(hostUser.id)
 
         // when
         val result = coupleService.createCouple(request)
@@ -277,7 +277,7 @@ class CoupleServiceTest @Autowired constructor(
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(hostUser.userStatus)
             whenever(SecurityUtil.getCurrentUserId()).doReturn(hostUser.id)
         }
-        whenever(redisUtil.getCoupleInvitationUser(request.invitationCode)).doReturn(hostUser.id)
+        whenever(inviCodeRedisRepository.getInvitationUser(request.invitationCode)).doReturn(hostUser.id)
 
 
         // when, then

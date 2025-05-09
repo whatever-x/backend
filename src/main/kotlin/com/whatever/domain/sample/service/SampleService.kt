@@ -1,6 +1,7 @@
 package com.whatever.domain.sample.service
 
 import com.whatever.config.properties.JwtProperties
+import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.dto.ServiceToken
 import com.whatever.domain.auth.dto.SignInResponse
 import com.whatever.domain.auth.service.JwtHelper
@@ -11,24 +12,21 @@ import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserStatus
-import com.whatever.domain.user.repository.UserRepository
-import com.whatever.domain.user.service.UserService
 import com.whatever.global.jwt.JwtProvider
 import com.whatever.util.DateTimeUtil
-import com.whatever.util.RedisUtil
 import io.viascom.nanoid.NanoId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 
 @Profile("dev", "local-mem")
 @Service
 @Transactional(readOnly = true)
 class SampleService(
     private val jwtHelper: JwtHelper,
-    private val redisUtil: RedisUtil,
+    private val authRedisRepository: AuthRedisRepository,
     private val jwtProperties: JwtProperties,
     private val jwtProvider: JwtProvider,
     private val sampleUserRepository: SampleUserRepository,
@@ -90,7 +88,7 @@ class SampleService(
     private fun createTokenAndSave(userId: Long, expSec: Long): ServiceToken {
         val accessToken = jwtHelper.createAccessToken(userId, expSec)  // access token 발행
         val refreshToken = jwtHelper.createRefreshToken()  // refresh token 발행
-        redisUtil.saveRefreshToken(
+        authRedisRepository.saveRefreshToken(
             userId = userId,
             deviceId = "tempDeviceId",  // TODO(준용): Client에서 Device Id를 받아와 저장 필요
             refreshToken = refreshToken,

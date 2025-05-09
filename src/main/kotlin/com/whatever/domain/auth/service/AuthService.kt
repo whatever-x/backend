@@ -1,17 +1,18 @@
 package com.whatever.domain.auth.service
 
 import com.whatever.config.properties.JwtProperties
+import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.dto.ServiceToken
 import com.whatever.domain.auth.dto.SignInResponse
 import com.whatever.domain.auth.exception.AuthException
 import com.whatever.domain.auth.exception.AuthExceptionCode
 import com.whatever.domain.auth.exception.IllegalOidcTokenException
 import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
+import com.whatever.domain.auth.service.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.domain.auth.service.provider.SocialUserProvider
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.global.exception.GlobalException
 import com.whatever.global.exception.GlobalExceptionCode
-import com.whatever.util.RedisUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.cache.CacheManager
@@ -23,8 +24,8 @@ val logger = KotlinLogging.logger {  }
 class AuthService(
     private val jwtHelper: JwtHelper,
     private val jwtProperties: JwtProperties,
+    private val authRedisRepository: AuthRedisRepository,
     userProviders: List<SocialUserProvider>,
-    private val redisUtil: RedisUtil,
     @Qualifier("oidcCacheManager") private val oidcCacheManager: CacheManager,
 ) {
     private val userProviderMap = userProviders.associateBy { it.platform }
@@ -75,7 +76,7 @@ class AuthService(
 
         if (isValid.not()) throw AuthException(errorCode = AuthExceptionCode.UNAUTHORIZED)
 
-        val refreshToken = redisUtil.getRefreshToken(userId = userId, deviceId = "tempDeviceId")
+        val refreshToken = authRedisRepository.getRefreshToken(userId = userId, deviceId = "tempDeviceId")
 
         if (serviceToken.refreshToken != refreshToken) {
             throw AuthException(errorCode = AuthExceptionCode.UNAUTHORIZED)
@@ -87,7 +88,7 @@ class AuthService(
     private fun createTokenAndSave(userId: Long): ServiceToken {
         val accessToken = jwtHelper.createAccessToken(userId)  // access token 발행
         val refreshToken = jwtHelper.createRefreshToken()  // refresh token 발행
-        redisUtil.saveRefreshToken(
+        authRedisRepository.saveRefreshToken(
             userId = userId,
             deviceId = "tempDeviceId",  // TODO(준용): Client에서 Device Id를 받아와 저장 필요
             refreshToken = refreshToken,

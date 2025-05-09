@@ -22,13 +22,13 @@ import com.whatever.domain.couple.exception.CoupleNotFoundException
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
+import com.whatever.domain.couple.repository.InvitationCodeRedisRepository
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
-import com.whatever.util.RedisUtil
 import com.whatever.util.findByIdAndNotDeleted
 import com.whatever.util.toZonId
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -47,10 +47,10 @@ private val logger = KotlinLogging.logger { }
 
 @Service
 class CoupleService(
-    private val redisUtil: RedisUtil,
     private val userRepository: UserRepository,
     private val coupleRepository: CoupleRepository,
     private val applicationEventPublisher: ApplicationEventPublisher,
+    private val inviCodeRedisRepository: InvitationCodeRedisRepository,
 ) {
 
     companion object {
@@ -159,7 +159,7 @@ class CoupleService(
     @Transactional
     fun createCouple(request: CreateCoupleRequest): CoupleDetailResponse {
         val invitationCode = request.invitationCode
-        val creatorUserId = redisUtil.getCoupleInvitationUser(invitationCode)
+        val creatorUserId = inviCodeRedisRepository.getInvitationUser(invitationCode)
             ?: throw CoupleException(errorCode = INVITATION_CODE_EXPIRED)
         val joinerUserId = SecurityUtil.getCurrentUserId()
 
@@ -178,7 +178,7 @@ class CoupleService(
         val savedCouple = coupleRepository.save(Couple())
         savedCouple.addMembers(creatorUser, joinerUser)
 
-        redisUtil.deleteCoupleInvitationCode(invitationCode, creatorUserId)
+        inviCodeRedisRepository.deleteInvitationCode(invitationCode, creatorUserId)
 
         return CoupleDetailResponse.from(
             couple = savedCouple,
@@ -192,8 +192,8 @@ class CoupleService(
         val user = userRepository.findUserById(userId)
         validateSingleUser(user)
 
-        redisUtil.getCoupleInvitationCode(userId)?.let {
-            val expirationTime = redisUtil.getCoupleInvitationExpirationTime(it)
+        inviCodeRedisRepository.getInvitationCode(userId)?.let {
+            val expirationTime = inviCodeRedisRepository.getInvitationExpirationTime(it)
             return CoupleInvitationCodeResponse(
                 invitationCode = it,
                 expirationDateTime = expirationTime,
@@ -204,7 +204,7 @@ class CoupleService(
         val expirationDateTime = DateTimeUtil.localNow().plusDays(INVITATION_CODE_EXPIRATION_DAY)
 
         val expirationTime = Duration.between(DateTimeUtil.localNow(), expirationDateTime)
-        val result = redisUtil.saveCoupleInvitationCode(
+        val result = inviCodeRedisRepository.saveInvitationCode(
             userId = userId,
             invitationCode = newInvitationCode,
             expirationTime = expirationTime
@@ -240,7 +240,7 @@ class CoupleService(
         var newInvitationCode: String
         do {
             newInvitationCode = NanoId.generate(INVITATION_CODE_LENGTH)
-            if (redisUtil.getCoupleInvitationUser(newInvitationCode) == null) {
+            if (inviCodeRedisRepository.getInvitationUser(newInvitationCode) == null) {
                 return newInvitationCode
             }
             logger.info { "already exists code: $newInvitationCode. retry(${attempts-1} attempts left)." }

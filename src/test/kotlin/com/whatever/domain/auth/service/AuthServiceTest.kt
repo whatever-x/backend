@@ -1,5 +1,6 @@
 package com.whatever.domain.auth.service
 
+import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
 import com.whatever.domain.auth.dto.ServiceToken
 import com.whatever.domain.auth.exception.AuthException
@@ -10,7 +11,6 @@ import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
-import com.whatever.util.RedisUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
@@ -47,7 +47,7 @@ class AuthServiceTest @Autowired constructor(
     private lateinit var oidcHelper: OIDCHelper
 
     @MockitoSpyBean
-    private lateinit var redisUtil: RedisUtil
+    private lateinit var authRedisRepository: AuthRedisRepository
 
     @MockitoBean
     private lateinit var jwtHelper: JwtHelper
@@ -65,7 +65,7 @@ class AuthServiceTest @Autowired constructor(
     @AfterEach
     fun tearDown() {
         securityUtilMock.close()
-        reset(redisUtil)
+        reset(authRedisRepository)
         reset(jwtHelper)
         userRepository.deleteAllInBatch()
     }
@@ -93,7 +93,7 @@ class AuthServiceTest @Autowired constructor(
         val storedRefreshToken = "differentRefreshToken"
         `when`(jwtHelper.extractUserIdIgnoringSignature(serviceToken.accessToken)).thenReturn(userId)
         `when`(jwtHelper.isValidJwt(serviceToken.refreshToken)).thenReturn(true)
-        `when`(redisUtil.getRefreshToken(userId = userId, deviceId = "tempDeviceIds")).thenReturn(storedRefreshToken)
+        `when`(authRedisRepository.getRefreshToken(userId = userId, deviceId = "tempDeviceIds")).thenReturn(storedRefreshToken)
 
         // when, then
         assertThatThrownBy { authService.refresh(serviceToken) }
