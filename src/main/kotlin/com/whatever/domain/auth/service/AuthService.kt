@@ -38,6 +38,7 @@ class AuthService(
     fun signUpOrSignIn(
         loginPlatform: LoginPlatform,
         idToken: String,
+        deviceId: String,
     ): SignInResponse {
         val userProvider = userProviderMap[loginPlatform]
             ?: throw GlobalException(
@@ -65,7 +66,7 @@ class AuthService(
         val userId = user.id
         val coupleId = user.couple?.id
 
-        val serviceToken = createTokenAndSave(userId = userId)
+        val serviceToken = createTokenAndSave(userId = userId, deviceId = deviceId)
         return SignInResponse(
             serviceToken = serviceToken,
             userStatus = user.userStatus,
@@ -99,7 +100,7 @@ class AuthService(
         logger.debug { "SignOut End - UserId: $userId, DeviceId: $deviceId" }
     }
 
-    fun refresh(serviceToken: ServiceToken): ServiceToken {
+    fun refresh(serviceToken: ServiceToken, deviceId: String): ServiceToken {
         val userId = jwtHelper.extractUserIdIgnoringSignature(serviceToken.accessToken)
         val isValid = jwtHelper.isValidJwt(serviceToken.refreshToken)
 
@@ -111,15 +112,15 @@ class AuthService(
             throw AuthException(errorCode = AuthExceptionCode.UNAUTHORIZED)
         }
 
-        return createTokenAndSave(userId = userId)
+        return createTokenAndSave(userId = userId, deviceId = deviceId)
     }
 
-    private fun createTokenAndSave(userId: Long): ServiceToken {
+    private fun createTokenAndSave(userId: Long, deviceId: String): ServiceToken {
         val accessToken = jwtHelper.createAccessToken(userId)  // access token 발행
         val refreshToken = jwtHelper.createRefreshToken()  // refresh token 발행
         authRedisRepository.saveRefreshToken(
             userId = userId,
-            deviceId = "tempDeviceId",  // TODO(준용): Client에서 Device Id를 받아와 저장 필요
+            deviceId = deviceId,
             refreshToken = refreshToken,
             ttlSeconds = jwtProperties.refreshExpirationSec
         )

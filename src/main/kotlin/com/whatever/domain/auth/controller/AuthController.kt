@@ -39,11 +39,13 @@ class AuthController(
     )
     @PostMapping("/sign-in")
     fun signIn(
+        @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
         @RequestBody request: SignInRequest,
     ): CaramelApiResponse<SignInResponse> {
         val socialAuthResponse = authService.signUpOrSignIn(
             loginPlatform = request.loginPlatform,
-            idToken = request.idToken
+            idToken = request.idToken,
+            deviceId = deviceId
         )
         return socialAuthResponse.succeed()
     }
@@ -75,9 +77,10 @@ class AuthController(
     )
     @PostMapping("/refresh")
     fun refresh(
+        @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
         @RequestBody request: ServiceToken,
     ): CaramelApiResponse<ServiceToken> {
-        val serviceToken = authService.refresh(request)
+        val serviceToken = authService.refresh(request, deviceId)
         return serviceToken.succeed()
     }
 }

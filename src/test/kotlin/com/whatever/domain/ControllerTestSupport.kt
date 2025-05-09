@@ -1,6 +1,8 @@
 package com.whatever.domain
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.whatever.domain.auth.controller.AuthController
+import com.whatever.domain.auth.service.AuthService
 import com.whatever.domain.balancegame.controller.BalanceGameController
 import com.whatever.domain.balancegame.service.BalanceGameService
 import com.whatever.domain.calendarevent.scheduleevent.controller.ScheduleController
@@ -27,6 +29,7 @@ import org.springframework.web.filter.OncePerRequestFilter
         ContentController::class,
         ScheduleController::class,
         BalanceGameController::class,
+        AuthController::class,
     ],
     excludeAutoConfiguration = [
         SecurityAutoConfiguration::class
@@ -54,4 +57,7 @@ abstract class ControllerTestSupport {
 
     @MockitoBean
     protected lateinit var balanceGameService: BalanceGameService
+
+    @MockitoBean
+    private lateinit var authService: AuthService
 }

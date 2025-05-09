@@ -75,12 +75,13 @@ class AuthServiceTest @Autowired constructor(
     fun refresh_WithInvalidRefreshToken_ThrowsException() {
         // given
         val serviceToken = ServiceToken(accessToken = "accessToken", refreshToken = "invalidRefreshToken")
+        val deviceId = "test-device"
         val userId = 1L
         `when`(jwtHelper.extractUserIdIgnoringSignature(serviceToken.accessToken)).thenReturn(userId)
         `when`(jwtHelper.isValidJwt(serviceToken.refreshToken)).thenReturn(false)
 
         // when, then
-        assertThatThrownBy { authService.refresh(serviceToken) }
+        assertThatThrownBy { authService.refresh(serviceToken, deviceId) }
             .isInstanceOf(AuthException::class.java)
     }
 
@@ -89,6 +90,7 @@ class AuthServiceTest @Autowired constructor(
     fun refresh_WithMismatchedRefreshToken_ThrowsException() {
         // given
         val serviceToken = ServiceToken(accessToken = "accessToken", refreshToken = "refreshToken")
+        val deviceId = "test-device"
         val userId = 1L
         val storedRefreshToken = "differentRefreshToken"
         `when`(jwtHelper.extractUserIdIgnoringSignature(serviceToken.accessToken)).thenReturn(userId)
@@ -96,7 +98,7 @@ class AuthServiceTest @Autowired constructor(
         `when`(authRedisRepository.getRefreshToken(userId = userId, deviceId = "tempDeviceIds")).thenReturn(storedRefreshToken)
 
         // when, then
-        assertThatThrownBy { authService.refresh(serviceToken) }
+        assertThatThrownBy { authService.refresh(serviceToken, deviceId) }
             .isInstanceOf(AuthException::class.java)
     }
 
@@ -106,6 +108,7 @@ class AuthServiceTest @Autowired constructor(
         // given
         val oidcPublicKeyCacheName = "oidc-public-key"
         val idToken = "idTokenWithPublicKeyIssue"
+        val deviceId = "test-device"
         val exception = OidcPublicKeyMismatchException(AuthExceptionCode.ILLEGAL_KID)
         val user = userRepository.save(User(
             nickname = "testuser",
@@ -141,6 +144,7 @@ class AuthServiceTest @Autowired constructor(
         val result = authService.signUpOrSignIn(
             loginPlatform = user.platform,
             idToken = idToken,
+            deviceId = deviceId,
         )
 
         // then
