@@ -89,6 +89,8 @@ val LocalDateTime.endOfDay: LocalDateTime
 
 val LocalDateTime.withoutNano: LocalDateTime
     get() = withNano(0)
+val ZonedDateTime.withoutNano: ZonedDateTime
+    get() = withNano(0)
 
 fun String.toZonId(): ZoneId {
     return ZoneId.of(this)

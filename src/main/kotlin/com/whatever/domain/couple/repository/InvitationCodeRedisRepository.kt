@@ -2,11 +2,13 @@ package com.whatever.domain.couple.repository
 
 import com.whatever.domain.base.RedisRepository
 import com.whatever.util.DateTimeUtil
+import com.whatever.util.withoutNano
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Repository
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 
 @Repository
 class InvitationCodeRedisRepository(
@@ -52,9 +54,11 @@ class InvitationCodeRedisRepository(
         zoneId: ZoneId = DateTimeUtil.UTC_ZONE_ID,
     ): LocalDateTime? {
         val invitationKey = "${INVITATION_CODE_PREFIX}${invitationCode}"
-        return redisTemplate.getExpire(invitationKey)
-            .takeIf { it >= 0 }
-            ?.let { DateTimeUtil.localNow().plusSeconds(it) }
+        val remainingTtlSeconds = getRemainingTtlSeconds(invitationKey)
+        if (remainingTtlSeconds == 0L) {
+            return null
+        }
+        return DateTimeUtil.localNow(zoneId).plusSeconds(remainingTtlSeconds).withoutNano
     }
 
     companion object {

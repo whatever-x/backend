@@ -3,10 +3,15 @@ package com.whatever.domain.auth.repository
 import com.whatever.config.properties.JwtProperties
 import com.whatever.domain.auth.service.logger
 import com.whatever.domain.base.RedisRepository
+import com.whatever.util.DateTimeUtil
+import com.whatever.util.withoutNano
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Repository
 import java.time.Duration
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
 val logger = KotlinLogging.logger {  }
@@ -47,7 +52,7 @@ class AuthRedisRepository(
         return redisTemplate.delete(key)
     }
 
-    fun saveSignOutJti(
+    fun saveJtiToBlacklist(
         jti: String,
         expirationDuration: Duration,
     ): Boolean {
@@ -60,6 +65,24 @@ class AuthRedisRepository(
         redisTemplate.opsForValue().set(key, "1", expirationDuration)
         logger.debug { "Jti added to blacklist - Jti: [$jti], ExpirationDuration: $expirationDuration" }
         return true
+    }
+
+    fun isJtiBlacklisted(jti: String): Boolean {
+        val key = "${SIGN_OUT_JTI_PREFIX}${jti}"
+        val result = redisTemplate.opsForValue().get(key)
+        return result != null
+    }
+
+    fun getJtiBlacklistExpirationTime(
+        jti: String,
+        zoneId: ZoneId = DateTimeUtil.UTC_ZONE_ID,
+    ): LocalDateTime? {
+        val key = "${SIGN_OUT_JTI_PREFIX}${jti}"
+        val remainingTtlSeconds = getRemainingTtlSeconds(key)
+        if (remainingTtlSeconds == 0L) {
+            return null
+        }
+        return DateTimeUtil.localNow(zoneId).plusSeconds(remainingTtlSeconds).withoutNano
     }
 
     companion object {
