@@ -35,6 +35,19 @@ class JwtHelper(
         )
     }
 
+    fun extractJti(token: String): String {
+        val jwt = jwtProvider.parseJwt(
+            jwtParser = getJwtParser(),
+            token = token,
+        )
+
+        return jwt.payload.id
+            ?: throw JwtMissingClaimException(
+                errorCode = JwtExceptionCode.MISSING_JTI,
+                detailMessage = "AccessToken에서 token id 정보를 찾을 수 없습니다."
+            )
+    }
+
     fun extractUserId(token: String): Long {
         val jwt = jwtProvider.parseJwt(
             jwtParser = getJwtParser(),
