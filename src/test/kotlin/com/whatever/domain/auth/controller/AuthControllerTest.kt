@@ -6,8 +6,11 @@ import com.whatever.domain.auth.dto.SignInRequest
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
 import com.whatever.global.constants.CaramelHttpHeaders.DEVICE_ID
+import com.whatever.global.security.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mockStatic
+import org.mockito.kotlin.whenever
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.post
 
@@ -42,15 +45,19 @@ class AuthControllerTest : ControllerTestSupport() {
         val accessHeader = "Bearer access-xxx"
         val deviceId = "test-device"
 
-        // when // then
-        mockMvc.post("/v1/auth/sign-out") {
-            header(AUTH_JWT_HEADER, accessHeader)
-            header(DEVICE_ID, deviceId)
-        }
-            .andDo { print() }
-            .andExpect {
-                status { isOk() }
+        mockStatic(SecurityUtil::class.java).use {
+            whenever(SecurityUtil.getCurrentUserId()).thenReturn(0L)
+
+            // when // then
+            mockMvc.post("/v1/auth/sign-out") {
+                header(AUTH_JWT_HEADER, accessHeader)
+                header(DEVICE_ID, deviceId)
             }
+                .andDo { print() }
+                .andExpect {
+                    status { isOk() }
+                }
+        }
     }
 
     @DisplayName("토큰을 재발급한다")

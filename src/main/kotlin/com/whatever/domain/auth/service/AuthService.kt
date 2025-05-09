@@ -15,8 +15,6 @@ import com.whatever.global.exception.GlobalException
 import com.whatever.global.exception.GlobalExceptionCode
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.util.DateTimeUtil
-import com.whatever.util.DateTimeUtil.KST_ZONE_ID
-import com.whatever.util.DateTimeUtil.changeTimeZone
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.ExpiredJwtException
 import org.springframework.beans.factory.annotation.Qualifier
@@ -79,8 +77,8 @@ class AuthService(
     fun signOut(
         bearerAccessToken: String,
         deviceId: String,
+        userId: Long = getCurrentUserId(),
     ) {
-        val userId = getCurrentUserId()
         logger.debug { "SignOut Start - UserId: $userId, DeviceId: $deviceId" }
 
         val accessToken = bearerAccessToken.substring(BEARER_TYPE.length)
@@ -90,7 +88,7 @@ class AuthService(
             val expDateTime = jwtHelper.extractExpDate(accessToken).toInstant().atZone(DateTimeUtil.UTC_ZONE_ID)
             val expirationDuration = DateTimeUtil.getDuration(endDateTime = expDateTime)
 
-            authRedisRepository.saveSignOutJti(jti = jti, expirationDuration = expirationDuration)
+            authRedisRepository.saveJtiToBlacklist(jti = jti, expirationDuration = expirationDuration)
         } catch (e: ExpiredJwtException) {
             logger.debug { "Access Token is already expired - UserId: $userId" }
         }
