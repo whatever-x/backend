@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.whatever.global.exception.GlobalExceptionCode
 import com.whatever.global.jwt.exception.CaramelJwtException
 import com.whatever.global.security.exception.AuthenticationException
+import com.whatever.global.security.exception.CaramelSecurityException
+import com.whatever.global.security.exception.SecurityExceptionCode
 import com.whatever.global.security.util.setExceptionResponse
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -23,6 +25,12 @@ class JwtExceptionFilter(
         try {
             filterChain.doFilter(request, response)
         } catch (e: CaramelJwtException) {
+            response.setExceptionResponse(
+                errorCode = e.errorCode,
+                detailMessage = e.detailMessage,
+                objectMapper = objectMapper
+            )
+        } catch (e: CaramelSecurityException) {
             response.setExceptionResponse(
                 errorCode = e.errorCode,
                 detailMessage = e.detailMessage,

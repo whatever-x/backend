@@ -26,7 +26,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
 
     @ExceptionHandler(CaramelException::class)
     fun handleCaramelException(e: CaramelException): ResponseEntity<CaramelApiResponse<*>> {
-        logger.error(e) { "예상하지 못한 예외가 발생했습니다." }
+        logger.error(e) {  }
         return createExceptionResponse(errorCode = e.errorCode, debugMessage = e.detailMessage)
     }
 
