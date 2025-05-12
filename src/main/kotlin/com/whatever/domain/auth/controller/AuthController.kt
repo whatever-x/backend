@@ -10,8 +10,10 @@ import com.whatever.global.constants.CaramelHttpHeaders.DEVICE_ID
 import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.succeed
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
@@ -56,7 +58,7 @@ class AuthController(
     )
     @PostMapping("/sign-out")
     fun signOut(
-        @RequestHeader(name = AUTH_JWT_HEADER, required = true) bearerAccessToken: String,
+        @Parameter(hidden = true) @RequestHeader(name = AUTH_JWT_HEADER, required = true) bearerAccessToken: String,
         @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
     ): CaramelApiResponse<Unit> {
         authService.signOut(
@@ -82,5 +84,18 @@ class AuthController(
     ): CaramelApiResponse<ServiceToken> {
         val serviceToken = authService.refresh(request, deviceId)
         return serviceToken.succeed()
+    }
+
+    @Operation(
+        summary = "회원 탈퇴",
+        description = "회원 탈퇴를 진행합니다.",
+    )
+    @DeleteMapping("/account")
+    fun deleteUser(
+        @Parameter(hidden = true) @RequestHeader(name = AUTH_JWT_HEADER, required = true) bearerAccessToken: String,
+        @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
+    ): CaramelApiResponse<Unit> {
+        authService.deleteUser(bearerAccessToken, deviceId)
+        return CaramelApiResponse.succeed()
     }
 }

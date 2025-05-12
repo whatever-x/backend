@@ -130,9 +130,9 @@ class AuthService(
 
     @Transactional
     fun deleteUser(
-        userId: Long = getCurrentUserId(),
         bearerAccessToken: String,
         deviceId: String,
+        userId: Long = getCurrentUserId(),
     ) {
         val user = userRepository.findByIdAndNotDeleted(userId)
             ?: throw UserNotFoundException(errorCode = NOT_FOUND)
