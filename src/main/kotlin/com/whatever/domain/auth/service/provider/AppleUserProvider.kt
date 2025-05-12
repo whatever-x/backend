@@ -8,8 +8,11 @@ import com.whatever.domain.auth.service.OIDCHelper
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Component
+
+private val logger = KotlinLogging.logger {  }
 
 @Component
 class AppleUserProvider(
@@ -22,10 +25,10 @@ class AppleUserProvider(
         get() = LoginPlatform.APPLE
 
     override fun findOrCreateUser(socialIdToken: String): User {
-        val kakaoPublicKey = appleOIDCClient.getOIDCPublicKey()
+        val applePublicKey = appleOIDCClient.getOIDCPublicKey()
         val idTokenPayload = oidcHelper.parseAppleIdToken(
             idToken = socialIdToken,
-            oidcPublicKeys = kakaoPublicKey.keys,
+            oidcPublicKeys = applePublicKey.keys,
         )
 
         userRepository.findByPlatformUserId(idTokenPayload.platformUserId)?.let {
@@ -37,6 +40,10 @@ class AppleUserProvider(
         } catch (e: DataIntegrityViolationException) {
             userRepository.findByPlatformUserId(idTokenPayload.platformUserId) ?: throw e
         }
+    }
+
+    override fun unlinkUser(userId: Long) {
+        logger.debug { "Bypass Apple user unlink. userId: ${userId}" }
     }
 
     fun findOrCreateUserByAppleAuthFormData(appleAuthFormData: AppleAuthFormData): User {
