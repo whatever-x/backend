@@ -12,7 +12,11 @@ import feign.Response
 import feign.codec.Encoder
 import feign.codec.ErrorDecoder
 import feign.form.FormEncoder
+import feign.form.spring.SpringFormEncoder
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.beans.factory.ObjectFactory
+import org.springframework.boot.autoconfigure.http.HttpMessageConverters
+import org.springframework.cloud.openfeign.support.SpringEncoder
 import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpStatus
 import kotlin.reflect.KClass
@@ -22,8 +26,8 @@ private val logger = KotlinLogging.logger {  }
 class KakaoKapiConfig {
 
     @Bean
-    fun formEncoder(): Encoder {
-        return FormEncoder()
+    fun formEncoder(converters: ObjectFactory<HttpMessageConverters>): Encoder {
+        return SpringFormEncoder(SpringEncoder(converters))
     }
 
     @Bean
