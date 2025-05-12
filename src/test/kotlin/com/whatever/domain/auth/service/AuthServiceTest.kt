@@ -1,13 +1,13 @@
 package com.whatever.domain.auth.service
 
 import com.whatever.domain.auth.client.KakaoKapiClient
-import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
 import com.whatever.domain.auth.client.dto.KakaoUnlinkUserResponse
 import com.whatever.domain.auth.dto.ServiceToken
 import com.whatever.domain.auth.exception.AuthException
 import com.whatever.domain.auth.exception.AuthExceptionCode
 import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
+import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.service.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.domain.content.service.createCouple
 import com.whatever.domain.couple.repository.CoupleRepository
@@ -19,6 +19,8 @@ import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
+import com.whatever.global.exception.GlobalException
+import com.whatever.global.exception.GlobalExceptionCode.UNKNOWN
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.findByIdAndNotDeleted
@@ -29,12 +31,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.mockStatic
-import org.mockito.Mockito.reset
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
-import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.never
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
@@ -47,8 +48,8 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -248,6 +249,71 @@ class AuthServiceTest @Autowired constructor(
         val jti = jwtHelper.extractJti(accessToken)
         assertThat(authRedisRepository.isJtiBlacklisted(jti)).isTrue
         assertThat(authRedisRepository.getRefreshToken(myUser.id, deviceId)).isNull()
+    }
+
+    @DisplayName("회원 탈퇴 시 유저 여러 디바이스에서 로그인을 해도 refresh token을 모두 폐기한다.")
+    @Test
+    fun deleteUser_WithMultiLoginRefreshToken() {
+        // given
+        val myUser = createSingleUser(userRepository)
+
+        val (accessToken, refreshToken, deviceId) = loginFixture(myUser)
+        (2..4).forEach { i ->
+            authRedisRepository.saveRefreshToken(
+                userId = myUser.id,
+                deviceId = "device$i",
+                refreshToken = "refresh-token-$i",
+            )
+        }
+
+        doReturn(KakaoUnlinkUserResponse(myUser.platformUserId.toLong()))
+            .whenever(kakaoKapiClient).unlinkUserByAdminKey(any(), any())
+
+        // when
+        authService.deleteUser(
+            userId = myUser.id,
+            bearerAccessToken = "${BEARER_TYPE}${accessToken}",
+            deviceId = deviceId,
+        )
+
+        // then
+        assertThat(authRedisRepository.deleteAllRefreshToken(myUser.id)).isZero
+    }
+
+    @DisplayName("회원 탈퇴 시 예외가 발생하면 롤백되어 유저가 탈퇴되지 않는다.")
+    @Test
+    fun deleteUser_WithExceptionAndRollBack() {
+        // given
+        val (myUser, partnerUser, couple) = createCouple(
+            userRepository = userRepository,
+            coupleRepository = coupleRepository,
+            myPlatformUserId = "123"
+        )
+        val (accessToken, refreshToken, deviceId) = loginFixture(myUser)
+
+        doThrow(GlobalException(errorCode = UNKNOWN))
+            .whenever(coupleService).leaveCouple(couple.id, myUser.id)
+
+        // when
+        assertFailsWith<GlobalException> {
+            authService.deleteUser(
+                userId = myUser.id,
+                bearerAccessToken = "${BEARER_TYPE}$accessToken",
+                deviceId = deviceId
+            )
+        }
+
+        // then
+        val existing = userRepository.findByIdAndNotDeleted(myUser.id)
+        assertThat(existing).isNotNull
+
+        val savedCouple = coupleRepository.findByIdWithMembers(couple.id)!!
+        assertThat(savedCouple.members.map { it.id })
+            .containsExactlyInAnyOrder(myUser.id, partnerUser.id)
+
+        val jti = jwtHelper.extractJti(accessToken)
+        assertThat(authRedisRepository.isJtiBlacklisted(jti)).isFalse()
+        assertThat(authRedisRepository.getRefreshToken(myUser.id, deviceId)).isEqualTo(refreshToken)
     }
 
     private fun loginFixture(myUser: User): Triple<String, String, String> {
