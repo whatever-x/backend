@@ -10,6 +10,9 @@ import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
 import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.service.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.domain.auth.service.provider.SocialUserProvider
+import com.whatever.domain.couple.controller.dto.response.CoupleBasicResponse
+import com.whatever.domain.couple.exception.CoupleExceptionCode.UPDATE_FAIL
+import com.whatever.domain.couple.exception.CoupleIllegalStateException
 import com.whatever.domain.couple.service.CoupleService
 import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.domain.user.exception.UserNotFoundException
@@ -24,6 +27,10 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.ExpiredJwtException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.cache.CacheManager
+import org.springframework.dao.OptimisticLockingFailureException
+import org.springframework.retry.annotation.Backoff
+import org.springframework.retry.annotation.Recover
+import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -143,6 +150,7 @@ class AuthService(
             deviceId = deviceId,
             userId = userId,
         )
+        authRedisRepository.deleteAllRefreshToken(userId)
     }
 
     private fun createTokenAndSave(userId: Long, deviceId: String): ServiceToken {

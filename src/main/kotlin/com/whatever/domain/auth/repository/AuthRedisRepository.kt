@@ -6,7 +6,11 @@ import com.whatever.domain.base.RedisRepository
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.withoutNano
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.data.redis.connection.DataType
+import org.springframework.data.redis.core.Cursor
+import org.springframework.data.redis.core.KeyScanOptions
 import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.data.redis.core.ScanOptions
 import org.springframework.stereotype.Repository
 import java.time.Duration
 import java.time.LocalDateTime
@@ -50,6 +54,38 @@ class AuthRedisRepository(
     ): Boolean {
         val key = "${REFRESH_TOKEN_PREFIX}${userId}:${deviceId}"
         return redisTemplate.delete(key)
+    }
+
+    private fun scanAllRefreshToken(userId: Long): Set<String> {
+        val key = "${REFRESH_TOKEN_PREFIX}${userId}:*"
+        val targetKeys = mutableSetOf<String>()
+        val scanOptions = ScanOptions.scanOptions().match(key).count(20).build()
+
+        try {
+            redisTemplate.scan(scanOptions).use {
+                while (it.hasNext()) {
+                    targetKeys.add(it.next())
+                }
+            }
+            logger.debug { "Found ${targetKeys.size} refresh token keys matching the pattern. owner: ${userId}" }
+        } catch (e: Exception) {
+            logger.error(e) { "Error during scanning refresh tokens for user: ${userId}" }
+        }
+        return targetKeys.toSet()
+    }
+
+    fun deleteAllRefreshToken(userId: Long): Long {
+        val targetKeys = scanAllRefreshToken(userId)
+        var deletedKeyCnt = 0L
+        try {
+            if (targetKeys.isNotEmpty()) {
+                deletedKeyCnt = redisTemplate.delete(targetKeys)
+            }
+            logger.debug { "Successfully deleted ${deletedKeyCnt} refresh token. owner: ${userId}" }
+        } catch (e: Exception) {
+            logger.error(e) { "Error during deleting refresh tokens for user: ${userId}" }
+        }
+        return deletedKeyCnt
     }
 
     fun saveJtiToBlacklist(
