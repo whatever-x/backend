@@ -1,16 +1,27 @@
 package com.whatever.domain.auth.service
 
+import com.whatever.domain.auth.client.KakaoKapiClient
 import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
+import com.whatever.domain.auth.client.dto.KakaoUnlinkUserResponse
 import com.whatever.domain.auth.dto.ServiceToken
 import com.whatever.domain.auth.exception.AuthException
 import com.whatever.domain.auth.exception.AuthExceptionCode
 import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
+import com.whatever.domain.auth.service.JwtHelper.Companion.BEARER_TYPE
+import com.whatever.domain.content.service.createCouple
+import com.whatever.domain.couple.repository.CoupleRepository
+import com.whatever.domain.couple.service.CoupleService
+import com.whatever.domain.couple.service.event.ExcludeAsyncConfigBean
+import com.whatever.domain.couple.service.event.SyncAsyncConfig
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
+import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
+import com.whatever.util.DateTimeUtil
+import com.whatever.util.findByIdAndNotDeleted
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
@@ -22,24 +33,34 @@ import org.mockito.Mockito.reset
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.never
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.cache.Cache
 import org.springframework.cache.CacheManager
+import org.springframework.context.annotation.Import
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+import java.time.LocalDate
+import java.util.UUID
 import kotlin.test.Test
 
 @ActiveProfiles("test")
 @SpringBootTest
+@Import(SyncAsyncConfig::class)
 class AuthServiceTest @Autowired constructor(
     private val redisTemplate: RedisTemplate<String, String>,
     private val authService: AuthService,
     private val userRepository: UserRepository,
-) {
+    private val coupleRepository: CoupleRepository,
+) : ExcludeAsyncConfigBean() {
+
+
     @MockitoBean
     private lateinit var oidcCacheManager: CacheManager
 
@@ -49,8 +70,13 @@ class AuthServiceTest @Autowired constructor(
     @MockitoSpyBean
     private lateinit var authRedisRepository: AuthRedisRepository
 
-    @MockitoBean
+    @MockitoSpyBean
     private lateinit var jwtHelper: JwtHelper
+    @MockitoSpyBean
+    private lateinit var coupleService: CoupleService
+
+    @MockitoBean
+    private lateinit var kakaoKapiClient: KakaoKapiClient
 
     private lateinit var securityUtilMock: AutoCloseable
 
@@ -65,9 +91,8 @@ class AuthServiceTest @Autowired constructor(
     @AfterEach
     fun tearDown() {
         securityUtilMock.close()
-        reset(authRedisRepository)
-        reset(jwtHelper)
         userRepository.deleteAllInBatch()
+        coupleRepository.deleteAllInBatch()
     }
 
     @DisplayName("유효하지 않은 리프레시 토큰이면 예외가 발생한다.")
@@ -77,8 +102,10 @@ class AuthServiceTest @Autowired constructor(
         val serviceToken = ServiceToken(accessToken = "accessToken", refreshToken = "invalidRefreshToken")
         val deviceId = "test-device"
         val userId = 1L
-        `when`(jwtHelper.extractUserIdIgnoringSignature(serviceToken.accessToken)).thenReturn(userId)
-        `when`(jwtHelper.isValidJwt(serviceToken.refreshToken)).thenReturn(false)
+        doReturn(userId)
+            .whenever(jwtHelper).extractUserIdIgnoringSignature(serviceToken.accessToken)
+        doReturn(false)
+            .whenever(jwtHelper).isValidJwt(serviceToken.refreshToken)
 
         // when, then
         assertThatThrownBy { authService.refresh(serviceToken, deviceId) }
@@ -93,8 +120,10 @@ class AuthServiceTest @Autowired constructor(
         val deviceId = "test-device"
         val userId = 1L
         val storedRefreshToken = "differentRefreshToken"
-        `when`(jwtHelper.extractUserIdIgnoringSignature(serviceToken.accessToken)).thenReturn(userId)
-        `when`(jwtHelper.isValidJwt(serviceToken.refreshToken)).thenReturn(true)
+        doReturn(userId)
+            .whenever(jwtHelper).extractUserIdIgnoringSignature(serviceToken.accessToken)
+        doReturn(true)
+            .whenever(jwtHelper).isValidJwt(serviceToken.refreshToken)
         `when`(authRedisRepository.getRefreshToken(userId = userId, deviceId = "tempDeviceIds")).thenReturn(storedRefreshToken)
 
         // when, then
@@ -132,10 +161,11 @@ class AuthServiceTest @Autowired constructor(
         whenever(oidcHelper.parseKakaoIdToken(any(), any()))
             .thenThrow(exception)  // Oidc PublicKey가 만료되어 불일치 발생
             .thenReturn(fakeKakaoIdTokenPayload)  // 캐싱 후 다시 정상값 반환
-        whenever(jwtHelper.createAccessToken(user.id))
-            .thenReturn(fakeServiceToken.accessToken)
-        whenever(jwtHelper.createRefreshToken())
-            .thenReturn(fakeServiceToken.refreshToken)
+
+        doReturn(fakeServiceToken.accessToken)
+            .whenever(jwtHelper).createAccessToken(user.id)
+        doReturn(fakeServiceToken.refreshToken)
+            .whenever(jwtHelper).createRefreshToken()
         whenever(oidcCacheManager.getCache(oidcPublicKeyCacheName))
             .thenReturn(mock(Cache::class.java))
 
@@ -153,4 +183,105 @@ class AuthServiceTest @Autowired constructor(
         assertThat(result.serviceToken.accessToken).isEqualTo(fakeServiceToken.accessToken)
         assertThat(result.serviceToken.refreshToken).isEqualTo(fakeServiceToken.refreshToken)
     }
+
+    @DisplayName("회원 탈퇴 시 유저 상태가 COUPLED라면 커플탈퇴와 유저삭제, 로그아웃을 진행한다.")
+    @Test
+    fun deleteUser_WithCoupleUser() {
+        // given
+        val (myUser, partnerUser, couple) = createCouple(
+            userRepository = userRepository,
+            coupleRepository = coupleRepository,
+            myPlatformUserId = "123",
+        )
+
+        val (accessToken, refreshToken, deviceId) = loginFixture(myUser)
+
+        doReturn(KakaoUnlinkUserResponse(myUser.platformUserId.toLong()))
+            .whenever(kakaoKapiClient).unlinkUserByAdminKey(any(), any())
+
+        // when
+        authService.deleteUser(
+            userId = myUser.id,
+            bearerAccessToken = "${BEARER_TYPE}${accessToken}",
+            deviceId = deviceId,
+        )
+
+        // then
+        val oldCouple = coupleRepository.findByIdWithMembers(couple.id)
+        require(oldCouple != null)
+        assertThat(oldCouple.members.map { it.id })
+            .hasSize(1)
+            .doesNotContain(myUser.id)
+
+        val oldUser = userRepository.findByIdAndNotDeleted(myUser.id)
+        assertThat(oldUser).isNull()
+
+        val jti = jwtHelper.extractJti(accessToken)
+        assertThat(authRedisRepository.isJtiBlacklisted(jti)).isTrue
+        assertThat(authRedisRepository.getRefreshToken(myUser.id, deviceId)).isNull()
+    }
+
+    @DisplayName("회원 탈퇴 시 유저 상태가 SINGLE이라면 유저삭제, 로그아웃을 진행한다.")
+    @Test
+    fun deleteUser_WithSingleUser() {
+        // given
+        val myUser = createSingleUser(userRepository)
+
+        val (accessToken, refreshToken, deviceId) = loginFixture(myUser)
+
+        doReturn(KakaoUnlinkUserResponse(myUser.platformUserId.toLong()))
+            .whenever(kakaoKapiClient).unlinkUserByAdminKey(any(), any())
+
+        // when
+        authService.deleteUser(
+            userId = myUser.id,
+            bearerAccessToken = "${BEARER_TYPE}${accessToken}",
+            deviceId = deviceId,
+        )
+
+        // then
+        verify(coupleService, never()).leaveCouple(any(), any())
+
+        val oldUser = userRepository.findByIdAndNotDeleted(myUser.id)
+        assertThat(oldUser).isNull()
+
+        val jti = jwtHelper.extractJti(accessToken)
+        assertThat(authRedisRepository.isJtiBlacklisted(jti)).isTrue
+        assertThat(authRedisRepository.getRefreshToken(myUser.id, deviceId)).isNull()
+    }
+
+    private fun loginFixture(myUser: User): Triple<String, String, String> {
+        val accessToken = jwtHelper.createAccessToken(myUser.id)
+        val refreshToken = jwtHelper.createRefreshToken()
+        val deviceId = "test-device"
+        authRedisRepository.saveRefreshToken(
+            userId = myUser.id,
+            deviceId = deviceId,
+            refreshToken = refreshToken,
+            ttlSeconds = 300L
+        )
+        return Triple(accessToken, refreshToken, deviceId)
+    }
+}
+
+fun createSingleUser(
+    userRepository: UserRepository,
+    email: String = "test@email.test",
+    birthDate: LocalDate = DateTimeUtil.localNow().toLocalDate(),
+    nickname: String = "testuser",
+    gender: UserGender = UserGender.FEMALE,
+    platform: LoginPlatform = LoginPlatform.TEST,
+    platformUserId: Long = 1L,
+): User {
+    return userRepository.save(
+        User(
+            email = email,
+            birthDate = birthDate,
+            platform = platform,
+            platformUserId = platformUserId.toString(),
+            nickname = nickname,
+            gender = gender,
+            userStatus = UserStatus.SINGLE,
+        )
+    )
 }
