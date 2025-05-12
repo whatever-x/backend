@@ -10,16 +10,22 @@ import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
 import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.service.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.domain.auth.service.provider.SocialUserProvider
+import com.whatever.domain.couple.service.CoupleService
+import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
+import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.LoginPlatform
+import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.exception.GlobalException
-import com.whatever.global.exception.GlobalExceptionCode
+import com.whatever.global.exception.GlobalExceptionCode.ARGS_VALIDATION_FAILED
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.util.DateTimeUtil
+import com.whatever.util.findByIdAndNotDeleted
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.ExpiredJwtException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.cache.CacheManager
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 val logger = KotlinLogging.logger {  }
 
@@ -30,6 +36,8 @@ class AuthService(
     private val authRedisRepository: AuthRedisRepository,
     userProviders: List<SocialUserProvider>,
     @Qualifier("oidcCacheManager") private val oidcCacheManager: CacheManager,
+    private val userRepository: UserRepository,
+    private val coupleService: CoupleService,
 ) {
     private val userProviderMap = userProviders.associateBy { it.platform }
 
@@ -40,7 +48,7 @@ class AuthService(
     ): SignInResponse {
         val userProvider = userProviderMap[loginPlatform]
             ?: throw GlobalException(
-                errorCode = GlobalExceptionCode.ARGS_VALIDATION_FAILED,
+                errorCode = ARGS_VALIDATION_FAILED,
                 detailMessage = "일치하는 로그인 플랫폼이 없습니다. platform: $loginPlatform"
             )
 
@@ -111,6 +119,30 @@ class AuthService(
         }
 
         return createTokenAndSave(userId = userId, deviceId = deviceId)
+    }
+
+    @Transactional
+    fun deleteUser(
+        userId: Long = getCurrentUserId(),
+        bearerAccessToken: String,
+        deviceId: String,
+    ) {
+        val user = userRepository.findByIdAndNotDeleted(userId)
+            ?: throw UserNotFoundException(errorCode = NOT_FOUND)
+
+        user.couple?.run {  // 커플이 있다면 탈퇴 진행
+            coupleService.leaveCouple(
+                coupleId = id,
+                userId = user.id,
+            )
+        }
+        user.deleteEntity()
+        userProviderMap[user.platform]?.unlinkUser(userId)
+        signOut(  // 인증 토큰 제거
+            bearerAccessToken = bearerAccessToken,
+            deviceId = deviceId,
+            userId = userId,
+        )
     }
 
     private fun createTokenAndSave(userId: Long, deviceId: String): ServiceToken {
