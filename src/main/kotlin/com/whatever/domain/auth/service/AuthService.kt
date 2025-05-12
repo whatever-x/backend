@@ -136,8 +136,8 @@ class AuthService(
                 userId = user.id,
             )
         }
-        user.deleteEntity()
         userProviderMap[user.platform]?.unlinkUser(userId)
+        user.deleteEntity()
         signOut(  // 인증 토큰 제거
             bearerAccessToken = bearerAccessToken,
             deviceId = deviceId,

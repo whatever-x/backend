@@ -6,6 +6,7 @@ import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Recover
 import org.springframework.retry.annotation.Retryable
 import org.springframework.retry.support.RetrySynchronizationManager
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
 private val logger = KotlinLogging.logger {  }
@@ -24,7 +25,7 @@ abstract class AbstractEntityCleanupService<E: BaseEntity> {
         backoff = Backoff(delay = 100, maxDelay = 300),
         maxAttempts = 3,
     )
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     open fun cleanupEntity(userId: Long, entityName: String): Int {
         val effectedRow = runCleanup(userId)
 
