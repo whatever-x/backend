@@ -21,3 +21,8 @@ class ContentIllegalStateException(
     errorCode: ContentExceptionCode,
     detailMessage: String? = null
 ) : ContentException(errorCode, detailMessage)
+
+class ContentAccessDeniedException(
+    errorCode: ContentExceptionCode,
+    detailMessage: String? = null
+) : ContentException(errorCode, detailMessage)
