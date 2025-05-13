@@ -1,11 +1,15 @@
 package com.whatever.domain.user.service
 
+import com.whatever.domain.user.dto.GetUserInfoResponse
 import com.whatever.domain.user.dto.PostUserProfileRequest
 import com.whatever.domain.user.dto.PostUserProfileResponse
 import com.whatever.domain.user.dto.PutUserProfileRequest
 import com.whatever.domain.user.dto.PutUserProfileResponse
+import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
+import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
+import com.whatever.util.findByIdAndNotDeleted
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -18,7 +22,7 @@ class UserService(
     @Transactional
     fun createProfile(postUserProfileRequest: PostUserProfileRequest): PostUserProfileResponse {
         val userId = getCurrentUserId()
-        val user = userRepository.findByIdOrNull(userId)
+        val user = userRepository.findByIdAndNotDeleted(userId)
         with(postUserProfileRequest) {
             user?.register(nickname, birthday, gender)
         }
@@ -33,7 +37,7 @@ class UserService(
     @Transactional
     fun updateProfile(putUserProfileRequest: PutUserProfileRequest): PutUserProfileResponse {
         val userId = getCurrentUserId()
-        val user = userRepository.findByIdOrNull(userId)?.apply {
+        val user = userRepository.findByIdAndNotDeleted(userId)?.apply {
             if (putUserProfileRequest.nickname.isNullOrBlank().not()) {
                 nickname = putUserProfileRequest.nickname
             }
@@ -48,5 +52,10 @@ class UserService(
             nickname = user?.nickname!!,
             birthday = user.birthDate!!,
         )
+    }
+
+    fun getUserInfo(userId: Long = getCurrentUserId()): GetUserInfoResponse {
+        val user = userRepository.findByIdAndNotDeleted(userId) ?: throw UserNotFoundException(errorCode = NOT_FOUND)
+        return GetUserInfoResponse.from(user)
     }
 }

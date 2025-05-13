@@ -1,7 +1,7 @@
 package com.whatever.global.constants
 
-import org.springframework.http.HttpHeaders
-
 object CaramelHttpHeaders {
     const val TIME_ZONE = "Time-Zone"
+    const val AUTH_JWT_HEADER = "Authorization"
+    const val DEVICE_ID = "Device-Id"
 }

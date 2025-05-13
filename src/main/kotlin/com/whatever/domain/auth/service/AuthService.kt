@@ -7,15 +7,32 @@ import com.whatever.domain.auth.exception.AuthException
 import com.whatever.domain.auth.exception.AuthExceptionCode
 import com.whatever.domain.auth.exception.IllegalOidcTokenException
 import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
+import com.whatever.domain.auth.repository.AuthRedisRepository
+import com.whatever.domain.auth.service.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.domain.auth.service.provider.SocialUserProvider
+import com.whatever.domain.couple.controller.dto.response.CoupleBasicResponse
+import com.whatever.domain.couple.exception.CoupleExceptionCode.UPDATE_FAIL
+import com.whatever.domain.couple.exception.CoupleIllegalStateException
+import com.whatever.domain.couple.service.CoupleService
+import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
+import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.LoginPlatform
+import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.exception.GlobalException
-import com.whatever.global.exception.GlobalExceptionCode
-import com.whatever.util.RedisUtil
+import com.whatever.global.exception.GlobalExceptionCode.ARGS_VALIDATION_FAILED
+import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
+import com.whatever.util.DateTimeUtil
+import com.whatever.util.findByIdAndNotDeleted
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.jsonwebtoken.ExpiredJwtException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.cache.CacheManager
+import org.springframework.dao.OptimisticLockingFailureException
+import org.springframework.retry.annotation.Backoff
+import org.springframework.retry.annotation.Recover
+import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 val logger = KotlinLogging.logger {  }
 
@@ -23,19 +40,22 @@ val logger = KotlinLogging.logger {  }
 class AuthService(
     private val jwtHelper: JwtHelper,
     private val jwtProperties: JwtProperties,
+    private val authRedisRepository: AuthRedisRepository,
     userProviders: List<SocialUserProvider>,
-    private val redisUtil: RedisUtil,
     @Qualifier("oidcCacheManager") private val oidcCacheManager: CacheManager,
+    private val userRepository: UserRepository,
+    private val coupleService: CoupleService,
 ) {
     private val userProviderMap = userProviders.associateBy { it.platform }
 
     fun signUpOrSignIn(
         loginPlatform: LoginPlatform,
         idToken: String,
+        deviceId: String,
     ): SignInResponse {
         val userProvider = userProviderMap[loginPlatform]
             ?: throw GlobalException(
-                errorCode = GlobalExceptionCode.ARGS_VALIDATION_FAILED,
+                errorCode = ARGS_VALIDATION_FAILED,
                 detailMessage = "일치하는 로그인 플랫폼이 없습니다. platform: $loginPlatform"
             )
 
@@ -59,7 +79,7 @@ class AuthService(
         val userId = user.id
         val coupleId = user.couple?.id
 
-        val serviceToken = createTokenAndSave(userId = userId)
+        val serviceToken = createTokenAndSave(userId = userId, deviceId = deviceId)
         return SignInResponse(
             serviceToken = serviceToken,
             userStatus = user.userStatus,
@@ -69,27 +89,76 @@ class AuthService(
         )
     }
 
-    fun refresh(serviceToken: ServiceToken): ServiceToken {
-        val userId = jwtHelper.getUserId(serviceToken.accessToken)
+    fun signOut(
+        bearerAccessToken: String,
+        deviceId: String,
+        userId: Long = getCurrentUserId(),
+    ) {
+        logger.debug { "SignOut Start - UserId: $userId, DeviceId: $deviceId" }
+
+        val accessToken = bearerAccessToken.substring(BEARER_TYPE.length)
+
+        try {
+            val jti = jwtHelper.extractJti(accessToken)
+            val expDateTime = jwtHelper.extractExpDate(accessToken).toInstant().atZone(DateTimeUtil.UTC_ZONE_ID)
+            val expirationDuration = DateTimeUtil.getDuration(endDateTime = expDateTime)
+
+            authRedisRepository.saveJtiToBlacklist(jti = jti, expirationDuration = expirationDuration)
+        } catch (e: ExpiredJwtException) {
+            logger.debug { "Access Token is already expired - UserId: $userId" }
+        }
+
+        authRedisRepository.deleteRefreshToken(userId = userId, deviceId = deviceId)
+
+        logger.debug { "SignOut End - UserId: $userId, DeviceId: $deviceId" }
+    }
+
+    fun refresh(serviceToken: ServiceToken, deviceId: String): ServiceToken {
+        val userId = jwtHelper.extractUserIdIgnoringSignature(serviceToken.accessToken)
         val isValid = jwtHelper.isValidJwt(serviceToken.refreshToken)
 
         if (isValid.not()) throw AuthException(errorCode = AuthExceptionCode.UNAUTHORIZED)
 
-        val refreshToken = redisUtil.getRefreshToken(userId = userId, deviceId = "tempDeviceId")
+        val refreshToken = authRedisRepository.getRefreshToken(userId = userId, deviceId = "tempDeviceId")
 
         if (serviceToken.refreshToken != refreshToken) {
             throw AuthException(errorCode = AuthExceptionCode.UNAUTHORIZED)
         }
 
-        return createTokenAndSave(userId = userId)
+        return createTokenAndSave(userId = userId, deviceId = deviceId)
     }
 
-    private fun createTokenAndSave(userId: Long): ServiceToken {
+    @Transactional
+    fun deleteUser(
+        bearerAccessToken: String,
+        deviceId: String,
+        userId: Long = getCurrentUserId(),
+    ) {
+        val user = userRepository.findByIdAndNotDeleted(userId)
+            ?: throw UserNotFoundException(errorCode = NOT_FOUND)
+
+        user.couple?.run {  // 커플이 있다면 탈퇴 진행
+            coupleService.leaveCouple(
+                coupleId = id,
+                userId = user.id,
+            )
+        }
+        userProviderMap[user.platform]?.unlinkUser(userId)
+        user.deleteEntity()
+        signOut(  // 인증 토큰 제거
+            bearerAccessToken = bearerAccessToken,
+            deviceId = deviceId,
+            userId = userId,
+        )
+        authRedisRepository.deleteAllRefreshToken(userId)
+    }
+
+    private fun createTokenAndSave(userId: Long, deviceId: String): ServiceToken {
         val accessToken = jwtHelper.createAccessToken(userId)  // access token 발행
         val refreshToken = jwtHelper.createRefreshToken()  // refresh token 발행
-        redisUtil.saveRefreshToken(
+        authRedisRepository.saveRefreshToken(
             userId = userId,
-            deviceId = "tempDeviceId",  // TODO(준용): Client에서 Device Id를 받아와 저장 필요
+            deviceId = deviceId,
             refreshToken = refreshToken,
             ttlSeconds = jwtProperties.refreshExpirationSec
         )

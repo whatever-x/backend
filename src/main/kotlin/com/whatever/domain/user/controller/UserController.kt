@@ -1,5 +1,6 @@
 package com.whatever.domain.user.controller
 
+import com.whatever.domain.user.dto.GetUserInfoResponse
 import com.whatever.domain.user.dto.PostUserProfileRequest
 import com.whatever.domain.user.dto.PostUserProfileResponse
 import com.whatever.domain.user.dto.PutUserProfileRequest
@@ -43,5 +44,15 @@ class UserController(
     ): CaramelApiResponse<PostUserProfileResponse> {
         val userProfileResponse = userService.createProfile(postUserProfileRequest)
         return userProfileResponse.succeed()
+    }
+
+    @Operation(
+        summary = "내 정보 조회",
+        description = "해당하는 유저 정보를 조회합니다. 개인의 정보만 조회 가능합니다."
+    )
+    @GetMapping("/me")
+    fun getUserInfo(): CaramelApiResponse<GetUserInfoResponse> {
+        val response = userService.getUserInfo()
+        return response.succeed()
     }
 }

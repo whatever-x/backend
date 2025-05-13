@@ -32,6 +32,7 @@ class JwtProvider(
 
         return Jwts.builder()
             .claims(claims)
+            .id(UUID.randomUUID().toString())
             .issuer(jwtProperties.issuer)
             .subject(subject)
             .issuedAt(issueDate)

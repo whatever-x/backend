@@ -12,7 +12,6 @@ import org.springframework.cache.annotation.Cacheable
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
 
@@ -41,7 +40,7 @@ interface KakaoKapiClient {
     )
     fun unlinkUserByAdminKey(
         @RequestHeader("Authorization") appAdminKeyWithPrefix: String,
-        @ModelAttribute unlinkUser: KakaoUnlinkUserRequest,
+        unlinkUser: KakaoUnlinkUserRequest,
     ): KakaoUnlinkUserResponse
 
 }
@@ -70,6 +69,6 @@ interface KakaoOIDCClient {
         path = ["/oauth/tokeninfo"],
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE]
     )
-    fun getIdTokenInfo(@ModelAttribute idToken: KakaoIdTokenInfoRequest): KakaoIdTokenPayload
+    fun getIdTokenInfo(idToken: KakaoIdTokenInfoRequest): KakaoIdTokenPayload
 
 }

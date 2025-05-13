@@ -80,6 +80,8 @@ class SecurityConfig(
 
         http {
             authorizeHttpRequests {
+                authorize("/v1/auth/sign-out", hasAnyRole(NEW.name, SINGLE.name, COUPLED.name))
+
                 authorize(HttpMethod.POST, "/v1/user/profile", hasAnyRole(NEW.name))
                 authorize("/v1/user/**", hasAnyRole(SINGLE.name, COUPLED.name))
 

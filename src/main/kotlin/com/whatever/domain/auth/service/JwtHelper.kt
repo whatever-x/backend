@@ -10,19 +10,14 @@ import io.jsonwebtoken.Jws
 import io.jsonwebtoken.JwtParser
 import io.jsonwebtoken.Jwts
 import org.springframework.stereotype.Component
+import java.util.Date
 
 @Component
 class JwtHelper(
     private val jwtProvider: JwtProvider,
     private val jwtProperties: JwtProperties,
 ) {
-    companion object {
-        private const val USER_ID_CLAIM_KEY = "userId"
-        private const val ACCESS_SUBJECT_NAME = "access"
-        private const val REFRESH_SUBJECT_NAME = "refresh"
-    }
 
-    // TODO(준용) accessToken에 넣을 User 정보 Claim 상의 후 DTO로 전환
     fun createAccessToken(userId: Long): String {
         val claims = mutableMapOf<String, String>()
         claims[USER_ID_CLAIM_KEY] = userId.toString()
@@ -41,8 +36,33 @@ class JwtHelper(
         )
     }
 
-    // TODO(준용) User 정보 DTO 반환으로 전환
-    fun parseAccessToken(token: String): Long {
+    fun extractJti(token: String): String {
+        val jwt = jwtProvider.parseJwt(
+            jwtParser = getJwtParser(),
+            token = token,
+        )
+
+        return jwt.payload.id
+            ?: throw JwtMissingClaimException(
+                errorCode = JwtExceptionCode.MISSING_JTI,
+                detailMessage = "AccessToken에서 token id 정보를 찾을 수 없습니다."
+            )
+    }
+
+    fun extractExpDate(token: String): Date {
+        val jwt = jwtProvider.parseJwt(
+            jwtParser = getJwtParser(),
+            token = token,
+        )
+
+        return jwt.payload.expiration
+            ?: throw JwtMissingClaimException(
+                errorCode = JwtExceptionCode.MISSING_JTI,
+                detailMessage = "AccessToken에서 token id 정보를 찾을 수 없습니다."
+            )
+    }
+
+    fun extractUserId(token: String): Long {
         val jwt = jwtProvider.parseJwt(
             jwtParser = getJwtParser(),
             token = token,
@@ -85,7 +105,7 @@ class JwtHelper(
         }
     }
 
-    fun getUserId(token: String): Long {
+    fun extractUserIdIgnoringSignature(token: String): Long {
         return jwtProvider.getUnsecuredPayload(token)["userId"]?.toLong()
             ?: throw JwtMissingClaimException(
                 errorCode = JwtExceptionCode.MISSING_CLAIM,
@@ -98,6 +118,13 @@ class JwtHelper(
             .requireIssuer(jwtProperties.issuer)
             .verifyWith(jwtProperties.secretKey)
             .build()
+    }
+
+    companion object {
+        private const val USER_ID_CLAIM_KEY = "userId"
+        private const val ACCESS_SUBJECT_NAME = "access"
+        private const val REFRESH_SUBJECT_NAME = "refresh"
+        const val BEARER_TYPE = "Bearer "
     }
 
 }
