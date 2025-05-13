@@ -30,11 +30,11 @@ data class CreateContentRequest(
     )
     val tags: List<TagIdDto> = emptyList(),
 
-    @Schema(
-        description = "일정 정보 (캘린더 추가시에만 사용)",
-        requiredMode = NOT_REQUIRED
-    )
-    val dateTimeInfo: DateTimeInfoDto? = null
+//    @Schema(
+//        description = "일정 정보 (캘린더 추가시에만 사용)",
+//        requiredMode = NOT_REQUIRED
+//    )
+//    val dateTimeInfo: DateTimeInfoDto? = null
 )
 
 @Schema(description = "태그 정보 모델")

@@ -2,11 +2,9 @@ package com.whatever.domain.content.controller
 
 import com.whatever.domain.ControllerTestSupport
 import com.whatever.domain.content.controller.dto.request.CreateContentRequest
-import com.whatever.domain.content.controller.dto.request.DateTimeInfoDto
 import com.whatever.domain.content.controller.dto.request.TagIdDto
 import com.whatever.domain.content.controller.dto.request.UpdateContentRequest
 import com.whatever.domain.content.exception.ContentExceptionCode
-import com.whatever.util.DateTimeUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
@@ -24,11 +22,11 @@ class ContentControllerTest : ControllerTestSupport() {
             title = "메모 제목",
             description = "메모 설명",
             tags = listOf(TagIdDto(tagId = 1L)),
-            dateTimeInfo = null
+//            dateTimeInfo = null
         )
 
         // when // then
-        mockMvc.post("/v1/content") {
+        mockMvc.post("/v1/content/memo") {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
         }
@@ -38,35 +36,35 @@ class ContentControllerTest : ControllerTestSupport() {
             }
     }
 
-    @DisplayName("콘텐츠를 생성한다. (Schedule 타입)")
-    @Test
-    fun createContent_Schedule() {
-        // given
-        val request = CreateContentRequest(
-            title = "일정 제목",
-            description = "일정 설명",
-            tags = listOf(TagIdDto(tagId = 1L)),
-            dateTimeInfo = DateTimeInfoDto(
-                startDateTime = DateTimeUtil.localNow(),
-                startTimezone = "Asia/Seoul",
-                endDateTime = DateTimeUtil.localNow().plusDays(1),
-                endTimezone = "Asia/Seoul"
-            )
-        )
-
-        // when // then
-        mockMvc.post("/v1/content") {
-            content = objectMapper.writeValueAsString(request)
-            contentType = MediaType.APPLICATION_JSON
-        }
-            .andDo { print() }
-            .andExpect {
-                status {
-                    isOk()
-                }
-            }
-
-    }
+//    @DisplayName("콘텐츠를 생성한다. (Schedule 타입)")
+//    @Test
+//    fun createContent_Schedule() {
+//        // given
+//        val request = CreateContentRequest(
+//            title = "일정 제목",
+//            description = "일정 설명",
+//            tags = listOf(TagIdDto(tagId = 1L)),
+//            dateTimeInfo = DateTimeInfoDto(
+//                startDateTime = DateTimeUtil.localNow(),
+//                startTimezone = "Asia/Seoul",
+//                endDateTime = DateTimeUtil.localNow().plusDays(1),
+//                endTimezone = "Asia/Seoul"
+//            )
+//        )
+//
+//        // when // then
+//        mockMvc.post("/v1/content") {
+//            content = objectMapper.writeValueAsString(request)
+//            contentType = MediaType.APPLICATION_JSON
+//        }
+//            .andDo { print() }
+//            .andExpect {
+//                status {
+//                    isOk()
+//                }
+//            }
+//
+//    }
 
     @DisplayName("콘텐츠 생성 시 제목과 설명이 모두 비어있으면 실패한다.")
     @Test
@@ -77,11 +75,11 @@ class ContentControllerTest : ControllerTestSupport() {
             description = "",
             isCompleted = false,
             tags = emptyList(),
-            dateTimeInfo = null
+//            dateTimeInfo = null
         )
 
         // when // then
-        mockMvc.post("/v1/content") {
+        mockMvc.post("/v1/content/memo") {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
         }
@@ -105,7 +103,7 @@ class ContentControllerTest : ControllerTestSupport() {
         )
 
         // when // then
-        mockMvc.put("/v1/content/{contentId}", 1L) {
+        mockMvc.put("/v1/content/memo/{memoId}", 1L) {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
         }
@@ -119,7 +117,7 @@ class ContentControllerTest : ControllerTestSupport() {
     @Test
     fun deleteContent() {
         // when // then
-        mockMvc.delete("/v1/content/{contentId}", 1L) {
+        mockMvc.delete("/v1/content/memo/{memoId}", 1L) {
             contentType = MediaType.APPLICATION_JSON
         }
             .andDo { print() }

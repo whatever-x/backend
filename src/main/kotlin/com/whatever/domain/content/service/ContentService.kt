@@ -35,7 +35,6 @@ private val logger = KotlinLogging.logger { }
 @Service
 class ContentService(
     private val memoCreator: MemoCreator,
-    private val scheduleCreator: ScheduleCreator,
     private val contentRepository: ContentRepository,
     private val tagRepository: TagRepository,
     private val tagContentMappingRepository: TagContentMappingRepository,
@@ -68,22 +67,22 @@ class ContentService(
     }
 
     fun createContent(contentRequest: CreateContentRequest): ContentSummaryResponse {
-        return if (contentRequest.dateTimeInfo == null) {
-            memoCreator.createMemo(
-                title = contentRequest.title,
-                description = contentRequest.description,
-                isCompleted = contentRequest.isCompleted,
-                tagIds = contentRequest.tags.map { it.tagId }.toSet(),
-            )
-        } else {
-            scheduleCreator.createSchedule(
-                title = contentRequest.title,
-                description = contentRequest.description,
-                isCompleted = contentRequest.isCompleted,
-                tagIds = contentRequest.tags.map { it.tagId }.toSet(),
-                dateTimeInfo = contentRequest.dateTimeInfo,
-            )
-        }.toContentSummaryResponse()
+        return memoCreator.createMemo(
+            title = contentRequest.title,
+            description = contentRequest.description,
+            isCompleted = contentRequest.isCompleted,
+            tagIds = contentRequest.tags.map { it.tagId }.toSet(),
+        ).toContentSummaryResponse()
+//        return if (contentRequest.dateTimeInfo == null) {
+//        } else {
+//            scheduleCreator.createSchedule(
+//                title = contentRequest.title,
+//                description = contentRequest.description,
+//                isCompleted = contentRequest.isCompleted,
+//                tagIds = contentRequest.tags.map { it.tagId }.toSet(),
+//                dateTimeInfo = contentRequest.dateTimeInfo,
+//            )
+//        }.toContentSummaryResponse()
     }
 
     @Retryable(
@@ -92,7 +91,7 @@ class ContentService(
         maxAttempts = 1,
         recover = "updateRecover",
     )
-    @Transactional
+    @Transactional  // TODO(준용) 스케줄 생성도 하도록 수정
     fun updateContent(contentId: Long, request: UpdateContentRequest): ContentSummaryResponse {
         val content = contentRepository.findContentByIdAndType(
             id = contentId,
