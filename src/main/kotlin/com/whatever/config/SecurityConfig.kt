@@ -85,13 +85,14 @@ class SecurityConfig(
                 authorize(HttpMethod.POST, "/v1/user/profile", hasAnyRole(NEW.name))
                 authorize("/v1/user/**", hasAnyRole(SINGLE.name, COUPLED.name))
 
+                authorize("/v1/content/**", hasAnyRole(COUPLED.name))
+
                 authorize("/v1/couples/invitation-code", hasAnyRole(SINGLE.name))
                 authorize("/v1/couples/connect", hasAnyRole(SINGLE.name))
                 authorize("/v1/couples/**", hasAnyRole(COUPLED.name))
 
                 authorize("/v1/calendar/holidays", hasAnyRole(COUPLED.name))
                 authorize("/v1/calendar/schedules/**", hasAnyRole(COUPLED.name))
-
                 authorize("/v1/calendar/**", hasAnyRole(COUPLED.name))
 
                 authorize("/v1/balance-game/**", hasAnyRole(COUPLED.name))

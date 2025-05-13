@@ -34,7 +34,7 @@ class ScheduleCreator(
         isCompleted: Boolean,
         tagIds: Set<Long>,
         dateTimeInfo: DateTimeInfoDto,
-    ): Content {
+    ): ScheduleEvent {
         val replacedTitle = when {
             title.isNullOrBlank() && !description.isNullOrBlank() -> description.take(MAX_TITLE_LENGTH)
             else -> title!!
@@ -74,7 +74,7 @@ class ScheduleCreator(
             }
         }
 
-        return content
+        return scheduleEvent
     }
 }
 

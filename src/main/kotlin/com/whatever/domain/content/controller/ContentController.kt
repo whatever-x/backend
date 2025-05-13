@@ -15,7 +15,14 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @Tag(
     name = "Content",
@@ -28,10 +35,10 @@ class ContentController(
 ) {
 
     @Operation(
-        summary = "콘텐츠 조회",
-        description = "콘텐츠를 조회합니다.",
+        summary = "메모 조회",
+        description = "메모를 조회합니다.",
     )
-    @GetMapping
+    @GetMapping("/memo")
     fun getContents(
         @ParameterObject queryParameter: GetContentListQueryParameter,
     ): CaramelApiResponse<CursoredResponse<ContentResponse>> {
@@ -39,10 +46,10 @@ class ContentController(
     }
 
     @Operation(
-        summary = "콘텐츠 생성",
-        description = "콘텐츠를 생성합니다. 날짜 정보를 보내지 않으면 Memo, 날짜 정보가 포함되면 Schedule로 생성됩니다."
+        summary = "메모 생성",
+        description = "메모를 생성합니다."
     )
-    @PostMapping
+    @PostMapping("/memo")
     fun createContent(
         @Valid @RequestBody request: CreateContentRequest
     ): CaramelApiResponse<ContentSummaryResponse> {
@@ -53,23 +60,23 @@ class ContentController(
     }
 
     @Operation(
-        summary = "콘텐츠 수정(메모)",
-        description = "메모 콘텐츠를 수정합니다. 수정된 값을 포함하여 기존을 값을 모두 전달합니다. 메모를 스케줄로 변경할 때 사용하면 안됩니다.",
+        summary = "메모 수정",
+        description = "메모 콘텐츠를 수정합니다. 수정된 값을 포함하여 기존을 값을 모두 전달합니다. 메모를 일정으로 변경할 때 사용할 수 있습니다.",
     )
-    @PutMapping("/{content-id}")
+    @PutMapping("/memo/{memo-id}")
     fun updateContent(
-        @PathVariable("content-id") contentId: Long,
+        @PathVariable("memo-id") contentId: Long,
         @RequestBody request: UpdateContentRequest,
     ): CaramelApiResponse<ContentSummaryResponse> {
         return contentService.updateContent(contentId, request).succeed()
     }
 
     @Operation(
-        summary = "콘텐츠 삭제(메모)",
+        summary = "메모 삭제",
         description = "메모 콘텐츠를 삭제합니다.",
     )
-    @DeleteMapping("/{content-id}")
-    fun deleteContent(@PathVariable("content-id") contentId: Long): CaramelApiResponse<Unit> {
+    @DeleteMapping("/memo/{memo-id}")
+    fun deleteContent(@PathVariable("memo-id") contentId: Long): CaramelApiResponse<Unit> {
         contentService.deleteContent(contentId)
         return CaramelApiResponse.succeed()
     }

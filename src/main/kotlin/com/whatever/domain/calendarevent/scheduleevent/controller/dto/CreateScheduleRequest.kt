@@ -1,5 +1,7 @@
 package com.whatever.domain.calendarevent.scheduleevent.controller.dto
 
+import com.whatever.domain.content.controller.dto.request.DateTimeInfoDto
+import com.whatever.domain.content.model.ContentDetail
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import java.time.LocalDateTime
@@ -7,8 +9,8 @@ import java.time.LocalDateTime
 @Schema(description = "일정 생성 요청 모델")
 data class CreateScheduleRequest(
 
-    @Schema(description = "콘텐츠(메모) id", example = "1")
-    val contentId: Long,
+//    @Schema(description = "콘텐츠(메모) id", example = "1")
+//    val contentId: Long,
 
     @Schema(description = "콘텐츠 제목. title, description 둘 중 하나는 필수입니다.", example = "맛집 리스트", nullable = true)
     @field:NotBlank(message = "제목은 공백일 수 없습니다.")
@@ -19,7 +21,7 @@ data class CreateScheduleRequest(
     val description: String? = null,
 
     @Schema(description = "완료 여부")
-    val isCompleted: Boolean,
+    val isCompleted: Boolean = false,
 
     @Schema(description = "시작일", example = "2025-02-16T18:26:40")
     val startDateTime: LocalDateTime,
@@ -35,4 +37,21 @@ data class CreateScheduleRequest(
 
     @Schema(description = "태그 번호 리스트")
     val tagIds: Set<Long> = emptySet(),
-)
+) {
+    fun toContentDetail(): ContentDetail {
+        return ContentDetail(
+            title = title,
+            description = description,
+            isCompleted = isCompleted,
+        )
+    }
+
+    fun toDateTimeInfoDto(): DateTimeInfoDto {
+        return DateTimeInfoDto(
+            startDateTime = startDateTime,
+            startTimezone = startTimeZone,
+            endDateTime = endDateTime,
+            endTimezone = endTimeZone,
+        )
+    }
+}

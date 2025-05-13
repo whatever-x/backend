@@ -12,14 +12,18 @@ import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
-import com.whatever.domain.user.model.LoginPlatform
+import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mockStatic
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
@@ -34,6 +38,7 @@ class ContentServiceTest @Autowired constructor(
     private val tagRepository: TagRepository,
     private val tagContentMappingRepository: TagContentMappingRepository,
     private val scheduleEventRepository: ScheduleEventRepository,
+    private val coupleRepository: CoupleRepository,
 ) {
 
     private lateinit var securityUtilMock: AutoCloseable
@@ -41,12 +46,11 @@ class ContentServiceTest @Autowired constructor(
 
     @BeforeEach
     fun setUp() {
-        testUser = userRepository.save(
-            User(platform = LoginPlatform.KAKAO, platformUserId = "test-user")
-        )
-
+        val (myUser, _, couple) = createCouple(userRepository, coupleRepository)
+        testUser = myUser
         securityUtilMock = mockStatic(SecurityUtil::class.java)
-        `when`(SecurityUtil.getCurrentUserId()).thenReturn(testUser.id)
+        whenever(SecurityUtil.getCurrentUserId()).thenReturn(testUser.id)
+        whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
     }
 
     @AfterEach

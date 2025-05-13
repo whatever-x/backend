@@ -13,6 +13,8 @@ enum class ContentExceptionCode(
     ILLEGAL_CONTENT_DETAIL("002", "입력할 수 없는 제목, 혹은 본문 내용입니다."),
     CONTENT_NOT_FOUND("003", "존재하지 않는 컨텐츠입니다."),
     UPDATE_CONFLICT("004", "상대방이 수정 중인 메모입니다. 잠시 후 재시도 해주세요.", HttpStatus.CONFLICT),
+    MEMO_NOT_FOUND("005", "존재하지 않는 메모입니다.", HttpStatus.NOT_FOUND),
+    COUPLE_NOT_MATCHED("006", "내 커플의 메모가 아닙니다.", HttpStatus.FORBIDDEN),
     ;
     override val code = "Content$sequence"
 }

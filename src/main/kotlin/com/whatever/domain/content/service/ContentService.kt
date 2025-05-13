@@ -1,12 +1,16 @@
 package com.whatever.domain.content.service
 
+import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
+import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
 import com.whatever.domain.content.controller.dto.request.CreateContentRequest
 import com.whatever.domain.content.controller.dto.request.GetContentListQueryParameter
 import com.whatever.domain.content.controller.dto.request.UpdateContentRequest
 import com.whatever.domain.content.controller.dto.response.ContentResponse
 import com.whatever.domain.content.controller.dto.response.ContentSummaryResponse
 import com.whatever.domain.content.controller.dto.response.TagDto
+import com.whatever.domain.content.exception.ContentAccessDeniedException
 import com.whatever.domain.content.exception.ContentExceptionCode
+import com.whatever.domain.content.exception.ContentExceptionCode.CONTENT_NOT_FOUND
 import com.whatever.domain.content.exception.ContentIllegalStateException
 import com.whatever.domain.content.exception.ContentNotFoundException
 import com.whatever.domain.content.model.Content
@@ -22,6 +26,7 @@ import com.whatever.global.cursor.CursoredResponse
 import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.CursorUtil
+import com.whatever.util.toZonId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.retry.annotation.Backoff
@@ -35,11 +40,11 @@ private val logger = KotlinLogging.logger { }
 @Service
 class ContentService(
     private val memoCreator: MemoCreator,
-    private val scheduleCreator: ScheduleCreator,
     private val contentRepository: ContentRepository,
     private val tagRepository: TagRepository,
     private val tagContentMappingRepository: TagContentMappingRepository,
     private val coupleRepository: CoupleRepository,
+    private val scheduleEventRepository: ScheduleEventRepository,
 ) {
     @Transactional(readOnly = true) // 읽기 전용 트랜잭션
     fun getContentList(queryParameter: GetContentListQueryParameter): CursoredResponse<ContentResponse> {
@@ -68,22 +73,12 @@ class ContentService(
     }
 
     fun createContent(contentRequest: CreateContentRequest): ContentSummaryResponse {
-        return if (contentRequest.dateTimeInfo == null) {
-            memoCreator.createMemo(
-                title = contentRequest.title,
-                description = contentRequest.description,
-                isCompleted = contentRequest.isCompleted,
-                tagIds = contentRequest.tags.map { it.tagId }.toSet(),
-            )
-        } else {
-            scheduleCreator.createSchedule(
-                title = contentRequest.title,
-                description = contentRequest.description,
-                isCompleted = contentRequest.isCompleted,
-                tagIds = contentRequest.tags.map { it.tagId }.toSet(),
-                dateTimeInfo = contentRequest.dateTimeInfo,
-            )
-        }.toContentSummaryResponse()
+        return memoCreator.createMemo(
+            title = contentRequest.title,
+            description = contentRequest.description,
+            isCompleted = contentRequest.isCompleted,
+            tagIds = contentRequest.tags.map { it.tagId }.toSet(),
+        ).toContentSummaryResponse()
     }
 
     @Retryable(
@@ -94,21 +89,50 @@ class ContentService(
     )
     @Transactional
     fun updateContent(contentId: Long, request: UpdateContentRequest): ContentSummaryResponse {
-        val content = contentRepository.findContentByIdAndType(
+        val memo = contentRepository.findContentByIdAndType(
             id = contentId,
             type = ContentType.MEMO
-        ) ?: throw ContentNotFoundException(ContentExceptionCode.CONTENT_NOT_FOUND)
+        ) ?: throw ContentNotFoundException(
+                errorCode = ContentExceptionCode.MEMO_NOT_FOUND,
+                detailMessage = "Memo not found or has been deleted. (contentId: ${contentId})"
+            )
+
+        val userCoupleId = SecurityUtil.getCurrentUserCoupleId()
+        val contentOwnerCoupleId = memo.user.couple?.id
+        if (userCoupleId != contentOwnerCoupleId) {
+            throw ContentAccessDeniedException(
+                errorCode = ContentExceptionCode.COUPLE_NOT_MATCHED,
+                detailMessage = "The current user's couple does not match the content owner's couple"
+            )
+        }
 
         val newContentDetail = ContentDetail(
             title = request.title,
             description = request.description,
             isCompleted = request.isCompleted
         )
-        content.updateContentDetail(newContentDetail)
+        memo.updateContentDetail(newContentDetail)
 
-        updateTags(content, request.tagList.map { it.tagId }.toSet())
+        updateTags(memo, request.tagList.map { it.tagId }.toSet())
+        if (request.dateTimeInfo == null) {  // 날짜 정보가 없다면 메모 업데이트만 진행
+            return memo.toContentSummaryResponse()
+        }
 
-        return content.toContentSummaryResponse()
+        val scheduleEvent = with(request.dateTimeInfo) {
+            ScheduleEvent.fromMemo(
+                memo = memo,
+                startDateTime = startDateTime,
+                endDateTime = endDateTime,
+                startTimeZone = startTimezone.toZonId(),
+                endTimeZone = endTimezone?.toZonId(),
+            )
+        }
+        val savedScheduleEvent = scheduleEventRepository.save(scheduleEvent)
+
+        return ContentSummaryResponse(
+            contentId = savedScheduleEvent.id,
+            contentType = ContentType.SCHEDULE,
+        )
     }
 
     @Retryable(
@@ -123,7 +147,7 @@ class ContentService(
         val content = contentRepository.findContentByIdAndType(
             id = contentId,
             type = ContentType.MEMO
-        ) ?: throw ContentNotFoundException(ContentExceptionCode.CONTENT_NOT_FOUND)
+        ) ?: throw ContentNotFoundException(CONTENT_NOT_FOUND)
 
         val tagMappings = tagContentMappingRepository.findAllByContent_IdAndIsDeleted(contentId)
         tagMappings.forEach(TagContentMapping::deleteEntity)

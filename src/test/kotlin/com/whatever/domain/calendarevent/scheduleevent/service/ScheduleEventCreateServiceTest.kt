@@ -1,7 +1,6 @@
 package com.whatever.domain.calendarevent.scheduleevent.service
 
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.CreateScheduleRequest
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleAccessDeniedException
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalArgumentException
 import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
@@ -27,6 +26,7 @@ import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.ActiveProfiles
 import kotlin.test.Test
 
@@ -81,15 +81,13 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         return Triple(myUser, partnerUser, couple)
     }
 
-    @DisplayName("MEMO 타입 컨텐츠에서 정상적으로 Schedule 생성에 성공한다.")
+    @DisplayName("Schedule 생성에 성공한다.")
     @Test
     fun createSchedule() {
         // given
         val (myUser, _, _) = setUpCoupleAndSecurity()
-        val memo = contentRepository.save(createContent(myUser, ContentType.MEMO))
 
         val request = CreateScheduleRequest(
-            contentId = memo.id,
             title = "Schedule Title",
             description = "Description Content",
             isCompleted = false,
@@ -104,80 +102,12 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
 
         // then
         val scheduleEvent = scheduleEventRepository.findByIdAndNotDeleted(result.contentId)
-        val content = contentRepository.findByIdAndNotDeleted(memo.id)
         require(scheduleEvent != null)
+        assertThat(scheduleEvent.id).isEqualTo(result.contentId)
+
+        val content = contentRepository.findByIdOrNull(scheduleEvent.content.id)
         require(content != null)
-        assertThat(scheduleEvent.content.id).isEqualTo(memo.id)
         assertThat(content.type).isEqualTo(ContentType.SCHEDULE)
-        assertThat(content.contentDetail.title).isEqualTo(request.title)
-        assertThat(content.contentDetail.description).isEqualTo(request.description)
-    }
-
-    @DisplayName("존재하지 않거나 삭제된 contentId 입력 시 예외가 발생한다.")
-    @Test
-    fun createSchedule_WithIllegalContentId() {
-        // given
-        setUpCoupleAndSecurity()
-        val request = CreateScheduleRequest(
-            contentId = 0L, // 존재하지 않는 ID
-            title = "title",
-            description = "desc",
-            isCompleted = false,
-            startDateTime = NOW,
-            startTimeZone = DateTimeUtil.UTC_ZONE_ID.id
-        )
-        // when, then
-        val exception = assertThrows<ScheduleIllegalArgumentException> {
-            scheduleEventService.createSchedule(request)
-        }
-        assertThat(exception).hasMessage(ScheduleExceptionCode.ILLEGAL_CONTENT_ID.message)
-    }
-
-    @DisplayName("MEMO 타입이 아닌 컨텐츠에서 생성 요청 시 예외가 발생한다.")
-    @Test
-    fun createSchedule_WithNonMemoContent() {
-        // given
-        val (myUser, _, _) = setUpCoupleAndSecurity()
-        val nonMemo = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
-        val request = CreateScheduleRequest(
-            contentId = nonMemo.id,
-            title = "title",
-            description = "desc",
-            isCompleted = false,
-            startDateTime = NOW,
-            startTimeZone = DateTimeUtil.UTC_ZONE_ID.id
-        )
-        // when, then
-        val exception = assertThrows<ScheduleIllegalArgumentException> {
-            scheduleEventService.createSchedule(request)
-        }
-        assertThat(exception).hasMessage(ScheduleExceptionCode.ILLEGAL_CONTENT_ID.message)
-    }
-
-    @DisplayName("다른 커플의 메모를 Schedule로 만들 경우 예외가 발생한다.")
-    @Test
-    fun createSchedule_WithOtherCoupleMemo() {
-        // given
-        val (ownerUser, _, _) = createCouple(userRepository, coupleRepository, "owner", "partner-owner")
-        val memo = contentRepository.save(createContent(ownerUser, ContentType.MEMO))
-        val (otherUser, _, otherCouple) = createCouple(userRepository, coupleRepository, "other", "other2")
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(otherUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(otherCouple.id)
-        }
-        val request = CreateScheduleRequest(
-            contentId = memo.id,
-            title = "title",
-            description = "desc",
-            isCompleted = false,
-            startDateTime = NOW,
-            startTimeZone = DateTimeUtil.UTC_ZONE_ID.id
-        )
-        // when, then
-        val exception = assertThrows<ScheduleAccessDeniedException> {
-            scheduleEventService.createSchedule(request)
-        }
-        assertThat(exception).hasMessage(ScheduleExceptionCode.COUPLE_NOT_MATCHED.message)
     }
 
     @DisplayName("Schedule 생성 시 title과 description이 모두 null 또는 blank이면 예외가 발생한다.")
@@ -194,7 +124,6 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         val (myUser, _, _) = setUpCoupleAndSecurity()
         val memo = contentRepository.save(createContent(myUser, ContentType.MEMO))
         val request = CreateScheduleRequest(
-            contentId = memo.id,
             title = title,
             description = description,
             isCompleted = false,
@@ -215,7 +144,6 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         val (myUser, _, _) = setUpCoupleAndSecurity()
         val memo = contentRepository.save(createContent(myUser, ContentType.MEMO))
         val request = CreateScheduleRequest(
-            contentId = memo.id,
             title = "title",
             description = "desc",
             isCompleted = false,

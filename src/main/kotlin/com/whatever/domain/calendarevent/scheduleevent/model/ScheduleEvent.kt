@@ -1,6 +1,11 @@
 package com.whatever.domain.calendarevent.scheduleevent.model
 
 import com.whatever.domain.base.BaseEntity
+import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode
+import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_CONTENT_DETAIL
+import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_CONTENT_TYPE
+import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_DURATION
+import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalArgumentException
 import com.whatever.domain.calendarevent.scheduleevent.model.converter.ZonedIdConverter
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
@@ -20,6 +25,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Version
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.util.UUID
 
 @Entity
 class ScheduleEvent(
@@ -64,6 +70,18 @@ class ScheduleEvent(
             field = value.withoutNano
         }
 
+    init {
+        val startInstant = startDateTime.atZone(startTimeZone).toInstant()
+        val endInstant   = endDateTime.atZone(endTimeZone).toInstant()
+
+        if (endInstant.isBefore(startInstant)) {
+            throw ScheduleIllegalArgumentException(
+                errorCode = ILLEGAL_DURATION,
+                detailMessage = "종료 시각(${endInstant})이 시작 시각(${startInstant})보다 이전일 수 없습니다."
+            )
+        }
+    }
+
     @Version
     private var version: Long = 0L
 
@@ -100,5 +118,29 @@ class ScheduleEvent(
         content.updateContentDetail(contentDetail)
         content.updateType(ContentType.MEMO)
         this.deleteEntity()
+    }
+
+    companion object {
+        fun fromMemo(
+            memo: Content,
+            startDateTime: LocalDateTime,
+            startTimeZone: ZoneId,
+            endDateTime: LocalDateTime? = null,
+            endTimeZone: ZoneId? = null,
+        ): ScheduleEvent {
+            if (memo.type != ContentType.MEMO) {
+                throw ScheduleIllegalArgumentException(errorCode = ILLEGAL_CONTENT_TYPE)
+            }
+
+            memo.updateType(ContentType.SCHEDULE)
+            return ScheduleEvent(
+                content = memo,
+                uid = UUID.randomUUID().toString(),
+                startDateTime = startDateTime,
+                startTimeZone = startTimeZone,
+                endDateTime = endDateTime ?: startDateTime.endOfDay.withoutNano,
+                endTimeZone = endTimeZone ?: startTimeZone,
+            )
+        }
     }
 }
