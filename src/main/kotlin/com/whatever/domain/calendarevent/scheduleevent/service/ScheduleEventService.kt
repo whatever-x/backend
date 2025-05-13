@@ -6,7 +6,6 @@ import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateSche
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleAccessDeniedException
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.COUPLE_NOT_MATCHED
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_CONTENT_DETAIL
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_CONTENT_ID
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_DURATION
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_PARTNER_STATUS
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.SCHEDULE_NOT_FOUND
@@ -19,8 +18,8 @@ import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventR
 import com.whatever.domain.content.controller.dto.response.ContentSummaryResponse
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
-import com.whatever.domain.content.model.ContentType
 import com.whatever.domain.content.repository.ContentRepository
+import com.whatever.domain.content.service.ScheduleCreator
 import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
@@ -29,13 +28,11 @@ import com.whatever.domain.couple.exception.CoupleException
 import com.whatever.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.UserStatus.SINGLE
+import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
-import com.whatever.util.endOfDay
-import com.whatever.util.findByIdAndNotDeleted
 import com.whatever.util.toDateTime
-import com.whatever.util.toZonId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.retry.annotation.Backoff
@@ -45,7 +42,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.*
 
 private val logger = KotlinLogging.logger {  }
 
@@ -56,6 +52,8 @@ class ScheduleEventService(
     private val tagRepository: TagRepository,
     private val coupleRepository: CoupleRepository,
     private val contentRepository: ContentRepository,
+    private val userRepository: UserRepository,
+    private val scheduleCreator: ScheduleCreator,
 ) {
 
     fun getSchedule(
@@ -106,48 +104,65 @@ class ScheduleEventService(
             validateRequestDuration(startDateTime, endDateTime)
         }
 
-        val content = contentRepository.findByIdAndNotDeleted(request.contentId)
-            ?.apply {
-                if (type != ContentType.MEMO) throw ScheduleIllegalArgumentException(
-                    errorCode = ILLEGAL_CONTENT_ID,
-                    detailMessage = "Only content of type 'MEMO' can be converted to a Schedule. (contentId: $id, type: $type)"
-                )
-            }
-            ?: throw ScheduleIllegalArgumentException(
-                errorCode = ILLEGAL_CONTENT_ID,
-                detailMessage = "Content not found or has been deleted. (contentId: ${request.contentId})"
-            )
+//        val content = contentRepository.findByIdAndNotDeleted(request.contentId)
+//            ?.apply {
+//                if (type != ContentType.MEMO) throw ScheduleIllegalArgumentException(
+//                    errorCode = ILLEGAL_CONTENT_ID,
+//                    detailMessage = "Only content of type 'MEMO' can be converted to a Schedule. (contentId: $id, type: $type)"
+//                )
+//            }
+//            ?: throw ScheduleIllegalArgumentException(
+//                errorCode = ILLEGAL_CONTENT_ID,
+//                detailMessage = "Content not found or has been deleted. (contentId: ${request.contentId})"
+//            )
+//
+//        val userCoupleId = SecurityUtil.getCurrentUserCoupleId()
+//        val contentOwnerCoupleId = content.user.couple?.id
+//        if (userCoupleId != contentOwnerCoupleId) {
+//            throw ScheduleAccessDeniedException(
+//                errorCode = COUPLE_NOT_MATCHED,
+//                detailMessage = "The current user's couple does not match the content owner's couple"
+//            )
+//        }
+//
+//        val userCoupleId = SecurityUtil.getCurrentUserCoupleId()
+//        val contentOwnerCoupleId = content.user.couple?.id
+//        if (userCoupleId != contentOwnerCoupleId) {
+//            throw ScheduleAccessDeniedException(
+//                errorCode = COUPLE_NOT_MATCHED,
+//                detailMessage = "The current user's couple does not match the content owner's couple"
+//            )
+//        }
+//
+//        content.type = ContentType.SCHEDULE
+//        val scheduleEvent = with(request) {
+//            ScheduleEvent(
+//                content = content,
+//                uid = UUID.randomUUID().toString(),
+//                startDateTime = startDateTime,
+//                endDateTime = endDateTime ?: startDateTime.endOfDay,
+//                startTimeZone = startTimeZone.toZonId(),
+//                endTimeZone = endTimeZone?.toZonId() ?: startTimeZone.toZonId(),
+//            )
+//        }
+//        val savedScheduleEvent = scheduleEventRepository.save(scheduleEvent)
+//
+//        updateSchedule(
+//            scheduleId = savedScheduleEvent.id,
+//            request = request.toUpdateRequest(),
+//        )
 
-        val userCoupleId = SecurityUtil.getCurrentUserCoupleId()
-        val contentOwnerCoupleId = content.user.couple?.id
-        if (userCoupleId != contentOwnerCoupleId) {
-            throw ScheduleAccessDeniedException(
-                errorCode = COUPLE_NOT_MATCHED,
-                detailMessage = "The current user's couple does not match the content owner's couple"
-            )
-        }
-
-        content.type = ContentType.SCHEDULE
-        val scheduleEvent = with(request) {
-            ScheduleEvent(
-                content = content,
-                uid = UUID.randomUUID().toString(),
-                startDateTime = startDateTime,
-                endDateTime = endDateTime ?: startDateTime.endOfDay,
-                startTimeZone = startTimeZone.toZonId(),
-                endTimeZone = endTimeZone?.toZonId() ?: startTimeZone.toZonId(),
-            )
-        }
-        val savedScheduleEvent = scheduleEventRepository.save(scheduleEvent)
-
-        updateSchedule(
-            scheduleId = savedScheduleEvent.id,
-            request = request.toUpdateRequest(),
+        val savedScheduleEvent = scheduleCreator.createSchedule(
+            title = request.title,
+            description = request.description,
+            isCompleted = request.isCompleted,
+            tagIds = request.tagIds,
+            dateTimeInfo = request.toDateTimeInfoDto()
         )
 
         return ContentSummaryResponse(
             contentId = savedScheduleEvent.id,
-            contentType = content.type,
+            contentType = savedScheduleEvent.content.type,
         )
     }
 
