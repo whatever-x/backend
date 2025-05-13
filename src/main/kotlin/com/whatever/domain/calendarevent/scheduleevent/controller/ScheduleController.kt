@@ -23,7 +23,6 @@ class ScheduleController(
 
     @Operation(
         summary = "일정 생성",
-//        description = "기존에 존재하던 콘텐츠(MEMO)를 바탕으로 일정을 생성합니다.",
         description = "새로운 일정을 생성합니다.",
     )
     @PostMapping
@@ -38,7 +37,7 @@ class ScheduleController(
 
     @Operation(
         summary = "일정 수정",
-        description = "일정을 수정합니다.",
+        description = "일정을 수정합니다. 일정을 메모로 변경할 때 사용할 수 있습니다.",
     )
     @PutMapping("/{schedule-id}")
     fun updateSchedule(

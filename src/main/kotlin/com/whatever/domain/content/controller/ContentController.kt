@@ -61,7 +61,7 @@ class ContentController(
 
     @Operation(
         summary = "메모 수정",
-        description = "메모 콘텐츠를 수정합니다. 수정된 값을 포함하여 기존을 값을 모두 전달합니다. 메모를 스케줄로 변경할 때 사용하면 안됩니다.",
+        description = "메모 콘텐츠를 수정합니다. 수정된 값을 포함하여 기존을 값을 모두 전달합니다. 메모를 일정으로 변경할 때 사용할 수 있습니다.",
     )
     @PutMapping("/memo/{memo-id}")
     fun updateContent(

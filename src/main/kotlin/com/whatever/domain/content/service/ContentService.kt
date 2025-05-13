@@ -79,16 +79,6 @@ class ContentService(
             isCompleted = contentRequest.isCompleted,
             tagIds = contentRequest.tags.map { it.tagId }.toSet(),
         ).toContentSummaryResponse()
-//        return if (contentRequest.dateTimeInfo == null) {
-//        } else {
-//            scheduleCreator.createSchedule(
-//                title = contentRequest.title,
-//                description = contentRequest.description,
-//                isCompleted = contentRequest.isCompleted,
-//                tagIds = contentRequest.tags.map { it.tagId }.toSet(),
-//                dateTimeInfo = contentRequest.dateTimeInfo,
-//            )
-//        }.toContentSummaryResponse()
     }
 
     @Retryable(
@@ -99,20 +89,6 @@ class ContentService(
     )
     @Transactional
     fun updateContent(contentId: Long, request: UpdateContentRequest): ContentSummaryResponse {
-//        val content = contentRepository.findContentByIdAndType(
-//            id = contentId,
-//            type = ContentType.MEMO
-//        ) ?: throw ContentNotFoundException(ContentExceptionCode.CONTENT_NOT_FOUND)
-//
-//        val newContentDetail = ContentDetail(
-//            title = request.title,
-//            description = request.description,
-//            isCompleted = request.isCompleted
-//        )
-//        content.updateContentDetail(newContentDetail)
-//
-//        updateTags(content, request.tagList.map { it.tagId }.toSet())
-
         val memo = contentRepository.findContentByIdAndType(
             id = contentId,
             type = ContentType.MEMO

@@ -10,12 +10,8 @@ import com.whatever.domain.content.exception.ContentAccessDeniedException
 import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.exception.ContentIllegalArgumentException
 import com.whatever.domain.content.exception.ContentNotFoundException
-import com.whatever.domain.content.model.Content
-import com.whatever.domain.content.model.ContentDetail
 import com.whatever.domain.content.model.ContentType
 import com.whatever.domain.content.repository.ContentRepository
-import com.whatever.domain.content.tag.model.Tag
-import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
 import com.whatever.domain.couple.model.Couple

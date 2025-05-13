@@ -46,10 +46,6 @@ class ContentServiceTest @Autowired constructor(
 
     @BeforeEach
     fun setUp() {
-//        testUser = userRepository.save(
-//            User(platform = LoginPlatform.KAKAO, platformUserId = "test-user")
-//        )
-
         val (myUser, _, couple) = createCouple(userRepository, coupleRepository)
         testUser = myUser
         securityUtilMock = mockStatic(SecurityUtil::class.java)
