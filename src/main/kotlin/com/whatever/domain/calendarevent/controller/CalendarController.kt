@@ -34,7 +34,7 @@ class CalendarController(
     )
     @GetMapping
     fun getCalendar(@ParameterObject queryParameter: GetCalendarQueryParameter): CaramelApiResponse<CalendarDetailResponse> {
-        val schedules = scheduleEventService.getSchedule(
+        val schedules = scheduleEventService.getSchedules(
             startDate = queryParameter.startDate,
             endDate = queryParameter.endDate,
             userTimeZone = queryParameter.userTimeZone

@@ -1,5 +1,7 @@
 package com.whatever.domain.calendarevent.scheduleevent.controller
 
+import com.whatever.domain.calendarevent.controller.dto.request.GetCalendarQueryParameter
+import com.whatever.domain.calendarevent.controller.dto.response.ScheduleDetailDto
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.CreateScheduleRequest
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
 import com.whatever.domain.calendarevent.scheduleevent.service.ScheduleEventService
@@ -9,6 +11,7 @@ import com.whatever.global.exception.dto.succeed
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.web.bind.annotation.*
 
 @Tag(
@@ -20,6 +23,23 @@ import org.springframework.web.bind.annotation.*
 class ScheduleController(
     private val scheduleEventService: ScheduleEventService
 ) {
+
+    @Operation(
+        summary = "일정 기간별 조회",
+        description = "주어진 기간 내의 일정을 조회합니다.",
+    )
+    @GetMapping
+    fun getSchedules(
+        @ParameterObject queryParameter: GetCalendarQueryParameter
+    ): CaramelApiResponse<List<ScheduleDetailDto>> {
+        val schedulesResponse = scheduleEventService.getSchedules(
+            startDate = queryParameter.startDate,
+            endDate = queryParameter.endDate,
+            userTimeZone = queryParameter.userTimeZone
+        )
+
+        return schedulesResponse.succeed()
+    }
 
     @Operation(
         summary = "일정 생성",

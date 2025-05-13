@@ -568,7 +568,7 @@ class ScheduleEventServiceTest @Autowired constructor(
 
     @DisplayName("스케줄 조회 시 커플의 삭제되지 않은 스케줄이 모두 조회된다.")
     @Test
-    fun getSchedule() {
+    fun getSchedules() {
         // given
         val startDate = LocalDate.of(2025, 4, 1)
         val endDate = LocalDate.of(2025, 4, 30)
@@ -641,7 +641,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         )
 
         // when
-        val result = scheduleEventService.getSchedule(
+        val result = scheduleEventService.getSchedules(
             startDate = request.startDate,
             endDate = request.endDate,
             userTimeZone = request.userTimeZone
@@ -657,7 +657,7 @@ class ScheduleEventServiceTest @Autowired constructor(
 
     @DisplayName("스케줄 조회 시 날짜 범위에 맞는 일정들이 조회된다.")
     @Test
-    fun getSchedule_WithDailyAndWeeklyRequest() {
+    fun getSchedules_WithDailyAndWeeklyRequest() {
         // given
         val startDate = LocalDate.of(2025, 4, 1)
         val userTimeZone = ZoneId.of("Asia/Seoul")
@@ -694,12 +694,12 @@ class ScheduleEventServiceTest @Autowired constructor(
         )
 
         // when
-        val resultDaily = scheduleEventService.getSchedule(
+        val resultDaily = scheduleEventService.getSchedules(
             startDate = requestDaily.startDate,
             endDate = requestDaily.endDate,
             userTimeZone = requestDaily.userTimeZone
         )
-        val resultWeekly = scheduleEventService.getSchedule(
+        val resultWeekly = scheduleEventService.getSchedules(
             startDate = requestWeekly.startDate,
             endDate = requestWeekly.endDate,
             userTimeZone = requestWeekly.userTimeZone

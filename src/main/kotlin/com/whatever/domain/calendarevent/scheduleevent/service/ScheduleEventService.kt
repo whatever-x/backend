@@ -52,7 +52,7 @@ class ScheduleEventService(
     private val scheduleCreator: ScheduleCreator,
 ) {
 
-    fun getSchedule(
+    fun getSchedules(
         startDate: LocalDate,
         endDate: LocalDate,
         userTimeZone: String
