@@ -3,6 +3,7 @@ package com.whatever.domain.calendarevent.scheduleevent.controller
 import com.whatever.domain.calendarevent.controller.dto.request.GetCalendarQueryParameter
 import com.whatever.domain.calendarevent.controller.dto.response.ScheduleDetailDto
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.CreateScheduleRequest
+import com.whatever.domain.calendarevent.scheduleevent.controller.dto.GetScheduleResponse
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
 import com.whatever.domain.calendarevent.scheduleevent.service.ScheduleEventService
 import com.whatever.domain.content.controller.dto.response.ContentSummaryResponse
@@ -39,6 +40,18 @@ class ScheduleController(
         )
 
         return schedulesResponse.succeed()
+    }
+
+    @Operation(
+        summary = "일정 조회",
+        description = "id에 해당하는 일정을 조회합니다. 커플 멤버가 작성한 일정만 조회 가능합니다.",
+    )
+    @GetMapping("/{schedule-id}")
+    fun getSchedule(
+        @PathVariable("schedule-id") scheduleId: Long
+    ): CaramelApiResponse<GetScheduleResponse> {
+        val scheduleResponse = scheduleEventService.getSchedule(scheduleId = scheduleId)
+        return scheduleResponse.succeed()
     }
 
     @Operation(

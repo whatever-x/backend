@@ -171,7 +171,7 @@ class ContentServiceTest @Autowired constructor(
         assertThat(result.errorCode).isEqualTo(COUPLE_NOT_MATCHED)
     }
 
-    @DisplayName("메모를 조회할 때 memoId에 해당하는 메모가 없다면 예외가 발생한다.")
+    @DisplayName("메모를 조회할 때 존재하지 않는 메모라면 예외가 발생한다.")
     @Test
     fun getMemo_WithIllegalMemoId() {
         // given

@@ -2,8 +2,10 @@ package com.whatever.domain.calendarevent.scheduleevent.service
 
 import com.whatever.domain.calendarevent.controller.dto.response.ScheduleDetailDto
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.CreateScheduleRequest
+import com.whatever.domain.calendarevent.scheduleevent.controller.dto.GetScheduleResponse
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleAccessDeniedException
+import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.COUPLE_NOT_MATCHED
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_CONTENT_DETAIL
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_DURATION
@@ -16,6 +18,8 @@ import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleNotFoun
 import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
 import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
 import com.whatever.domain.content.controller.dto.response.ContentSummaryResponse
+import com.whatever.domain.content.exception.ContentAccessDeniedException
+import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
 import com.whatever.domain.content.service.ScheduleCreator
@@ -51,6 +55,27 @@ class ScheduleEventService(
     private val coupleRepository: CoupleRepository,
     private val scheduleCreator: ScheduleCreator,
 ) {
+
+    fun getSchedule(
+        scheduleId: Long,
+        ownerCoupleId: Long = SecurityUtil.getCurrentUserCoupleId(),
+    ): GetScheduleResponse {
+        val schedule = scheduleEventRepository.findByIdWithContent(scheduleId)
+            ?: throw ScheduleNotFoundException(errorCode = SCHEDULE_NOT_FOUND)
+
+        val couple = coupleRepository.findByIdWithMembers(ownerCoupleId)
+        if (couple == null || !couple.members.map { it.id }.contains(schedule.content.user.id)) {
+            throw ScheduleAccessDeniedException(errorCode = COUPLE_NOT_MATCHED)
+        }
+
+        val tags = tagContentMappingRepository.findAllByContentIdWithTag(schedule.content.id)
+            .map { it.tag }
+        return GetScheduleResponse.of(
+            schedule = schedule,
+            content = schedule.content,
+            tags = tags,
+        )
+    }
 
     fun getSchedules(
         startDate: LocalDate,

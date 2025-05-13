@@ -4,10 +4,14 @@ import com.whatever.domain.calendarevent.controller.dto.request.GetCalendarQuery
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleAccessDeniedException
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode
+import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.COUPLE_NOT_MATCHED
+import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.SCHEDULE_NOT_FOUND
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalArgumentException
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalStateException
+import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleNotFoundException
 import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
 import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
+import com.whatever.domain.content.controller.dto.response.TagDto
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
 import com.whatever.domain.content.model.ContentType
@@ -97,6 +101,81 @@ class ScheduleEventServiceTest @Autowired constructor(
             whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
         }
         return Triple(myUser, partnerUser, couple)
+    }
+
+    @DisplayName("일정 조회 시 일정 정보와 본문, 연관 태그까지 정상 조회된다.")
+    @Test
+    fun getSchedule() {
+        // given
+        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        val (schedule, tags) = createScheduleWithTags(myUser, 10)
+
+        // when
+        val result = scheduleEventService.getSchedule(
+            scheduleId = schedule.id,
+            ownerCoupleId = couple.id,
+        )
+
+        // then
+        assertThat(result.scheduleDetail.scheduleId).isEqualTo(schedule.id)
+        assertThat(result.tags).containsExactlyInAnyOrderElementsOf(tags.map { TagDto.from(it) })
+    }
+
+    @DisplayName("일정 조회 시 파트너의 일정도 일정 정보와 본문, 연관 태그까지 정상 조회된다.")
+    @Test
+    fun getSchedule_WithPartnersSchedule() {
+        // given
+        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        val (schedule, tags) = createScheduleWithTags(partnerUser, 10)
+
+        // when
+        val result = scheduleEventService.getSchedule(
+            scheduleId = schedule.id,
+            ownerCoupleId = couple.id,
+        )
+
+        // then
+        assertThat(result.scheduleDetail.scheduleId).isEqualTo(schedule.id)
+        assertThat(result.tags).containsExactlyInAnyOrderElementsOf(tags.map { TagDto.from(it) })
+    }
+
+    @DisplayName("일정 조회 시 다른 커플의 일정이라면 예외가 발생한다.")
+    @Test
+    fun getSchedule_WithOtherCouplesMemo() {
+        // given
+        val (otherUser1, _, _) = createCouple(userRepository, coupleRepository, "other1", "other2")
+        val (_, _, couple) = createCouple(userRepository, coupleRepository)
+        val (schedule, tags) = createScheduleWithTags(otherUser1, 0)
+
+        // when
+        val result = assertThrows<ScheduleAccessDeniedException> {
+            scheduleEventService.getSchedule(
+                scheduleId = schedule.id,
+                ownerCoupleId = couple.id,
+            )
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(COUPLE_NOT_MATCHED)
+    }
+
+    @DisplayName("일정 조회 시 존재하지 않는 일정이라면 예외가 발생한다.")
+    @Test
+    fun getSchedule_WithIllegalScheduleId() {
+        // given
+        val (_, _, couple) = createCouple(userRepository, coupleRepository)
+        val illegalScheduleId = 0L
+
+        // when
+        val result = assertThrows<ScheduleNotFoundException> {
+            scheduleEventService.getSchedule(
+                scheduleId = illegalScheduleId,
+                ownerCoupleId = couple.id,
+            )
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(SCHEDULE_NOT_FOUND)
     }
 
     @DisplayName("나의 Schedule 업데이트 시 request 값들이 정상적으로 반영된다.")
@@ -708,6 +787,27 @@ class ScheduleEventServiceTest @Autowired constructor(
         // then
         assertThat(resultDaily).hasSize(1)
         assertThat(resultWeekly).hasSize(7)
+    }
+
+    private fun createScheduleWithTags(
+        ownerUser: User,
+        tagCount: Int = 10,
+    ): Pair<ScheduleEvent, Set<Tag>> {
+        val content = contentRepository.save(createContent(ownerUser, ContentType.SCHEDULE))
+        val tagNamesSet = (1..tagCount).map { "testTag${it}" }.toSet()
+        val tags = createTags(tagNamesSet, tagRepository)
+        addTags(content, tags, tagContentMappingRepository)
+        val schedule = scheduleEventRepository.save(
+            ScheduleEvent(
+                uid = "test-uuid4-value",
+                startDateTime = NOW.minusDays(5),
+                startTimeZone = ZoneId.of("Asia/Seoul"),
+                endDateTime = NOW.minusDays(3),
+                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
+                content = content,
+            )
+        )
+        return Pair(schedule, tags)
     }
 }
 
