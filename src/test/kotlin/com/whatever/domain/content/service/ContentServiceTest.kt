@@ -3,6 +3,10 @@ package com.whatever.domain.content.service
 import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
 import com.whatever.domain.content.controller.dto.request.TagIdDto
 import com.whatever.domain.content.controller.dto.request.UpdateContentRequest
+import com.whatever.domain.content.controller.dto.response.TagDto
+import com.whatever.domain.content.exception.ContentAccessDeniedException
+import com.whatever.domain.content.exception.ContentExceptionCode
+import com.whatever.domain.content.exception.ContentExceptionCode.*
 import com.whatever.domain.content.exception.ContentNotFoundException
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
@@ -12,6 +16,7 @@ import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
+import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
@@ -20,7 +25,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.whenever
@@ -43,11 +48,15 @@ class ContentServiceTest @Autowired constructor(
 
     private lateinit var securityUtilMock: AutoCloseable
     private lateinit var testUser: User
+    private lateinit var testPartnerUser: User
+    private lateinit var testCouple: Couple
 
     @BeforeEach
     fun setUp() {
-        val (myUser, _, couple) = createCouple(userRepository, coupleRepository)
+        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
         testUser = myUser
+        testPartnerUser = partnerUser
+        testCouple = couple
         securityUtilMock = mockStatic(SecurityUtil::class.java)
         whenever(SecurityUtil.getCurrentUserId()).thenReturn(testUser.id)
         whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
@@ -69,6 +78,7 @@ class ContentServiceTest @Autowired constructor(
     }
 
     private fun createTestMemo(
+        user: User = testUser,
         title: String = "Test Memo",
         description: String? = "Memo Description",
         isCompleted: Boolean = false,
@@ -76,13 +86,106 @@ class ContentServiceTest @Autowired constructor(
     ): Content {
         val contentDetail = ContentDetail(title = title, description = description, isCompleted = isCompleted)
         val content = contentRepository.save(
-            Content(user = testUser, contentDetail = contentDetail, type = ContentType.MEMO)
+            Content(user = user, contentDetail = contentDetail, type = ContentType.MEMO)
         )
         if (tags.isNotEmpty()) {
             val mappings = tags.map { TagContentMapping(tag = it, content = content) }
             tagContentMappingRepository.saveAll(mappings)
         }
         return content
+    }
+
+    @DisplayName("메모를 조회할 경우 본문과 태그까지 정상적으로 조회된다.")
+    @Test
+    fun getMemo() {
+        // given
+        val tags = mutableListOf<Tag>()
+        repeat(10) { i ->
+            tags.add(createTestTag("label${i}"))
+        }
+        val testMemo = createTestMemo(
+            user = testUser,
+            tags = tags,
+        )
+
+        // when
+        val result = contentService.getMemo(
+            memoId = testMemo.id,
+            ownerCoupleId = testCouple.id
+        )
+
+        // then
+        assertThat(result.id).isEqualTo(testMemo.id)
+        assertThat(result.title).isEqualTo(testMemo.contentDetail.title)
+        assertThat(result.description).isEqualTo(testMemo.contentDetail.description)
+        assertThat(result.tagList).containsExactlyInAnyOrderElementsOf(tags.map { TagDto.from(it) })
+    }
+
+    @DisplayName("메모를 조회할 때 파트너의 메모도 본문과 태그까지 정상적으로 조회된다.")
+    @Test
+    fun getMemo_WithPartnersMemo() {
+        // given
+        val tags = mutableListOf<Tag>()
+        repeat(10) { i ->
+            tags.add(createTestTag("label${i}"))
+        }
+        val testMemo = createTestMemo(
+            user = testPartnerUser,
+            tags = tags,
+        )
+
+        // when
+        val result = contentService.getMemo(
+            memoId = testMemo.id,
+            ownerCoupleId = testCouple.id
+        )
+
+        // then
+        assertThat(result.id).isEqualTo(testMemo.id)
+        assertThat(result.title).isEqualTo(testMemo.contentDetail.title)
+        assertThat(result.description).isEqualTo(testMemo.contentDetail.description)
+        assertThat(result.tagList).containsExactlyInAnyOrderElementsOf(tags.map { TagDto.from(it) })
+    }
+
+    @DisplayName("메모를 조회할 때 다른 커플의 메모일 경우 얘외가 발생한다.")
+    @Test
+    fun getMemo_WithOtherCouplesMemo() {
+        // given
+        val (otherUser1, _, _) = createCouple(
+            userRepository = userRepository,
+            coupleRepository = coupleRepository,
+            myPlatformUserId = "other-me",
+            partnerPlatformUserId = "partner-me"
+        )
+        val testMemo = createTestMemo(user = otherUser1)
+
+        // when
+        val result = assertThrows<ContentAccessDeniedException> {
+            contentService.getMemo(
+                memoId = testMemo.id,
+                ownerCoupleId = testCouple.id
+            )
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(COUPLE_NOT_MATCHED)
+    }
+
+    @DisplayName("메모를 조회할 때 memoId에 해당하는 메모가 없다면 예외가 발생한다.")
+    @Test
+    fun getMemo_WithIllegalMemoId() {
+        // given
+
+        // when
+        val result = assertThrows<ContentNotFoundException> {
+            contentService.getMemo(
+                memoId = 0L ,  // illegal memo id
+                ownerCoupleId = testCouple.id
+            )
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(MEMO_NOT_FOUND)
     }
 
     @DisplayName("콘텐츠 수정: 메모의 제목, 설명, 완료 상태를 성공적으로 업데이트한다")
