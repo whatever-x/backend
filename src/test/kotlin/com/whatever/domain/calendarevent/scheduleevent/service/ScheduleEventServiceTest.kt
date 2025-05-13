@@ -747,8 +747,7 @@ internal fun createCouple(
             sharedMessage = sharedMessage
         )
     )
-    myUser.setCouple(savedCouple)
-    partnerUser.setCouple(savedCouple)
+    savedCouple.addMembers(myUser, partnerUser)
 
     userRepository.save(myUser)
     userRepository.save(partnerUser)

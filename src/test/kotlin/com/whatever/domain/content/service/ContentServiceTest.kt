@@ -41,12 +41,6 @@ class ContentServiceTest @Autowired constructor(
 
     @BeforeEach
     fun setUp() {
-        scheduleEventRepository.deleteAllInBatch()
-        tagContentMappingRepository.deleteAllInBatch()
-        contentRepository.deleteAllInBatch()
-        tagRepository.deleteAllInBatch()
-        userRepository.deleteAllInBatch()
-
         testUser = userRepository.save(
             User(platform = LoginPlatform.KAKAO, platformUserId = "test-user")
         )
@@ -58,6 +52,12 @@ class ContentServiceTest @Autowired constructor(
     @AfterEach
     fun tearDown() {
         securityUtilMock.close()
+
+        scheduleEventRepository.deleteAllInBatch()
+        tagContentMappingRepository.deleteAllInBatch()
+        contentRepository.deleteAllInBatch()
+        tagRepository.deleteAllInBatch()
+        userRepository.deleteAllInBatch()
     }
 
     private fun createTestTag(label: String): Tag {

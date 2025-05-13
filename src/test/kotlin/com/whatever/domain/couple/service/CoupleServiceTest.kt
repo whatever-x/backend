@@ -1,5 +1,9 @@
 package com.whatever.domain.couple.service
 
+import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
+import com.whatever.domain.content.repository.ContentRepository
+import com.whatever.domain.content.tag.repository.TagContentMappingRepository
+import com.whatever.domain.content.tag.repository.TagRepository
 import com.whatever.domain.couple.controller.dto.request.CreateCoupleRequest
 import com.whatever.domain.couple.controller.dto.request.UpdateCoupleSharedMessageRequest
 import com.whatever.domain.couple.controller.dto.request.UpdateCoupleStartDateRequest
@@ -13,7 +17,8 @@ import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
-import com.whatever.domain.user.model.UserStatus
+import com.whatever.domain.user.model.UserStatus.COUPLED
+import com.whatever.domain.user.model.UserStatus.SINGLE
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
@@ -25,7 +30,6 @@ import org.assertj.core.data.TemporalUnitWithinOffset
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.reset
@@ -38,6 +42,7 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import java.time.temporal.ChronoUnit
+import kotlin.test.Test
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -46,6 +51,10 @@ class CoupleServiceTest @Autowired constructor(
     private val coupleService: CoupleService,
     private val userRepository: UserRepository,
     private val coupleRepository: CoupleRepository,
+    private val tagContentMappingRepository: TagContentMappingRepository,
+    private val tagRepository: TagRepository,
+    private val scheduleEventRepository: ScheduleEventRepository,
+    private val contentRepository: ContentRepository,
 ) {
 
     @MockitoSpyBean
@@ -59,14 +68,19 @@ class CoupleServiceTest @Autowired constructor(
         check(connectionFactory != null)
         connectionFactory.connection.serverCommands().flushAll()
         securityUtilMock = mockStatic(SecurityUtil::class.java)
-
-        userRepository.deleteAllInBatch()
     }
 
     @AfterEach
     fun tearDown() {
         securityUtilMock.close()  // static mock 초기화
         reset(redisUtil)  // redisUtil mock 초기화
+
+        tagContentMappingRepository.deleteAllInBatch()
+        scheduleEventRepository.deleteAllInBatch()
+        contentRepository.deleteAllInBatch()
+        userRepository.deleteAllInBatch()
+        coupleRepository.deleteAllInBatch()
+        tagRepository.deleteAllInBatch()
     }
 
     @DisplayName("사용자 상태가 SINGLE이 아니면 예외가 발생한다.")
@@ -77,7 +91,7 @@ class CoupleServiceTest @Autowired constructor(
             User(
                 platform = LoginPlatform.KAKAO,
                 platformUserId = "test-user-id",
-                userStatus = UserStatus.COUPLED
+                userStatus = COUPLED
             )
         )
         securityUtilMock.apply {
@@ -99,7 +113,7 @@ class CoupleServiceTest @Autowired constructor(
             User(
                 platform = LoginPlatform.KAKAO,
                 platformUserId = "test-user-id",
-                userStatus = UserStatus.SINGLE
+                userStatus = SINGLE
             )
         )
         securityUtilMock.apply {
@@ -127,7 +141,7 @@ class CoupleServiceTest @Autowired constructor(
             User(
                 platform = LoginPlatform.KAKAO,
                 platformUserId = "test-user-id",
-                userStatus = UserStatus.SINGLE
+                userStatus = SINGLE
             )
         )
         securityUtilMock.apply {
@@ -188,7 +202,7 @@ class CoupleServiceTest @Autowired constructor(
                 birthDate = DateTimeUtil.localNow().toLocalDate(),
                 platform = LoginPlatform.KAKAO,
                 platformUserId = "other-user-id",
-                userStatus = UserStatus.COUPLED
+                userStatus = COUPLED
             )
         )
 
@@ -213,7 +227,7 @@ class CoupleServiceTest @Autowired constructor(
                 birthDate = DateTimeUtil.localNow().toLocalDate(),
                 platform = LoginPlatform.KAKAO,
                 platformUserId = "my-user-id",
-                userStatus = UserStatus.SINGLE,
+                userStatus = SINGLE,
                 gender = UserGender.MALE,
             )
         )
@@ -223,7 +237,7 @@ class CoupleServiceTest @Autowired constructor(
                 birthDate = DateTimeUtil.localNow().toLocalDate(),
                 platform = LoginPlatform.KAKAO,
                 platformUserId = "host-user-id",
-                userStatus = UserStatus.SINGLE,
+                userStatus = SINGLE,
                 gender = UserGender.FEMALE,
             )
         )
@@ -254,7 +268,7 @@ class CoupleServiceTest @Autowired constructor(
                 birthDate = DateTimeUtil.localNow().toLocalDate(),
                 platform = LoginPlatform.KAKAO,
                 platformUserId = "host-user-id",
-                userStatus = UserStatus.SINGLE
+                userStatus = SINGLE
             )
         )
         val request = CreateCoupleRequest("test-invitation-code")
@@ -385,7 +399,7 @@ internal fun makeCouple(userRepository: UserRepository, coupleRepository: Couple
             birthDate = DateTimeUtil.localNow().toLocalDate(),
             platform = LoginPlatform.KAKAO,
             platformUserId = "my-user-id",
-            userStatus = UserStatus.SINGLE,
+            userStatus = SINGLE,
             gender = UserGender.MALE,
         )
     )
@@ -395,7 +409,7 @@ internal fun makeCouple(userRepository: UserRepository, coupleRepository: Couple
             birthDate = DateTimeUtil.localNow().toLocalDate(),
             platform = LoginPlatform.KAKAO,
             platformUserId = "partner-user-id",
-            userStatus = UserStatus.SINGLE,
+            userStatus = SINGLE,
             gender = UserGender.FEMALE,
         )
     )
@@ -408,8 +422,7 @@ internal fun makeCouple(userRepository: UserRepository, coupleRepository: Couple
             sharedMessage = sharedMessage
         )
     )
-    myUser.setCouple(savedCouple)
-    partnerUser.setCouple(savedCouple)
+    savedCouple.addMembers(myUser, partnerUser)
 
     userRepository.save(myUser)
     userRepository.save(partnerUser)

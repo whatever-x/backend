@@ -16,9 +16,12 @@ import com.whatever.domain.couple.exception.CoupleExceptionCode.INVITATION_CODE_
 import com.whatever.domain.couple.exception.CoupleExceptionCode.MEMBER_NOT_FOUND
 import com.whatever.domain.couple.exception.CoupleExceptionCode.NOT_A_MEMBER
 import com.whatever.domain.couple.exception.CoupleExceptionCode.UPDATE_FAIL
+import com.whatever.domain.couple.exception.CoupleIllegalArgumentException
 import com.whatever.domain.couple.exception.CoupleIllegalStateException
+import com.whatever.domain.couple.exception.CoupleNotFoundException
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
+import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
@@ -30,8 +33,8 @@ import com.whatever.util.findByIdAndNotDeleted
 import com.whatever.util.toZonId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.viascom.nanoid.NanoId
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.OptimisticLockingFailureException
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Recover
 import org.springframework.retry.annotation.Retryable
@@ -47,6 +50,7 @@ class CoupleService(
     private val redisUtil: RedisUtil,
     private val userRepository: UserRepository,
     private val coupleRepository: CoupleRepository,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
 
     companion object {
@@ -74,6 +78,11 @@ class CoupleService(
         }
 
         return CoupleBasicResponse.from(updatedCouple)
+    }
+    @Recover
+    fun updateSharedMessageRecover(e: OptimisticLockingFailureException, coupleId: Long): CoupleBasicResponse {
+        logger.error { "couple shared message update fail. couple id: ${coupleId}" }
+        throw CoupleIllegalStateException(errorCode = UPDATE_FAIL)
     }
 
     @Retryable(
@@ -103,13 +112,6 @@ class CoupleService(
 
         return CoupleBasicResponse.from(updatedCouple)
     }
-
-    @Recover
-    fun updateSharedMessageRecover(e: OptimisticLockingFailureException, coupleId: Long): CoupleBasicResponse {
-        logger.error { "couple shared message update fail. couple id: ${coupleId}" }
-        throw CoupleIllegalStateException(errorCode = UPDATE_FAIL)
-    }
-
     @Recover
     fun updateStartDateRecover(
         e: OptimisticLockingFailureException,
@@ -141,6 +143,20 @@ class CoupleService(
     }
 
     @Transactional
+    fun leaveCouple(
+        coupleId: Long,
+        userId: Long = SecurityUtil.getCurrentUserId(),
+    ) {
+        val couple = coupleRepository.findByIdWithMembers(coupleId)
+            ?: throw CoupleNotFoundException(errorCode = COUPLE_NOT_FOUND)
+        val user = couple.members.find { it.id == userId }
+            ?: throw CoupleIllegalArgumentException(errorCode = NOT_A_MEMBER)
+
+        couple.removeMember(user)
+        applicationEventPublisher.publishEvent(CoupleMemberLeaveEvent(coupleId, userId))
+    }
+
+    @Transactional
     fun createCouple(request: CreateCoupleRequest): CoupleDetailResponse {
         val invitationCode = request.invitationCode
         val creatorUserId = redisUtil.getCoupleInvitationUser(invitationCode)
@@ -160,8 +176,7 @@ class CoupleService(
         validateSingleUser(joinerUser)
 
         val savedCouple = coupleRepository.save(Couple())
-        creatorUser.setCouple(savedCouple)
-        joinerUser.setCouple(savedCouple)
+        savedCouple.addMembers(creatorUser, joinerUser)
 
         redisUtil.deleteCoupleInvitationCode(invitationCode, creatorUserId)
 
@@ -241,10 +256,10 @@ class CoupleService(
 
 private fun UserRepository.findUserById(id: Long, exceptionMessage: String? = null): User {
     return findByIdAndNotDeleted(id)
-        ?: throw CoupleException(errorCode = MEMBER_NOT_FOUND, detailMessage = exceptionMessage)
+        ?: throw CoupleIllegalArgumentException(errorCode = MEMBER_NOT_FOUND, detailMessage = exceptionMessage)
 }
 
 private fun CoupleRepository.findCoupleById(id: Long, exceptionMessage: String? = null): Couple {
     return findByIdAndNotDeleted(id)
-        ?: throw CoupleException(errorCode = COUPLE_NOT_FOUND, detailMessage = exceptionMessage)
+        ?: throw CoupleNotFoundException(errorCode = COUPLE_NOT_FOUND, detailMessage = exceptionMessage)
 }

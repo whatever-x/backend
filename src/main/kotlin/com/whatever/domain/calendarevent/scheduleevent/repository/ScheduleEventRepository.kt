@@ -2,7 +2,9 @@ package com.whatever.domain.calendarevent.scheduleevent.repository
 
 import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 interface ScheduleEventRepository : JpaRepository<ScheduleEvent, Long> {
@@ -37,5 +39,20 @@ interface ScheduleEventRepository : JpaRepository<ScheduleEvent, Long> {
             and se.isDeleted = false 
     """)
     fun findByIdWithContent(scheduleId: Long): ScheduleEvent?
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(
+        """
+        update ScheduleEvent se
+        set se.isDeleted = true
+        where se.id in (
+            select tse.id from ScheduleEvent tse
+                join tse.content c
+            where c.user.id = :userId
+                and tse.isDeleted = false
+        )
+    """
+    )
+    fun softDeleteAllByUserIdInBulk(userId: Long): Int
 
 }

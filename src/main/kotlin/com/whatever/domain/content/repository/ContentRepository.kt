@@ -12,13 +12,24 @@ import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.user.model.User
 import com.whatever.util.CursorUtil
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 
 interface ContentRepository : JpaRepository<Content, Long>, ContentRepositoryCustom {
 
     @Query("SELECT c FROM Content c WHERE c.id = :id AND c.type = :type AND c.isDeleted = false")
     fun findContentByIdAndType(id: Long, type: ContentType): Content?
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("""
+        update Content c
+        set c.isDeleted = true
+        where c.user.id = :userId
+            and c.isDeleted = false
+    """)
+    fun softDeleteAllByUserIdInBulk(userId: Long): Int
 }
 
 interface ContentRepositoryCustom {

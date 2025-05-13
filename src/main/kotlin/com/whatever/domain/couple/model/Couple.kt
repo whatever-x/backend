@@ -6,6 +6,7 @@ import com.whatever.domain.couple.exception.CoupleExceptionCode.ILLEGAL_MEMBER_S
 import com.whatever.domain.couple.exception.CoupleExceptionCode.ILLEGAL_START_DATE
 import com.whatever.domain.couple.exception.CoupleIllegalArgumentException
 import com.whatever.domain.couple.exception.CoupleIllegalStateException
+import com.whatever.domain.couple.model.CoupleStatus.INACTIVE
 import com.whatever.domain.user.model.User
 import com.whatever.util.DateTimeUtil
 import jakarta.persistence.*
@@ -33,11 +34,41 @@ class Couple (
     @Version
     private var version: Long = 0L
 
-    fun addUsers(user: User) {
-        mutableMembers.add(user)
+    fun addMembers(user1: User, user2: User) {
+        if (user1.id == user2.id) {
+            throw CoupleIllegalArgumentException(
+                errorCode = ILLEGAL_MEMBER_SIZE,
+
+            )
+        }
+        if (mutableMembers.isNotEmpty()) {
+            throw CoupleIllegalStateException(
+                errorCode = ILLEGAL_MEMBER_SIZE,
+                detailMessage = "커플에는 반드시 두 명의 유저가 있어야 합니다. 현재 등록된 유저 수: ${mutableMembers.size}"
+            )
+        }
+        user1.setCouple(this)
+        user2.setCouple(this)
+        mutableMembers.add(user1)
+        mutableMembers.add(user2)
+    }
+
+    fun removeMember(user: User) {
+        if (!mutableMembers.removeIf { it.id == user.id }) {
+            throw CoupleIllegalArgumentException(errorCode = CoupleExceptionCode.NOT_A_MEMBER)
+        }
+
+        user.leaveFromCouple()
+        status = INACTIVE
+        if (mutableMembers.isEmpty()) {
+            this.deleteEntity()
+        }
     }
 
     fun updateStartDate(newDate: LocalDate, userZoneId: ZoneId) {
+        if (status == INACTIVE) {
+            throw CoupleIllegalStateException(errorCode = CoupleExceptionCode.ILLEGAL_COUPLE_STATUS)
+        }
         val todayInUserZone = DateTimeUtil.zonedNow(userZoneId).toLocalDate()
         if (newDate.isAfter(todayInUserZone)) {
             throw CoupleIllegalArgumentException(errorCode = ILLEGAL_START_DATE)
@@ -47,16 +78,9 @@ class Couple (
     }
 
     fun updateSharedMessage(newMessage: String?) {
-        sharedMessage = newMessage.takeUnless { it.isNullOrBlank() }
-    }
-
-    @PreUpdate
-    protected fun validateMemberSize() {
-        if (mutableMembers.size != 2) {
-            throw CoupleIllegalStateException(
-                errorCode = ILLEGAL_MEMBER_SIZE,
-                detailMessage = "커플에는 반드시 두 명의 유저가 있어야 합니다. 현재 등록된 유저 수: ${mutableMembers.size}"
-            )
+        if (status == INACTIVE) {
+            throw CoupleIllegalStateException(errorCode = CoupleExceptionCode.ILLEGAL_COUPLE_STATUS)
         }
+        sharedMessage = newMessage.takeUnless { it.isNullOrBlank() }
     }
 }
