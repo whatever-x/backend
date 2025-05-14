@@ -11,6 +11,8 @@ import com.whatever.domain.content.controller.dto.response.TagDto
 import com.whatever.domain.content.exception.ContentAccessDeniedException
 import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.exception.ContentExceptionCode.CONTENT_NOT_FOUND
+import com.whatever.domain.content.exception.ContentExceptionCode.COUPLE_NOT_MATCHED
+import com.whatever.domain.content.exception.ContentExceptionCode.MEMO_NOT_FOUND
 import com.whatever.domain.content.exception.ContentIllegalStateException
 import com.whatever.domain.content.exception.ContentNotFoundException
 import com.whatever.domain.content.model.Content
@@ -46,6 +48,28 @@ class ContentService(
     private val coupleRepository: CoupleRepository,
     private val scheduleEventRepository: ScheduleEventRepository,
 ) {
+    fun getMemo(
+        memoId: Long,
+        ownerCoupleId: Long = SecurityUtil.getCurrentUserCoupleId(),
+    ): ContentResponse {
+        val memo = contentRepository.findContentByIdAndType(
+            id = memoId,
+            type = ContentType.MEMO
+        ) ?: throw ContentNotFoundException(errorCode = MEMO_NOT_FOUND)
+
+        val couple = coupleRepository.findByIdWithMembers(ownerCoupleId)
+        if (couple == null || !couple.members.map { it.id }.contains(memo.user.id)) {
+            throw ContentAccessDeniedException(errorCode = COUPLE_NOT_MATCHED)
+        }
+
+        val tagDtos = tagContentMappingRepository.findAllByContentIdWithTag(contentId = memo.id)
+            .map { TagDto.from(it.tag) }
+        return ContentResponse.from(
+            content = memo,
+            tagList = tagDtos,
+        )
+    }
+
     @Transactional(readOnly = true) // 읽기 전용 트랜잭션
     fun getContentList(queryParameter: GetContentListQueryParameter): CursoredResponse<ContentResponse> {
         val coupleId = SecurityUtil.getCurrentUserCoupleId()
@@ -93,7 +117,7 @@ class ContentService(
             id = contentId,
             type = ContentType.MEMO
         ) ?: throw ContentNotFoundException(
-                errorCode = ContentExceptionCode.MEMO_NOT_FOUND,
+                errorCode = MEMO_NOT_FOUND,
                 detailMessage = "Memo not found or has been deleted. (contentId: ${contentId})"
             )
 
@@ -101,7 +125,7 @@ class ContentService(
         val contentOwnerCoupleId = memo.user.couple?.id
         if (userCoupleId != contentOwnerCoupleId) {
             throw ContentAccessDeniedException(
-                errorCode = ContentExceptionCode.COUPLE_NOT_MATCHED,
+                errorCode = COUPLE_NOT_MATCHED,
                 detailMessage = "The current user's couple does not match the content owner's couple"
             )
         }

@@ -14,7 +14,7 @@ enum class ScheduleExceptionCode(
     ILLEGAL_DURATION("002", "잘못된 기간 설정입니다."),
     SCHEDULE_NOT_FOUND("003", "스케줄을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     ILLEGAL_PARTNER_STATUS("004", "파트너의 커플 정보를 확인할 수 없습니다.", HttpStatus.NOT_FOUND),
-    COUPLE_NOT_MATCHED("005", "수정할 수 없는 일정입니다.", HttpStatus.FORBIDDEN),
+    COUPLE_NOT_MATCHED("005", "내 커플의 일정이 아닙니다.", HttpStatus.FORBIDDEN),
     UPDATE_CONFLICT("006", "상대방이 수정 중인 일정입니다. 잠시 후 재시도 해주세요.", HttpStatus.CONFLICT),
     ILLEGAL_CONTENT_ID("007", "사용할 수 없는 콘텐츠입니다."),
     ILLEGAL_CONTENT_TYPE("008", "일정으로 변경할 수 없는 콘텐츠입니다."),

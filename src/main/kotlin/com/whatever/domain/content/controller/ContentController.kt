@@ -35,14 +35,26 @@ class ContentController(
 ) {
 
     @Operation(
-        summary = "메모 조회",
-        description = "메모를 조회합니다.",
+        summary = "메모 목록 조회",
+        description = "메모 목록을 조회합니다.",
     )
     @GetMapping("/memo")
     fun getContents(
         @ParameterObject queryParameter: GetContentListQueryParameter,
     ): CaramelApiResponse<CursoredResponse<ContentResponse>> {
         return contentService.getContentList(queryParameter).succeed()
+    }
+
+    @Operation(
+        summary = "메모 조회",
+        description = "메모를 조회합니다. 커플의 멤버가 작성한 메모만 조회할 수 있습니다.",
+    )
+    @GetMapping("/memo/{memo-id}")
+    fun getMemo(
+        @PathVariable("memo-id") memoId: Long,
+    ): CaramelApiResponse<ContentResponse> {
+        val response = contentService.getMemo(memoId)
+        return response.succeed()
     }
 
     @Operation(
