@@ -119,7 +119,7 @@ class AuthService(
 
         if (isValid.not()) throw AuthException(errorCode = AuthExceptionCode.UNAUTHORIZED)
 
-        val refreshToken = authRedisRepository.getRefreshToken(userId = userId, deviceId = "tempDeviceId")
+        val refreshToken = authRedisRepository.getRefreshToken(userId = userId, deviceId = deviceId)
 
         if (serviceToken.refreshToken != refreshToken) {
             throw AuthException(errorCode = AuthExceptionCode.UNAUTHORIZED)
