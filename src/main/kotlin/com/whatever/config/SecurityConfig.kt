@@ -83,6 +83,7 @@ class SecurityConfig(
                 authorize("/v1/auth/sign-out", hasAnyRole(NEW.name, SINGLE.name, COUPLED.name))
 
                 authorize(HttpMethod.POST, "/v1/user/profile", hasAnyRole(NEW.name))
+                authorize("/v1/user/me", hasAnyRole(NEW.name, SINGLE.name, COUPLED.name))
                 authorize("/v1/user/**", hasAnyRole(SINGLE.name, COUPLED.name))
 
                 authorize("/v1/content/**", hasAnyRole(COUPLED.name))
