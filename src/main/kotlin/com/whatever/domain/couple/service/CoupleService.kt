@@ -40,7 +40,6 @@ import org.springframework.retry.annotation.Recover
 import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.Duration
 
 
 private val logger = KotlinLogging.logger { }
@@ -123,7 +122,7 @@ class CoupleService(
     }
 
     @Transactional(readOnly = true)
-    fun getCoupleInfo(coupleId: Long): CoupleDetailResponse {
+    fun getCoupleAndMemberInfo(coupleId: Long): CoupleDetailResponse {
         val currentUserId = SecurityUtil.getCurrentUserId()
         val couple = coupleRepository.findCoupleById(coupleId)
 
