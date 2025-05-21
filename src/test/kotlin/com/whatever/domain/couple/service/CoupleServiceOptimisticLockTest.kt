@@ -81,7 +81,7 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
         val futures = requests.mapIndexed { idx, request ->
             CompletableFuture.supplyAsync({
                 mockStatic(SecurityUtil::class.java).use {
-                    it.apply { whenever(SecurityUtil.getCurrentUserId()).doReturn(members[idx].id) }
+                    it.apply { whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id) }
                     coupleService.updateStartDate(savedCouple.id, request, timeZone)
                 }
             }, executor)
@@ -140,7 +140,7 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
         val futures = requests.mapIndexed { idx, request ->
             CompletableFuture.supplyAsync({
                 mockStatic(SecurityUtil::class.java).use {
-                    it.apply { whenever(SecurityUtil.getCurrentUserId()).doReturn(members[0].id) }
+                    it.apply { whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id) }
                     coupleService.updateSharedMessage(savedCouple.id, request)
                 }
             }, executor)
@@ -172,13 +172,13 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
         val futures = listOf(
             CompletableFuture.supplyAsync({
                 mockStatic(SecurityUtil::class.java).use {
-                    it.apply { whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id) }
+                    it.apply { whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id) }
                     coupleService.updateStartDate(savedCouple.id, updateStartDateRequest, timeZone)
                 }
             }, executor),
             CompletableFuture.supplyAsync({
                 mockStatic(SecurityUtil::class.java).use {
-                    it.apply { whenever(SecurityUtil.getCurrentUserId()).doReturn(partnerUser.id) }
+                    it.apply { whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id) }
                     coupleService.updateSharedMessage(savedCouple.id, updateSharedMessageRequest)
                 }
             }, executor)

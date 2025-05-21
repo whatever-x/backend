@@ -293,7 +293,7 @@ class CoupleServiceTest @Autowired constructor(
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+            whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id)
         }
         val request = UpdateCoupleStartDateRequest(DateTimeUtil.localNow().toLocalDate())
         val timeZone = "Asia/Seoul"
@@ -312,7 +312,7 @@ class CoupleServiceTest @Autowired constructor(
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+            whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id)
         }
 
         // 미래 시간으로 설정
@@ -341,7 +341,7 @@ class CoupleServiceTest @Autowired constructor(
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+            whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id)
         }
         val request = UpdateCoupleSharedMessageRequest("new message")
 
@@ -360,7 +360,7 @@ class CoupleServiceTest @Autowired constructor(
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+            whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id)
         }
         val request = UpdateCoupleSharedMessageRequest("           ")
 
@@ -379,7 +379,7 @@ class CoupleServiceTest @Autowired constructor(
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+            whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id)
         }
         val request = UpdateCoupleSharedMessageRequest(null)
 
