@@ -121,6 +121,14 @@ class CoupleService(
         throw CoupleIllegalStateException(errorCode = UPDATE_FAIL)
     }
 
+    fun getCoupleInfo(
+        coupleId: Long = SecurityUtil.getCurrentUserCoupleId(),
+    ): CoupleBasicResponse {
+        val couple = coupleRepository.findByIdAndNotDeleted(coupleId)
+            ?: throw CoupleNotFoundException(COUPLE_NOT_FOUND)
+        return CoupleBasicResponse.from(couple)
+    }
+
     @Transactional(readOnly = true)
     fun getCoupleAndMemberInfo(coupleId: Long): CoupleDetailResponse {
         val currentUserId = SecurityUtil.getCurrentUserId()
