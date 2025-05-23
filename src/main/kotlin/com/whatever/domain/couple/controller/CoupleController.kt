@@ -60,7 +60,7 @@ class CoupleController(
 
     @Operation(
         summary = "커플 기념일 조회",
-        description = "커플 정보를 조회합니다."
+        description = "커플 기념일을 조회합니다.(100일, 주년, 생일)"
     )
     @GetMapping("/{couple-id}/anniversaries")
     fun getCoupleAnniversaries(
