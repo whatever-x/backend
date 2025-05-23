@@ -33,12 +33,23 @@ class CoupleController(
 ) {
 
     @Operation(
+        summary = "내 커플 정보 조회",
+        description = "유저 정보를 제외한 내 커플 정보를 반환합니다."
+    )
+    @GetMapping("/me")
+    fun getMyCoupleInfo(): CaramelApiResponse<CoupleBasicResponse> {
+        val response = coupleService.getCoupleInfo()
+        return response.succeed()
+    }
+
+
+    @Operation(
         summary = "커플 정보 조회",
         description = "커플 정보를 조회합니다."
     )
     @GetMapping("/{couple-id}")
     fun getCoupleInfo(@PathVariable("couple-id") coupleId: Long): CaramelApiResponse<CoupleDetailResponse> {
-        val response = coupleService.getCoupleInfo(coupleId)
+        val response = coupleService.getCoupleAndMemberInfo(coupleId)
         return response.succeed()
     }
 

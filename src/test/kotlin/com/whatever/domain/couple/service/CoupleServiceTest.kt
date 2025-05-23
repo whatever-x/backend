@@ -170,7 +170,7 @@ class CoupleServiceTest @Autowired constructor(
 
     @DisplayName("Couple의 member가 정보를 조회할 경우 멤버정보가 포함된 커플정보를 반환한다.")
     @Test
-    fun getCoupleInfo() {
+    fun getCoupleAndMemberInfo() {
         // given
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
 
@@ -180,7 +180,7 @@ class CoupleServiceTest @Autowired constructor(
         }
 
         // when
-        val result = coupleService.getCoupleInfo(savedCouple.id)
+        val result = coupleService.getCoupleAndMemberInfo(savedCouple.id)
 
         // then
         assertThat(result.coupleId).isEqualTo(savedCouple.id)
@@ -192,7 +192,7 @@ class CoupleServiceTest @Autowired constructor(
 
     @DisplayName("Couple의 member가 아닌 유저가 정보를 조회할 경우 예외를 반환한다.")
     @Test
-    fun getCoupleInfo_ByOtherUser() {
+    fun getCoupleAndMemberInfo_ByOtherUser() {
         // given
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
 
@@ -212,7 +212,7 @@ class CoupleServiceTest @Autowired constructor(
         }
 
         // when, then
-        assertThatThrownBy { coupleService.getCoupleInfo(savedCouple.id) }
+        assertThatThrownBy { coupleService.getCoupleAndMemberInfo(savedCouple.id) }
             .isInstanceOf(CoupleAccessDeniedException::class.java)
             .hasMessage("커플에 속한 유저가 아닙니다.")
     }
@@ -293,7 +293,7 @@ class CoupleServiceTest @Autowired constructor(
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+            whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id)
         }
         val request = UpdateCoupleStartDateRequest(DateTimeUtil.localNow().toLocalDate())
         val timeZone = "Asia/Seoul"
@@ -312,7 +312,7 @@ class CoupleServiceTest @Autowired constructor(
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+            whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id)
         }
 
         // 미래 시간으로 설정
@@ -341,7 +341,7 @@ class CoupleServiceTest @Autowired constructor(
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+            whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id)
         }
         val request = UpdateCoupleSharedMessageRequest("new message")
 
@@ -360,7 +360,7 @@ class CoupleServiceTest @Autowired constructor(
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+            whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id)
         }
         val request = UpdateCoupleSharedMessageRequest("           ")
 
@@ -379,7 +379,7 @@ class CoupleServiceTest @Autowired constructor(
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
+            whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id)
         }
         val request = UpdateCoupleSharedMessageRequest(null)
 
