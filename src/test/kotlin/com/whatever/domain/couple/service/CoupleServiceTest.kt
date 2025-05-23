@@ -41,6 +41,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 
@@ -392,7 +393,11 @@ class CoupleServiceTest @Autowired constructor(
     }
 }
 
-internal fun makeCouple(userRepository: UserRepository, coupleRepository: CoupleRepository): Triple<User, User, Couple> {
+internal fun makeCouple(
+    userRepository: UserRepository,
+    coupleRepository: CoupleRepository,
+    startDate: LocalDate = DateTimeUtil.localNow().toLocalDate(),
+): Triple<User, User, Couple> {
     val myUser = userRepository.save(
         User(
             nickname = "my",
@@ -414,7 +419,6 @@ internal fun makeCouple(userRepository: UserRepository, coupleRepository: Couple
         )
     )
 
-    val startDate = DateTimeUtil.localNow().toLocalDate()
     val sharedMessage = "test message"
     val savedCouple = coupleRepository.save(
         Couple(

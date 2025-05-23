@@ -3,9 +3,11 @@ package com.whatever.domain.couple.controller
 import com.whatever.domain.couple.controller.dto.request.CreateCoupleRequest
 import com.whatever.domain.couple.controller.dto.request.UpdateCoupleSharedMessageRequest
 import com.whatever.domain.couple.controller.dto.request.UpdateCoupleStartDateRequest
+import com.whatever.domain.couple.controller.dto.response.CoupleAnniversaryResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleBasicResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleInvitationCodeResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleDetailResponse
+import com.whatever.domain.couple.service.CoupleAnniversaryService
 import com.whatever.domain.couple.service.CoupleService
 import com.whatever.global.constants.CaramelHttpHeaders.TIME_ZONE
 import com.whatever.global.exception.dto.CaramelApiResponse
@@ -20,7 +22,9 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @Tag(
     name = "Couple",
@@ -29,7 +33,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/v1/couples")
 class CoupleController(
-    private val coupleService: CoupleService
+    private val coupleService: CoupleService,
+    private val coupleAnnivService: CoupleAnniversaryService,
 ) {
 
     @Operation(
@@ -50,6 +55,23 @@ class CoupleController(
     @GetMapping("/{couple-id}")
     fun getCoupleInfo(@PathVariable("couple-id") coupleId: Long): CaramelApiResponse<CoupleDetailResponse> {
         val response = coupleService.getCoupleAndMemberInfo(coupleId)
+        return response.succeed()
+    }
+
+    @Operation(
+        summary = "커플 기념일 조회",
+        description = "커플 정보를 조회합니다."
+    )
+    @GetMapping("/{couple-id}/anniversaries")
+    fun getCoupleAnniversaries(
+        @PathVariable("couple-id") coupleId: Long,
+        @RequestParam("startDate") startDate: LocalDate,
+        @RequestParam("endDate") endDate: LocalDate,
+    ): CaramelApiResponse<CoupleAnniversaryResponse> {
+        val response = coupleAnnivService.getCoupleAnniversary(
+            startDate = startDate,
+            endDate = endDate,
+        )
         return response.succeed()
     }
 
