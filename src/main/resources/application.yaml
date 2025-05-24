@@ -79,6 +79,8 @@ kor:  # Kor Open Api Key
   openapi:
     specialday:
       key: ${OPENAPI_SPECIALDAY_KEY}
+firebase:
+  credential-file-path: ${GOOGLE_APPLICATION_CREDENTIALS}
 ---
 # Production
 spring:
