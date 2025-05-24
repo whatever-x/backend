@@ -16,6 +16,8 @@ import com.whatever.global.exception.externalserver.specialday.SpecialDayFailedO
 import feign.codec.DecodeException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
+import java.time.MonthDay
+import java.time.Year
 import java.time.YearMonth
 
 private val logger = KotlinLogging.logger {  }
@@ -30,13 +32,32 @@ class SpecialDayService(
         private const val HOLIDAY_INFO_SUCCESS_CODE = "00"
     }
 
-    fun getHolidays(yearMonth: YearMonth): HolidayDetailListResponse {
-        val startDate = yearMonth.atDay(1)
-        val endDate = yearMonth.atEndOfMonth()
+    fun getHolidaysInYear(year: Year): HolidayDetailListResponse {
+        val startDate = year.atMonthDay(MonthDay.of(1, 1))
+        val endDate = year.atMonthDay(MonthDay.of(12, 31))
         val holidays = specialDayRepository.findAllByTypeAndBetweenStartDateAndEndDate(
-            SpecialDayType.HOLI,
-            startDate,
-            endDate,
+            type = SpecialDayType.HOLI,
+            startDate = startDate,
+            endDate = endDate,
+        )
+
+        val holidayDetailDtos = holidays.mapNotNull { HolidayDetailDto.from(it) }
+        return HolidayDetailListResponse(holidayList = holidayDetailDtos)
+    }
+
+    fun getHolidays(
+        startYearMonth: YearMonth,
+        endYearMonth: YearMonth,
+    ): HolidayDetailListResponse {
+        val startDate = startYearMonth.atDay(1)
+        var endDate = endYearMonth.atEndOfMonth()
+        if (endDate.isBefore(startDate)) {
+            endDate = startYearMonth.atEndOfMonth()
+        }
+        val holidays = specialDayRepository.findAllByTypeAndBetweenStartDateAndEndDate(
+            type = SpecialDayType.HOLI,
+            startDate = startDate,
+            endDate = endDate,
         )
 
         val holidayDetailDtos = holidays.mapNotNull { HolidayDetailDto.from(it) }

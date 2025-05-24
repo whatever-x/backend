@@ -25,17 +25,24 @@ class SpecialDayServiceTest @Autowired constructor(
     @Test
     fun getHolidays() {
         // given
-        val currentYearMonth = YearMonth.of(2025, 1)
-        val currentLocalDate = currentYearMonth.atEndOfMonth()
+        val startYearMonth = YearMonth.of(2025, 1)
+        val endYearMonth = YearMonth.of(2025, 1)
+        val currentLocalDate = startYearMonth.atEndOfMonth()
         val holidays = makeTestHoliday(
             count = currentLocalDate.dayOfMonth,  // 1월에만 휴일 설정
-            startYear = currentYearMonth.year,
+            startYear = startYearMonth.year,
         )
         specialDayRepository.saveAll(holidays)
 
         // when
-        val resultWithHolidays = specialDayService.getHolidays(currentYearMonth)
-        val resultWithoutHoliday = specialDayService.getHolidays(currentYearMonth.plusMonths(2))
+        val resultWithHolidays = specialDayService.getHolidays(
+            startYearMonth,
+            endYearMonth
+        )
+        val resultWithoutHoliday = specialDayService.getHolidays(
+            startYearMonth.minusMonths(2),
+            startYearMonth.minusMonths(1),
+        )
 
         // then
         assertThat(resultWithHolidays.holidayList).hasSize(currentLocalDate.dayOfMonth)
