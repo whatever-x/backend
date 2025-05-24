@@ -34,6 +34,7 @@ import com.whatever.domain.user.model.UserStatus.SINGLE
 import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
+import com.whatever.util.endOfDay
 import com.whatever.util.toDateTime
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.dao.OptimisticLockingFailureException
@@ -82,9 +83,11 @@ class ScheduleEventService(
         endDate: LocalDate,
         userTimeZone: String
     ): List<ScheduleDetailDto> {
+        val startDateTime = startDate.toDateTime()
+        val endDateTime = endDate.toDateTime().endOfDay
         validateRequestDuration(
-            startDateTime = startDate.toDateTime(),
-            endDateTime = endDate.toDateTime()
+            startDateTime = startDateTime,
+            endDateTime = endDateTime,
         )
 
         val currentUserCoupleId = SecurityUtil.getCurrentUserCoupleId()
@@ -97,8 +100,8 @@ class ScheduleEventService(
 
         val memberIds = couple.members.map { it.id }.toSet()
         val coupleSchedules = scheduleEventRepository.findAllByDurationAndUsers(
-            startDateTime = startDate.toDateTime(),
-            endDateTime = endDate.toDateTime(),
+            startDateTime = startDateTime,
+            endDateTime = endDateTime,
             memberIds = memberIds
         )
 
