@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.Year
 import java.time.YearMonth
 
 @Tag(
@@ -50,9 +51,25 @@ class CalendarController(
     )
     @GetMapping("/holidays")
     fun getHolidays(
-        @RequestParam("yearMonth") yearMonth: YearMonth,
+        @RequestParam("startYearMonth") startYearMonth: YearMonth,
+        @RequestParam("endYearMonth") endYearMonth: YearMonth,
     ): CaramelApiResponse<HolidayDetailListResponse> {
-        val response = specialDayService.getHolidays(yearMonth)
+        val response = specialDayService.getHolidays(
+            startYearMonth = startYearMonth,
+            endYearMonth = endYearMonth,
+        )
+        return response.succeed()
+    }
+
+    @Operation(
+        summary = "휴일 연도 조회",
+        description = "캘린더에 기본으로 표시되어야하는 특별한 날 중 휴일을 반환합니다.",
+    )
+    @GetMapping("/holidays/year")
+    fun getHolidaysInYear(
+        @RequestParam("year") year: Year,
+    ): CaramelApiResponse<HolidayDetailListResponse> {
+        val response = specialDayService.getHolidaysInYear(year)
         return response.succeed()
     }
 }
