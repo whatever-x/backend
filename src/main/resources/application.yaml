@@ -165,10 +165,10 @@ spring:
       on-profile: local-mem
     import: optional:file:.env[.properties]
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.h2.Driver
+    url: 'jdbc:h2:mem:whatever'
+    username: 'user'
+    password: ''
   jpa:
     hibernate:
       ddl-auto: create
