@@ -5,6 +5,8 @@ import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.dto.ServiceToken
 import com.whatever.domain.auth.dto.SignInResponse
 import com.whatever.domain.auth.service.JwtHelper
+import com.whatever.domain.firebase.service.FirebaseService
+import com.whatever.domain.firebase.service.event.FcmNotification
 import com.whatever.domain.sample.exception.SampleExceptionCode
 import com.whatever.domain.sample.exception.SampleNotFoundException
 import com.whatever.domain.sample.repository.SampleUserRepository
@@ -30,10 +32,21 @@ class SampleService(
     private val jwtProperties: JwtProperties,
     private val jwtProvider: JwtProvider,
     private val sampleUserRepository: SampleUserRepository,
+    private val firebaseService: FirebaseService,
 ) {
-    companion object {
-        val randomEmailLength = 10
-        val randomNicknameLength = 8
+
+    fun sendTestFcmNotification(
+        targetUserIds: Set<Long>,
+        title: String,
+        body: String,
+    ) {
+        firebaseService.sendNotification(
+            targetUserIds = targetUserIds,
+            fcmNotification = FcmNotification(
+                title = title,
+                body = body,
+            )
+        )
     }
 
     fun getSample(): String {
@@ -109,5 +122,10 @@ class SampleService(
             expirationSec = expSec,
             claims = claims,
         )
+    }
+
+    companion object {
+        val randomEmailLength = 10
+        val randomNicknameLength = 8
     }
 }

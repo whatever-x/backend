@@ -5,8 +5,11 @@ import com.whatever.domain.firebase.repository.FcmTokenRepository
 import com.whatever.domain.firebase.service.event.FcmNotification
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+
+private val logger = KotlinLogging.logger {  }
 
 @Service
 class FirebaseService(
@@ -45,7 +48,7 @@ class FirebaseService(
             .map { it.token }
 
         if (tokens.isEmpty()) {
-            // 전송 대상 token이 없습니다.
+            logger.debug { "No FCM tokens to send notification. User IDs: ${targetUserIds}" }
             return
         }
 
@@ -70,7 +73,7 @@ class FirebaseService(
             .map { it.token }
 
         if (tokens.isEmpty()) {
-            // 전송 대상 token이 없습니다.
+            logger.debug { "No FCM tokens to send data. User IDs: ${targetUserIds}" }
             return
         }
 

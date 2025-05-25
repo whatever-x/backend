@@ -1,11 +1,11 @@
 package com.whatever.domain.sample.controller
 
 import com.whatever.domain.auth.dto.SignInResponse
+import com.whatever.domain.sample.controller.dto.SampleSendFcmRequest
 import com.whatever.domain.sample.exception.SampleExceptionCode
 import com.whatever.domain.sample.exception.SampleNotFoundException
 import com.whatever.domain.sample.service.SampleService
 import com.whatever.domain.user.model.UserGender
-import com.whatever.domain.user.model.UserStatus
 import com.whatever.global.annotation.DisableSwaggerAuthButton
 import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.ErrorResponse
@@ -20,6 +20,8 @@ import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
@@ -33,6 +35,22 @@ import java.time.LocalDate
 class SampleController(
     private val sampleService: SampleService,
 ) {
+
+    @DisableSwaggerAuthButton
+    @Operation(
+        summary = "fcm 요청을 테스트합니다.",
+        description = "fcm notification 전송을 테스트합니다. 타겟 유저에 대한 fcm token 등록이 선행되어야 합니다.",
+    )
+    @PostMapping
+    fun sendTestFcm(
+        @RequestBody request: SampleSendFcmRequest,
+    ) {
+        sampleService.sendTestFcmNotification(
+            request.targetUserIds,
+            request.title,
+            request.body,
+        )
+    }
 
     @DisableSwaggerAuthButton
     @Operation(
