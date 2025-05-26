@@ -1,6 +1,7 @@
 package com.whatever.domain.content.service
 
 import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
+import com.whatever.domain.content.controller.dto.request.CreateContentRequest
 import com.whatever.domain.content.controller.dto.request.TagIdDto
 import com.whatever.domain.content.controller.dto.request.UpdateContentRequest
 import com.whatever.domain.content.controller.dto.response.TagDto
@@ -18,6 +19,8 @@ import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
+import com.whatever.domain.couple.service.event.ExcludeAsyncConfigBean
+import com.whatever.domain.firebase.service.FirebaseService
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
@@ -28,11 +31,16 @@ import org.junit.jupiter.api.DisplayName
 import kotlin.test.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mockStatic
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.only
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -44,12 +52,15 @@ class ContentServiceTest @Autowired constructor(
     private val tagContentMappingRepository: TagContentMappingRepository,
     private val scheduleEventRepository: ScheduleEventRepository,
     private val coupleRepository: CoupleRepository,
-) {
+) : ExcludeAsyncConfigBean() {
 
     private lateinit var securityUtilMock: AutoCloseable
     private lateinit var testUser: User
     private lateinit var testPartnerUser: User
     private lateinit var testCouple: Couple
+
+    @MockitoBean
+    private lateinit var firebaseService: FirebaseService
 
     @BeforeEach
     fun setUp() {
@@ -93,6 +104,28 @@ class ContentServiceTest @Autowired constructor(
             tagContentMappingRepository.saveAll(mappings)
         }
         return content
+    }
+
+    @DisplayName("메모 생성 시 fcm 전송 메서드가 실행된다.")
+    @Test
+    fun createContent() {
+        // given
+        val request = CreateContentRequest(
+            title = "test-title",
+            description = "test-desc",
+            isCompleted = false,
+        )
+
+        // when
+        val result = contentService.createContent(request)
+
+        // then
+        assertThat(result.contentType).isEqualTo(ContentType.MEMO)
+        verify(firebaseService, only())
+            .sendNotification(
+                targetUserIds = eq(setOf(testPartnerUser.id)),
+                fcmNotification = any()
+            )
     }
 
     @DisplayName("메모를 조회할 경우 본문과 태그까지 정상적으로 조회된다.")
