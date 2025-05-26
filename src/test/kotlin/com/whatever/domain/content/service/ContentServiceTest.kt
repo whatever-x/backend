@@ -2,12 +2,13 @@ package com.whatever.domain.content.service
 
 import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
 import com.whatever.domain.content.controller.dto.request.CreateContentRequest
+import com.whatever.domain.content.controller.dto.request.DateTimeInfoDto
 import com.whatever.domain.content.controller.dto.request.TagIdDto
 import com.whatever.domain.content.controller.dto.request.UpdateContentRequest
 import com.whatever.domain.content.controller.dto.response.TagDto
 import com.whatever.domain.content.exception.ContentAccessDeniedException
-import com.whatever.domain.content.exception.ContentExceptionCode
-import com.whatever.domain.content.exception.ContentExceptionCode.*
+import com.whatever.domain.content.exception.ContentExceptionCode.COUPLE_NOT_MATCHED
+import com.whatever.domain.content.exception.ContentExceptionCode.MEMO_NOT_FOUND
 import com.whatever.domain.content.exception.ContentNotFoundException
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
@@ -24,23 +25,27 @@ import com.whatever.domain.firebase.service.FirebaseService
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
+import com.whatever.util.DateTimeUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
-import kotlin.test.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.only
+import org.mockito.kotlin.reset
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockReset
+import org.springframework.test.context.bean.override.mockito.MockReset.BEFORE
 import org.springframework.test.context.bean.override.mockito.MockitoBean
+import kotlin.test.Test
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -59,7 +64,7 @@ class ContentServiceTest @Autowired constructor(
     private lateinit var testPartnerUser: User
     private lateinit var testCouple: Couple
 
-    @MockitoBean
+    @MockitoBean(reset = MockReset.AFTER)
     private lateinit var firebaseService: FirebaseService
 
     @BeforeEach
@@ -82,6 +87,7 @@ class ContentServiceTest @Autowired constructor(
         contentRepository.deleteAllInBatch()
         tagRepository.deleteAllInBatch()
         userRepository.deleteAllInBatch()
+        coupleRepository.deleteAllInBatch()
     }
 
     private fun createTestTag(label: String): Tag {
@@ -121,10 +127,10 @@ class ContentServiceTest @Autowired constructor(
 
         // then
         assertThat(result.contentType).isEqualTo(ContentType.MEMO)
-        verify(firebaseService, only())
+        verify(firebaseService, times(1))
             .sendNotification(
                 targetUserIds = eq(setOf(testPartnerUser.id)),
-                fcmNotification = any()
+                fcmNotification = any(),
             )
     }
 
@@ -293,6 +299,42 @@ class ContentServiceTest @Autowired constructor(
         assertThrows<ContentNotFoundException> {
             contentService.updateContent(nonExistentId, request)
         }
+    }
+
+    @DisplayName("콘텐츠 수정: 메모에 DateTimeInfo 정보를 추가하여 일정을 생성하고, partnerUser에게 fcm 알림을 전송한다.")
+    @Test
+    fun updateContent_WithDateTimeInfo() {
+        // given
+        val memo = createTestMemo(title = "Original Title", description = "Original Desc", isCompleted = false)
+        val newTitle = "Updated Title"
+        val newDesc = "Updated Desc"
+        val request = UpdateContentRequest(
+            title = newTitle,
+            description = newDesc,
+            isCompleted = memo.contentDetail.isCompleted,
+            dateTimeInfo = DateTimeInfoDto(
+                startDateTime = DateTimeUtil.localNow(),
+                startTimezone = DateTimeUtil.KST_ZONE_ID.toString(),
+            )
+        )
+
+        // when
+        val response = contentService.updateContent(memo.id, request)
+
+        // then
+        val scheduleEvent = scheduleEventRepository.findAll().single()
+        assertThat(response.contentId).isEqualTo(scheduleEvent.id)
+        assertThat(response.contentType).isEqualTo(ContentType.SCHEDULE)
+
+        val updatedContent = contentRepository.findByIdOrNull(memo.id)!!
+        assertThat(updatedContent.contentDetail.title).isEqualTo(newTitle)
+        assertThat(updatedContent.contentDetail.description).isEqualTo(newDesc)
+        assertThat(updatedContent.type).isEqualTo(ContentType.SCHEDULE)
+
+        verify(firebaseService, times(1)).sendNotification(
+            targetUserIds = eq(setOf(testPartnerUser.id)),
+            fcmNotification = any(),
+        )
     }
 
     @DisplayName("콘텐츠 삭제: 메모를 성공적으로 삭제한다 (Soft Delete)")

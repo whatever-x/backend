@@ -10,6 +10,8 @@ import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
+import com.whatever.domain.couple.service.event.ExcludeAsyncConfigBean
+import com.whatever.domain.firebase.service.FirebaseService
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
@@ -23,11 +25,17 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.Mockito.mockStatic
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.only
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockReset.AFTER
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import kotlin.test.Test
 
 @ActiveProfiles("test")
@@ -40,13 +48,16 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
     private val tagContentMappingRepository: TagContentMappingRepository,
     private val tagRepository: TagRepository,
     private val scheduleEventService: ScheduleEventService,
-) {
+) : ExcludeAsyncConfigBean() {
 
     companion object {
         val NOW = DateTimeUtil.localNow()
     }
 
     private lateinit var securityUtilMock: AutoCloseable
+
+    @MockitoBean(reset = AFTER)
+    private lateinit var firebaseService: FirebaseService
 
     @BeforeEach
     fun setUp() {
@@ -81,11 +92,11 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         return Triple(myUser, partnerUser, couple)
     }
 
-    @DisplayName("Schedule 생성에 성공한다.")
+    @DisplayName("Schedule 생성에 성공하고, partnerUser에게 fcm 알림을 전송한다.")
     @Test
     fun createSchedule() {
         // given
-        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val (myUser, partnerUser, _) = setUpCoupleAndSecurity()
 
         val request = CreateScheduleRequest(
             title = "Schedule Title",
@@ -108,6 +119,11 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         val content = contentRepository.findByIdOrNull(scheduleEvent.content.id)
         require(content != null)
         assertThat(content.type).isEqualTo(ContentType.SCHEDULE)
+
+        verify(firebaseService, only()).sendNotification(
+            targetUserIds = eq(setOf(partnerUser.id)),
+            fcmNotification = any(),
+        )
     }
 
     @DisplayName("Schedule 생성 시 title과 description이 모두 null 또는 blank이면 예외가 발생한다.")
@@ -137,7 +153,7 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         assertThat(exception).hasMessage(ScheduleExceptionCode.ILLEGAL_CONTENT_DETAIL.message)
     }
 
-    @DisplayName("endDateTime이 startDateTime보다 이르면 예외 발생")
+    @DisplayName("endDateTime이 startDateTime보다 이르면 예외가 발생한다.")
     @Test
     fun createSchedule_WithInvalidDuration() {
         // given
