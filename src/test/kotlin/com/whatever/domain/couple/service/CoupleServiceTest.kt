@@ -15,6 +15,8 @@ import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.model.CoupleStatus
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.repository.InvitationCodeRedisRepository
+import com.whatever.domain.couple.service.event.ExcludeAsyncConfigBean
+import com.whatever.domain.firebase.service.FirebaseService
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
@@ -34,12 +36,17 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.reset
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -56,10 +63,13 @@ class CoupleServiceTest @Autowired constructor(
     private val tagRepository: TagRepository,
     private val scheduleEventRepository: ScheduleEventRepository,
     private val contentRepository: ContentRepository,
-) {
+) : ExcludeAsyncConfigBean() {
 
     @MockitoSpyBean
     private lateinit var inviCodeRedisRepository: InvitationCodeRedisRepository
+
+    @MockitoBean
+    private lateinit var firebaseService: FirebaseService
 
     private lateinit var securityUtilMock: AutoCloseable
 
@@ -257,6 +267,12 @@ class CoupleServiceTest @Autowired constructor(
         assertThat(result.status).isEqualTo(CoupleStatus.ACTIVE)
         assertThat(result.myInfo.id).isEqualTo(myUser.id)
         assertThat(result.partnerInfo.id).isEqualTo(hostUser.id)
+
+        verify(firebaseService, times(1))
+            .sendNotification(
+                targetUserIds = eq(setOf(myUser.id, hostUser.id)),
+                fcmNotification = any(),
+            )
     }
 
     @DisplayName("자신이 만든 초대 코드를 등록시 예외를 반환한다.")

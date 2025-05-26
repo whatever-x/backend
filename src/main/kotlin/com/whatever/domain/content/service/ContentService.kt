@@ -23,19 +23,28 @@ import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
+import com.whatever.domain.couple.exception.CoupleExceptionCode
+import com.whatever.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
+import com.whatever.domain.couple.exception.CoupleNotFoundException
 import com.whatever.domain.couple.repository.CoupleRepository
+import com.whatever.domain.firebase.service.event.dto.MemoCreateEvent
+import com.whatever.domain.firebase.service.event.dto.ScheduleCreateEvent
 import com.whatever.global.cursor.CursoredResponse
 import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil
+import com.whatever.global.security.util.SecurityUtil.getCurrentUserCoupleId
+import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.util.CursorUtil
 import com.whatever.util.toZonId
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Recover
 import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.lang.IllegalArgumentException
 
 private val logger = KotlinLogging.logger { }
 
@@ -47,10 +56,11 @@ class ContentService(
     private val tagContentMappingRepository: TagContentMappingRepository,
     private val coupleRepository: CoupleRepository,
     private val scheduleEventRepository: ScheduleEventRepository,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
     fun getMemo(
         memoId: Long,
-        ownerCoupleId: Long = SecurityUtil.getCurrentUserCoupleId(),
+        ownerCoupleId: Long = getCurrentUserCoupleId(),
     ): ContentResponse {
         val memo = contentRepository.findContentByIdAndType(
             id = memoId,
@@ -72,7 +82,7 @@ class ContentService(
 
     @Transactional(readOnly = true) // 읽기 전용 트랜잭션
     fun getContentList(queryParameter: GetContentListQueryParameter): CursoredResponse<ContentResponse> {
-        val coupleId = SecurityUtil.getCurrentUserCoupleId()
+        val coupleId = getCurrentUserCoupleId()
         val memberIds = coupleRepository.findByIdWithMembers(coupleId)?.members?.map { it.id }
             ?: emptyList()
 
@@ -96,13 +106,27 @@ class ContentService(
         }
     }
 
+    @Transactional
     fun createContent(contentRequest: CreateContentRequest): ContentSummaryResponse {
-        return memoCreator.createMemo(
+        val couple = coupleRepository.findByIdWithMembers(getCurrentUserCoupleId())
+            ?: throw CoupleNotFoundException(COUPLE_NOT_FOUND)
+
+        val memo = memoCreator.createMemo(
             title = contentRequest.title,
             description = contentRequest.description,
             isCompleted = contentRequest.isCompleted,
             tagIds = contentRequest.tags.map { it.tagId }.toSet(),
-        ).toContentSummaryResponse()
+        )
+
+        applicationEventPublisher.publishEvent(
+            MemoCreateEvent(
+                userId = getCurrentUserId(),
+                coupleId = couple.id,
+                memberIds = couple.members.map { it.id }.toSet(),
+                contentDetail = memo.contentDetail,
+            )
+        )
+        return memo.toContentSummaryResponse()
     }
 
     @Retryable(
@@ -117,13 +141,15 @@ class ContentService(
             id = contentId,
             type = ContentType.MEMO
         ) ?: throw ContentNotFoundException(
-                errorCode = MEMO_NOT_FOUND,
-                detailMessage = "Memo not found or has been deleted. (contentId: ${contentId})"
-            )
+            errorCode = MEMO_NOT_FOUND,
+            detailMessage = "Memo not found or has been deleted. (contentId: ${contentId})"
+        )
 
-        val userCoupleId = SecurityUtil.getCurrentUserCoupleId()
+        val couple = coupleRepository.findByIdWithMembers(getCurrentUserCoupleId())
+            ?: throw CoupleNotFoundException(COUPLE_NOT_FOUND)
+
         val contentOwnerCoupleId = memo.user.couple?.id
-        if (userCoupleId != contentOwnerCoupleId) {
+        if (couple.id != contentOwnerCoupleId) {
             throw ContentAccessDeniedException(
                 errorCode = COUPLE_NOT_MATCHED,
                 detailMessage = "The current user's couple does not match the content owner's couple"
@@ -152,6 +178,16 @@ class ContentService(
             )
         }
         val savedScheduleEvent = scheduleEventRepository.save(scheduleEvent)
+
+
+        applicationEventPublisher.publishEvent(
+            ScheduleCreateEvent(
+                userId = getCurrentUserId(),
+                coupleId = couple.id,
+                memberIds = couple.members.map { it.id }.toSet(),
+                contentDetail = savedScheduleEvent.content.contentDetail,
+            )
+        )
 
         return ContentSummaryResponse(
             contentId = savedScheduleEvent.id,

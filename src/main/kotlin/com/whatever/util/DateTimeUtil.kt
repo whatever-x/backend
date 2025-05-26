@@ -9,6 +9,7 @@ import java.time.ZonedDateTime
 import java.util.*
 
 object DateTimeUtil {
+    val SYS_ZONE_ID = ZoneId.systemDefault()
     val UTC_ZONE_ID: ZoneId = ZoneId.of("UTC")
     val KST_ZONE_ID: ZoneId = ZoneId.of("Asia/Seoul")
 

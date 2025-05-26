@@ -53,7 +53,6 @@ import kotlin.test.assertFailsWith
 
 @ActiveProfiles("test")
 @SpringBootTest
-@Import(SyncAsyncConfig::class)
 class AuthServiceTest @Autowired constructor(
     private val redisTemplate: RedisTemplate<String, String>,
     private val authService: AuthService,
