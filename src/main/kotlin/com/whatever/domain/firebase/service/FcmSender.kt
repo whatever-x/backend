@@ -2,13 +2,16 @@ package com.whatever.domain.firebase.service
 
 import com.google.firebase.messaging.BatchResponse
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.FirebaseMessagingException
 import com.google.firebase.messaging.Message
+import com.google.firebase.messaging.MessagingErrorCode
+import com.google.firebase.messaging.MessagingErrorCode.*
 import com.google.firebase.messaging.MulticastMessage
 import com.google.firebase.messaging.Notification
 import com.whatever.domain.firebase.exception.FcmIllegalArgumentException
 import com.whatever.domain.firebase.exception.FcmSendException
-import com.whatever.domain.firebase.exception.FirebaseExceptionCode.FCM_EMPTY_TOKEN
-import com.whatever.domain.firebase.exception.FirebaseExceptionCode.UNKNOWN
+import com.whatever.domain.firebase.exception.FirebaseExceptionCode
+import com.whatever.domain.firebase.exception.FirebaseExceptionCode.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
@@ -88,10 +91,27 @@ class FcmSender {
         callDescription: String,
         fcmCall: () -> T
     ): T {
-        return runCatching {
-            fcmCall()
-        }.onFailure { e ->
-            logger.debug(e) { "FCM call failed: $callDescription" }
-        }.getOrElse { throw FcmSendException(UNKNOWN) }
+        try {
+            return fcmCall()
+        } catch (e: FirebaseMessagingException) {
+            val mappedCode =
+                when (e.messagingErrorCode) {
+                    INVALID_ARGUMENT -> FCM_INVALID_ARGUMENT
+                    UNREGISTERED -> FCM_UNREGISTERED_TOKEN
+                    SENDER_ID_MISMATCH -> FCM_SENDER_ID_MISMATCH
+                    QUOTA_EXCEEDED -> FCM_QUOTA_EXCEEDED
+                    UNAVAILABLE -> FCM_SERVER_UNAVAILABLE
+                    INTERNAL -> FCM_INTERNAL_SERVER_ERROR
+                    else -> UNKNOWN
+                }
+            logger.error(e) {
+                "FCM call failed: $callDescription. FCM ErrorCode: ${e.messagingErrorCode}, MappedCode: $mappedCode"
+            }
+
+            throw FcmSendException(mappedCode)
+        } catch (e: Exception) {
+            logger.error(e) { "Generic error during FCM call: $callDescription" }
+            throw FcmSendException(UNKNOWN)
+        }
     }
 }
