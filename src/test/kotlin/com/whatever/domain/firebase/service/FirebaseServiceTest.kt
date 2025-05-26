@@ -1,15 +1,25 @@
 package com.whatever.domain.firebase.service
 
 import com.whatever.domain.auth.service.createSingleUser
+import com.whatever.domain.content.service.createCouple
+import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.firebase.model.FcmToken
 import com.whatever.domain.firebase.repository.FcmTokenRepository
+import com.whatever.domain.firebase.service.event.FcmNotification
+import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
+import org.mockito.kotlin.any
+import org.mockito.kotlin.never
+import org.mockito.kotlin.only
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
+import java.util.*
 import kotlin.test.Test
 
 @ActiveProfiles("test")
@@ -18,7 +28,11 @@ class FirebaseServiceTest @Autowired constructor(
     private val firebaseService: FirebaseService,
     private val fcmTokenRepository: FcmTokenRepository,
     private val userRepository: UserRepository,
+    private val coupleRepository: CoupleRepository,
 ) {
+
+    @MockitoBean
+    private lateinit var fcmSender: FcmSender
 
     @AfterEach
     fun tearDown() {
@@ -97,4 +111,164 @@ class FirebaseServiceTest @Autowired constructor(
         assertThat(savedToken.updatedAt).isAfter(oldFcmToken.updatedAt)
     }
 
+    @DisplayName("타겟 유저의 fcm 토큰이 없다면 전송 함수가 실행되지 않는다.")
+    @Test
+    fun sendNotification_WithUsersWithoutTokens() {
+        // given
+        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+
+        // when
+        firebaseService.sendNotification(
+            targetUserIds = setOf(myUser.id, partnerUser.id),
+            fcmNotification = FcmNotification("title", "body")
+        )
+
+        // then
+        verify(fcmSender, never()).sendNotification(any(), any())
+        verify(fcmSender, never()).sendNotificationAll(any(), any())
+    }
+
+    @DisplayName("타겟 유저에게 등록된 토큰이 하나라면 sendNotification()이 실행된다.")
+    @Test
+    fun sendNotification_WithSingleTokenUser() {
+        // given
+        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        createFcmToken("test-device", myUser)
+
+        // when
+        firebaseService.sendNotification(
+            targetUserIds = setOf(myUser.id),
+            fcmNotification = FcmNotification("title", "body")
+        )
+
+        // then
+        verify(fcmSender, only()).sendNotification(any(), any())
+        verify(fcmSender, never()).sendNotificationAll(any(), any())
+    }
+
+    @DisplayName("타겟 유저에게 등록된 토큰이 여러개라면 sendNotificationAll()이 실행된다.")
+    @Test
+    fun sendNotification_WithMultipleTokensUser() {
+        // given
+        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        createFcmToken("test-device-1", myUser)
+        createFcmToken("test-device-2", myUser)
+
+        // when
+        firebaseService.sendNotification(
+            targetUserIds = setOf(myUser.id),
+            fcmNotification = FcmNotification("title", "body")
+        )
+
+        // then
+        verify(fcmSender, never()).sendNotification(any(), any())
+        verify(fcmSender, only()).sendNotificationAll(any(), any())
+    }
+
+    @DisplayName("타겟 유저들에게 등록된 토큰이 여러개라면 sendNotificationAll()이 실행된다.")
+    @Test
+    fun sendNotification_WithMultipleTokensUsers() {
+        // given
+        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        createFcmToken("test-device-1", myUser)
+        createFcmToken("test-device-2", myUser)
+        createFcmToken("test-device-1", partnerUser)
+        createFcmToken("test-device-2", partnerUser)
+
+        // when
+        firebaseService.sendNotification(
+            targetUserIds = setOf(myUser.id, partnerUser.id),
+            fcmNotification = FcmNotification("title", "body")
+        )
+
+        // then
+        verify(fcmSender, never()).sendNotification(any(), any())
+        verify(fcmSender, only()).sendNotificationAll(any(), any())
+    }
+
+    @DisplayName("타겟 유저의 fcm 토큰이 없다면 데이터 전송 함수가 실행되지 않는다.")
+    @Test
+    fun sendData_WithUsersWithoutTokens() {
+        // given
+        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+
+        // when
+        firebaseService.sendData(
+            targetUserIds = setOf(myUser.id, partnerUser.id),
+            data = mapOf("k" to "v"),
+        )
+
+        // then
+        verify(fcmSender, never()).sendData(any(), any())
+        verify(fcmSender, never()).sendDataAll(any(), any())
+    }
+
+    @DisplayName("타겟 유저에게 등록된 토큰이 하나라면 sendData()가 실행된다.")
+    @Test
+    fun sendData_WithSingleTokenUser() {
+        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        createFcmToken("test-device", myUser)
+
+        // when
+        firebaseService.sendData(
+            targetUserIds = setOf(myUser.id),
+            data = mapOf("a" to "1"),
+        )
+
+        // then
+        verify(fcmSender, only()).sendData(any(), any())
+        verify(fcmSender, never()).sendDataAll(any(), any())
+    }
+
+    @DisplayName("타겟 유저에게 등록된 토큰이 여러개라면 sendDataAll()이 실행된다.")
+    @Test
+    fun sendData_WithMultipleTokensUser() {
+        // given
+        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        createFcmToken("test-device-1", myUser)
+        createFcmToken("test-device-2", myUser)
+
+        // when
+        firebaseService.sendData(
+            targetUserIds = setOf(myUser.id),
+            data = mapOf("x" to "y"),
+        )
+
+        // then
+        verify(fcmSender, never()).sendData(any(), any())
+        verify(fcmSender, only()).sendDataAll(any(), any())
+    }
+
+    @DisplayName("타겟 유저들에게 등록된 토큰이 여러개라면 sendDataAll()이 실행된다.")
+    @Test fun sendData_WithMultipleTokensUsers() {
+        // given
+        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        createFcmToken("test-device-1", myUser)
+        createFcmToken("test-device-2", myUser)
+        createFcmToken("test-device-1", partnerUser)
+        createFcmToken("test-device-2", partnerUser)
+
+        // when
+        firebaseService.sendData(
+            targetUserIds = setOf(myUser.id, partnerUser.id),
+            data = mapOf("x" to "y"),
+        )
+
+        // then
+        verify(fcmSender, never()).sendData(any(), any())
+        verify(fcmSender, only()).sendDataAll(any(), any())
+    }
+
+    private fun createFcmToken(
+        deviceId: String,
+        user: User,
+    ): FcmToken {
+        return fcmTokenRepository.save(
+            FcmToken(
+                initialToken = UUID.randomUUID().toString(),
+                deviceId = deviceId,
+                user = user,
+            )
+        )
+    }
 }
