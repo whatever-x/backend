@@ -4,7 +4,6 @@ import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 interface ScheduleEventRepository : JpaRepository<ScheduleEvent, Long> {
@@ -12,10 +11,10 @@ interface ScheduleEventRepository : JpaRepository<ScheduleEvent, Long> {
         select se from ScheduleEvent se
             join fetch se.content c
             join c.user u
-        where se.isDeleted = false
-            and (se.startDateTime <= :endDateTime and se.endDateTime >= :startDateTime)
+        where (se.startDateTime <= :endDateTime and se.endDateTime >= :startDateTime)
             and u.id in :memberIds
-        order by se.startDateTime
+            and se.isDeleted = false
+        order by se.startDateTime, se.endDateTime, se.id
     """)
     fun findAllByDurationAndUsers(
         startDateTime: LocalDateTime,

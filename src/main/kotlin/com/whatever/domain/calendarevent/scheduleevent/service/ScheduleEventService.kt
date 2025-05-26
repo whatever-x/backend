@@ -96,7 +96,7 @@ class ScheduleEventService(
             endDateTime = endDateTime,
         )
 
-        val currentUserCoupleId = SecurityUtil.getCurrentUserCoupleId()
+        val currentUserCoupleId = getCurrentUserCoupleId()
         val couple = coupleRepository.findByIdWithMembers(currentUserCoupleId)
             ?: throw CoupleException(errorCode = COUPLE_NOT_FOUND)
 
