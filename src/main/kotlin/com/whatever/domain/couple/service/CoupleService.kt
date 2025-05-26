@@ -23,6 +23,7 @@ import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.repository.InvitationCodeRedisRepository
 import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
+import com.whatever.domain.firebase.service.event.dto.CoupleConnectedEvent
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
@@ -187,6 +188,13 @@ class CoupleService(
         savedCouple.addMembers(creatorUser, joinerUser)
 
         inviCodeRedisRepository.deleteInvitationCode(invitationCode, creatorUserId)
+
+        applicationEventPublisher.publishEvent(
+            CoupleConnectedEvent(
+                coupleId = savedCouple.id,
+                memberIds = setOf(creatorUserId, joinerUserId),
+            )
+        )
 
         return CoupleDetailResponse.from(
             couple = savedCouple,
