@@ -31,7 +31,6 @@ import kotlin.test.Test
 
 @ActiveProfiles("test")
 @SpringBootTest
-@Import(SyncAsyncConfig::class)
 class CoupleMemberLeaveEventPublishTest @Autowired constructor(
     private val applicationEventPublisher: ApplicationEventPublisher
 ) : ExcludeAsyncConfigBean(){
@@ -105,6 +104,7 @@ class SyncAsyncConfig {
     }
 }
 
+@Import(SyncAsyncConfig::class)
 abstract class ExcludeAsyncConfigBean {  // AsyncConfig를 비활성화 하기위해 Mocking
     @MockitoBean
     private lateinit var asyncConfig: AsyncConfig

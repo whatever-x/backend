@@ -31,7 +31,7 @@ import kotlin.test.Test
 @ActiveProfiles("test")
 @SpringBootTest
 @RecordApplicationEvents
-class CoupleServiceEventTest @Autowired constructor(
+class CoupleServiceLeaveCoupleTest @Autowired constructor(
     private val coupleService: CoupleService,
     private val userRepository: UserRepository,
     private val coupleRepository: CoupleRepository,
