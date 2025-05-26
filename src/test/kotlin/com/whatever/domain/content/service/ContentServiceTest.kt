@@ -34,7 +34,6 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
-import org.mockito.kotlin.reset
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -42,8 +41,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockReset
-import org.springframework.test.context.bean.override.mockito.MockReset.BEFORE
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import kotlin.test.Test
 
@@ -64,7 +61,7 @@ class ContentServiceTest @Autowired constructor(
     private lateinit var testPartnerUser: User
     private lateinit var testCouple: Couple
 
-    @MockitoBean(reset = MockReset.AFTER)
+    @MockitoBean//(reset = MockReset.AFTER)
     private lateinit var firebaseService: FirebaseService
 
     @BeforeEach
