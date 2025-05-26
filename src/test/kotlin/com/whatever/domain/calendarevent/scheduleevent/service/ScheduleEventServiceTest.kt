@@ -789,6 +789,51 @@ class ScheduleEventServiceTest @Autowired constructor(
         assertThat(resultWeekly).hasSize(7)
     }
 
+    @DisplayName("스케줄 조회 시 시작일, 종료일이 같다면 id 오름차순으로 정렬되어 반환된다.")
+    @Test
+    fun getSchedules_WithSameDateTimeSchedules() {
+        // given
+        val startDate = LocalDate.of(2025, 4, 1)
+        val userTimeZone = ZoneId.of("Asia/Seoul")
+
+        // 조회 대상 커플 데이터 생성
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
+        val numberOfEvents = 10
+        val scheduleEvents = mutableListOf<ScheduleEvent>()
+        repeat(numberOfEvents) { idx ->
+            val content = contentRepository.save(createContent(if (idx % 2 == 0) myUser else partnerUser, ContentType.SCHEDULE))
+            val eventStartDate = startDate.plusDays(idx.toLong())
+            val event = scheduleEventRepository.save(
+                ScheduleEvent(
+                    uid = "test-uid-${idx}",
+                    startDateTime = startDate.toDateTime(),
+                    startTimeZone = userTimeZone,
+                    endDateTime = startDate.toDateTime().endOfDay,
+                    endTimeZone = userTimeZone,
+                    content = content
+                )
+            )
+            scheduleEvents.add(event)
+        }
+
+        val request = GetCalendarQueryParameter(
+            startDate = startDate,
+            endDate = startDate.plusDays(1),
+            userTimeZone = userTimeZone.id
+        )
+
+        // when
+        val result = scheduleEventService.getSchedules(
+            startDate = request.startDate,
+            endDate = request.endDate,
+            userTimeZone = request.userTimeZone
+        )
+
+        // then
+        assertThat(result).hasSize(10)
+        assertThat(result.map { it.scheduleId }).isSortedAccordingTo(Comparator.naturalOrder())
+    }
+
     private fun createScheduleWithTags(
         ownerUser: User,
         tagCount: Int = 10,
