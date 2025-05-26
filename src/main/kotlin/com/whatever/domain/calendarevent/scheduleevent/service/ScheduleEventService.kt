@@ -28,15 +28,20 @@ import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
 import com.whatever.domain.couple.exception.CoupleException
+import com.whatever.domain.couple.exception.CoupleExceptionCode
 import com.whatever.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
+import com.whatever.domain.couple.exception.CoupleNotFoundException
 import com.whatever.domain.couple.repository.CoupleRepository
+import com.whatever.domain.firebase.service.event.dto.ScheduleCreateEvent
 import com.whatever.domain.user.model.UserStatus.SINGLE
 import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil
+import com.whatever.global.security.util.SecurityUtil.getCurrentUserCoupleId
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.endOfDay
 import com.whatever.util.toDateTime
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Recover
@@ -55,11 +60,12 @@ class ScheduleEventService(
     private val tagRepository: TagRepository,
     private val coupleRepository: CoupleRepository,
     private val scheduleCreator: ScheduleCreator,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
 
     fun getSchedule(
         scheduleId: Long,
-        ownerCoupleId: Long = SecurityUtil.getCurrentUserCoupleId(),
+        ownerCoupleId: Long = getCurrentUserCoupleId(),
     ): GetScheduleResponse {
         val schedule = scheduleEventRepository.findByIdWithContent(scheduleId)
             ?: throw ScheduleNotFoundException(errorCode = SCHEDULE_NOT_FOUND)
@@ -128,12 +134,24 @@ class ScheduleEventService(
             validateRequestDuration(startDateTime, endDateTime)
         }
 
+        val couple = coupleRepository.findByIdWithMembers(getCurrentUserCoupleId())
+            ?: throw CoupleNotFoundException(COUPLE_NOT_FOUND)
+
         val savedScheduleEvent = scheduleCreator.createSchedule(
             title = request.title,
             description = request.description,
             isCompleted = request.isCompleted,
             tagIds = request.tagIds,
             dateTimeInfo = request.toDateTimeInfoDto()
+        )
+
+        applicationEventPublisher.publishEvent(
+            ScheduleCreateEvent(
+                userId = SecurityUtil.getCurrentUserId(),
+                coupleId = couple.id,
+                memberIds = couple.members.map { it.id }.toSet(),
+                contentDetail = savedScheduleEvent.content.contentDetail,
+            )
         )
 
         return ContentSummaryResponse(
@@ -258,7 +276,7 @@ class ScheduleEventService(
         val currentUserId = SecurityUtil.getCurrentUserId()
 
         if (currentUserId != scheduleOwnerUser.id) {
-            val currentUserCoupleId = SecurityUtil.getCurrentUserCoupleId()
+            val currentUserCoupleId = getCurrentUserCoupleId()
             if (scheduleOwnerUser.userStatus == SINGLE) {
                 throw ScheduleIllegalStateException(
                     errorCode = ILLEGAL_PARTNER_STATUS,

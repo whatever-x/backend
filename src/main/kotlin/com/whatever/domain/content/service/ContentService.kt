@@ -28,6 +28,7 @@ import com.whatever.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
 import com.whatever.domain.couple.exception.CoupleNotFoundException
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.firebase.service.event.dto.MemoCreateEvent
+import com.whatever.domain.firebase.service.event.dto.ScheduleCreateEvent
 import com.whatever.global.cursor.CursoredResponse
 import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil
@@ -144,9 +145,11 @@ class ContentService(
             detailMessage = "Memo not found or has been deleted. (contentId: ${contentId})"
         )
 
-        val userCoupleId = getCurrentUserCoupleId()
+        val couple = coupleRepository.findByIdWithMembers(getCurrentUserCoupleId())
+            ?: throw CoupleNotFoundException(COUPLE_NOT_FOUND)
+
         val contentOwnerCoupleId = memo.user.couple?.id
-        if (userCoupleId != contentOwnerCoupleId) {
+        if (couple.id != contentOwnerCoupleId) {
             throw ContentAccessDeniedException(
                 errorCode = COUPLE_NOT_MATCHED,
                 detailMessage = "The current user's couple does not match the content owner's couple"
@@ -175,6 +178,16 @@ class ContentService(
             )
         }
         val savedScheduleEvent = scheduleEventRepository.save(scheduleEvent)
+
+
+        applicationEventPublisher.publishEvent(
+            ScheduleCreateEvent(
+                userId = getCurrentUserId(),
+                coupleId = couple.id,
+                memberIds = couple.members.map { it.id }.toSet(),
+                contentDetail = savedScheduleEvent.content.contentDetail,
+            )
+        )
 
         return ContentSummaryResponse(
             contentId = savedScheduleEvent.id,
