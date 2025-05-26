@@ -12,13 +12,19 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
-import org.apache.catalina.core.ApplicationContext
+import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 
 @Entity
+@Table(
+    uniqueConstraints = [
+        UniqueConstraint(columnNames = ["device_id", "user_id"]),
+    ]
+)
 class FcmToken(
     initialToken: String,
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     val deviceId: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,7 +36,7 @@ class FcmToken(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "token", unique = true, nullable = false)
     private var _token: String
     val token: String
         get() = _token
