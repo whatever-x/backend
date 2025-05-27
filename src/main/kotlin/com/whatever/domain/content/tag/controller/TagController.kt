@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController
     description = "태그 API"
 )
 @RestController
-@RequestMapping("v1/tags")
+@RequestMapping("/v1/tags")
 class TagController(
     private val tagService: TagService,
 ) {
