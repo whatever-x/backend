@@ -7,14 +7,14 @@ data class TagDetailListResponse(
 )
 
 data class TagDetailDto(
-    val tagId: Long,
-    val tagLabel: String
+    val id: Long,
+    val label: String
 ) {
     companion object {
         fun from(tag: Tag): TagDetailDto {
             return TagDetailDto(
-                tagId = tag.id,
-                tagLabel = tag.label
+                id = tag.id,
+                label = tag.label
             )
         }
     }
