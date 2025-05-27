@@ -81,6 +81,7 @@ kor:  # Kor Open Api Key
       key: ${OPENAPI_SPECIALDAY_KEY}
 firebase:
   credential-file-path: ${GOOGLE_APPLICATION_CREDENTIALS}
+  fcm-enabled: ${FCM_ENABLED}
 ---
 # Production
 spring:

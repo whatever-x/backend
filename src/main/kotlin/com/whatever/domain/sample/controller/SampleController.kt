@@ -41,7 +41,7 @@ class SampleController(
         summary = "fcm 요청을 테스트합니다.",
         description = "fcm notification 전송을 테스트합니다. 타겟 유저에 대한 fcm token 등록이 선행되어야 합니다.",
     )
-    @PostMapping
+    @PostMapping("/test/fcm")
     fun sendTestFcm(
         @RequestBody request: SampleSendFcmRequest,
     ) {
