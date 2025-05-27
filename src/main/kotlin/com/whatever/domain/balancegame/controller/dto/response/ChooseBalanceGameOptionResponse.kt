@@ -6,8 +6,8 @@ import com.whatever.domain.balancegame.model.UserChoiceOption
 
 data class ChooseBalanceGameOptionResponse(
     val gameId: Long,
-    val myChoice: UserChoiceInfo?,
-    val partnerChoice: UserChoiceInfo?,
+    val myChoice: OptionInfo?,
+    val partnerChoice: OptionInfo?,
 ) {
     companion object {
         fun of(
@@ -17,8 +17,8 @@ data class ChooseBalanceGameOptionResponse(
         ): ChooseBalanceGameOptionResponse {
             return ChooseBalanceGameOptionResponse(
                 gameId = game.id,
-                myChoice = myChoice?.let { UserChoiceInfo.from(it) },
-                partnerChoice = partnerChoice?.let { UserChoiceInfo.from(it) }
+                myChoice = myChoice?.let { OptionInfo.from(it) },
+                partnerChoice = partnerChoice?.let { OptionInfo.from(it) }
             )
         }
     }
