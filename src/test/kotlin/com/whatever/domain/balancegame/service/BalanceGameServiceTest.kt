@@ -76,7 +76,7 @@ class BalanceGameServiceTest @Autowired constructor(
 
             // then
             assertThat(result.gameInfo.id).isEqualTo(expectedGame.first.id)
-            assertThat(result.options.map { it.id }).containsExactlyInAnyOrderElementsOf(expectedGame.second.map { it.id })
+            assertThat(result.gameInfo.options.map { it.id }).containsExactlyInAnyOrderElementsOf(expectedGame.second.map { it.id })
             assertThat(result.myChoice).isNull()
             assertThat(result.partnerChoice).isNull()
         }
@@ -103,9 +103,8 @@ class BalanceGameServiceTest @Autowired constructor(
             val result = balanceGameService.getTodayBalanceGameInfo()
 
             // then
-            assertThat(result.myChoice?.userId).isEqualTo(myChoice.user.id)
-            assertThat(result.myChoice?.nickname).isEqualTo(myUser.nickname)
             assertThat(result.myChoice?.optionId).isEqualTo(myChoice.balanceGameOption.id)
+            assertThat(result.myChoice?.text).isEqualTo(myChoice.balanceGameOption.optionText)
             assertThat(result.partnerChoice).isNull()
         }
     }
@@ -132,9 +131,8 @@ class BalanceGameServiceTest @Autowired constructor(
 
             // then
             assertThat(result.myChoice).isNull()
-            assertThat(result.partnerChoice?.userId).isEqualTo(partnerChoice.user.id)
-            assertThat(result.partnerChoice?.nickname).isEqualTo(partnerUser.nickname)
             assertThat(result.partnerChoice?.optionId).isEqualTo(partnerChoice.balanceGameOption.id)
+            assertThat(result.partnerChoice?.text).isEqualTo(partnerChoice.balanceGameOption.optionText)
         }
     }
 
@@ -166,11 +164,7 @@ class BalanceGameServiceTest @Autowired constructor(
             val result = balanceGameService.getTodayBalanceGameInfo()
 
             // then
-            assertThat(result.myChoice?.userId).isEqualTo(myChoice.user.id)
-            assertThat(result.myChoice?.nickname).isEqualTo(myUser.nickname)
             assertThat(result.myChoice?.optionId).isEqualTo(myChoice.balanceGameOption.id)
-            assertThat(result.partnerChoice?.userId).isEqualTo(partnerChoice.user.id)
-            assertThat(result.partnerChoice?.nickname).isEqualTo(partnerUser.nickname)
             assertThat(result.partnerChoice?.optionId).isEqualTo(partnerChoice.balanceGameOption.id)
         }
     }
@@ -213,7 +207,6 @@ class BalanceGameServiceTest @Autowired constructor(
 
             // then
             assertThat(result.gameId).isEqualTo(gameId)
-            assertThat(result.myChoice?.userId).isEqualTo(myUser.id)
             assertThat(result.myChoice?.optionId).isEqualTo(request.optionId)
             assertThat(result.partnerChoice).isNull()
         }
@@ -244,7 +237,6 @@ class BalanceGameServiceTest @Autowired constructor(
 
             // then
             assertThat(result.gameId).isEqualTo(gameId)
-            assertThat(result.myChoice?.userId).isEqualTo(myUser.id)
             assertThat(result.myChoice?.optionId).isEqualTo(firstChoiceOption.id)
             assertThat(result.partnerChoice).isNull()
         }
@@ -275,9 +267,7 @@ class BalanceGameServiceTest @Autowired constructor(
 
             // then
             assertThat(result.gameId).isEqualTo(gameId)
-            assertThat(result.myChoice?.userId).isEqualTo(myUser.id)
             assertThat(result.myChoice?.optionId).isEqualTo(myChoiceOption.id)
-            assertThat(result.partnerChoice?.userId).isEqualTo(partnerUser.id)
             assertThat(result.partnerChoice?.optionId).isEqualTo(partnerChoiceOption.id)
         }
     }
@@ -297,7 +287,7 @@ class BalanceGameServiceTest @Autowired constructor(
             val beforeGame = balanceGameService.getTodayBalanceGameInfo()
 
             val beforeGameId = beforeGame.gameInfo.id
-            val request = ChooseBalanceGameOptionRequest(optionId = beforeGame.options.first().id)
+            val request = ChooseBalanceGameOptionRequest(optionId = beforeGame.gameInfo.options.first().id)
 
             // when
             val result = assertThrows<BalanceGameIllegalArgumentException> {

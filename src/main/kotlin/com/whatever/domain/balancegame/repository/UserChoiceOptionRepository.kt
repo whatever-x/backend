@@ -12,6 +12,19 @@ interface UserChoiceOptionRepository : JpaRepository<UserChoiceOption, Long> {
         isDeleted: Boolean = false,
     ): List<UserChoiceOption>
 
+    @Query("""
+        select uco from UserChoiceOption uco
+            join fetch BalanceGameOption o on uco.balanceGameOption.id = o.id
+        where uco.balanceGame.id = :gameId
+            and uco.user.id in :userIds
+            and uco.isDeleted = false 
+    """)
+    fun findAllWithOptionByBalanceGameIdAndUsers(
+        gameId: Long,
+        userIds: List<Long>,
+        isDeleted: Boolean = false,
+    ): List<UserChoiceOption>
+
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("""
         update UserChoiceOption uco
