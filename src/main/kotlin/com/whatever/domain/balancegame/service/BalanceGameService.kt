@@ -19,6 +19,8 @@ import com.whatever.domain.balancegame.repository.UserChoiceOptionRepository
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
+import com.whatever.global.security.util.SecurityUtil.getCurrentUserCoupleId
+import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.util.DateTimeUtil
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -45,15 +47,16 @@ class BalanceGameService(
         }
 
         val memberChoices = getCoupleMemberChoices(
-            coupleId = SecurityUtil.getCurrentUserCoupleId(),
+            coupleId = getCurrentUserCoupleId(),
             game = todayGame,
         )
 
+        val userId = getCurrentUserId()
         return GetBalanceGameResponse.of(
             game = todayGame,
             options = sortedOptions,
-            myChoice = memberChoices.find { it.user.id == SecurityUtil.getCurrentUserId() },
-            partnerChoice = memberChoices.find { it.user.id != SecurityUtil.getCurrentUserId() },
+            myChoice = memberChoices.find { it.user.id == userId }?.balanceGameOption,
+            partnerChoice = memberChoices.find { it.user.id != userId }?.balanceGameOption,
         )
     }
 
@@ -67,8 +70,8 @@ class BalanceGameService(
             throw BalanceGameIllegalArgumentException(errorCode = GAME_CHANGED)
         }
 
-        val coupleId = SecurityUtil.getCurrentUserCoupleId()
-        val requestUserId = SecurityUtil.getCurrentUserId()
+        val coupleId = getCurrentUserCoupleId()
+        val requestUserId = getCurrentUserId()
         val memberChoices = getCoupleMemberChoices(
             coupleId = coupleId,
             game = balanceGame,
@@ -91,8 +94,8 @@ class BalanceGameService(
 
         return ChooseBalanceGameOptionResponse.of(
             game = balanceGame,
-            myChoice = myChoice,
-            partnerChoice = partnerChoice,
+            myChoice = myChoice.balanceGameOption,
+            partnerChoice = partnerChoice?.balanceGameOption,
         )
     }
 
@@ -109,7 +112,7 @@ class BalanceGameService(
     ): List<UserChoiceOption> {
         val memberIds = coupleRepository.findByIdWithMembers(coupleId)?.members?.map { it.id }
             ?: return emptyList()
-        val memberChoices = userChoiceOptionRepository.findByBalanceGame_IdAndUser_IdInAndIsDeleted(
+        val memberChoices = userChoiceOptionRepository.findAllWithOptionByBalanceGameIdAndUsers(
             gameId = game.id,
             userIds = memberIds,
         )

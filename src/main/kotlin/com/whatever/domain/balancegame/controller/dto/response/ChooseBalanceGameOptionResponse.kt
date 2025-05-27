@@ -12,8 +12,8 @@ data class ChooseBalanceGameOptionResponse(
     companion object {
         fun of(
             game: BalanceGame,
-            myChoice: UserChoiceOption?,
-            partnerChoice: UserChoiceOption?,
+            myChoice: BalanceGameOption?,
+            partnerChoice: BalanceGameOption?,
         ): ChooseBalanceGameOptionResponse {
             return ChooseBalanceGameOptionResponse(
                 gameId = game.id,

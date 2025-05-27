@@ -11,7 +11,6 @@ import java.time.LocalDate
 
 data class GetBalanceGameResponse(
     val gameInfo: BalanceGameInfo,
-    val options: List<OptionInfo>,
     val myChoice: UserChoiceInfo?,
     val partnerChoice: UserChoiceInfo?,
 ) {
@@ -19,12 +18,11 @@ data class GetBalanceGameResponse(
         fun of(
             game: BalanceGame,
             options: List<BalanceGameOption>,
-            myChoice: UserChoiceOption?,
-            partnerChoice: UserChoiceOption?,
+            myChoice: BalanceGameOption?,
+            partnerChoice: BalanceGameOption?,
         ): GetBalanceGameResponse {
             return GetBalanceGameResponse(
-                gameInfo = BalanceGameInfo.from(game),
-                options = options.map { OptionInfo.from(it) },
+                gameInfo = BalanceGameInfo.of(game, options),
                 myChoice = myChoice?.let { UserChoiceInfo.from(it) },
                 partnerChoice = partnerChoice?.let { UserChoiceInfo.from(it) }
             )
@@ -36,13 +34,15 @@ data class BalanceGameInfo(
     val id: Long,
     val date: LocalDate,
     val question: String,
+    val options: List<OptionInfo>
 ) {
     companion object {
-        fun from(game: BalanceGame): BalanceGameInfo {
+        fun of(game: BalanceGame, options: List<BalanceGameOption>): BalanceGameInfo {
             return BalanceGameInfo(
                 id = game.id,
                 date = game.gameDate,
-                question = game.question
+                question = game.question,
+                options = options.map { OptionInfo.from(it) }
             )
         }
     }
@@ -63,20 +63,14 @@ data class OptionInfo(
 }
 
 data class UserChoiceInfo(
-    val userId: Long,
-    val nickname: String,
     val optionId: Long,
+    val text: String,
 ) {
     companion object {
-        fun from(userChoice: UserChoiceOption): UserChoiceInfo {
+        fun from(option: BalanceGameOption): UserChoiceInfo {
             return UserChoiceInfo(
-                userId = userChoice.user.id,
-                nickname = userChoice.user.nickname
-                    ?: throw GlobalException(
-                        errorCode = GlobalExceptionCode.ILLEGAL_STATE,
-                        detailMessage = "Illegal User Status. Nickname is null. user id: ${userChoice.user.id}"
-                    ),
-                optionId = userChoice.balanceGameOption.id,
+                optionId = option.id,
+                text = option.optionText
             )
         }
     }
