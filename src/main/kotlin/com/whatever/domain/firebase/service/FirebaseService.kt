@@ -1,5 +1,6 @@
 package com.whatever.domain.firebase.service
 
+import com.whatever.config.properties.FirebaseProperties
 import com.whatever.domain.firebase.model.FcmToken
 import com.whatever.domain.firebase.repository.FcmTokenRepository
 import com.whatever.domain.firebase.service.event.FcmNotification
@@ -16,6 +17,7 @@ class FirebaseService(
     private val fcmTokenRepository: FcmTokenRepository,
     private val userRepository: UserRepository,
     private val fcmSender: FcmSender,
+    private val firebaseProperties: FirebaseProperties,
 ) {
 
     @Transactional
@@ -44,6 +46,10 @@ class FirebaseService(
         targetUserIds: Set<Long>,
         fcmNotification: FcmNotification,
     ) {
+        if (!firebaseProperties.fcmEnabled) {
+            return
+        }
+
         val tokens = getActiveFcmTokens(targetUserIds)
             .map { it.token }
 
@@ -69,6 +75,10 @@ class FirebaseService(
         targetUserIds: Set<Long>,
         data: Map<String, String>,
     ) {
+        if (!firebaseProperties.fcmEnabled) {
+            return
+        }
+
         val tokens = getActiveFcmTokens(targetUserIds)
             .map { it.token }
 

@@ -39,6 +39,9 @@ class FirebaseInitializer(
             logger.info { "Firebase app already initialized" }
         }
 
+        if (!firebaseProperties.fcmEnabled) {
+            logger.warn { "[FCM IS DISABLED] Skipping notification in this application." }
+        }
     }
 
     private fun getFirebaseOptions(credentialFilePath: String): FirebaseOptions {
