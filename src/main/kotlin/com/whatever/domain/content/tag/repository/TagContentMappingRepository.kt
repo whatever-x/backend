@@ -4,7 +4,6 @@ import com.whatever.domain.content.tag.model.TagContentMapping
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
-import org.springframework.transaction.annotation.Transactional
 
 interface TagContentMappingRepository : JpaRepository<TagContentMapping, Long> {
 
@@ -14,7 +13,15 @@ interface TagContentMappingRepository : JpaRepository<TagContentMapping, Long> {
         where tcm.content.id = :contentId
             and tcm.isDeleted = false
     """)
-    fun findAllByContentIdWithTag(contentId: Long): List<TagContentMapping>
+    fun findAllWithTagByContentId(contentId: Long): List<TagContentMapping>
+
+    @Query("""
+        select tcm from TagContentMapping tcm
+            join fetch tcm.tag t
+        where tcm.content.id in :contentIds
+            and tcm.isDeleted = false
+    """)
+    fun findAllWithTagByContentIds(contentIds: Set<Long>): List<TagContentMapping>
 
     fun findAllByContent_IdAndIsDeleted(contentId: Long, isDeleted: Boolean = false): List<TagContentMapping>
 

@@ -5,7 +5,6 @@ import com.whatever.domain.calendarevent.scheduleevent.controller.dto.CreateSche
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.GetScheduleResponse
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleAccessDeniedException
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.COUPLE_NOT_MATCHED
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_CONTENT_DETAIL
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_DURATION
@@ -18,8 +17,6 @@ import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleNotFoun
 import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
 import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
 import com.whatever.domain.content.controller.dto.response.ContentSummaryResponse
-import com.whatever.domain.content.exception.ContentAccessDeniedException
-import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
 import com.whatever.domain.content.service.ScheduleCreator
@@ -28,7 +25,6 @@ import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
 import com.whatever.domain.couple.exception.CoupleException
-import com.whatever.domain.couple.exception.CoupleExceptionCode
 import com.whatever.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
 import com.whatever.domain.couple.exception.CoupleNotFoundException
 import com.whatever.domain.couple.repository.CoupleRepository
@@ -75,7 +71,7 @@ class ScheduleEventService(
             throw ScheduleAccessDeniedException(errorCode = COUPLE_NOT_MATCHED)
         }
 
-        val tags = tagContentMappingRepository.findAllByContentIdWithTag(schedule.content.id)
+        val tags = tagContentMappingRepository.findAllWithTagByContentId(schedule.content.id)
             .map { it.tag }
         return GetScheduleResponse.of(
             schedule = schedule,
@@ -300,7 +296,7 @@ class ScheduleEventService(
     }
 
     private fun updateTags(content: Content, newTags: Set<Tag>) {
-        val existingMappings = tagContentMappingRepository.findAllByContentIdWithTag(content.id)
+        val existingMappings = tagContentMappingRepository.findAllWithTagByContentId(content.id)
         val currentTags = existingMappings.map { mapping -> mapping.tag }.toSet()
 
         val mappingToRemove = existingMappings.filter { mapping -> mapping.tag !in newTags }

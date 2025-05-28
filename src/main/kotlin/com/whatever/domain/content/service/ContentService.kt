@@ -23,7 +23,6 @@ import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
-import com.whatever.domain.couple.exception.CoupleExceptionCode
 import com.whatever.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
 import com.whatever.domain.couple.exception.CoupleNotFoundException
 import com.whatever.domain.couple.repository.CoupleRepository
@@ -31,7 +30,6 @@ import com.whatever.domain.firebase.service.event.dto.MemoCreateEvent
 import com.whatever.domain.firebase.service.event.dto.ScheduleCreateEvent
 import com.whatever.global.cursor.CursoredResponse
 import com.whatever.global.exception.common.CaramelException
-import com.whatever.global.security.util.SecurityUtil
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserCoupleId
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.util.CursorUtil
@@ -44,7 +42,6 @@ import org.springframework.retry.annotation.Recover
 import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.lang.IllegalArgumentException
 
 private val logger = KotlinLogging.logger { }
 
@@ -72,7 +69,7 @@ class ContentService(
             throw ContentAccessDeniedException(errorCode = COUPLE_NOT_MATCHED)
         }
 
-        val tagDtos = tagContentMappingRepository.findAllByContentIdWithTag(contentId = memo.id)
+        val tagDtos = tagContentMappingRepository.findAllWithTagByContentId(contentId = memo.id)
             .map { TagDto.from(it.tag) }
         return ContentResponse.from(
             content = memo,
@@ -86,12 +83,17 @@ class ContentService(
         val memberIds = coupleRepository.findByIdWithMembers(coupleId)?.members?.map { it.id }
             ?: emptyList()
 
-        return contentRepository.findByTypeWithCursor(
+        val contentList = contentRepository.findByTypeWithCursor(
             type = ContentType.MEMO,
             queryParameter = queryParameter,
             memberIds = memberIds,
             tagId = queryParameter.tagId,
-        ).let { contents: List<Content> ->
+        )
+        val tagContentMap = tagContentMappingRepository.findAllWithTagByContentIds(
+            contentList.map { it.id }.toSet()
+        ).groupBy { it.content.id }
+
+        return contentList.let { contents: List<Content> ->
             CursoredResponse.from(
                 list = contents,
                 size = queryParameter.size,
@@ -100,8 +102,7 @@ class ContentService(
                 }
             )
         }.map { content ->
-            val existingMappings = tagContentMappingRepository.findAllByContent_IdAndIsDeleted(content.id)
-            val existingTags = existingMappings.map { it.tag.toTagDto() }
+            val existingTags = tagContentMap[content.id]?.map { it.tag.toTagDto() } ?: emptyList()
             ContentResponse.from(content, existingTags)
         }
     }
