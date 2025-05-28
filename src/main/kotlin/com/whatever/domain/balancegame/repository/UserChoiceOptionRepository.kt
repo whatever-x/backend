@@ -14,7 +14,7 @@ interface UserChoiceOptionRepository : JpaRepository<UserChoiceOption, Long> {
 
     @Query("""
         select uco from UserChoiceOption uco
-            join fetch BalanceGameOption o on uco.balanceGameOption.id = o.id
+            join fetch uco.balanceGameOption
         where uco.balanceGame.id = :gameId
             and uco.user.id in :userIds
             and uco.isDeleted = false 

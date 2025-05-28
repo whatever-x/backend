@@ -206,7 +206,7 @@ class BalanceGameServiceTest @Autowired constructor(
             val result = balanceGameService.chooseBalanceGameOption(gameId, request)
 
             // then
-            assertThat(result.gameId).isEqualTo(gameId)
+            assertThat(result.gameInfo.id).isEqualTo(gameId)
             assertThat(result.myChoice?.id).isEqualTo(request.optionId)
             assertThat(result.partnerChoice).isNull()
         }
@@ -236,7 +236,7 @@ class BalanceGameServiceTest @Autowired constructor(
             val result = balanceGameService.chooseBalanceGameOption(gameId, request)
 
             // then
-            assertThat(result.gameId).isEqualTo(gameId)
+            assertThat(result.gameInfo.id).isEqualTo(gameId)
             assertThat(result.myChoice?.id).isEqualTo(firstChoiceOption.id)
             assertThat(result.partnerChoice).isNull()
         }
@@ -266,7 +266,7 @@ class BalanceGameServiceTest @Autowired constructor(
             val result = balanceGameService.chooseBalanceGameOption(gameId, request)
 
             // then
-            assertThat(result.gameId).isEqualTo(gameId)
+            assertThat(result.gameInfo.id).isEqualTo(gameId)
             assertThat(result.myChoice?.id).isEqualTo(myChoiceOption.id)
             assertThat(result.partnerChoice?.id).isEqualTo(partnerChoiceOption.id)
         }
