@@ -3,7 +3,6 @@ package com.whatever.domain.balancegame.service
 import com.whatever.domain.balancegame.controller.dto.request.ChooseBalanceGameOptionRequest
 import com.whatever.domain.balancegame.controller.dto.response.ChooseBalanceGameOptionResponse
 import com.whatever.domain.balancegame.controller.dto.response.GetBalanceGameResponse
-import com.whatever.domain.balancegame.exception.BalanceGameExceptionCode
 import com.whatever.domain.balancegame.exception.BalanceGameExceptionCode.GAME_CHANGED
 import com.whatever.domain.balancegame.exception.BalanceGameExceptionCode.GAME_NOT_EXISTS
 import com.whatever.domain.balancegame.exception.BalanceGameExceptionCode.GAME_OPTION_NOT_ENOUGH
@@ -13,12 +12,12 @@ import com.whatever.domain.balancegame.exception.BalanceGameIllegalStateExceptio
 import com.whatever.domain.balancegame.exception.BalanceGameNotFoundException
 import com.whatever.domain.balancegame.exception.BalanceGameOptionNotFoundException
 import com.whatever.domain.balancegame.model.BalanceGame
+import com.whatever.domain.balancegame.model.BalanceGameOption
 import com.whatever.domain.balancegame.model.UserChoiceOption
 import com.whatever.domain.balancegame.repository.BalanceGameRepository
 import com.whatever.domain.balancegame.repository.UserChoiceOptionRepository
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.security.util.SecurityUtil
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserCoupleId
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.util.DateTimeUtil
@@ -38,13 +37,7 @@ class BalanceGameService(
     @Transactional(readOnly = true)
     fun getTodayBalanceGameInfo(): GetBalanceGameResponse {
         val todayGame = getBalanceGame()
-        val sortedOptions = todayGame.options
-            .filter { !it.isDeleted }
-            .sortedBy { it.id }
-
-        if (sortedOptions.size < 2) {
-            throw BalanceGameIllegalStateException(errorCode = GAME_OPTION_NOT_ENOUGH)
-        }
+        val sortedOptions = getSortedActiveBalanceGameOptions(todayGame.options)
 
         val memberChoices = getCoupleMemberChoices(
             coupleId = getCurrentUserCoupleId(),
@@ -69,6 +62,7 @@ class BalanceGameService(
         if (balanceGame.id != gameId) {
             throw BalanceGameIllegalArgumentException(errorCode = GAME_CHANGED)
         }
+        val sortedOptions = getSortedActiveBalanceGameOptions(balanceGame.options)
 
         val coupleId = getCurrentUserCoupleId()
         val requestUserId = getCurrentUserId()
@@ -94,15 +88,26 @@ class BalanceGameService(
 
         return ChooseBalanceGameOptionResponse.of(
             game = balanceGame,
+            options = sortedOptions,
             myChoice = myChoice.balanceGameOption,
             partnerChoice = partnerChoice?.balanceGameOption,
         )
     }
 
+    private fun getSortedActiveBalanceGameOptions(
+        options: List<BalanceGameOption>
+    ): List<BalanceGameOption> {
+        val sortedOptions = options.filter { !it.isDeleted }.sortedBy { it.id }
+        if (sortedOptions.size < 2) {
+            throw BalanceGameIllegalStateException(errorCode = GAME_OPTION_NOT_ENOUGH)
+        }
+        return sortedOptions
+    }
+
     private fun getBalanceGame(
         date: LocalDate = DateTimeUtil.localNow(TARGET_ZONE_ID).toLocalDate()
     ): BalanceGame {
-        return balanceGameRepository.findByGameDateAndIsDeleted(gameDate = date)
+        return balanceGameRepository.findWithOptionsByGameDate(gameDate = date)
             ?: throw BalanceGameNotFoundException(errorCode = GAME_NOT_EXISTS)
     }
 
