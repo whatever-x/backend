@@ -561,7 +561,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         )
 
         // then
-        val updatedTagMappings = tagContentMappingRepository.findAllByContentIdWithTag(oldContent.id)
+        val updatedTagMappings = tagContentMappingRepository.findAllWithTagByContentId(oldContent.id)
         assertThat(updatedTagMappings).hasSize(newTags.size)
 
         val updatedTagLabels = updatedTagMappings.map { it.tag.label }
