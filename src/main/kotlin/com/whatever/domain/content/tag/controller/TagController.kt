@@ -1,6 +1,5 @@
 package com.whatever.domain.content.tag.controller
 
-import com.whatever.domain.content.tag.controller.dto.response.TagDetailDto
 import com.whatever.domain.content.tag.controller.dto.response.TagDetailListResponse
 import com.whatever.domain.content.tag.service.TagService
 import com.whatever.global.annotation.DisableSwaggerAuthButton
@@ -17,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController
     description = "태그 API"
 )
 @RestController
-@RequestMapping("/tags")
+@RequestMapping("/v1/tags")
 class TagController(
     private val tagService: TagService,
 ) {

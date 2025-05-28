@@ -41,7 +41,7 @@ class TagServiceTest @Autowired constructor(
         val result = tagService.getTags()
 
         // then
-        assertThat(result.tagList.map { it.tagId })
+        assertThat(result.tagList.map { it.id })
             .containsExactlyElementsOf(activeTags.map { it.id })
     }
 
