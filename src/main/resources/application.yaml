@@ -4,12 +4,15 @@ spring:
     active: local-mem
   application:
     name: whatever-backend
+  datasource:
+    hikari:
+      maximum-pool-size: ${DB_MAX_CONNECTION}
   jpa:
     open-in-view: false
     properties:
       hibernate:
         show_sql: false
-        use_sql_comments: true
+        use_sql_comments: false
         format_sql: true
         globally_quoted_identifiers: true
         order_updates: true
@@ -115,10 +118,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: true
-        show_sql: true
   data:
     redis:
       host: ${REDIS_HOST}
@@ -173,10 +172,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
-    properties:
-      hibernate:
-        format_sql: true
-        show_sql: true
     defer-datasource-initialization: true
   data:
     redis:

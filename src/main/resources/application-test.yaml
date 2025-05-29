@@ -8,13 +8,17 @@ spring:
     url: 'jdbc:h2:mem:whatever'
     username: 'user'
     password: ''
+    hikari:
+      maximum-pool-size: ${DB_MAX_CONNECTION}
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: create
     properties:
       hibernate:
-        use_sql_comments: true
+        show_sql: false
+        use_sql_comments: false
+        format_sql: true
         globally_quoted_identifiers: true
         order_updates: true
         jdbc:
