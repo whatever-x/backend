@@ -7,7 +7,9 @@ import com.whatever.domain.firebase.model.FcmToken
 import com.whatever.domain.firebase.repository.FcmTokenRepository
 import com.whatever.domain.firebase.service.event.FcmNotification
 import com.whatever.domain.user.model.User
+import com.whatever.domain.user.model.UserSetting
 import com.whatever.domain.user.repository.UserRepository
+import com.whatever.domain.user.repository.UserSettingRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
@@ -29,6 +31,7 @@ class FirebaseServiceTest @Autowired constructor(
     private val fcmTokenRepository: FcmTokenRepository,
     private val userRepository: UserRepository,
     private val coupleRepository: CoupleRepository,
+    private val userSettingRepository: UserSettingRepository,
 ) {
 
     @MockitoBean
@@ -37,7 +40,9 @@ class FirebaseServiceTest @Autowired constructor(
     @AfterEach
     fun tearDown() {
         fcmTokenRepository.deleteAllInBatch()
+        userSettingRepository.deleteAllInBatch()
         userRepository.deleteAllInBatch()
+        coupleRepository.deleteAllInBatch()
     }
 
     @DisplayName("새로운 디바이스에서 토큰을 등록하면 새로운 토큰이 생성된다.")
@@ -116,6 +121,8 @@ class FirebaseServiceTest @Autowired constructor(
     fun sendNotification_WithUsersWithoutTokens() {
         // given
         val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        setUserSetting(myUser, true)
+        setUserSetting(partnerUser, true)
 
         // when
         firebaseService.sendNotification(
@@ -186,11 +193,34 @@ class FirebaseServiceTest @Autowired constructor(
         verify(fcmSender, only()).sendNotificationAll(any(), any())
     }
 
+    @DisplayName("타겟 유저들에게 등록된 토큰이 있지만, 알림 설정을 껐다면 전송되지 않는다.")
+    @Test
+    fun sendNotification_WithMultipleTokensUsersAndNotiDisabled() {
+        // given
+        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        createFcmToken("test-device-1", myUser, false)
+        createFcmToken("test-device-2", myUser, false)
+        createFcmToken("test-device-1", partnerUser, false)
+        createFcmToken("test-device-2", partnerUser, false)
+
+        // when
+        firebaseService.sendNotification(
+            targetUserIds = setOf(myUser.id, partnerUser.id),
+            fcmNotification = FcmNotification("title", "body")
+        )
+
+        // then
+        verify(fcmSender, never()).sendNotification(any(), any())
+        verify(fcmSender, never()).sendNotificationAll(any(), any())
+    }
+
     @DisplayName("타겟 유저의 fcm 토큰이 없다면 데이터 전송 함수가 실행되지 않는다.")
     @Test
     fun sendData_WithUsersWithoutTokens() {
         // given
         val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
+        setUserSetting(myUser, true)
+        setUserSetting(partnerUser, true)
 
         // when
         firebaseService.sendData(
@@ -262,7 +292,9 @@ class FirebaseServiceTest @Autowired constructor(
     private fun createFcmToken(
         deviceId: String,
         user: User,
+        notificationEnabled: Boolean = true
     ): FcmToken {
+        setUserSetting(user, notificationEnabled)
         return fcmTokenRepository.save(
             FcmToken(
                 initialToken = UUID.randomUUID().toString(),
@@ -270,5 +302,11 @@ class FirebaseServiceTest @Autowired constructor(
                 user = user,
             )
         )
+    }
+
+    private fun setUserSetting(user: User, notificationEnabled: Boolean) {
+        if (!userSettingRepository.existsByUserAndIsDeleted(user)) {
+            userSettingRepository.save(UserSetting(user, notificationEnabled))
+        }
     }
 }
