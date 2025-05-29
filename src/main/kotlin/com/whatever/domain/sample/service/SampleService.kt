@@ -10,9 +10,11 @@ import com.whatever.domain.firebase.service.event.FcmNotification
 import com.whatever.domain.sample.exception.SampleExceptionCode
 import com.whatever.domain.sample.exception.SampleNotFoundException
 import com.whatever.domain.sample.repository.SampleUserRepository
+import com.whatever.domain.sample.repository.SampleUserSettingRepository
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
+import com.whatever.domain.user.model.UserSetting
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.global.jwt.JwtProvider
 import com.whatever.util.DateTimeUtil
@@ -33,6 +35,7 @@ class SampleService(
     private val jwtProvider: JwtProvider,
     private val sampleUserRepository: SampleUserRepository,
     private val firebaseService: FirebaseService,
+    private val sampleUserSettingRepository: SampleUserSettingRepository,
 ) {
 
     fun sendTestFcmNotification(
@@ -94,7 +97,8 @@ class SampleService(
             gender = testGender ?: UserGender.MALE,
             userStatus = UserStatus.SINGLE,
         )
-        sampleUserRepository.save(dummyUser)
+        val user = sampleUserRepository.save(dummyUser)
+        sampleUserSettingRepository.save(UserSetting(user))
         return dummyUser.email!!
     }
 
