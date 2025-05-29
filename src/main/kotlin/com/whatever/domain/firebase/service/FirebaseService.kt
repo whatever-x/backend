@@ -38,8 +38,8 @@ class FirebaseService(
             )
     }
 
-    fun getActiveFcmTokens(userIds: Set<Long>): List<FcmToken> {
-        return fcmTokenRepository.findAllActiveTokensByUserIds(userIds)
+    fun getSendableFcmTokens(userIds: Set<Long>): List<FcmToken> {
+        return fcmTokenRepository.findAllSendableTokensByUserIds(userIds)
     }
 
     fun sendNotification(
@@ -50,13 +50,13 @@ class FirebaseService(
             return
         }
 
-        val tokens = getActiveFcmTokens(targetUserIds)
-            .map { it.token }
+        val tokens = getSendableFcmTokens(targetUserIds).map { it.token }
 
         if (tokens.isEmpty()) {
             logger.debug { "No FCM tokens to send notification. User IDs: ${targetUserIds}" }
             return
         }
+        logger.info { "Sending FCM notification to ${tokens.size} tokens." }
 
         if (tokens.size == 1){
             fcmSender.sendNotification(
@@ -79,13 +79,14 @@ class FirebaseService(
             return
         }
 
-        val tokens = getActiveFcmTokens(targetUserIds)
+        val tokens = getSendableFcmTokens(targetUserIds)
             .map { it.token }
 
         if (tokens.isEmpty()) {
             logger.debug { "No FCM tokens to send data. User IDs: ${targetUserIds}" }
             return
         }
+        logger.info { "Sending FCM notification to ${tokens.size} tokens." }
 
         if (tokens.size == 1){
             fcmSender.sendData(

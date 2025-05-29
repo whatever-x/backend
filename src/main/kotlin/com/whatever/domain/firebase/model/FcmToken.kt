@@ -18,7 +18,7 @@ import jakarta.persistence.UniqueConstraint
 @Entity
 @Table(
     uniqueConstraints = [
-        UniqueConstraint(columnNames = ["device_id", "user_id"]),
+        UniqueConstraint(columnNames = ["user_id", "device_id"]),
     ]
 )
 class FcmToken(
