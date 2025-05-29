@@ -2,12 +2,12 @@ package com.whatever.domain.user.dto
 
 import com.whatever.domain.user.model.UserSetting
 
-data class PatchUserSettingResponse(
+data class UserSettingResponse(
     val notificationEnabled: Boolean,
 ) {
     companion object {
-        fun from(userSetting: UserSetting): PatchUserSettingResponse {
-            return PatchUserSettingResponse(
+        fun from(userSetting: UserSetting): UserSettingResponse {
+            return UserSettingResponse(
                 notificationEnabled = userSetting.notificationEnabled,
             )
         }

@@ -2,7 +2,7 @@ package com.whatever.domain.user.service
 
 import com.whatever.domain.user.dto.GetUserInfoResponse
 import com.whatever.domain.user.dto.PatchUserSettingRequest
-import com.whatever.domain.user.dto.PatchUserSettingResponse
+import com.whatever.domain.user.dto.UserSettingResponse
 import com.whatever.domain.user.dto.PostUserProfileRequest
 import com.whatever.domain.user.dto.PostUserProfileResponse
 import com.whatever.domain.user.dto.PutUserProfileRequest
@@ -75,7 +75,7 @@ class UserService(
     fun updateUserSetting(
         request: PatchUserSettingRequest,
         userId: Long = getCurrentUserId(),
-    ): PatchUserSettingResponse {
+    ): UserSettingResponse {
         val userRef = userRepository.getReferenceById(userId)
         val userSetting = userSettingRepository.findByUserAndIsDeleted(userRef)
             ?: throw UserIllegalStateException(
@@ -87,6 +87,18 @@ class UserService(
             request.notificationEnabled?.let { userSetting.notificationEnabled = it }
         }
 
-        return PatchUserSettingResponse.from(userSetting)
+        return UserSettingResponse.from(userSetting)
+    }
+
+    fun getUserSetting(
+        userId: Long = getCurrentUserId(),
+    ): UserSettingResponse {
+        val userRef = userRepository.getReferenceById(userId)
+        val userSetting = userSettingRepository.findByUserAndIsDeleted(userRef)
+            ?: throw UserIllegalStateException(
+                SETTING_DATA_NOT_FOUND,
+                detailMessage = "User setting data not exists."
+            )
+        return UserSettingResponse.from(userSetting)
     }
 }

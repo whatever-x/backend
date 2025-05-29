@@ -2,7 +2,7 @@ package com.whatever.domain.user.controller
 
 import com.whatever.domain.user.dto.GetUserInfoResponse
 import com.whatever.domain.user.dto.PatchUserSettingRequest
-import com.whatever.domain.user.dto.PatchUserSettingResponse
+import com.whatever.domain.user.dto.UserSettingResponse
 import com.whatever.domain.user.dto.PostUserProfileRequest
 import com.whatever.domain.user.dto.PostUserProfileResponse
 import com.whatever.domain.user.dto.PutUserProfileRequest
@@ -65,8 +65,18 @@ class UserController(
     @PatchMapping("/settings")
     fun updateUserSetting(
         @RequestBody request: PatchUserSettingRequest
-    ): CaramelApiResponse<PatchUserSettingResponse> {
+    ): CaramelApiResponse<UserSettingResponse> {
         val response = userService.updateUserSetting(request)
+        return response.succeed()
+    }
+
+    @Operation(
+        summary = "유저 설정 조회",
+        description = "설정을 조회합니다.",
+    )
+    @GetMapping("/settings")
+    fun getUserSetting(): CaramelApiResponse<UserSettingResponse> {
+        val response = userService.getUserSetting()
         return response.succeed()
     }
 }
