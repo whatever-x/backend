@@ -1,6 +1,8 @@
 package com.whatever.domain.user.controller
 
 import com.whatever.domain.user.dto.GetUserInfoResponse
+import com.whatever.domain.user.dto.PatchUserSettingRequest
+import com.whatever.domain.user.dto.UserSettingResponse
 import com.whatever.domain.user.dto.PostUserProfileRequest
 import com.whatever.domain.user.dto.PostUserProfileResponse
 import com.whatever.domain.user.dto.PutUserProfileRequest
@@ -53,6 +55,28 @@ class UserController(
     @GetMapping("/me")
     fun getUserInfo(): CaramelApiResponse<GetUserInfoResponse> {
         val response = userService.getUserInfo()
+        return response.succeed()
+    }
+
+    @Operation(
+        summary = "유저 설정 수정",
+        description = "수정할 설정 정보만 추가하여 보내면 됩니다. 아무것도 넣지 않을경우 현재 설정 정보를 그대로 반환합니다.",
+    )
+    @PatchMapping("/settings")
+    fun updateUserSetting(
+        @RequestBody request: PatchUserSettingRequest
+    ): CaramelApiResponse<UserSettingResponse> {
+        val response = userService.updateUserSetting(request)
+        return response.succeed()
+    }
+
+    @Operation(
+        summary = "유저 설정 조회",
+        description = "설정을 조회합니다.",
+    )
+    @GetMapping("/settings")
+    fun getUserSetting(): CaramelApiResponse<UserSettingResponse> {
+        val response = userService.getUserSetting()
         return response.succeed()
     }
 }

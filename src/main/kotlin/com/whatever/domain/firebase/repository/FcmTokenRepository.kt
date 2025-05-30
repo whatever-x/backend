@@ -11,11 +11,13 @@ interface FcmTokenRepository : JpaRepository<FcmToken, Long> {
 
     @Query("""
         select tk from FcmToken tk
+        join UserSetting us on us.user = tk.user
         where tk.user.id in :userIds
             and tk.isDeleted = false
             and tk.updatedAt >= :expireDateTime
+            and us.notificationEnabled = true
     """)
-    fun findAllActiveTokensByUserIds(
+    fun findAllSendableTokensByUserIds(
         userIds: Set<Long>,
         expireDateTime: LocalDateTime = DateTimeUtil.localNow().minusDays(270)
     ): List<FcmToken>

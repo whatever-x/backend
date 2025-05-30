@@ -7,7 +7,12 @@ open class UserException(
     detailMessage: String? = null
 ) : CaramelException(errorCode, detailMessage)
 
-open class UserNotFoundException(
+class UserNotFoundException(
+    errorCode: UserExceptionCode,
+    detailMessage: String? = null
+) : UserException(errorCode, detailMessage)
+
+class UserIllegalStateException(
     errorCode: UserExceptionCode,
     detailMessage: String? = null
 ) : UserException(errorCode, detailMessage)
