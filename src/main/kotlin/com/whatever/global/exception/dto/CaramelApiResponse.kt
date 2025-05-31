@@ -1,7 +1,13 @@
 package com.whatever.global.exception.dto
 
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
+
 data class CaramelApiResponse<T>(
     val success: Boolean,
+    @JsonSerialize(nullsUsing = NullToEmptyObjectSerializer::class)
     val data: T?,
     val error: ErrorResponse?,
 ) {
@@ -38,3 +44,15 @@ fun <T> T.succeed() = CaramelApiResponse(
     data = this,
     error = null,
 )
+
+class NullToEmptyObjectSerializer : StdSerializer<Any?>(Any::class.java as Class<Any?>) {  // Nullable을 한번 더 명시
+    override fun serialize(
+        value: Any?,
+        gen: JsonGenerator,
+        provider: SerializerProvider
+    ) {
+        gen.writeStartObject()
+        gen.writeEndObject()
+    }
+
+}
