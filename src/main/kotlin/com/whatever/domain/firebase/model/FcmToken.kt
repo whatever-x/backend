@@ -18,7 +18,14 @@ import jakarta.persistence.UniqueConstraint
 @Entity
 @Table(
     uniqueConstraints = [
-        UniqueConstraint(columnNames = ["user_id", "device_id"]),
+        UniqueConstraint(
+            name = "fcm_token_unique_idx_user_id_device_id",
+            columnNames = ["user_id", "device_id"],
+        ),
+        UniqueConstraint(
+            name = "fcm_token_unique_idx_token",
+            columnNames = ["token"],
+        ),
     ]
 )
 class FcmToken(
@@ -36,7 +43,7 @@ class FcmToken(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L
 
-    @Column(name = "token", unique = true, nullable = false)
+    @Column(name = "token", nullable = false)
     private var _token: String
     val token: String
         get() = _token
