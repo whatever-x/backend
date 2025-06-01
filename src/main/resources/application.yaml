@@ -7,6 +7,7 @@ spring:
   datasource:
     hikari:
       maximum-pool-size: ${DB_MAX_CONNECTION}
+      connection-test-query: "SELECT 1"
   jpa:
     open-in-view: false
     properties:
@@ -91,18 +92,7 @@ spring:
   config:
     activate:
       on-profile: production
-#  datasource:
-#    url: 'jdbc:h2:mem:whatever;NON_KEYWORDS=USER'
-#    username: 'user'
-#    password: ''
-#    driver-class-name: org.h2.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: true
-        show_sql: true
+
 ---
 # Dev
 spring:
@@ -117,7 +107,7 @@ spring:
     password: ${POSTGRES_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
   data:
     redis:
       host: ${REDIS_HOST}
