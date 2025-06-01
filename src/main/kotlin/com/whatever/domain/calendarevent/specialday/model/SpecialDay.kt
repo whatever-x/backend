@@ -14,7 +14,12 @@ import java.time.LocalDate
 
 @Entity
 @Table(
-    uniqueConstraints = [UniqueConstraint(columnNames = ["loc_date", "date_name"])]
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "special_day_unique_idx_loc_date_and_date_name",
+            columnNames = ["loc_date", "date_name"]
+        )
+    ]
 )
 class SpecialDay(
     @Id
