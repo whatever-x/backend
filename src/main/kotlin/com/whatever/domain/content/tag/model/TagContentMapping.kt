@@ -7,8 +7,11 @@ import jakarta.persistence.*
 @Entity
 @Table(
     uniqueConstraints = [
-        UniqueConstraint(columnNames = ["tag_id", "content_id"])
-    ]
+        UniqueConstraint(
+            name = "tag_content_mapping_unique_idx_content_id_and_tag_id_when_not_deleted",
+            columnNames = ["content_id", "tag_id"]
+        )
+    ],
 )
 class TagContentMapping(
     @Id
