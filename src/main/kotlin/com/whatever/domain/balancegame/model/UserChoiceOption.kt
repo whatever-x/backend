@@ -13,7 +13,14 @@ import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 
 @Entity
-@Table(uniqueConstraints = [UniqueConstraint(columnNames = ["user_id", "game_id"])])
+@Table(
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "user_choice_option_unique_idx_user_id_and_game_id",
+            columnNames = ["user_id", "game_id"]
+        )
+    ],
+)
 class UserChoiceOption(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,6 +37,4 @@ class UserChoiceOption(
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     val user: User,
-
-    ) : BaseEntity() {
-}
+) : BaseEntity()
