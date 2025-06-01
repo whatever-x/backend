@@ -12,12 +12,19 @@ import jakarta.validation.constraints.Size
 import java.time.LocalDate
 
 @Entity
+@Table(
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "user_unique_idx_platform_user_id_when_not_deleted",
+            columnNames = ["platform_user_id"]
+        )
+    ],
+)
 class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L,
 
-    @Column(unique = true)
     var email: String? = null,
 
     var birthDate: LocalDate? = null,
@@ -25,7 +32,7 @@ class User(
     @Enumerated(EnumType.STRING)
     val platform: LoginPlatform,
 
-    @Column(unique = true)
+    @Column(nullable = false)
     val platformUserId: String,
 
     @Size(min = 2, max = 8)
