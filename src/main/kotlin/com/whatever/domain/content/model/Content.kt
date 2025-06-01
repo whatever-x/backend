@@ -7,6 +7,14 @@ import com.whatever.domain.user.model.User
 import jakarta.persistence.*
 
 @Entity
+@Table(
+    indexes = [
+        Index(
+            name = "content_idx_user_id",
+            columnList = "user_id",
+        )
+    ]
+)
 class Content(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
