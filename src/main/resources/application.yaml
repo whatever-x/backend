@@ -115,11 +115,6 @@ spring:
       password: ${REDIS_PASSWORD}
   cache:
     type: redis
-
-logback:
-  path:
-    root: ${LOG_FILE_ROOT_PATH}
-
 management:
   metrics:
     distribution:
@@ -139,14 +134,22 @@ otel:
   service:
     name: ${OTEL_SERVICE_NAME}
   resource:
+    providers:
+      process: false
     attributes:
       deployment.environment: ${SPRING_PROFILES_ACTIVE}
   traces:
+    exporter: ${OTEL_EXPORTER}
+  logs:
     exporter: ${OTEL_EXPORTER}
   exporter:
     otlp:
       protocol: ${OTEL_EXPORTER_PROTOCOL}
       endpoint: ${OTEL_EXPORTER_ENDPOINT}
+  java:
+    disabled:
+      resource:
+        providers: ${OTEL_DISABLED_PROVIDERS}
 ---
 # Local-mem
 spring:
@@ -171,7 +174,3 @@ spring:
   cache:  # 원하는 cache의 주석을 해제하여 사용
     type: caffeine
 #    type: redis
-
-logback:
-  path:
-    root: ${LOG_FILE_ROOT_PATH}
