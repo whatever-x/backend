@@ -58,6 +58,8 @@ dependencies {
     // Logging
     implementation 'io.github.oshai:kotlin-logging-jvm:7.0.3'
     implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+    implementation "io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.17:$opentelemetryVersion-alpha"
 
     // Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3'
@@ -95,6 +97,12 @@ dependencies {
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.4.0'
     testImplementation 'org.awaitility:awaitility-kotlin:4.3.0'
     testImplementation 'com.github.codemonstur:embedded-redis:1.4.3'
+}
+
+configurations {
+    configureEach {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
 }
 
 kotlin {
