@@ -1,8 +1,11 @@
 package com.whatever.config
 
-import com.whatever.domain.user.model.UserStatus.*
+import com.whatever.domain.user.model.UserStatus.COUPLED
+import com.whatever.domain.user.model.UserStatus.NEW
+import com.whatever.domain.user.model.UserStatus.SINGLE
 import com.whatever.global.security.filter.JwtAuthenticationFilter
 import com.whatever.global.security.filter.JwtExceptionFilter
+import com.whatever.global.security.filter.RequestResponseLoggingFilter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
@@ -32,6 +35,7 @@ import org.springframework.security.web.authentication.logout.LogoutFilter
 class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
     private val jwtExceptionFilter: JwtExceptionFilter,
+    private val requestResponseLoggingFilter: RequestResponseLoggingFilter,
     private val caramelAuthenticationEntryPoint: AuthenticationEntryPoint,
     private val caramelAccessDeniedHandler: AccessDeniedHandler
 ) {
@@ -105,6 +109,7 @@ class SecurityConfig(
         http {
             addFilterAfter<LogoutFilter>(jwtExceptionFilter)
             addFilterAfter<JwtExceptionFilter>(jwtAuthenticationFilter)
+            addFilterAfter<JwtAuthenticationFilter>(requestResponseLoggingFilter)
         }
 
         http {
@@ -153,6 +158,13 @@ class SecurityConfig(
     @Bean
     fun jwtExceptionFilterRegistration(filter: JwtExceptionFilter): FilterRegistrationBean<JwtExceptionFilter> {
         val registration: FilterRegistrationBean<JwtExceptionFilter> = FilterRegistrationBean<JwtExceptionFilter>(filter)
+        registration.isEnabled = false
+        return registration
+    }
+
+    @Bean
+    fun requestLoggingFilterRegistration(filter: RequestResponseLoggingFilter): FilterRegistrationBean<RequestResponseLoggingFilter> {
+        val registration: FilterRegistrationBean<RequestResponseLoggingFilter> = FilterRegistrationBean<RequestResponseLoggingFilter>(filter)
         registration.isEnabled = false
         return registration
     }
