@@ -2,13 +2,12 @@ package com.whatever.domain.user.model
 
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.couple.model.Couple
-import com.whatever.domain.user.exception.UserExceptionCode
 import com.whatever.domain.user.exception.UserExceptionCode.INVALID_USER_STATUS_FOR_COUPLING
 import com.whatever.domain.user.exception.UserIllegalStateException
 import com.whatever.domain.user.model.UserStatus.COUPLED
 import com.whatever.domain.user.model.UserStatus.SINGLE
 import jakarta.persistence.*
-import jakarta.validation.constraints.Size
+import org.hibernate.validator.constraints.CodePointLength
 import java.time.LocalDate
 
 @Entity
@@ -36,8 +35,8 @@ class User(
     @Column(nullable = false)
     val platformUserId: String,
 
-    @Size(min = 2, max = 8)
     @Column(length = 8)
+    @field:CodePointLength(min = 2, max = 8)
     var nickname: String? = null,
 
     @Enumerated(EnumType.STRING)

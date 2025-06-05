@@ -20,6 +20,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Version
+import org.hibernate.validator.constraints.CodePointLength
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -32,6 +33,7 @@ class Couple(
     var startDate: LocalDate? = null,
 
     @Column(length = MAX_SHARED_MESSAGE_LENGTH_WITH_BUFFER)
+    @field:CodePointLength(max = MAX_SHARED_MESSAGE_LENGTH)
     var sharedMessage: String? = null,
 
     @Enumerated(EnumType.STRING)

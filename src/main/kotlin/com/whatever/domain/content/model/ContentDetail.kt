@@ -4,13 +4,16 @@ import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.exception.ContentIllegalArgumentException
 import jakarta.persistence.Column
 import jakarta.persistence.Embeddable
+import org.hibernate.validator.constraints.CodePointLength
 
 @Embeddable
 class ContentDetail(
     @Column(length = MAX_TITLE_LENGTH)
+    @field:CodePointLength(max = MAX_TITLE_LENGTH)
     var title: String?,
 
     @Column(length = MAX_DESCRIPTION_LENGTH)
+    @field:CodePointLength(max = MAX_DESCRIPTION_LENGTH)
     var description: String?,
 
     @Column(nullable = false)
@@ -29,23 +32,6 @@ class ContentDetail(
                 errorCode = ContentExceptionCode.ILLEGAL_CONTENT_DETAIL,
                 detailMessage = "Title and description must not be blank."
             )
-        }
-
-        title?.let {
-            if (it.codePointCount(0, it.length) > MAX_TITLE_LENGTH) {
-                throw ContentIllegalArgumentException(
-                    errorCode = ContentExceptionCode.TITLE_OUT_OF_LENGTH,
-                    detailMessage = "Maximum title length is ${MAX_TITLE_LENGTH}. Current:${it.length}"
-                )
-            }
-        }
-        description?.let {
-            if (it.codePointCount(0, it.length) > MAX_DESCRIPTION_LENGTH) {
-                throw ContentIllegalArgumentException(
-                    errorCode = ContentExceptionCode.DESCRIPTION_OUT_OF_LENGTH,
-                    detailMessage = "Maximum description length is ${MAX_DESCRIPTION_LENGTH}. Current:${it.length}"
-                )
-            }
         }
     }
 

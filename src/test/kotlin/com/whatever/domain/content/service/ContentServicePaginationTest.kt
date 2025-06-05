@@ -227,14 +227,14 @@ internal fun createCouple(
     myPlatformUserId: String = "me",
     partnerPlatformUserId: String = "partner",
 ): Triple<User, User, Couple> {
-    val myUser = userRepository.save(createUser("my}", myPlatformUserId, UserStatus.SINGLE))
+    val myUser = userRepository.save(createUser("my", myPlatformUserId, UserStatus.SINGLE))
     val partnerUser = userRepository.save(createUser("partner", partnerPlatformUserId, UserStatus.SINGLE))
 
     val startDate = DateTimeUtil.localNow().toLocalDate()
     val savedCouple = coupleRepository.save(
         Couple(
             startDate = startDate,
-            sharedMessage = "test message for $myPlatformUserId"
+            sharedMessage = "test message for ${myUser.nickname}"
         )
     )
     savedCouple.addMembers(myUser, partnerUser)
