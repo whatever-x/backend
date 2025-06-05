@@ -40,11 +40,11 @@ class ScheduleEvent(
 
     endDateTime: LocalDateTime,
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     @Convert(converter = ZonedIdConverter::class)
     var startTimeZone: ZoneId,
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     @Convert(converter = ZonedIdConverter::class)
     var endTimeZone: ZoneId,
 
