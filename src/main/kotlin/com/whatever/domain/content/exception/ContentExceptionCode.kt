@@ -15,8 +15,6 @@ enum class ContentExceptionCode(
     UPDATE_CONFLICT("004", "상대방이 수정 중인 메모입니다. 잠시 후 재시도 해주세요.", HttpStatus.CONFLICT),
     MEMO_NOT_FOUND("005", "존재하지 않는 메모입니다.", HttpStatus.NOT_FOUND),
     COUPLE_NOT_MATCHED("006", "내 커플의 메모가 아닙니다.", HttpStatus.FORBIDDEN),
-    TITLE_OUT_OF_LENGTH("007", "제목 길이가 초과되었습니다."),
-    DESCRIPTION_OUT_OF_LENGTH("008", "본문 길이가 초과되었습니다."),
     ;
     override val code = "Content$sequence"
 }

@@ -28,7 +28,6 @@ class Content(
     val contentDetail: ContentDetail,
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 50, nullable = false)
     var type: ContentType = ContentType.MEMO,
 ) : BaseEntity() {
 
