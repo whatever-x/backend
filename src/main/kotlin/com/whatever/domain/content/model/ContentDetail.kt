@@ -7,13 +7,15 @@ import jakarta.persistence.Embeddable
 
 @Embeddable
 class ContentDetail(
+    @Column(length = MAX_TITLE_LENGTH)
     var title: String?,
 
+    @Column(length = MAX_DESCRIPTION_LENGTH)
     var description: String?,
 
     @Column(nullable = false)
     var isCompleted: Boolean = false,
-){
+) {
 
     init {
         if (title == null && description == null) {
@@ -27,6 +29,23 @@ class ContentDetail(
                 errorCode = ContentExceptionCode.ILLEGAL_CONTENT_DETAIL,
                 detailMessage = "Title and description must not be blank."
             )
+        }
+
+        title?.let {
+            if (it.codePointCount(0, it.length) > MAX_TITLE_LENGTH) {
+                throw ContentIllegalArgumentException(
+                    errorCode = ContentExceptionCode.TITLE_OUT_OF_LENGTH,
+                    detailMessage = "Maximum title length is ${MAX_TITLE_LENGTH}. Current:${it.length}"
+                )
+            }
+        }
+        description?.let {
+            if (it.codePointCount(0, it.length) > MAX_DESCRIPTION_LENGTH) {
+                throw ContentIllegalArgumentException(
+                    errorCode = ContentExceptionCode.DESCRIPTION_OUT_OF_LENGTH,
+                    detailMessage = "Maximum description length is ${MAX_DESCRIPTION_LENGTH}. Current:${it.length}"
+                )
+            }
         }
     }
 
