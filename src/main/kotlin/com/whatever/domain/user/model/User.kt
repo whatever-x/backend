@@ -30,6 +30,7 @@ class User(
     var birthDate: LocalDate? = null,
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     val platform: LoginPlatform,
 
     @Column(nullable = false)
@@ -40,9 +41,11 @@ class User(
     var nickname: String? = null,
 
     @Enumerated(EnumType.STRING)
+    @Column(length = MAX_GENDER_LENGTH)
     var gender: UserGender? = null,
 
     @Enumerated(EnumType.STRING)
+    @Column(length = MAX_STATUS_LENGTH, nullable = false)
     var userStatus: UserStatus = UserStatus.NEW,
 
 //    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
@@ -82,5 +85,10 @@ class User(
         this.birthDate = birthday
         this.gender = gender
         this.userStatus = SINGLE
+    }
+
+    companion object {
+        const val MAX_GENDER_LENGTH = 50
+        const val MAX_STATUS_LENGTH = 50
     }
 }
