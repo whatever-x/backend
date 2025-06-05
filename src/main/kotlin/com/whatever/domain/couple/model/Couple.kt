@@ -4,26 +4,38 @@ import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.couple.exception.CoupleExceptionCode
 import com.whatever.domain.couple.exception.CoupleExceptionCode.ILLEGAL_MEMBER_SIZE
 import com.whatever.domain.couple.exception.CoupleExceptionCode.ILLEGAL_START_DATE
+import com.whatever.domain.couple.exception.CoupleExceptionCode.SHARED_MESSAGE_OUT_OF_LENGTH
 import com.whatever.domain.couple.exception.CoupleIllegalArgumentException
 import com.whatever.domain.couple.exception.CoupleIllegalStateException
 import com.whatever.domain.couple.model.CoupleStatus.INACTIVE
 import com.whatever.domain.user.model.User
 import com.whatever.util.DateTimeUtil
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.OneToMany
+import jakarta.persistence.Version
 import java.time.LocalDate
 import java.time.ZoneId
 
 @Entity
-class Couple (
+class Couple(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L,
 
     var startDate: LocalDate? = null,
 
+    @Column(length = MAX_SHARED_MESSAGE_LENGTH_WITH_BUFFER)
     var sharedMessage: String? = null,
 
     @Enumerated(EnumType.STRING)
+    @Column(length = MAX_STATUS_LENGTH, nullable = false)
     var status: CoupleStatus = CoupleStatus.ACTIVE,
 ) : BaseEntity() {
 
@@ -39,7 +51,7 @@ class Couple (
             throw CoupleIllegalArgumentException(
                 errorCode = ILLEGAL_MEMBER_SIZE,
 
-            )
+                )
         }
         if (mutableMembers.isNotEmpty()) {
             throw CoupleIllegalStateException(
@@ -81,6 +93,17 @@ class Couple (
         if (status == INACTIVE) {
             throw CoupleIllegalStateException(errorCode = CoupleExceptionCode.ILLEGAL_COUPLE_STATUS)
         }
+        newMessage?.let {
+            if (newMessage.codePointCount(0, newMessage.length) > MAX_SHARED_MESSAGE_LENGTH) {
+                throw CoupleIllegalArgumentException(errorCode = SHARED_MESSAGE_OUT_OF_LENGTH)
+            }
+        }
         sharedMessage = newMessage.takeUnless { it.isNullOrBlank() }
+    }
+
+    companion object {
+        const val MAX_SHARED_MESSAGE_LENGTH_WITH_BUFFER = 50
+        const val MAX_SHARED_MESSAGE_LENGTH = 24
+        const val MAX_STATUS_LENGTH = 50
     }
 }

@@ -20,6 +20,7 @@ enum class CoupleExceptionCode(
     UPDATE_FAIL("009", "상대방이 수정 중입니다. 잠시 후 재시도 해주세요.", HttpStatus.CONFLICT),
     ILLEGAL_START_DATE("010", "커플 시작일은 오늘 이전이어야 합니다."),
     ILLEGAL_COUPLE_STATUS("011", "커플의 상태가 올바르지 않습니다."),
+    SHARED_MESSAGE_OUT_OF_LENGTH("012", "기억할 말의 길이가 초과되었습니다."),
     ;
 
     override val code = "COUPLE$sequence"
