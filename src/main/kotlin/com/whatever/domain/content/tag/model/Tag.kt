@@ -9,7 +9,10 @@ class Tag (
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L,
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = MAX_LABEL_LENGTH)
     val label: String
 ) : BaseEntity() {
+    companion object {
+        const val MAX_LABEL_LENGTH = 50
+    }
 }
