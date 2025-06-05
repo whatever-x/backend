@@ -2,13 +2,12 @@ package com.whatever.domain.user.model
 
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.couple.model.Couple
-import com.whatever.domain.user.exception.UserExceptionCode
 import com.whatever.domain.user.exception.UserExceptionCode.INVALID_USER_STATUS_FOR_COUPLING
 import com.whatever.domain.user.exception.UserIllegalStateException
 import com.whatever.domain.user.model.UserStatus.COUPLED
 import com.whatever.domain.user.model.UserStatus.SINGLE
 import jakarta.persistence.*
-import jakarta.validation.constraints.Size
+import org.hibernate.validator.constraints.CodePointLength
 import java.time.LocalDate
 
 @Entity
@@ -30,19 +29,22 @@ class User(
     var birthDate: LocalDate? = null,
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     val platform: LoginPlatform,
 
     @Column(nullable = false)
     val platformUserId: String,
 
-    @Size(min = 2, max = 8)
     @Column(length = 8)
+    @field:CodePointLength(min = 2, max = 8)
     var nickname: String? = null,
 
     @Enumerated(EnumType.STRING)
+    @Column(length = MAX_GENDER_LENGTH)
     var gender: UserGender? = null,
 
     @Enumerated(EnumType.STRING)
+    @Column(length = MAX_STATUS_LENGTH, nullable = false)
     var userStatus: UserStatus = UserStatus.NEW,
 
 //    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
@@ -82,5 +84,10 @@ class User(
         this.birthDate = birthday
         this.gender = gender
         this.userStatus = SINGLE
+    }
+
+    companion object {
+        const val MAX_GENDER_LENGTH = 50
+        const val MAX_STATUS_LENGTH = 50
     }
 }

@@ -1,8 +1,6 @@
 package com.whatever.domain.calendarevent.scheduleevent.model
 
 import com.whatever.domain.base.BaseEntity
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_CONTENT_DETAIL
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_CONTENT_TYPE
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_DURATION
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalArgumentException
@@ -40,11 +38,11 @@ class ScheduleEvent(
 
     endDateTime: LocalDateTime,
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = MAX_TIME_ZONE_LENGTH)
     @Convert(converter = ZonedIdConverter::class)
     var startTimeZone: ZoneId,
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = MAX_TIME_ZONE_LENGTH)
     @Convert(converter = ZonedIdConverter::class)
     var endTimeZone: ZoneId,
 
@@ -121,6 +119,8 @@ class ScheduleEvent(
     }
 
     companion object {
+        const val MAX_TIME_ZONE_LENGTH = 50
+
         fun fromMemo(
             memo: Content,
             startDateTime: LocalDateTime,
