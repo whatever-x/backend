@@ -1,5 +1,6 @@
 package com.whatever.global.exception.externalserver.kakao
 
+import com.whatever.global.exception.ErrorUiType
 import com.whatever.global.exception.externalserver.ExternalServerExceptionCode
 import org.springframework.http.HttpStatus
 
@@ -8,6 +9,7 @@ enum class KakaoServerExceptionCode(
     val kakaoErrorCode: String,
     override val message: String,
     override val status: HttpStatus = HttpStatus.BAD_REQUEST,
+    override val errorUiType: ErrorUiType = ErrorUiType.TOAST,
 ) : ExternalServerExceptionCode {
 
     // 알 수 없는 오류 (기본값)

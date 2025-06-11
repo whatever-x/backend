@@ -1,5 +1,6 @@
 package com.whatever.global.security.exception
 
+import com.whatever.global.exception.ErrorUiType
 import com.whatever.global.exception.common.CaramelExceptionCode
 import org.springframework.http.HttpStatus
 
@@ -7,6 +8,7 @@ enum class SecurityExceptionCode(
     sequence: String,
     override val message: String,
     override val status: HttpStatus = HttpStatus.BAD_REQUEST,
+    override val errorUiType: ErrorUiType = ErrorUiType.TOAST,
 ) : CaramelExceptionCode {
 
     FORBIDDEN("000", "접근 권한이 없습니다.", HttpStatus.FORBIDDEN),

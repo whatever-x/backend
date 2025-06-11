@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
+import com.whatever.global.exception.ErrorUiType
 import com.whatever.global.exception.common.CaramelExceptionCode
 
 data class CaramelApiResponse<T>(
@@ -25,6 +26,7 @@ data class CaramelApiResponse<T>(
         fun failed(
             code: CaramelExceptionCode,
             debugMessage: String?,
+            overrideErrorUiType: ErrorUiType? = null,
         ): CaramelApiResponse<*> {
             return CaramelApiResponse(
                 success = false,
@@ -32,6 +34,7 @@ data class CaramelApiResponse<T>(
                 error = ErrorResponse.of(
                     errorCode = code,
                     debugMessage = debugMessage,
+                    errorUiType = overrideErrorUiType ?: code.errorUiType,
                 )
             )
         }

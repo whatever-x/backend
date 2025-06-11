@@ -1,5 +1,6 @@
 package com.whatever.domain.couple.exception
 
+import com.whatever.global.exception.ErrorUiType
 import com.whatever.global.exception.common.CaramelExceptionCode
 import org.springframework.http.HttpStatus
 
@@ -7,6 +8,7 @@ enum class CoupleExceptionCode(
     sequence: String,
     override val message: String,
     override val status: HttpStatus = HttpStatus.BAD_REQUEST,
+    override val errorUiType: ErrorUiType = ErrorUiType.TOAST,
 ) : CaramelExceptionCode {
 
     INVALID_USER_STATUS("001", "기능을 이용할 수 없는 유저 상태입니다.", HttpStatus.FORBIDDEN),

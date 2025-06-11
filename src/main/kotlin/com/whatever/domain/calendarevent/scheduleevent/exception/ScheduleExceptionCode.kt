@@ -1,5 +1,6 @@
 package com.whatever.domain.calendarevent.scheduleevent.exception
 
+import com.whatever.global.exception.ErrorUiType
 import com.whatever.global.exception.common.CaramelExceptionCode
 import org.springframework.http.HttpStatus
 
@@ -7,6 +8,7 @@ enum class ScheduleExceptionCode(
     sequence: String,
     override val message: String,
     override val status: HttpStatus = HttpStatus.BAD_REQUEST,
+    override val errorUiType: ErrorUiType = ErrorUiType.TOAST,
 ) : CaramelExceptionCode {
 
     UNKNOWN("000", "예상치 못한 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),

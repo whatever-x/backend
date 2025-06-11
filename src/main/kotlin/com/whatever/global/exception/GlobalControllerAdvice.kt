@@ -27,7 +27,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
     @ExceptionHandler(CaramelException::class)
     fun handleCaramelException(e: CaramelException): ResponseEntity<CaramelApiResponse<*>> {
         logger.error(e) {  }
-        return createExceptionResponse(errorCode = e.errorCode, debugMessage = e.detailMessage)
+        return createExceptionResponse(caramelException = e)
     }
 
     @ExceptionHandler(ExhaustedRetryException::class)

@@ -1,5 +1,6 @@
 package com.whatever.domain.firebase.exception
 
+import com.whatever.global.exception.ErrorUiType
 import com.whatever.global.exception.common.CaramelExceptionCode
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.BAD_REQUEST
@@ -11,6 +12,7 @@ enum class FirebaseExceptionCode(
     sequence: String,
     override val message: String,
     override val status: HttpStatus = BAD_REQUEST,
+    override val errorUiType: ErrorUiType = ErrorUiType.TOAST,
 ) : CaramelExceptionCode {
 
     UNKNOWN("001", "FCM 전송에 실패했습니다.", INTERNAL_SERVER_ERROR),

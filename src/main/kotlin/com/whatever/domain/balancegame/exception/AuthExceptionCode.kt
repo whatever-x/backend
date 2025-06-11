@@ -1,5 +1,6 @@
 package com.whatever.domain.balancegame.exception
 
+import com.whatever.global.exception.ErrorUiType
 import com.whatever.global.exception.common.CaramelExceptionCode
 import org.springframework.http.HttpStatus
 
@@ -7,6 +8,7 @@ enum class BalanceGameExceptionCode(
     sequence: String,
     override val message: String,
     override val status: HttpStatus = HttpStatus.BAD_REQUEST,
+    override val errorUiType: ErrorUiType = ErrorUiType.TOAST,
 ) : CaramelExceptionCode {
 
     UNKNOWN( "000", "알 수 없는 에러입니다. 담당자에게 문의해주세요.", HttpStatus.INTERNAL_SERVER_ERROR),
