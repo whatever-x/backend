@@ -1,21 +1,16 @@
 package com.whatever.domain.auth.repository
 
 import com.whatever.config.properties.JwtProperties
-import com.whatever.domain.auth.service.logger
 import com.whatever.domain.base.RedisRepository
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.withoutNano
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.data.redis.connection.DataType
-import org.springframework.data.redis.core.Cursor
-import org.springframework.data.redis.core.KeyScanOptions
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.core.ScanOptions
 import org.springframework.stereotype.Repository
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
 val logger = KotlinLogging.logger {  }

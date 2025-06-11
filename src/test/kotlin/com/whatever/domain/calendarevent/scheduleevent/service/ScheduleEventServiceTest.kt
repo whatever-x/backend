@@ -507,7 +507,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         )
 
         // when, then
-        val exception = assertThrows<ScheduleIllegalStateException> {
+        val exception = assertThrows<ScheduleAccessDeniedException> {
             scheduleEventService.updateSchedule(
                 scheduleId = oldSchedule.id,
                 request = request

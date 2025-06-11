@@ -69,32 +69,6 @@ class SampleController(
 
     @DisableSwaggerAuthButton
     @Operation(
-        summary = "기능명 기재",
-        description = "기능 설명 기재",
-    )
-    @ApiResponses(
-        ApiResponse(responseCode = "200", description = "응답에 대한 설명"),
-        ApiResponse(responseCode = "400", description = "응답에 대한 설명2"),
-        ApiResponse(
-            responseCode = "404",
-            description = "응답에 대한 설명3",
-            content = [  // 해당 응답에 대한 스키마 추가 가능
-                Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = ErrorResponse::class),
-                    //array = ArraySchema(schema = Schema(implementation = ExceptionResponse::class))  // array도 가능
-                )
-            ]
-        )
-    )
-    @GetMapping("/exception")
-    fun getException(): ResponseEntity<String> {
-        throw SampleNotFoundException(SampleExceptionCode.SAMPLE_CODE, "예외 생성 예시입니다.")
-        return ResponseEntity.ok("exception not found")
-    }
-
-    @DisableSwaggerAuthButton
-    @Operation(
         summary = "개발용 테스트 유저 생성",
         description = "개발용 테스트 유저입니다."
     )

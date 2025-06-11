@@ -49,22 +49,18 @@ class KapiErrorDecoder() : ErrorDecoder {
             HttpStatus.BAD_REQUEST ->
                 throw KakaoBadRequestException(
                     errorCode = KakaoServerExceptionCode.fromKakaoErrorCode(errorResponse.code),
-                    detailMessage = errorResponse.msg,
                 )
             HttpStatus.UNAUTHORIZED ->
                 throw KakaoUnauthorizedException(
                     errorCode = KakaoServerExceptionCode.fromKakaoErrorCode(errorResponse.code),
-                    detailMessage = errorResponse.msg,
                 )
             HttpStatus.FORBIDDEN ->
                 throw KakaoForbiddenException(
                     errorCode = KakaoServerExceptionCode.fromKakaoErrorCode(errorResponse.code),
-                    detailMessage = errorResponse.msg,
                 )
             HttpStatus.SERVICE_UNAVAILABLE ->
                 throw KakaoServiceUnavailableException(
                     errorCode = KakaoServerExceptionCode.fromKakaoErrorCode(errorResponse.code),
-                    detailMessage = errorResponse.msg,
                 )
             else -> throw KakaoServerException(errorCode = UNKNOWN)
         }
@@ -82,9 +78,7 @@ internal fun <T : Any> Response.toObject(objectType: KClass<T>): T {
             jacksonObjectMapper().readValue(bodyInputStream, objectType.java)
         }
     } catch (e: Exception) {
-        throw KakaoServerException(
-            errorCode = UNKNOWN,
-            detailMessage = "Kakao Api 에러 메시지 파싱에 실패했습니다. 대상 class: ${objectType.simpleName}"
-        )
+        logger.warn { "Kakao Api 에러 메시지 파싱에 실패했습니다. 대상 class: ${objectType.simpleName}" }
+        throw KakaoServerException(errorCode = UNKNOWN)
     }
 }
