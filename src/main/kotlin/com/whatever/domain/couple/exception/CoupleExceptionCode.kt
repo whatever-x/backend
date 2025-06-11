@@ -1,15 +1,12 @@
 package com.whatever.domain.couple.exception
 
-import com.whatever.global.exception.ErrorUiType
 import com.whatever.global.exception.common.CaramelExceptionCode
 import org.springframework.http.HttpStatus
 
 enum class CoupleExceptionCode(
     sequence: String,
     override val message: String,
-    override val description: String? = null,
     override val status: HttpStatus = HttpStatus.BAD_REQUEST,
-    override val errorUiType: ErrorUiType = ErrorUiType.TOAST,
 ) : CaramelExceptionCode {
 
     INVALID_USER_STATUS(
@@ -26,12 +23,10 @@ enum class CoupleExceptionCode(
         sequence = "003",
         message = "사용할 수 없는 초대코드에요",
         status = HttpStatus.NOT_FOUND,
-        errorUiType = ErrorUiType.DIALOG,
     ),
     INVITATION_CODE_SELF_GENERATED(
         sequence = "004",
         message = "내가 만든 초대코드는 등록할 수 없어요",
-        errorUiType = ErrorUiType.DIALOG,
     ),
     MEMBER_NOT_FOUND(
         sequence = "005",
@@ -64,7 +59,6 @@ enum class CoupleExceptionCode(
     INACTIVE_COUPLE_STATUS(
         sequence = "011",
         message = "커플의 연결이 끊어져 더 이상 이 공간의 데이터를 수정할 수 없어요.",
-        errorUiType = ErrorUiType.DIALOG,
     ),
     SHARED_MESSAGE_OUT_OF_LENGTH(
         sequence = "012",
