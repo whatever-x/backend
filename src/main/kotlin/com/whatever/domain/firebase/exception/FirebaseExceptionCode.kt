@@ -1,6 +1,5 @@
 package com.whatever.domain.firebase.exception
 
-import com.whatever.global.exception.ErrorUiType
 import com.whatever.global.exception.common.CaramelExceptionCode
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.BAD_REQUEST
@@ -11,9 +10,7 @@ import org.springframework.http.HttpStatus.TOO_MANY_REQUESTS
 enum class FirebaseExceptionCode(
     sequence: String,
     override val message: String,
-    override val description: String? = null,
     override val status: HttpStatus = BAD_REQUEST,
-    override val errorUiType: ErrorUiType = ErrorUiType.TOAST,
 ) : CaramelExceptionCode {
 
     UNKNOWN(
@@ -60,7 +57,11 @@ enum class FirebaseExceptionCode(
         sequence = "009",
         message = "FCM 외부 인증 서비스(예: APNs)에서 오류가 발생했습니다.",
         status = INTERNAL_SERVER_ERROR,
-    )
+    ),
+    FCM_BLANK_TOKEN(
+        sequence = "010",
+        message = "FCM 토큰은 Blank일 수 없습니다.",
+    ),
     ;
 
     override val code = "FIREBASE$sequence"
