@@ -1,15 +1,12 @@
 package com.whatever.domain.user.exception
 
-import com.whatever.global.exception.ErrorUiType
 import com.whatever.global.exception.common.CaramelExceptionCode
 import org.springframework.http.HttpStatus
 
 enum class UserExceptionCode(
     sequence: String,
     override val message: String,
-    override val description: String? = null,
     override val status: HttpStatus = HttpStatus.BAD_REQUEST,
-    override val errorUiType: ErrorUiType = ErrorUiType.TOAST,
 ) : CaramelExceptionCode {
 
     INVALID_NICKNAME_CHARACTER(
