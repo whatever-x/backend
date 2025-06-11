@@ -1,15 +1,13 @@
 package com.whatever.global.exception.common
 
-import com.whatever.global.exception.ErrorUiType
+import com.whatever.global.exception.ErrorUi
 
 /**
  * 커스텀 예외 객체들의 부모
  * @param errorCode 예외 코드를 지정
- * @param detailMessage (선택)디버깅에 필요한 추가적인 메시지
- * @param overrideErrorUiType (선택)errorCode에 정의된 UI Type를 재정의
+ * @param errorUi 클라이언트에서 예외를 표시할 UI Type
  */
 abstract class CaramelException(
     val errorCode: CaramelExceptionCode,
-    val detailMessage: String? = null,
-    val overrideErrorUiType: ErrorUiType? = null
+    val errorUi: ErrorUi = ErrorUi.Toast("알 수 없는 에러입니다.")
 ) : RuntimeException(errorCode.message)

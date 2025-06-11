@@ -1,6 +1,7 @@
 package com.whatever.global.security.handler
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.security.exception.SecurityExceptionCode
 import com.whatever.global.security.util.setExceptionResponse
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -21,10 +22,10 @@ class CaramelAuthenticationEntryPoint(
         response: HttpServletResponse,
         authException: AuthenticationException
     ) {
-        logger.error(authException) { request.requestURI }
+        logger.error(authException) { "인증에 실패했습니다. 접근 API: ${request.requestURI}" }
         response.setExceptionResponse(
             errorCode = SecurityExceptionCode.UNAUTHORIZED,
-            detailMessage = "인증에 실패했습니다. 접근 API: ${request.requestURI}",
+            errorUi = ErrorUi.Toast("재로그인이 필요해요"),
             objectMapper = objectMapper
         )
     }

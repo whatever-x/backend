@@ -4,17 +4,14 @@ import com.whatever.global.exception.externalserver.ExternalServerException
 
 open class SpecialDayApiException(
     errorCode: SpecialDayApiExceptionCode,
-    detailMessage: String? = null,
-) : ExternalServerException(errorCode, detailMessage)
+) : ExternalServerException(errorCode, )
 
 class SpecialDayDecodeException(
     errorCode: SpecialDayApiExceptionCode,
-    detailMessage: String? = null,
-) : SpecialDayApiException(errorCode, detailMessage)
+) : SpecialDayApiException(errorCode)
 
 class SpecialDayFailedOperationException(
     errorCode: SpecialDayApiExceptionCode,
-    detailMessage: String? = null,
     val resultCode: String? = null,
     val resultMsg: String? = null,
-) : SpecialDayApiException(errorCode, detailMessage)
+) : SpecialDayApiException(errorCode)

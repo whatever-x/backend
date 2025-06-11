@@ -1,15 +1,12 @@
 package com.whatever.global.exception.externalserver.specialday
 
-import com.whatever.global.exception.ErrorUiType
 import com.whatever.global.exception.externalserver.ExternalServerExceptionCode
 import org.springframework.http.HttpStatus
 
 enum class SpecialDayApiExceptionCode(
     val sequence: String,
     override val message: String,
-    override val description: String? = null,
     override val status: HttpStatus = HttpStatus.BAD_REQUEST,
-    override val errorUiType: ErrorUiType = ErrorUiType.TOAST,
 ) : ExternalServerExceptionCode {
     UNKNOWN(
         sequence = "000",

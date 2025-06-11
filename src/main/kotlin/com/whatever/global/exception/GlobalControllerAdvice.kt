@@ -34,8 +34,8 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
     fun handleExhaustedRetryException(e: ExhaustedRetryException): ResponseEntity<CaramelApiResponse<*>> {
         throw e.cause ?: return createExceptionResponse(
             errorCode = GlobalExceptionCode.ILLEGAL_STATE,
-            debugMessage = e.message
-        )
+            errorUi = ErrorUi.Toast("알 수 없는 오류가 발생했습니다."),
+            )
     }
 
     @ExceptionHandler(AccessDeniedException::class)
@@ -43,7 +43,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
         logger.error(e) { "잘못된 접근 입니다." }
         return createExceptionResponse(
             errorCode = GlobalExceptionCode.ACCESS_DENIED,
-            debugMessage = e.message
+            errorUi = ErrorUi.Toast("접근할 수 없는 작업이에요"),
         )
     }
 
@@ -52,7 +52,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
         logger.error(e) { "잘못된 인자가 전달되었습니다." }
         return createExceptionResponse(
             errorCode = GlobalExceptionCode.INVALID_ARGUMENT,
-            debugMessage = e.message
+            errorUi = ErrorUi.Toast("잘못된 값이 전달되었어요"),
         )
     }
 
@@ -61,7 +61,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
         logger.error(e) { "잘못된 상태입니다." }
         return createExceptionResponse(
             errorCode = GlobalExceptionCode.ILLEGAL_STATE,
-            debugMessage = e.message
+            errorUi = ErrorUi.Toast("알 수 없는 오류가 발생했습니다."),
         )
     }
 
@@ -83,9 +83,10 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
 
                 else -> "처리할 수 없는 에러가 발생했습니다. 관리자에게 문의해주세요."
             }
+        logger.error(e) { detailMessage }
         return createExceptionResponse(
             errorCode = GlobalExceptionCode.ARGS_VALIDATION_FAILED,
-            debugMessage = detailMessage
+            errorUi = ErrorUi.Toast("잘못된 값이 전달되었어요"),
         )
     }
 
@@ -96,8 +97,8 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
     fun handleMethodArgumentTypeMismatchException(e: Exception): ResponseEntity<CaramelApiResponse<*>> {
         return createExceptionResponse(
             errorCode = GlobalExceptionCode.ARGS_TYPE_MISMATCH,
-            debugMessage = null
-        )
+            errorUi = ErrorUi.Toast("알 수 없는 오류가 발생했습니다."),
+            )
     }
 
     @ExceptionHandler(Exception::class)
@@ -107,7 +108,10 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
             throw e
         }
         logger.error(e) { "예상하지 못한 예외가 발생했습니다." }
-        return createExceptionResponse(errorCode = GlobalExceptionCode.UNKNOWN)
+        return createExceptionResponse(
+            errorCode = GlobalExceptionCode.UNKNOWN,
+            errorUi = ErrorUi.Toast("알 수 없는 오류가 발생했습니다."),
+        )
     }
 
     @ExceptionHandler(
@@ -115,6 +119,9 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
         HttpRequestMethodNotSupportedException::class
     )
     fun handleNoResourceFoundException(e: ServletException): ResponseEntity<CaramelApiResponse<*>> {
-        return createExceptionResponse(errorCode = GlobalExceptionCode.NO_RESOURCE)
+        return createExceptionResponse(
+            errorCode = GlobalExceptionCode.NO_RESOURCE,
+            errorUi = ErrorUi.Toast("알 수 없는 오류가 발생했습니다."),
+        )
     }
 }
