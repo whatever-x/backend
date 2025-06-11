@@ -1,7 +1,8 @@
 package com.whatever.domain.content.model
 
-import com.whatever.domain.content.exception.ContentExceptionCode
+import com.whatever.domain.content.exception.ContentExceptionCode.ILLEGAL_CONTENT_DETAIL
 import com.whatever.domain.content.exception.ContentIllegalArgumentException
+import com.whatever.global.exception.ErrorUi
 import jakarta.persistence.Column
 import jakarta.persistence.Embeddable
 import org.hibernate.validator.constraints.CodePointLength
@@ -23,14 +24,14 @@ class ContentDetail(
     init {
         if (title == null && description == null) {
             throw ContentIllegalArgumentException(
-                errorCode = ContentExceptionCode.ILLEGAL_CONTENT_DETAIL,
-                detailMessage = "Both title and description cannot be Null."
+                errorCode = ILLEGAL_CONTENT_DETAIL,
+                errorUi = ErrorUi.Toast("제목이나 본문 중 하나는 입력해야 해요."),
             )
         }
         if ((title?.isBlank() == true) || (description?.isBlank() == true)) {
             throw ContentIllegalArgumentException(
-                errorCode = ContentExceptionCode.ILLEGAL_CONTENT_DETAIL,
-                detailMessage = "Title and description must not be blank."
+                errorCode = ILLEGAL_CONTENT_DETAIL,
+                errorUi = ErrorUi.Toast("공백은 입력할 수 없어요."),
             )
         }
     }

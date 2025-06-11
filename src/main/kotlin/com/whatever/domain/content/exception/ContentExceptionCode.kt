@@ -1,15 +1,12 @@
 package com.whatever.domain.content.exception
 
-import com.whatever.global.exception.ErrorUiType
 import com.whatever.global.exception.common.CaramelExceptionCode
 import org.springframework.http.HttpStatus
 
 enum class ContentExceptionCode(
     sequence: String,
     override val message: String,
-    override val description: String? = null,
     override val status: HttpStatus = HttpStatus.BAD_REQUEST,
-    override val errorUiType: ErrorUiType = ErrorUiType.TOAST,
 ) : CaramelExceptionCode {
 
     TITLE_OR_DESCRIPTION_REQUIRED(

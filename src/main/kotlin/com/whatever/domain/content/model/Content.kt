@@ -4,6 +4,7 @@ import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.content.exception.ContentExceptionCode.ILLEGAL_CONTENT_DETAIL
 import com.whatever.domain.content.exception.ContentIllegalArgumentException
 import com.whatever.domain.user.model.User
+import com.whatever.global.exception.ErrorUi
 import jakarta.persistence.*
 
 @Entity
@@ -36,7 +37,7 @@ class Content(
         if (newContentDetail.title == null && newContentDetail.description == null) {
             throw ContentIllegalArgumentException(
                 errorCode = ILLEGAL_CONTENT_DETAIL,
-                detailMessage = "Both title and description cannot be Null."
+                errorUi = ErrorUi.Toast("제목이나 본문 중 하나는 입력해야 해요."),
             )
         }
         with(contentDetail) {

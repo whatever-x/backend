@@ -29,6 +29,7 @@ import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.firebase.service.event.dto.MemoCreateEvent
 import com.whatever.domain.firebase.service.event.dto.ScheduleCreateEvent
 import com.whatever.global.cursor.CursoredResponse
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserCoupleId
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
@@ -141,20 +142,14 @@ class ContentService(
         val memo = contentRepository.findContentByIdAndType(
             id = contentId,
             type = ContentType.MEMO
-        ) ?: throw ContentNotFoundException(
-            errorCode = MEMO_NOT_FOUND,
-            detailMessage = "Memo not found or has been deleted. (contentId: ${contentId})"
-        )
+        ) ?: throw ContentNotFoundException(errorCode = MEMO_NOT_FOUND)
 
         val couple = coupleRepository.findByIdWithMembers(getCurrentUserCoupleId())
             ?: throw CoupleNotFoundException(COUPLE_NOT_FOUND)
 
         val contentOwnerCoupleId = memo.user.couple?.id
         if (couple.id != contentOwnerCoupleId) {
-            throw ContentAccessDeniedException(
-                errorCode = COUPLE_NOT_MATCHED,
-                detailMessage = "The current user's couple does not match the content owner's couple"
-            )
+            throw ContentAccessDeniedException(errorCode = COUPLE_NOT_MATCHED)
         }
 
         val newContentDetail = ContentDetail(
@@ -236,8 +231,11 @@ class ContentService(
         e: OptimisticLockingFailureException,
         contentId: Long,
     ) {
-        logger.error { "update schedule fail. content id: $contentId" }
-        throw ContentIllegalStateException(errorCode = ContentExceptionCode.UPDATE_CONFLICT)
+        logger.error { "update memo fail. content id: $contentId" }
+        throw ContentIllegalStateException(
+            errorCode = ContentExceptionCode.UPDATE_CONFLICT,
+            errorUi = ErrorUi.Toast("메모 수정을 실패했어요. 다시 시도해주세요.")
+        )
     }
 
     @Recover
@@ -245,8 +243,11 @@ class ContentService(
         e: OptimisticLockingFailureException,
         contentId: Long,
     ) {
-        logger.error { "delete content fail. content id: $contentId" }
-        throw ContentIllegalStateException(errorCode = ContentExceptionCode.UPDATE_CONFLICT)
+        logger.error { "delete memo fail. content id: $contentId" }
+        throw ContentIllegalStateException(
+            errorCode = ContentExceptionCode.UPDATE_CONFLICT,
+            errorUi = ErrorUi.Toast("메모 삭제를 실패했어요. 다시 시도해주세요.")
+        )
     }
 }
 
