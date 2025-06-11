@@ -13,8 +13,7 @@ abstract class CaramelControllerAdvice {
             .status(errorCode.status)
             .body(
                 CaramelApiResponse.failed(
-                    code = errorCode.code,
-                    message = errorCode.message,
+                    code = errorCode,
                     debugMessage = debugMessage
                 )
             )

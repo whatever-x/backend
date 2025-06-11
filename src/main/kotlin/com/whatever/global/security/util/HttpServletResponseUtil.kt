@@ -17,8 +17,7 @@ fun HttpServletResponse.setExceptionResponse(
     writer.write(
         objectMapper.writeValueAsString(
             CaramelApiResponse.failed(
-                code = errorCode.code,
-                message = errorCode.message,
+                code = errorCode,
                 debugMessage = detailMessage
             )
         )
