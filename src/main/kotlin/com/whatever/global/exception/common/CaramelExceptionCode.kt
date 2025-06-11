@@ -7,5 +7,6 @@ interface CaramelExceptionCode {
     val status: HttpStatus
     val code: String
     val message: String
+    val description: String?
     val errorUiType: ErrorUiType
 }

@@ -7,6 +7,7 @@ import com.whatever.global.exception.common.CaramelExceptionCode
 data class ErrorResponse(
     val code: String,
     val message: String,
+    val description: String?,
     val debugMessage: String?,
     val errorUiType: ErrorUiType,
 ) {
@@ -19,6 +20,7 @@ data class ErrorResponse(
             return ErrorResponse(
                 code = errorCode.code,
                 message = errorCode.message,
+                description = errorCode.description,
                 debugMessage = debugMessage,
                 errorUiType = errorUiType,
             )
