@@ -8,6 +8,7 @@ import com.whatever.domain.calendarevent.scheduleevent.model.converter.ZonedIdCo
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
 import com.whatever.domain.content.model.ContentType
+import com.whatever.global.exception.ErrorUi
 import com.whatever.util.endOfDay
 import com.whatever.util.toZonId
 import com.whatever.util.withoutNano
@@ -75,7 +76,7 @@ class ScheduleEvent(
         if (endInstant.isBefore(startInstant)) {
             throw ScheduleIllegalArgumentException(
                 errorCode = ILLEGAL_DURATION,
-                detailMessage = "종료 시각(${endInstant})이 시작 시각(${startInstant})보다 이전일 수 없습니다."
+                errorUi = ErrorUi.Toast("시작일은 종료일보다 이전이어야 해요."),
             )
         }
     }
@@ -129,7 +130,10 @@ class ScheduleEvent(
             endTimeZone: ZoneId? = null,
         ): ScheduleEvent {
             if (memo.type != ContentType.MEMO) {
-                throw ScheduleIllegalArgumentException(errorCode = ILLEGAL_CONTENT_TYPE)
+                throw ScheduleIllegalArgumentException(
+                    errorCode = ILLEGAL_CONTENT_TYPE,
+                    errorUi = ErrorUi.Toast("메모 콘텐츠만 일정으로 바꿀 수 있어요.")
+                )
             }
 
             memo.updateType(ContentType.SCHEDULE)

@@ -30,6 +30,7 @@ import com.whatever.domain.couple.exception.CoupleNotFoundException
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.firebase.service.event.dto.ScheduleCreateEvent
 import com.whatever.domain.user.model.UserStatus.SINGLE
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserCoupleId
@@ -231,7 +232,10 @@ class ScheduleEventService(
         scheduleId: Long,
     ) {
         logger.error { "update schedule fail. schedule id: ${scheduleId}" }
-        throw ScheduleIllegalStateException(errorCode = UPDATE_CONFLICT)
+        throw ScheduleIllegalStateException(
+            errorCode = UPDATE_CONFLICT,
+            errorUi = ErrorUi.Toast("일정 수정을 실패했어요. 다시 시도해주세요.")
+        )
     }
 
     @Recover
@@ -240,20 +244,23 @@ class ScheduleEventService(
         scheduleId: Long,
     ) {
         logger.error { "delete schedule fail. schedule id: ${scheduleId}" }
-        throw ScheduleIllegalStateException(errorCode = UPDATE_CONFLICT)
+        throw ScheduleIllegalStateException(
+            errorCode = UPDATE_CONFLICT,
+            errorUi = ErrorUi.Toast("일정 삭제를 실패했어요. 다시 시도해주세요.")
+        )
     }
 
     private fun validateRequestContentDetail(title: String?, description: String?) {
         if (title == null && description == null) {
             throw ScheduleIllegalArgumentException(
                 errorCode = ILLEGAL_CONTENT_DETAIL,
-                detailMessage = "Both title and description cannot be Null."
+                errorUi = ErrorUi.Toast("제목이나 본문 중 하나는 입력해야 해요."),
             )
         }
         if ((title?.isBlank() == true) || (description?.isBlank() == true)) {
             throw ScheduleIllegalArgumentException(
                 errorCode = ILLEGAL_CONTENT_DETAIL,
-                detailMessage = "Title and description must not be blank."
+                errorUi = ErrorUi.Toast("공백은 입력할 수 없어요."),
             )
         }
     }
@@ -262,7 +269,7 @@ class ScheduleEventService(
         if (startDateTime != null && endDateTime?.isBefore(startDateTime) == true) {
             throw ScheduleIllegalArgumentException(
                 errorCode = ILLEGAL_DURATION,
-                detailMessage = "EndDateTime must not be before startDateTime."
+                errorUi = ErrorUi.Toast("시작일은 종료일보다 이전이어야 해요."),
             )
         }
     }
@@ -274,23 +281,14 @@ class ScheduleEventService(
         if (currentUserId != scheduleOwnerUser.id) {
             val currentUserCoupleId = getCurrentUserCoupleId()
             if (scheduleOwnerUser.userStatus == SINGLE) {
-                throw ScheduleIllegalStateException(
-                    errorCode = ILLEGAL_PARTNER_STATUS,
-                    detailMessage = "Schedule owner is single now."
-                )
+                throw ScheduleAccessDeniedException(errorCode = ILLEGAL_PARTNER_STATUS)
             }
 
             val scheduleOwnerCoupleId = scheduleOwnerUser.couple?.id
-                ?: throw ScheduleIllegalStateException(
-                    errorCode = ILLEGAL_PARTNER_STATUS,
-                    detailMessage = "Schedule owner's couple data is missing."
-                )
+                ?: throw ScheduleAccessDeniedException(errorCode = ILLEGAL_PARTNER_STATUS)
 
             if (currentUserCoupleId != scheduleOwnerCoupleId) {
-                throw ScheduleAccessDeniedException(
-                    errorCode = COUPLE_NOT_MATCHED,
-                    detailMessage = "The current user's couple does not match the schedule owner's couple"
-                )
+                throw ScheduleAccessDeniedException(errorCode = COUPLE_NOT_MATCHED)
             }
         }
     }
