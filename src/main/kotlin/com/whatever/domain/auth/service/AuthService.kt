@@ -17,7 +17,7 @@ import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.exception.ErrorUiType
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.findByIdAndNotDeleted
@@ -28,7 +28,7 @@ import org.springframework.cache.CacheManager
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger {  }
 
 @Service
 class AuthService(
@@ -50,7 +50,7 @@ class AuthService(
         val userProvider = userProviderMap[loginPlatform]
             ?: throw AuthFailedException(
                 errorCode = USER_PROVIDER_NOT_FOUND,
-                detailMessage = "일치하는 로그인 플랫폼이 없습니다. platform: $loginPlatform"
+                errorUi = ErrorUi.Dialog("로그인을 하지 못 했어요.\n다시 한 번 시도해 주세요."),
             )
 
         val user = runCatching { userProvider.findOrCreateUser(idToken) }
@@ -65,12 +65,12 @@ class AuthService(
                     logger.warn(exception) { "User sign-in failed." }
                     throw AuthFailedException(
                         errorCode = AuthExceptionCode.UNKNOWN,
-                        overrideErrorUiType = ErrorUiType.DIALOG,
+                        errorUi = ErrorUi.Dialog("로그인을 하지 못 했어요.\n다시 한 번 시도해 주세요."),
                     )
                 }
                 throw IllegalOidcTokenException(
                     errorCode = AuthExceptionCode.ILLEGAL_KID,
-                    detailMessage = "일치하는 Kid가 없는 idToken입니다."
+                    errorUi = ErrorUi.Dialog("로그인을 하지 못 했어요.\n다시 한 번 시도해 주세요."),
                 )
             }
 

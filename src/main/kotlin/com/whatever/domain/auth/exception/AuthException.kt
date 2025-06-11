@@ -1,26 +1,23 @@
 package com.whatever.domain.auth.exception
 
-import com.whatever.global.exception.ErrorUiType
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.exception.common.CaramelException
 
 open class AuthException(
     errorCode: AuthExceptionCode,
-    detailMessage: String? = null,
-    overrideErrorUiType: ErrorUiType? = null,
-) : CaramelException(errorCode, detailMessage, overrideErrorUiType)
+    errorUi: ErrorUi = ErrorUi.Toast("알 수 없는 에러입니다."),
+) : CaramelException(errorCode, errorUi)
 
 class AuthFailedException(
     errorCode: AuthExceptionCode,
-    detailMessage: String? = null,
-    overrideErrorUiType: ErrorUiType? = null,
-) : AuthException(errorCode, detailMessage, overrideErrorUiType)
+    errorUi: ErrorUi,
+) : AuthException(errorCode, errorUi)
 
 class IllegalOidcTokenException(
     errorCode: AuthExceptionCode,
-    detailMessage: String? = null,
-) : AuthException(errorCode, detailMessage)
+    errorUi: ErrorUi,
+) : AuthException(errorCode, errorUi)
 
 class OidcPublicKeyMismatchException(
     errorCode: AuthExceptionCode,
-    detailMessage: String? = null,
-) : AuthException(errorCode, detailMessage)
+) : AuthException(errorCode)
