@@ -27,6 +27,7 @@ import com.whatever.domain.firebase.service.event.dto.CoupleConnectedEvent
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
+import com.whatever.global.exception.ErrorUiType
 import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserCoupleId
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
@@ -178,10 +179,18 @@ class CoupleService(
 
         val users = userRepository.findUserByIdIn(setOf(creatorUserId, joinerUserId))
         val creatorUser = users.find { it.id == creatorUserId }
-            ?: throw CoupleException(errorCode = MEMBER_NOT_FOUND, detailMessage = "host user not found")
+            ?: throw CoupleException(
+                errorCode = MEMBER_NOT_FOUND,
+                detailMessage = "Host user not found",
+                overrideErrorUiType = ErrorUiType.DIALOG,
+            )
         validateSingleUser(creatorUser)
         val joinerUser = users.find { it.id == joinerUserId }
-            ?: throw CoupleException(errorCode = MEMBER_NOT_FOUND, detailMessage = "partner user not found")
+            ?: throw CoupleException(
+                errorCode = MEMBER_NOT_FOUND,
+                detailMessage = "Partner user not found",
+                overrideErrorUiType = ErrorUiType.DIALOG,
+            )
         validateSingleUser(joinerUser)
 
         val savedCouple = coupleRepository.save(Couple())

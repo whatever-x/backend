@@ -1,11 +1,13 @@
 package com.whatever.domain.couple.exception
 
+import com.whatever.global.exception.ErrorUiType
 import com.whatever.global.exception.common.CaramelException
 
 open class CoupleException(
     errorCode: CoupleExceptionCode,
-    detailMessage: String? = null
-) : CaramelException(errorCode, detailMessage)
+    detailMessage: String? = null,
+    overrideErrorUiType: ErrorUiType? = null
+) : CaramelException(errorCode, detailMessage, overrideErrorUiType)
 
 class CoupleAccessDeniedException(
     errorCode: CoupleExceptionCode,

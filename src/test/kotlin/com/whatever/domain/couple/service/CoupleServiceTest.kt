@@ -300,7 +300,7 @@ class CoupleServiceTest @Autowired constructor(
         // when, then
         assertThatThrownBy { coupleService.createCouple(request) }
             .isInstanceOf(CoupleException::class.java)
-            .hasMessage("스스로 생성한 코드는 사용할 수 없습니다.")
+            .hasMessage(CoupleExceptionCode.INVITATION_CODE_SELF_GENERATED.message)
     }
 
     @DisplayName("커플 시작일을 업데이트시 변경된 응답이 반환된다.")
