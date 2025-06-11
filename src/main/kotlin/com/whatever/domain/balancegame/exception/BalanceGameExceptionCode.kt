@@ -23,7 +23,7 @@ enum class BalanceGameExceptionCode(
     ),
     GAME_CHANGED(
         sequence = "002",
-        message = "오늘의 게임이 아닙니다. 다시 요청해주세요.",
+        message = "12시가 넘어 새로운 질문으로 업데이트되었어요.\n질문을 보고 새롭게 선택해 주세요.",
         errorUiType = ErrorUiType.DIALOG,
     ),
     ILLEGAL_OPTION(
