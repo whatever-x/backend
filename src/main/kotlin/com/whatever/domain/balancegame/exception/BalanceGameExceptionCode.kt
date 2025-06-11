@@ -1,15 +1,12 @@
 package com.whatever.domain.balancegame.exception
 
-import com.whatever.global.exception.ErrorUiType
 import com.whatever.global.exception.common.CaramelExceptionCode
 import org.springframework.http.HttpStatus
 
 enum class BalanceGameExceptionCode(
     sequence: String,
     override val message: String,
-    override val description: String? = null,
     override val status: HttpStatus = HttpStatus.BAD_REQUEST,
-    override val errorUiType: ErrorUiType = ErrorUiType.TOAST,
 ) : CaramelExceptionCode {
 
     UNKNOWN(
@@ -25,7 +22,6 @@ enum class BalanceGameExceptionCode(
     GAME_CHANGED(
         sequence = "002",
         message = "12시가 넘어 새로운 질문으로 업데이트되었어요.\n질문을 보고 새롭게 선택해 주세요.",
-        errorUiType = ErrorUiType.DIALOG,
     ),
     ILLEGAL_OPTION(
         sequence = "003",

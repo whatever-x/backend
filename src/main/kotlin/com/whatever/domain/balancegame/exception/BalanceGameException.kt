@@ -1,28 +1,29 @@
 package com.whatever.domain.balancegame.exception
 
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.exception.common.CaramelException
 
 open class BalanceGameException(
     errorCode: BalanceGameExceptionCode,
-    detailMessage: String? = null
-) : CaramelException(errorCode, detailMessage)
+    errorUi: ErrorUi = ErrorUi.Toast("알 수 없는 에러입니다."),
+) : CaramelException(errorCode, errorUi)
 
 class BalanceGameIllegalStateException(
     errorCode: BalanceGameExceptionCode,
-    detailMessage: String? = null
-) : BalanceGameException(errorCode, detailMessage)
+    errorUi: ErrorUi
+) : BalanceGameException(errorCode, errorUi)
 
 class BalanceGameIllegalArgumentException(
     errorCode: BalanceGameExceptionCode,
-    detailMessage: String? = null
-) : BalanceGameException(errorCode, detailMessage)
+    errorUi: ErrorUi
+) : BalanceGameException(errorCode, errorUi)
 
 class BalanceGameNotFoundException(
     errorCode: BalanceGameExceptionCode,
-    detailMessage: String? = null
-) : BalanceGameException(errorCode, detailMessage)
+    errorUi: ErrorUi = ErrorUi.Toast("밸런스 게임을 찾을 수 없어요."),
+) : BalanceGameException(errorCode, errorUi)
 
 class BalanceGameOptionNotFoundException(
     errorCode: BalanceGameExceptionCode,
-    detailMessage: String? = null
-) : BalanceGameException(errorCode, detailMessage)
+    errorUi: ErrorUi = ErrorUi.Toast("밸런스 선택지를 찾을 수 없어요."),
+) : BalanceGameException(errorCode, errorUi)
