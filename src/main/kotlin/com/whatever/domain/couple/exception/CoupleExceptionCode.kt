@@ -60,9 +60,10 @@ enum class CoupleExceptionCode(
         sequence = "010",
         message = "커플 시작일은 오늘 이전이어야 합니다."
     ),
-    ILLEGAL_COUPLE_STATUS(
+    INACTIVE_COUPLE_STATUS(
         sequence = "011",
-        message = "커플의 상태가 올바르지 않습니다."
+        message = "커플의 연결이 끊어져 더 이상 이 공간의 데이터를 수정할 수 없어요.",
+        errorUiType = ErrorUiType.DIALOG,
     ),
     SHARED_MESSAGE_OUT_OF_LENGTH(
         sequence = "012",

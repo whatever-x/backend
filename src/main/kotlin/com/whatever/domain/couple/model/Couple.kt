@@ -81,7 +81,7 @@ class Couple(
 
     fun updateStartDate(newDate: LocalDate, userZoneId: ZoneId) {
         if (status == INACTIVE) {
-            throw CoupleIllegalStateException(errorCode = CoupleExceptionCode.ILLEGAL_COUPLE_STATUS)
+            throw CoupleIllegalStateException(errorCode = CoupleExceptionCode.INACTIVE_COUPLE_STATUS)
         }
         val todayInUserZone = DateTimeUtil.zonedNow(userZoneId).toLocalDate()
         if (newDate.isAfter(todayInUserZone)) {
@@ -93,7 +93,7 @@ class Couple(
 
     fun updateSharedMessage(newMessage: String?) {
         if (status == INACTIVE) {
-            throw CoupleIllegalStateException(errorCode = CoupleExceptionCode.ILLEGAL_COUPLE_STATUS)
+            throw CoupleIllegalStateException(errorCode = CoupleExceptionCode.INACTIVE_COUPLE_STATUS)
         }
         newMessage?.let {
             if (newMessage.codePointCount(0, newMessage.length) > MAX_SHARED_MESSAGE_LENGTH) {
