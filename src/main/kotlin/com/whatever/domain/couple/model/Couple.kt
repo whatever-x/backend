@@ -9,6 +9,7 @@ import com.whatever.domain.couple.exception.CoupleIllegalArgumentException
 import com.whatever.domain.couple.exception.CoupleIllegalStateException
 import com.whatever.domain.couple.model.CoupleStatus.INACTIVE
 import com.whatever.domain.user.model.User
+import com.whatever.global.exception.ErrorUi
 import com.whatever.util.DateTimeUtil
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -52,13 +53,13 @@ class Couple(
         if (user1.id == user2.id) {
             throw CoupleIllegalArgumentException(
                 errorCode = ILLEGAL_MEMBER_SIZE,
-
+                errorUi = ErrorUi.Toast("커플 멤버 구성에 문제가 생겼어요. 다시 시도해주세요."),
                 )
         }
         if (mutableMembers.isNotEmpty()) {
             throw CoupleIllegalStateException(
                 errorCode = ILLEGAL_MEMBER_SIZE,
-                detailMessage = "커플에는 반드시 두 명의 유저가 있어야 합니다. 현재 등록된 유저 수: ${mutableMembers.size}"
+                errorUi = ErrorUi.Toast("이미 구성된 커플에는 멤버를 추가할 수 없어요."),
             )
         }
         user1.setCouple(this)
@@ -69,7 +70,10 @@ class Couple(
 
     fun removeMember(user: User) {
         if (!mutableMembers.removeIf { it.id == user.id }) {
-            throw CoupleIllegalArgumentException(errorCode = CoupleExceptionCode.NOT_A_MEMBER)
+            throw CoupleIllegalArgumentException(
+                errorCode = CoupleExceptionCode.NOT_A_MEMBER,
+                errorUi = ErrorUi.Toast("커플 멤버가 아닌 유저는 제거할 수 없어요."),
+            )
         }
 
         user.leaveFromCouple()
@@ -81,11 +85,17 @@ class Couple(
 
     fun updateStartDate(newDate: LocalDate, userZoneId: ZoneId) {
         if (status == INACTIVE) {
-            throw CoupleIllegalStateException(errorCode = CoupleExceptionCode.ILLEGAL_COUPLE_STATUS)
+            throw CoupleIllegalStateException(
+                errorCode = CoupleExceptionCode.INACTIVE_COUPLE_STATUS,
+                errorUi = ErrorUi.Dialog("커플 연결이 끊어져 더 이상 이 공간의 데이터를 더 이상 수정할 수 없어요."),
+            )
         }
         val todayInUserZone = DateTimeUtil.zonedNow(userZoneId).toLocalDate()
         if (newDate.isAfter(todayInUserZone)) {
-            throw CoupleIllegalArgumentException(errorCode = ILLEGAL_START_DATE)
+            throw CoupleIllegalArgumentException(
+                errorCode = ILLEGAL_START_DATE,
+                errorUi = ErrorUi.Toast("오늘보다 미래의 날짜는 설정할 수 없어요.")
+            )
         }
 
         startDate = newDate
@@ -93,11 +103,17 @@ class Couple(
 
     fun updateSharedMessage(newMessage: String?) {
         if (status == INACTIVE) {
-            throw CoupleIllegalStateException(errorCode = CoupleExceptionCode.ILLEGAL_COUPLE_STATUS)
+            throw CoupleIllegalStateException(
+                errorCode = CoupleExceptionCode.INACTIVE_COUPLE_STATUS,
+                errorUi = ErrorUi.Dialog("커플 연결이 끊어져 더 이상 이 공간의 데이터를 더 이상 수정할 수 없어요."),
+            )
         }
         newMessage?.let {
             if (newMessage.codePointCount(0, newMessage.length) > MAX_SHARED_MESSAGE_LENGTH) {
-                throw CoupleIllegalArgumentException(errorCode = SHARED_MESSAGE_OUT_OF_LENGTH)
+                throw CoupleIllegalArgumentException(
+                    errorCode = SHARED_MESSAGE_OUT_OF_LENGTH,
+                    errorUi = ErrorUi.Toast("최대 ${MAX_SHARED_MESSAGE_LENGTH}자 까지 입력할 수 있어요.")
+                )
             }
         }
         sharedMessage = newMessage.takeUnless { it.isNullOrBlank() }

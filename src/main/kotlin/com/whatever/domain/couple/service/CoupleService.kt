@@ -24,9 +24,13 @@ import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.repository.InvitationCodeRedisRepository
 import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
 import com.whatever.domain.firebase.service.event.dto.CoupleConnectedEvent
+import com.whatever.domain.user.exception.UserExceptionCode
+import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
+import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserCoupleId
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
@@ -83,7 +87,10 @@ class CoupleService(
     @Recover
     fun updateSharedMessageRecover(e: OptimisticLockingFailureException, coupleId: Long): CoupleBasicResponse {
         logger.error { "couple shared message update fail. couple id: ${coupleId}" }
-        throw CoupleIllegalStateException(errorCode = UPDATE_FAIL)
+        throw CoupleIllegalStateException(
+            errorCode = UPDATE_FAIL,
+            errorUi = ErrorUi.Toast("기억할 말을 저장하는 데 실패했어요."),
+        )
     }
 
     @Retryable(
@@ -120,7 +127,10 @@ class CoupleService(
         request: UpdateCoupleStartDateRequest,
     ): CoupleBasicResponse {
         logger.error { "couple start date update fail. couple id: ${coupleId}" }
-        throw CoupleIllegalStateException(errorCode = UPDATE_FAIL)
+        throw CoupleIllegalStateException(
+            errorCode = UPDATE_FAIL,
+            errorUi = ErrorUi.Toast("커플 시작일을 저장하는 데 실패했어요."),
+        )
     }
 
     fun getCoupleInfo(
@@ -141,7 +151,7 @@ class CoupleService(
         val partnerUser = couple.members.firstOrNull { it.id != currentUserId }
             ?: throw CoupleIllegalStateException(
                 errorCode = MEMBER_NOT_FOUND,
-                detailMessage = "상대방 유저에 대한 정보가 존재하지 않습니다."
+                errorUi = ErrorUi.Toast("커플 멤버 정보가 없어 불러올 수 없어요."),
             )
 
         return CoupleDetailResponse.from(
@@ -159,7 +169,7 @@ class CoupleService(
         val couple = coupleRepository.findByIdWithMembers(coupleId)
             ?: throw CoupleNotFoundException(errorCode = COUPLE_NOT_FOUND)
         val user = couple.members.find { it.id == userId }
-            ?: throw CoupleIllegalArgumentException(errorCode = NOT_A_MEMBER)
+            ?: throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
 
         couple.removeMember(user)
         applicationEventPublisher.publishEvent(CoupleMemberLeaveEvent(coupleId, userId))
@@ -169,19 +179,27 @@ class CoupleService(
     fun createCouple(request: CreateCoupleRequest): CoupleDetailResponse {
         val invitationCode = request.invitationCode
         val creatorUserId = inviCodeRedisRepository.getInvitationUser(invitationCode)
-            ?: throw CoupleException(errorCode = INVITATION_CODE_EXPIRED)
+            ?: throw CoupleException(
+                errorCode = INVITATION_CODE_EXPIRED,
+                errorUi = ErrorUi.Dialog("사용할 수 없는 초대코드에요.")
+            )
         val joinerUserId = getCurrentUserId()
 
         if (creatorUserId == joinerUserId) {
-            throw CoupleException(errorCode = INVITATION_CODE_SELF_GENERATED)
+            throw CoupleException(
+                errorCode = INVITATION_CODE_SELF_GENERATED,
+                errorUi = ErrorUi.Dialog("사용할 수 없는 초대코드에요.")
+            )
         }
 
+        logger.debug { "Start create couple. CreatorUser:${creatorUserId}, JoinerUser:${joinerUserId}" }
         val users = userRepository.findUserByIdIn(setOf(creatorUserId, joinerUserId))
+
         val creatorUser = users.find { it.id == creatorUserId }
-            ?: throw CoupleException(errorCode = MEMBER_NOT_FOUND, detailMessage = "host user not found")
+            ?: throw UserNotFoundException(errorCode = NOT_FOUND)
         validateSingleUser(creatorUser)
         val joinerUser = users.find { it.id == joinerUserId }
-            ?: throw CoupleException(errorCode = MEMBER_NOT_FOUND, detailMessage = "partner user not found")
+            ?: throw UserNotFoundException(errorCode = NOT_FOUND)
         validateSingleUser(joinerUser)
 
         val savedCouple = coupleRepository.save(Couple())
@@ -196,6 +214,7 @@ class CoupleService(
             )
         )
 
+        logger.debug { "New couple created. CreatorUser:${creatorUserId}, JoinerUser:${joinerUserId}" }
         return CoupleDetailResponse.from(
             couple = savedCouple,
             myUser = joinerUser,
@@ -228,7 +247,7 @@ class CoupleService(
         if (!result) {
             throw CoupleException(
                 errorCode = INVITATION_CODE_GENERATION_FAIL,
-                detailMessage = "invitation code conflict. try again"
+                errorUi = ErrorUi.Toast("초대 코드를 만들지 못했어요. 다시 시도해주세요."),
             )
         }
 
@@ -240,9 +259,10 @@ class CoupleService(
 
     private fun validateSingleUser(user: User) {
         if (user.userStatus != UserStatus.SINGLE) {
+            logger.warn { "Current user id: ${user.id}, status: ${user.userStatus}" }
             throw CoupleException(
                 errorCode = INVALID_USER_STATUS,
-                detailMessage = "user status: ${user.userStatus}"
+                errorUi = ErrorUi.Toast("이미 커플이 있다면, 사용할 수 없는 기능이에요."),
             )
         }
     }
@@ -252,30 +272,33 @@ class CoupleService(
             "생성 시도 횟수는 최대 10까지 세팅할 수 있습니다."
         }
 
-        var attempts = maxRegeneration
-        var newInvitationCode: String
-        do {
-            newInvitationCode = NanoId.generate(INVITATION_CODE_LENGTH)
+        for (attempt in 1..maxRegeneration) {
+            val newInvitationCode = NanoId.generate(INVITATION_CODE_LENGTH)
+
             if (inviCodeRedisRepository.getInvitationUser(newInvitationCode) == null) {
                 return newInvitationCode
             }
-            logger.info { "already exists code: $newInvitationCode. retry(${attempts-1} attempts left)." }
-        } while (--attempts > 0)
 
+            logger.info {
+                "Invitation code collision detected. Retrying... [Code: $newInvitationCode, Attempt: $attempt/$maxRegeneration]"
+            }
+        }
+
+        logger.warn { "Failed to generate a unique invitation code after $maxRegeneration attempts." }
         throw CoupleException(
             errorCode = INVITATION_CODE_GENERATION_FAIL,
-            detailMessage = "생성 시도 횟수: $maxRegeneration"
+            errorUi = ErrorUi.Toast("초대 코드를 만들지 못했어요. 다시 시도해주세요."),
         )
     }
 
 }
 
-private fun UserRepository.findUserById(id: Long, exceptionMessage: String? = null): User {
+private fun UserRepository.findUserById(id: Long): User {
     return findByIdAndNotDeleted(id)
-        ?: throw CoupleIllegalArgumentException(errorCode = MEMBER_NOT_FOUND, detailMessage = exceptionMessage)
+        ?: throw UserNotFoundException(errorCode = NOT_FOUND)
 }
 
-private fun CoupleRepository.findCoupleById(id: Long, exceptionMessage: String? = null): Couple {
+private fun CoupleRepository.findCoupleById(id: Long): Couple {
     return findByIdAndNotDeleted(id)
-        ?: throw CoupleNotFoundException(errorCode = COUPLE_NOT_FOUND, detailMessage = exceptionMessage)
+        ?: throw CoupleNotFoundException(errorCode = COUPLE_NOT_FOUND)
 }

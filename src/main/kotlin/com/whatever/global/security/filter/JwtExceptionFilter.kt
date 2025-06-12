@@ -1,11 +1,10 @@
 package com.whatever.global.security.filter
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.exception.GlobalExceptionCode
 import com.whatever.global.jwt.exception.CaramelJwtException
-import com.whatever.global.security.exception.AuthenticationException
 import com.whatever.global.security.exception.CaramelSecurityException
-import com.whatever.global.security.exception.SecurityExceptionCode
 import com.whatever.global.security.util.setExceptionResponse
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -27,19 +26,19 @@ class JwtExceptionFilter(
         } catch (e: CaramelJwtException) {
             response.setExceptionResponse(
                 errorCode = e.errorCode,
-                detailMessage = e.detailMessage,
+                errorUi = e.errorUi,
                 objectMapper = objectMapper
             )
         } catch (e: CaramelSecurityException) {
             response.setExceptionResponse(
                 errorCode = e.errorCode,
-                detailMessage = e.detailMessage,
+                errorUi = e.errorUi,
                 objectMapper = objectMapper
             )
         } catch (e: Exception) {
             response.setExceptionResponse(
                 errorCode = GlobalExceptionCode.UNKNOWN,
-                detailMessage = "인증 과정에서 예상하지 못한 에러가 발생했습니다.",
+                errorUi = ErrorUi.Dialog("로그인을 하지 못했어요.\n다시 한 번 시도해주세요."),
                 objectMapper = objectMapper
             )
         }

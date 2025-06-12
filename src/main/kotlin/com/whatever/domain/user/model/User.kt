@@ -6,9 +6,13 @@ import com.whatever.domain.user.exception.UserExceptionCode.INVALID_USER_STATUS_
 import com.whatever.domain.user.exception.UserIllegalStateException
 import com.whatever.domain.user.model.UserStatus.COUPLED
 import com.whatever.domain.user.model.UserStatus.SINGLE
+import com.whatever.global.exception.ErrorUi
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.*
 import org.hibernate.validator.constraints.CodePointLength
 import java.time.LocalDate
+
+private val logger = KotlinLogging.logger {  }
 
 @Entity
 @Table(
@@ -57,9 +61,10 @@ class User(
 
     fun setCouple(couple: Couple) {
         if (userStatus != SINGLE) {
+            logger.error { "Current user status is '${userStatus}'. To be coupled, the user status must be '${SINGLE}'." }
             throw UserIllegalStateException(
                 errorCode = INVALID_USER_STATUS_FOR_COUPLING,
-                detailMessage = "Current user status is '${userStatus}'. To be coupled, the user status must be '${SINGLE}'."
+                errorUi = ErrorUi.Toast("커플이 될 수 없는 사용자가 있어요."),
             )
         }
         _couple = couple

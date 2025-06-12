@@ -2,6 +2,7 @@ package com.whatever.global.security.handler
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.whatever.domain.user.model.UserStatus
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.security.exception.SecurityExceptionCode
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserAuthorities
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
@@ -27,18 +28,18 @@ class CaramelAccessDeniedHandler(
     ) {
 
         val userAuthorities = getCurrentUserAuthorities()
-        logger.error(accessDeniedException) {
-            "API 접근 실패. UserId: ${getCurrentUserId()}, Authorities: ${userAuthorities}, API: ${request.requestURI}"
-        }
-
         val detailMessage = when {
             userAuthorities.hasAuthority(UserStatus.NEW) -> "신규 유저이므로 초기 정보를 입력해야합니다."
-            else -> "해당하는 API에 접근할 권한이 없습니다. 접근 API: ${request.requestURI}"
+            else -> "해당하는 API에 접근할 권한이 없습니다."
         }
+        logger.error(accessDeniedException) {
+            "API 접근 실패. ${detailMessage} UserId: ${getCurrentUserId()}, Authorities: ${userAuthorities}, API: ${request.requestURI}"
+        }
+
 
         response.setExceptionResponse(
             errorCode = SecurityExceptionCode.FORBIDDEN,
-            detailMessage = detailMessage,
+            errorUi = ErrorUi.Toast("접근할 수 없는 작업이에요"),
             objectMapper = objectMapper
         )
     }

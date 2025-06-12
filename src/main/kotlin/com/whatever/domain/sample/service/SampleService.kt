@@ -16,6 +16,7 @@ import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserSetting
 import com.whatever.domain.user.model.UserStatus
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.jwt.JwtProvider
 import com.whatever.util.DateTimeUtil
 import io.viascom.nanoid.NanoId
@@ -58,7 +59,10 @@ class SampleService(
 
     fun testSignIn(email: String, expSec: Long): SignInResponse {
         val testUser = sampleUserRepository.findByEmailAndIsDeleted(email)
-            ?: throw SampleNotFoundException(SampleExceptionCode.SAMPLE_CODE, "테스트 유저를 찾을 수 없습니다. 관리자에게 문의해주세요.")
+            ?: throw SampleNotFoundException(
+                errorCode = SampleExceptionCode.SAMPLE_CODE,
+                errorUi = ErrorUi.Toast("테스트 유저를 찾을 수 없습니다. 관리자에게 문의해주세요."),
+            )
 
         val serviceToken = createTokenAndSave(userId = testUser.id, expSec)
         return SignInResponse(

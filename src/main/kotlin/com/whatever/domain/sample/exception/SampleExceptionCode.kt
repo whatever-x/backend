@@ -9,7 +9,11 @@ enum class SampleExceptionCode(
     override val status: HttpStatus,
 ) : CaramelExceptionCode {
 
-    SAMPLE_CODE("000", "샘플 예외코드입니다.",  HttpStatus.NOT_FOUND),
+    SAMPLE_CODE(
+        sequence = "000",
+        message = "샘플 예외코드입니다.",
+        status = HttpStatus.NOT_FOUND
+    ),
     ;
 
     override val code = "SAMPLE$sequence"

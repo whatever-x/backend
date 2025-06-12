@@ -1,5 +1,6 @@
 package com.whatever.global.exception.common
 
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.exception.dto.CaramelApiResponse
 import org.springframework.http.ResponseEntity
 
@@ -7,17 +8,28 @@ abstract class CaramelControllerAdvice {
 
     fun createExceptionResponse(
         errorCode: CaramelExceptionCode,
-        debugMessage: String? = null,
+        errorUi: ErrorUi,
     ): ResponseEntity<CaramelApiResponse<*>> {
         return ResponseEntity
             .status(errorCode.status)
             .body(
                 CaramelApiResponse.failed(
-                    code = errorCode.code,
-                    message = errorCode.message,
-                    debugMessage = debugMessage
+                    code = errorCode,
+                    errorUi = errorUi,
                 )
             )
     }
 
+    fun createExceptionResponse(
+        caramelException: CaramelException,
+    ): ResponseEntity<CaramelApiResponse<*>> {
+        return ResponseEntity
+            .status(caramelException.errorCode.status)
+            .body(
+                CaramelApiResponse.failed(
+                    code = caramelException.errorCode,
+                    errorUi = caramelException.errorUi,
+                )
+            )
+    }
 }

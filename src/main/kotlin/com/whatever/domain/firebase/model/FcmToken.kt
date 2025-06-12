@@ -1,7 +1,11 @@
 package com.whatever.domain.firebase.model
 
 import com.whatever.domain.base.BaseEntity
+import com.whatever.domain.firebase.exception.FcmIllegalArgumentException
+import com.whatever.domain.firebase.exception.FirebaseExceptionCode
+import com.whatever.domain.firebase.exception.FirebaseExceptionCode.FCM_BLANK_TOKEN
 import com.whatever.domain.user.model.User
+import com.whatever.global.exception.ErrorUi
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.DateTimeUtil.SYS_ZONE_ID
 import jakarta.persistence.Column
@@ -22,10 +26,10 @@ import jakarta.persistence.UniqueConstraint
             name = "fcm_token_unique_idx_user_id_device_id",
             columnNames = ["user_id", "device_id"],
         ),
-        UniqueConstraint(
-            name = "fcm_token_unique_idx_token",
-            columnNames = ["token"],
-        ),
+//        UniqueConstraint(
+//            name = "fcm_token_unique_idx_token",
+//            columnNames = ["token"],
+//        ),
     ]
 )
 class FcmToken(
@@ -50,14 +54,20 @@ class FcmToken(
 
     init {
         if (initialToken.isBlank()) {
-            throw IllegalArgumentException()  // TODO(준용) custom exception
+            throw FcmIllegalArgumentException(
+                errorCode = FCM_BLANK_TOKEN,
+                errorUi = ErrorUi.Toast("알림 정보 등록에 실패했어요.")
+            )
         }
         _token = initialToken
     }
 
     fun updateToken(newToken: String) {
         if (newToken.isBlank()) {
-            throw IllegalArgumentException()  // TODO(준용) custom exception
+            throw FcmIllegalArgumentException(
+                errorCode = FCM_BLANK_TOKEN,
+                errorUi = ErrorUi.Toast("알림 정보 업데이트에 실패했어요.")
+            )
         }
         _token = newToken
 

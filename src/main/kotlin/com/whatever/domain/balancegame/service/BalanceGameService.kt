@@ -18,6 +18,7 @@ import com.whatever.domain.balancegame.repository.BalanceGameRepository
 import com.whatever.domain.balancegame.repository.UserChoiceOptionRepository
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.repository.UserRepository
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserCoupleId
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.util.DateTimeUtil
@@ -60,7 +61,13 @@ class BalanceGameService(
     ): ChooseBalanceGameOptionResponse {
         val balanceGame = getBalanceGame()
         if (balanceGame.id != gameId) {
-            throw BalanceGameIllegalArgumentException(errorCode = GAME_CHANGED)
+            throw BalanceGameIllegalArgumentException(
+                errorCode = GAME_CHANGED,
+                errorUi = ErrorUi.Dialog(
+                    title = "12시가 넘어 새로운 질문으로 업데이트되었어요.",
+                    description = "질문을 보고 새롭게 선택해 주세요."
+                )
+            )
         }
         val sortedOptions = getSortedActiveBalanceGameOptions(balanceGame.options)
 
@@ -99,7 +106,10 @@ class BalanceGameService(
     ): List<BalanceGameOption> {
         val sortedOptions = options.filter { !it.isDeleted }.sortedBy { it.id }
         if (sortedOptions.size < 2) {
-            throw BalanceGameIllegalStateException(errorCode = GAME_OPTION_NOT_ENOUGH)
+            throw BalanceGameIllegalStateException(
+                errorCode = GAME_OPTION_NOT_ENOUGH,
+                errorUi = ErrorUi.Toast("밸런스 게임의 선택지가 모두 등록되지 않았어요.")
+            )
         }
         return sortedOptions
     }

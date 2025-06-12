@@ -5,6 +5,7 @@ import com.whatever.domain.auth.service.JwtHelper
 import com.whatever.domain.auth.service.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.security.exception.AccessDeniedException
 import com.whatever.global.security.exception.SecurityExceptionCode
 import com.whatever.global.security.principal.CaramelUserDetails
@@ -32,7 +33,10 @@ class JwtAuthenticationFilter(
 
         if (accessToken != null) {
             if (isBlacklisted(accessToken)) {
-                throw AccessDeniedException(SecurityExceptionCode.BLACK_LISTED_TOKEN)
+                throw AccessDeniedException(
+                    errorCode = SecurityExceptionCode.BLACK_LISTED_TOKEN,
+                    errorUi = ErrorUi.Toast("알 수 없는 오류가 발생했습니다.")
+                )
             }
             val context = SecurityContextHolder.createEmptyContext()
             context.authentication = getAuthentication(accessToken)

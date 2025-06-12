@@ -5,21 +5,19 @@ import com.whatever.domain.auth.dto.ServiceToken
 import com.whatever.domain.auth.dto.SignInResponse
 import com.whatever.domain.auth.exception.AuthException
 import com.whatever.domain.auth.exception.AuthExceptionCode
+import com.whatever.domain.auth.exception.AuthExceptionCode.USER_PROVIDER_NOT_FOUND
+import com.whatever.domain.auth.exception.AuthFailedException
 import com.whatever.domain.auth.exception.IllegalOidcTokenException
 import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
 import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.service.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.domain.auth.service.provider.SocialUserProvider
-import com.whatever.domain.couple.controller.dto.response.CoupleBasicResponse
-import com.whatever.domain.couple.exception.CoupleExceptionCode.UPDATE_FAIL
-import com.whatever.domain.couple.exception.CoupleIllegalStateException
 import com.whatever.domain.couple.service.CoupleService
 import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.exception.GlobalException
-import com.whatever.global.exception.GlobalExceptionCode.ARGS_VALIDATION_FAILED
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.findByIdAndNotDeleted
@@ -27,14 +25,10 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.ExpiredJwtException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.cache.CacheManager
-import org.springframework.dao.OptimisticLockingFailureException
-import org.springframework.retry.annotation.Backoff
-import org.springframework.retry.annotation.Recover
-import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger {  }
 
 @Service
 class AuthService(
@@ -54,9 +48,9 @@ class AuthService(
         deviceId: String,
     ): SignInResponse {
         val userProvider = userProviderMap[loginPlatform]
-            ?: throw GlobalException(
-                errorCode = ARGS_VALIDATION_FAILED,
-                detailMessage = "일치하는 로그인 플랫폼이 없습니다. platform: $loginPlatform"
+            ?: throw AuthFailedException(
+                errorCode = USER_PROVIDER_NOT_FOUND,
+                errorUi = ErrorUi.Dialog("로그인을 하지 못 했어요.\n다시 한 번 시도해 주세요."),
             )
 
         val user = runCatching { userProvider.findOrCreateUser(idToken) }
@@ -68,11 +62,15 @@ class AuthService(
                 userProvider.findOrCreateUser(idToken)
             }.getOrElse { exception ->
                 if (exception !is OidcPublicKeyMismatchException) {
-                    throw exception
+                    logger.warn(exception) { "User sign-in failed." }
+                    throw AuthFailedException(
+                        errorCode = AuthExceptionCode.UNKNOWN,
+                        errorUi = ErrorUi.Dialog("로그인을 하지 못 했어요.\n다시 한 번 시도해 주세요."),
+                    )
                 }
                 throw IllegalOidcTokenException(
                     errorCode = AuthExceptionCode.ILLEGAL_KID,
-                    detailMessage = "일치하는 Kid가 없는 idToken입니다."
+                    errorUi = ErrorUi.Dialog("로그인을 하지 못 했어요.\n다시 한 번 시도해 주세요."),
                 )
             }
 

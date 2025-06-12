@@ -7,6 +7,7 @@ import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
 import com.whatever.domain.auth.exception.AuthExceptionCode
 import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
 import com.whatever.global.jwt.JwtProvider
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jws
 import io.jsonwebtoken.JwtParser
@@ -17,6 +18,8 @@ import java.security.KeyFactory
 import java.security.PublicKey
 import java.security.spec.RSAPublicKeySpec
 import java.util.*
+
+private val logger = KotlinLogging.logger {  }
 
 @Component
 class OIDCHelper(
@@ -29,11 +32,10 @@ class OIDCHelper(
         oidcPublicKeys: List<JsonWebKey>,
     ): AppleIdTokenPayload {
         val kid = getKid(idToken)
-        val webKey = oidcPublicKeys.firstOrNull { jsonWebKey -> jsonWebKey.kid == kid }
-            ?: throw OidcPublicKeyMismatchException(
-                errorCode = AuthExceptionCode.ILLEGAL_KID,
-                detailMessage = "kid(${kid})에 해당하는 애플 공개키를 찾을 수 없습니다."
-            )
+        val webKey = oidcPublicKeys.firstOrNull { jsonWebKey -> jsonWebKey.kid == kid } ?: let {
+            logger.warn { "kid(${kid})에 해당하는 애플 공개키를 찾을 수 없습니다." }
+            throw OidcPublicKeyMismatchException(errorCode = AuthExceptionCode.ILLEGAL_KID)
+        }
 
         val jws = parseIdToken(
             idToken = idToken,
@@ -50,11 +52,10 @@ class OIDCHelper(
         oidcPublicKeys: List<JsonWebKey>,
     ): KakaoIdTokenPayload {
         val kid = getKid(idToken)
-        val webKey = oidcPublicKeys.firstOrNull { jsonWebKey -> jsonWebKey.kid == kid }
-            ?: throw OidcPublicKeyMismatchException(
-                errorCode = AuthExceptionCode.ILLEGAL_KID,
-                detailMessage = "kid(${kid})에 해당하는 카카오 공개키를 찾을 수 없습니다."
-            )
+        val webKey = oidcPublicKeys.firstOrNull { jsonWebKey -> jsonWebKey.kid == kid } ?: let {
+            logger.warn { "kid(${kid})에 해당하는 카카오 공개키를 찾을 수 없습니다." }
+            throw OidcPublicKeyMismatchException(errorCode = AuthExceptionCode.ILLEGAL_KID)
+        }
 
         val jws = parseIdToken(
             idToken = idToken,

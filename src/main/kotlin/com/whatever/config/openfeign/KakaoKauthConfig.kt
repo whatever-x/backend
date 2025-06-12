@@ -39,7 +39,6 @@ class KauthErrorDecoder() : ErrorDecoder {
 
         throw KakaoServerException(
             errorCode = KakaoServerExceptionCode.fromKakaoErrorCode(errorResponse.error),
-            detailMessage = errorResponse.errorDescription,
         )
     }
 }

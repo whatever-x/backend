@@ -1,18 +1,19 @@
 package com.whatever.global.security.exception
 
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.exception.common.CaramelException
 
 open class CaramelSecurityException(
     errorCode: SecurityExceptionCode,
-    detailMessage: String? = null
-) : CaramelException(errorCode, detailMessage)
+    errorUi: ErrorUi,
+) : CaramelException(errorCode, errorUi)
 
 class AccessDeniedException(
     errorCode: SecurityExceptionCode,
-    detailMessage: String? = null
-) : CaramelSecurityException(errorCode)
+    errorUi: ErrorUi,
+) : CaramelSecurityException(errorCode, errorUi)
 
 class AuthenticationException(
     errorCode: SecurityExceptionCode,
-    detailMessage: String? = null
-) : CaramelSecurityException(errorCode)
+    errorUi: ErrorUi,
+) : CaramelSecurityException(errorCode, errorUi)

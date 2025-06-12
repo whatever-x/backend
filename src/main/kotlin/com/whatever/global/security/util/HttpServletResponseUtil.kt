@@ -1,6 +1,7 @@
 package com.whatever.global.security.util
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.exception.common.CaramelExceptionCode
 import com.whatever.global.exception.dto.CaramelApiResponse
 import jakarta.servlet.http.HttpServletResponse
@@ -8,7 +9,7 @@ import org.springframework.http.MediaType
 
 fun HttpServletResponse.setExceptionResponse(
     errorCode: CaramelExceptionCode,
-    detailMessage: String? = null,
+    errorUi: ErrorUi,
     objectMapper: ObjectMapper,
 ) {
     characterEncoding = Charsets.UTF_8.name()
@@ -17,9 +18,8 @@ fun HttpServletResponse.setExceptionResponse(
     writer.write(
         objectMapper.writeValueAsString(
             CaramelApiResponse.failed(
-                code = errorCode.code,
-                message = errorCode.message,
-                debugMessage = detailMessage
+                code = errorCode,
+                errorUi = errorUi,
             )
         )
     )

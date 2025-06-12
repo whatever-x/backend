@@ -14,6 +14,7 @@ import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.UserSetting
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.repository.UserSettingRepository
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.util.findByIdAndNotDeleted
 import org.springframework.stereotype.Service
@@ -79,8 +80,8 @@ class UserService(
         val userRef = userRepository.getReferenceById(userId)
         val userSetting = userSettingRepository.findByUserAndIsDeleted(userRef)
             ?: throw UserIllegalStateException(
-                SETTING_DATA_NOT_FOUND,
-                detailMessage = "User setting data not exists."
+                errorCode = SETTING_DATA_NOT_FOUND,
+                errorUi = ErrorUi.Toast("유저 설정 정보를 찾을 수 없어요."),
             )
 
         with(request) {
@@ -97,7 +98,7 @@ class UserService(
         val userSetting = userSettingRepository.findByUserAndIsDeleted(userRef)
             ?: throw UserIllegalStateException(
                 SETTING_DATA_NOT_FOUND,
-                detailMessage = "User setting data not exists."
+                errorUi = ErrorUi.Toast("유저 설정 정보를 찾을 수 없어요."),
             )
         return UserSettingResponse.from(userSetting)
     }

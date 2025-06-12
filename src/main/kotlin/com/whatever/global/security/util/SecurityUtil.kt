@@ -1,6 +1,7 @@
 package com.whatever.global.security.util
 
 import com.whatever.domain.user.model.UserStatus
+import com.whatever.global.exception.ErrorUi
 import com.whatever.global.security.exception.AuthenticationException
 import com.whatever.global.security.exception.SecurityExceptionCode
 import com.whatever.global.security.principal.CaramelUserDetails
@@ -36,18 +37,21 @@ object SecurityUtil {
             .takeIf { it.isAuthenticated }
             ?: throw AuthenticationException(
                 errorCode = SecurityExceptionCode.UNAUTHORIZED,
-                detailMessage = "인증 정보가 존재하지 않습니다. 재로그인이 필요합니다."
+                errorUi = ErrorUi.Toast("인증 정보를 찾을 수 없어요. 다시 로그인이 필요해요."),
             )
 
         return authentication.principal as? CaramelUserDetails ?: throw AuthenticationException(
             errorCode = SecurityExceptionCode.UNAUTHORIZED,
-            detailMessage = "인증 정보가 존재하지 않습니다. 재로그인이 필요합니다."
+            errorUi = ErrorUi.Toast("인증 정보를 찾을 수 없어요. 다시 로그인이 필요해요."),
         )
     }
 
     @JvmStatic
     private fun getAuthentication(): Authentication {
         return SecurityContextHolder.getContext().authentication
-            ?: throw AuthenticationException(SecurityExceptionCode.AUTHENTICATION_NOT_FOUND)
+            ?: throw AuthenticationException(
+                errorCode = SecurityExceptionCode.AUTHENTICATION_NOT_FOUND,
+                errorUi = ErrorUi.Toast("인증 정보를 찾을 수 없어요. 다시 로그인이 필요해요."),
+            )
     }
 }
