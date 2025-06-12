@@ -21,7 +21,7 @@ enum class BalanceGameExceptionCode(
     ),
     GAME_CHANGED(
         sequence = "002",
-        message = "12시가 넘어 새로운 질문으로 업데이트되었어요.\n질문을 보고 새롭게 선택해 주세요.",
+        message = "이 전 날짜의 밸런스 게임입니다. 새로운 게임으로 갱신이 필요합니다.",
     ),
     ILLEGAL_OPTION(
         sequence = "003",
