@@ -22,6 +22,8 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.encrypt.Encryptors
+import org.springframework.security.crypto.encrypt.TextEncryptor
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.AuthenticationEntryPoint
@@ -168,5 +170,24 @@ class SecurityConfig(
         registration.isEnabled = false
         return registration
     }
+}
 
+@Configuration
+class CryptoConfig {
+    @Value("\${crypto.password}")
+    lateinit var textEncryptorPassword: String
+    @Value("\${crypto.salt}")
+    lateinit var textEncryptorSalt: String
+
+    @Profile("production")
+    @Bean(name = ["textEncryptor"])
+    fun productionTextEncryptor(): TextEncryptor {
+        return Encryptors.delux(textEncryptorPassword, textEncryptorSalt)
+    }
+
+    @Profile("!production")
+    @Bean(name = ["textEncryptor"])
+    fun testTextEncryptor(): TextEncryptor {
+        return Encryptors.noOpText()
+    }
 }
