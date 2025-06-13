@@ -105,6 +105,59 @@ spring:
   config:
     activate:
       on-profile: production
+    import: optional:file:.env[.properties]
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+  cache:
+    type: redis
+
+management:
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            request: 'true'
+  endpoints:
+    web:
+      exposure:
+        include: ${ACTUATOR_EXPOSURE_API}
+    access:
+      default: read_only
+
+otel:
+  sdk:
+    disabled: false
+  service:
+    name: ${OTEL_SERVICE_NAME}
+  resource:
+    providers:
+      process: false
+    attributes:
+      deployment.environment: ${SPRING_PROFILES_ACTIVE}
+  traces:
+    exporter: ${OTEL_EXPORTER}
+  logs:
+    exporter: ${OTEL_EXPORTER}
+  exporter:
+    otlp:
+      protocol: ${OTEL_EXPORTER_PROTOCOL}
+      endpoint: ${OTEL_EXPORTER_ENDPOINT}
+  java:
+    disabled:
+      resource:
+        providers: ${OTEL_DISABLED_PROVIDERS}
 
 ---
 # ┌───────────────────────────── Dev 프로파일 ─────────────────────────────
