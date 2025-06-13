@@ -12,6 +12,7 @@ interface TagContentMappingRepository : JpaRepository<TagContentMapping, Long> {
             join fetch tcm.tag t
         where tcm.content.id = :contentId
             and tcm.isDeleted = false
+        order by tcm.tag.id
     """)
     fun findAllWithTagByContentId(contentId: Long): List<TagContentMapping>
 
@@ -20,6 +21,7 @@ interface TagContentMappingRepository : JpaRepository<TagContentMapping, Long> {
             join fetch tcm.tag t
         where tcm.content.id in :contentIds
             and tcm.isDeleted = false
+        order by tcm.tag.id
     """)
     fun findAllWithTagByContentIds(contentIds: Set<Long>): List<TagContentMapping>
 
