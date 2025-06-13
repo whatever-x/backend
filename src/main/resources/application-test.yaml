@@ -62,3 +62,6 @@ kor:  # Kor Open Api Key
 firebase:
   credential-file-path: ${GOOGLE_APPLICATION_CREDENTIALS}
   fcm-enabled: ${FCM_ENABLED}
+crypto:
+  password: ${CRYPTO_PASSWORD}
+  salt: ${CRYPTO_SALT}
