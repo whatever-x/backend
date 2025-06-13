@@ -10,6 +10,9 @@ import com.whatever.global.exception.ErrorUi
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.*
 import org.hibernate.validator.constraints.CodePointLength
+import org.springframework.context.annotation.DependsOn
+import org.springframework.security.crypto.encrypt.TextEncryptor
+import org.springframework.stereotype.Component
 import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {  }
@@ -28,6 +31,7 @@ class User(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L,
 
+    @Convert(converter = UserEmailConverter::class)
     var email: String? = null,
 
     var birthDate: LocalDate? = null,
@@ -95,4 +99,19 @@ class User(
         const val MAX_GENDER_LENGTH = 50
         const val MAX_STATUS_LENGTH = 50
     }
+}
+
+@Component
+@Converter
+class UserEmailConverter(
+    private val textEncryptor: TextEncryptor,
+) : AttributeConverter<String?, String?> {
+    override fun convertToDatabaseColumn(email: String?): String? {
+        return email?.let { textEncryptor.encrypt(email) }
+    }
+
+    override fun convertToEntityAttribute(encryptedEmail: String?): String? {
+        return encryptedEmail?.let { textEncryptor.decrypt(encryptedEmail) }
+    }
+
 }
