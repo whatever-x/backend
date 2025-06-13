@@ -63,7 +63,7 @@ class CoupleAnniversaryServiceTest @Autowired constructor(
         }
         userRepository.saveAll(listOf(userA, userB))
 
-        val searchStart = LocalDate.of(2027, 1, 1)
+        val searchStart = LocalDate.of(2025, 1, 1)
         val searchEnd = LocalDate.of(2029, 1, 10)
 
         // when
@@ -82,19 +82,16 @@ class CoupleAnniversaryServiceTest @Autowired constructor(
         // 100일 단위 기념일
         assertThat(result.hundredDayAnniversaries.map { it.date to it.label })
             .containsExactly(
-                couple.startDate!!.plusDays(99 + 700) to "800일",
-                couple.startDate!!.plusDays(99 + 800) to "900일",
-                couple.startDate!!.plusDays(99 + 900) to "1000일",
-                couple.startDate!!.plusDays(99 + 1000) to "1100일",
-                couple.startDate!!.plusDays(99 + 1100) to "1200일",
-                couple.startDate!!.plusDays(99 + 1200) to "1300일",
-                couple.startDate!!.plusDays(99 + 1300) to "1400일",
+                couple.startDate!!.plusDays(99 + 0) to "100일",
+                couple.startDate!!.plusDays(99 + 100) to "200일",
+                couple.startDate!!.plusDays(99 + 200) to "300일",
             )
         assertThat(result.hundredDayAnniversaries.map { it.type }).allMatch { it == N_TH_DAY }
 
         // 주년 단위 기념일
         assertThat(result.yearlyAnniversaries.map { it.date to it.label to it.type })
             .containsExactly(
+                couple.startDate!!.plusYears(1) to "1주년" to YEARLY,
                 couple.startDate!!.plusYears(2) to "2주년" to YEARLY,
                 couple.startDate!!.plusYears(3) to "3주년" to YEARLY,
                 couple.startDate!!.plusYears(4) to "4주년" to YEARLY,
@@ -104,10 +101,14 @@ class CoupleAnniversaryServiceTest @Autowired constructor(
         val memberBirthDates = result.myBirthDates + result.partnerBirthDates
         assertThat(memberBirthDates.map { it.date to it.label to it.isAdjustedForNonLeapYear })
             .containsExactlyInAnyOrder(
+                userA.birthDate!!.withYear(2025) to "사용자A 생일" to false,
+                userA.birthDate!!.withYear(2026) to "사용자A 생일" to false,
                 userA.birthDate!!.withYear(2027) to "사용자A 생일" to false,
                 userA.birthDate!!.withYear(2028) to "사용자A 생일" to false,
                 userA.birthDate!!.withYear(2029) to "사용자A 생일" to false,
 
+                userB.birthDate!!.withYear(2025) to "사용자B 생일" to true,
+                userB.birthDate!!.withYear(2026) to "사용자B 생일" to true,
                 userB.birthDate!!.withYear(2027) to "사용자B 생일" to true,
                 LocalDate.of(2028, 2, 29) to "사용자B 생일" to false,  // 윤년일 경우 그대로
             )
@@ -124,9 +125,7 @@ class CoupleAnniversaryServiceTest @Autowired constructor(
             startDate = LocalDate.of(2025, 1, 1)
         )
         val searchStart = couple.startDate!!
-        val searchEnd = searchStart.minusDays(1).plusDays(200)
-
-        val expectedDate = couple.startDate!!.minusDays(1).plusDays(200)
+        val searchEnd = searchStart.minusDays(1).plusDays(300)
 
         // when
         val result = coupleAnniversaryService.get100ThDay(
@@ -141,9 +140,33 @@ class CoupleAnniversaryServiceTest @Autowired constructor(
             .containsExactly(
                 couple.startDate!!.plusDays(99) to "100일",
                 couple.startDate!!.plusDays(199) to "200일",
+                couple.startDate!!.plusDays(299) to "300일",
             )
 
         assertThat(result.map { it.type }).allMatch { it == N_TH_DAY }
+    }
+
+    @DisplayName("조회 범위에 300일 이상의 100일 단위 기념일은 포함되지 않는다.")
+    @Test
+    fun get100ThDay_Over300ThAnniversary() {
+        // given
+        val (_, _, couple) = makeCouple(
+            userRepository = userRepository,
+            coupleRepository = coupleRepository,
+            startDate = LocalDate.of(2025, 1, 1)
+        )
+        val searchStart = couple.startDate!!.plusDays(300)
+        val searchEnd = searchStart.plusMonths(1)  // DAYS.between=300 + 1 (301 > 300)
+
+        // when
+        val result = coupleAnniversaryService.get100ThDay(
+            coupleStartDate = couple.startDate!!,
+            startDate = searchStart,
+            endDate = searchEnd,
+        )
+
+        // then
+        assertThat(result).isEmpty()
     }
 
     @DisplayName("조회 범위에 포함된 100일 기념일이 없다면 빈 리스트를 반환한다.")

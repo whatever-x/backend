@@ -61,7 +61,11 @@ class CoupleAnniversaryService(
             startDate = startDate,
             endDate = endDate,
             interval = 100,
-        ).map {
+        ).mapNotNull {
+            if (it.nTh > 300) {
+                return@mapNotNull null
+            }
+
             CoupleAnniversaryDto(
                 type = CoupleAnniversaryType.N_TH_DAY,
                 date = it.date,
