@@ -55,8 +55,10 @@ class SecurityConfig(
     lateinit var swaggerUser: String
     @Value("\${swagger.password}")
     lateinit var swaggerPassword: String
+    @Value("\${management.endpoints.web.base-path}")
+    lateinit var actuatorPath: String
 
-    @Profile("dev")
+    @Profile("production", "dev")
     @Bean
     @Order(1)
     fun swaggerFilterChain(http: HttpSecurity): SecurityFilterChain {
@@ -89,7 +91,8 @@ class SecurityConfig(
                 // 1. Public Access
                 authorize(HttpMethod.POST, "/v1/auth/sign-in", permitAll)
                 authorize(HttpMethod.POST, "/v1/auth/refresh", permitAll)
-                 authorize("/sample/**", permitAll)
+                authorize("/sample/**", permitAll)
+                authorize("${actuatorPath}/**", permitAll)
 
                 // 2. Role: NEW
                 authorize(HttpMethod.POST, "/v1/user/profile", hasAnyRole(NEW.name))
