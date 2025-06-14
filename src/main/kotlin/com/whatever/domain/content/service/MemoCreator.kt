@@ -27,12 +27,8 @@ class MemoCreator(
         isCompleted: Boolean,
         tagIds: Set<Long>,
     ): Content {
-        val replacedTitle = when {
-            title.isNullOrBlank() && !description.isNullOrBlank() -> description.take(MAX_TITLE_LENGTH)
-            else -> title!!
-        }
         val contentDetail = ContentDetail(
-            title = replacedTitle,
+            title = title,
             description = description,
             isCompleted = isCompleted
         )
