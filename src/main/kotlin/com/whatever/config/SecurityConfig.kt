@@ -56,7 +56,7 @@ class SecurityConfig(
     @Value("\${swagger.password}")
     lateinit var swaggerPassword: String
 
-    @Profile("production", "dev")
+    @Profile("dev")
     @Bean
     @Order(1)
     fun swaggerFilterChain(http: HttpSecurity): SecurityFilterChain {
@@ -86,25 +86,36 @@ class SecurityConfig(
 
         http {
             authorizeHttpRequests {
-                authorize("/v1/auth/sign-out", hasAnyRole(NEW.name, SINGLE.name, COUPLED.name))
+                // 1. Public Access
+                authorize(HttpMethod.POST, "/v1/auth/sign-in", permitAll)
+                authorize(HttpMethod.POST, "/v1/auth/refresh", permitAll)
+                 authorize("/sample/**", permitAll)
 
+                // 2. Role: NEW
                 authorize(HttpMethod.POST, "/v1/user/profile", hasAnyRole(NEW.name))
-                authorize("/v1/user/me", hasAnyRole(NEW.name, SINGLE.name, COUPLED.name))
-                authorize("/v1/user/**", hasAnyRole(SINGLE.name, COUPLED.name))
 
-                authorize("/v1/content/**", hasAnyRole(COUPLED.name))
-
+                // 3. Role: SINGLE
                 authorize("/v1/couples/invitation-code", hasAnyRole(SINGLE.name))
                 authorize("/v1/couples/connect", hasAnyRole(SINGLE.name))
-                authorize("/v1/couples/**", hasAnyRole(COUPLED.name))
 
-                authorize("/v1/calendar/holidays", hasAnyRole(COUPLED.name))
-                authorize("/v1/calendar/schedules/**", hasAnyRole(COUPLED.name))
+                // 4. Role: COUPLED
                 authorize("/v1/calendar/**", hasAnyRole(COUPLED.name))
-
+                authorize("/v1/content/**", hasAnyRole(COUPLED.name))
+                authorize("/v1/couples/{couple-id}/**", hasAnyRole(COUPLED.name))
+                authorize("/v1/couples/me", hasAnyRole(COUPLED.name))
                 authorize("/v1/balance-game/**", hasAnyRole(COUPLED.name))
+                authorize(HttpMethod.GET, "/v1/tags", hasAnyRole(COUPLED.name))
 
-                authorize(anyRequest, permitAll)  // TODO(준용) API에 따른 Role 추가 필요, 현재 임시로 모두 허용
+                // 5. Authenticated Users
+                authorize("/v1/auth/sign-out", authenticated)
+                authorize(HttpMethod.DELETE, "/v1/auth/account", authenticated)
+                authorize("/v1/user/me", authenticated) // 모든 인증된 사용자는 자신의 정보를 볼 수 있음
+
+                // 6. Service Members
+                authorize("/v1/user/**", hasAnyRole(SINGLE.name, COUPLED.name))
+
+                // 7. Default Rule
+                authorize(anyRequest, authenticated)
             }
         }
 

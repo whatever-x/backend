@@ -7,8 +7,10 @@ import com.whatever.domain.content.controller.dto.request.TagIdDto
 import com.whatever.domain.content.controller.dto.request.UpdateContentRequest
 import com.whatever.domain.content.controller.dto.response.TagDto
 import com.whatever.domain.content.exception.ContentAccessDeniedException
+import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.exception.ContentExceptionCode.COUPLE_NOT_MATCHED
 import com.whatever.domain.content.exception.ContentExceptionCode.MEMO_NOT_FOUND
+import com.whatever.domain.content.exception.ContentIllegalArgumentException
 import com.whatever.domain.content.exception.ContentNotFoundException
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
@@ -31,6 +33,8 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
@@ -109,9 +113,102 @@ class ContentServiceTest @Autowired constructor(
         return content
     }
 
+    @DisplayName("메모 생성 시 제목만 null이라면 저장에 성공한다.")
+    @Test
+    fun createContent_WithNullTitle() {
+        // given
+        val request = CreateContentRequest(
+            title = null,
+            description = "test-desc",
+            isCompleted = false,
+        )
+
+        // when
+        val result = contentService.createContent(request)
+
+        // then
+        val savedContent = contentRepository.findByIdOrNull(result.contentId)
+        requireNotNull(savedContent)
+
+        with(savedContent.contentDetail) {
+            assertThat(title).isNull()
+            assertThat(description).isEqualTo(request.description)
+        }
+    }
+
+    @DisplayName("메모 생성 시 본문만 null이라면 저장에 성공한다.")
+    @Test
+    fun createContent_WithNullDescription() {
+        // given
+        val request = CreateContentRequest(
+            title = "test-title",
+            description = null,
+            isCompleted = false,
+        )
+
+        // when
+        val result = contentService.createContent(request)
+
+        // then
+        val savedContent = contentRepository.findByIdOrNull(result.contentId)
+        requireNotNull(savedContent)
+
+        with(savedContent.contentDetail) {
+            assertThat(title).isEqualTo(request.title)
+            assertThat(description).isNull()
+        }
+    }
+
+    @DisplayName("메모 생성 시 제목과 본문 모두 null이라면 저장에 실패한다.")
+    @Test
+    fun createContent_WithNullTitleAndDescription() {
+        // given
+        val request = CreateContentRequest(
+            title = null,
+            description = null,
+            isCompleted = false,
+        )
+
+        // when
+        val result = assertThrows<ContentIllegalArgumentException> {
+            contentService.createContent(request)
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(ContentExceptionCode.ILLEGAL_CONTENT_DETAIL)
+        assertThat(contentRepository.findAll()).isEmpty()
+    }
+
+    @DisplayName("메모 생성 시 제목과 본문 하나라도 Blank라면 저장에 실패한다.")
+    @ParameterizedTest
+    @CsvSource(
+        value = [
+            "title, ' '",
+            "'  ' , description",
+            "'  ' , '  '",
+        ]
+    )
+    fun createContent_WithNullTitleAndDescription(title: String, description: String) {
+        // given
+        val request = CreateContentRequest(
+            title = title,
+            description = description,
+            isCompleted = false,
+        )
+
+        // when
+        val result = assertThrows<ContentIllegalArgumentException> {
+            contentService.createContent(request)
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(ContentExceptionCode.ILLEGAL_CONTENT_DETAIL)
+        assertThat(contentRepository.findAll()).isEmpty()
+    }
+
     @DisplayName("메모 생성 시 fcm 전송 메서드가 실행된다.")
     @Test
-    fun createContent() {
+    fun createContent_WithSendNotification() {
         // given
         val request = CreateContentRequest(
             title = "test-title",
