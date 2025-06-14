@@ -1,6 +1,7 @@
 package com.whatever.config
 
 import com.whatever.global.annotation.DisableSwaggerAuthButton
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.models.Components
@@ -13,6 +14,7 @@ import org.springdoc.core.customizers.OperationCustomizer
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.web.method.HandlerMethod
 
 @OpenAPIDefinition(
@@ -23,6 +25,7 @@ import org.springframework.web.method.HandlerMethod
     )
 )
 @Configuration
+@Profile("!production")
 class SwaggerConfig {
 
     @Value("\${swagger.local-server-url}")

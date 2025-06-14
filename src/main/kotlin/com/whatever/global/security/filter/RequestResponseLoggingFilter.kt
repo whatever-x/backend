@@ -19,6 +19,10 @@ private val requestFilterLogger = KotlinLogging.logger { }
 class RequestResponseLoggingFilter(
     private val objectMapper: ObjectMapper,
 ) : OncePerRequestFilter() {
+    override fun shouldNotFilter(request: HttpServletRequest): Boolean {
+        return !LOGGING_PATTERN.containsMatchIn(request.requestURI)
+    }
+
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -117,7 +121,7 @@ class RequestResponseLoggingFilter(
         private const val MAX_BODY_LENGTH = 500
         private val CARAMEL_HEADER_NAMES = CaramelHttpHeaders.ALL_HEADERS.map { it.lowercase() }.toSet()
         private val SENSITIVE_HEADER_PATTERN = Regex("(?i)authorization|device-id")
-//        private val SHOULD_NOT_LOGGING_PATTERN = Regex("(?i)")
+        private val LOGGING_PATTERN = Regex("(?i)/v1/")
     }
 }
 

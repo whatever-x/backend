@@ -159,6 +159,9 @@ otel:
       resource:
         providers: ${OTEL_DISABLED_PROVIDERS}
 
+springdoc:
+  api-docs:
+    enabled: false
 ---
 # ┌───────────────────────────── Dev 프로파일 ─────────────────────────────
 spring:
