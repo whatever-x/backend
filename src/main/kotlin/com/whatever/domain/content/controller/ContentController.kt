@@ -78,7 +78,7 @@ class ContentController(
     @PutMapping("/memo/{memo-id}")
     fun updateContent(
         @PathVariable("memo-id") contentId: Long,
-        @RequestBody request: UpdateContentRequest,
+        @Valid @RequestBody request: UpdateContentRequest,
     ): CaramelApiResponse<ContentSummaryResponse> {
         return contentService.updateContent(contentId, request).succeed()
     }
