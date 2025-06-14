@@ -56,7 +56,7 @@ class SecurityConfig(
     @Value("\${swagger.password}")
     lateinit var swaggerPassword: String
 
-    @Profile("production", "dev")
+    @Profile("dev")
     @Bean
     @Order(1)
     fun swaggerFilterChain(http: HttpSecurity): SecurityFilterChain {
