@@ -44,4 +44,5 @@ out/
 src/main/resources/*.sql
 
 docker-compose.yml
+**/caramel-ef5d9-firebase-adminsdk-fbsvc-3c12d03afc.json
 caramel-ef5d9-firebase-adminsdk-fbsvc-3c12d03afc.json
