@@ -789,6 +789,43 @@ class ScheduleEventServiceTest @Autowired constructor(
         assertThat(resultWeekly).hasSize(7)
     }
 
+    @DisplayName("스케줄 조회 시 조회 범위 밖의 스케줄은 조회되지 않아야 한다.")
+    @Test
+    fun getSchedules_DateRangeWithoutEvents() {
+        // given
+        val startDate = LocalDate.of(2025, 6, 2)
+        val userTimeZone = ZoneId.of("Asia/Seoul")
+
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
+        val content = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
+        val event = scheduleEventRepository.save(
+            ScheduleEvent(
+                uid = "test-uid",
+                startDateTime = startDate.toDateTime(),
+                startTimeZone = userTimeZone,
+                endDateTime = startDate.toDateTime().endOfDay,
+                endTimeZone = userTimeZone,
+                content = content
+            )
+        )
+
+        val request = GetCalendarQueryParameter(
+            startDate = startDate.minusDays(1),
+            endDate = startDate.minusDays(1),
+            userTimeZone = userTimeZone.id,
+        )
+
+        // when
+        val result = scheduleEventService.getSchedules(
+            startDate = request.startDate,
+            endDate = request.endDate,
+            userTimeZone = request.userTimeZone
+        )
+
+        // then
+        assertThat(result).hasSize(0)
+    }
+
     @DisplayName("스케줄 조회 시 시작일, 종료일이 같다면 id 오름차순으로 정렬되어 반환된다.")
     @Test
     fun getSchedules_WithSameDateTimeSchedules() {

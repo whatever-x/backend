@@ -37,6 +37,7 @@ import com.whatever.global.security.util.SecurityUtil.getCurrentUserCoupleId
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.endOfDay
 import com.whatever.util.toDateTime
+import com.whatever.util.withoutNano
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.OptimisticLockingFailureException
@@ -86,8 +87,8 @@ class ScheduleEventService(
         endDate: LocalDate,
         userTimeZone: String
     ): List<ScheduleDetailDto> {
-        val startDateTime = startDate.toDateTime()
-        val endDateTime = endDate.toDateTime().endOfDay
+        val startDateTime = startDate.toDateTime().withoutNano
+        val endDateTime = endDate.toDateTime().endOfDay.withoutNano
         validateRequestDuration(
             startDateTime = startDateTime,
             endDateTime = endDateTime,
