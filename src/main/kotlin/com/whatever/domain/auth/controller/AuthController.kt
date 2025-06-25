@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @Tag(
-    name = "Auth",
-    description = "인증 API"
+    name = "인증 API",
+    description = "로그인, 토큰 갱신 등 인증과 관련된 API"
 )
 @RestController
 @RequestMapping("/v1/auth")
@@ -32,7 +32,11 @@ class AuthController(
     @DisableSwaggerAuthButton
     @Operation(
         summary = "로그인 or 회원가입",
-        description = "이미 회원인 경우 로그인을, 그렇지 않다면 회원가입을 진행합니다.",
+        description = """
+            ### 이미 회원인 경우 로그인을, 그렇지 않다면 회원가입을 진행합니다.
+            
+            - 회원가입을 진행한 유저는 NEW 상태로 생성되며, 프로필 생성을 진행해야 합니다.
+        """,
         responses = [
             ApiResponse(responseCode = "200", description = "로그인 성공"),
             ApiResponse(responseCode = "201", description = "회원가입 성공"),
@@ -54,7 +58,13 @@ class AuthController(
 
     @Operation(
         summary = "로그아웃",
-        description = "성공 응답이 나가면, 클라이언트에서 사용하던 access & refresh token은 재사용 할 수 없습니다."
+        description = """
+            ### 로그아웃
+            
+            - 클라이언트에서 사용하던 Access Token과 Refresh Token이 서버 측에서 파기됩니다.
+            
+            - 파기된 토큰은 재사용이 불가능하고, 새롭게 로그인을 하여 발급받아야 합니다.
+        """,
     )
     @PostMapping("/sign-out")
     fun signOut(
@@ -71,10 +81,16 @@ class AuthController(
     @DisableSwaggerAuthButton
     @Operation(
         summary = "토큰 refresh",
-        description = "새로운 accesstoken, refreshtoken 을 재발급합니다.",
+        description = """
+            ### 새로운 Access Token, Refresh Token을 재발급합니다.
+            
+            - 전송한 Access Token과 Refresh Token이 서버 측에서 파기됩니다.
+            
+            - 해당 요청 이후에는 새롭게 발급된 토큰을 사용해야 합니다.
+        """,
         responses = [
             ApiResponse(responseCode = "200", description = "발급 완료"),
-            ApiResponse(responseCode = "403", description = "리프레시 토큰 만료"),
+            ApiResponse(responseCode = "403", description = "리프레시 토큰 만료. 재로그인 필요."),
         ]
     )
     @PostMapping("/refresh")
@@ -88,7 +104,15 @@ class AuthController(
 
     @Operation(
         summary = "회원 탈퇴",
-        description = "회원 탈퇴를 진행합니다.",
+        description = """
+            ### 회원 탈퇴를 진행합니다.
+            
+            - 커플이 있다면 커플 탈퇴를 진행됩니다.
+            
+            - Kakao 회원일 경우 Kakao Application과 연결을 해제합니다.
+            
+            - 로그아웃을 진행합니다.
+        """,
     )
     @DeleteMapping("/account")
     fun deleteUser(
