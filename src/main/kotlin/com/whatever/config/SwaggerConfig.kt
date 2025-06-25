@@ -64,6 +64,8 @@ class SwaggerConfig {
             if (handlerMethod.hasMethodAnnotation(DisableSwaggerAuthButton::class.java)) {
                 operation.security = emptyList()
             }
+
+            operation.description = operation.description?.trimIndent()
             operation
         }
     }
