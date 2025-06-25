@@ -10,14 +10,15 @@ import com.whatever.domain.content.controller.dto.response.ContentSummaryRespons
 import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.succeed
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.web.bind.annotation.*
 
 @Tag(
-    name = "Calendar-Schedule",
-    description = "캘린더의 요소 중 일정에 관련된 API"
+    name = "일정 API",
+    description = "일정 관련 기능을 제공하는 API"
 )
 @RestController
 @RequestMapping("/v1/calendar/schedules")
@@ -27,7 +28,10 @@ class ScheduleController(
 
     @Operation(
         summary = "일정 기간별 조회",
-        description = "주어진 기간 내의 일정을 조회합니다.",
+        description = """### 주어진 기간에 포함된 일정을 조회합니다.""",
+        responses = [
+            ApiResponse(responseCode = "200", description = "일정 정보 리스트"),
+        ]
     )
     @GetMapping
     fun getSchedules(
@@ -43,8 +47,15 @@ class ScheduleController(
     }
 
     @Operation(
-        summary = "일정 조회",
-        description = "id에 해당하는 일정을 조회합니다. 커플 멤버가 작성한 일정만 조회 가능합니다.",
+        summary = "일정 단건 조회",
+        description = """
+            ### schedule-id에 해당하는 일정을 조회합니다.
+            
+            - 같은 커플에 속한 유저의 일정만 조회할 수 있습니다.
+        """,
+        responses = [
+            ApiResponse(responseCode = "200", description = "일정 정보 + 연관 태그 리스트"),
+        ]
     )
     @GetMapping("/{schedule-id}")
     fun getSchedule(
@@ -56,7 +67,18 @@ class ScheduleController(
 
     @Operation(
         summary = "일정 생성",
-        description = "새로운 일정을 생성합니다.",
+        description = """
+            ### 일정을 생성합니다.
+            
+            - `title`과 `description` 둘 중 하나는 입력값이 있어야합니다.
+            
+            - `title`은 Blank일 수 없습니다.
+            
+            - `description`은 Blank일 수 없습니다.
+        """,
+        responses = [
+            ApiResponse(responseCode = "200", description = "생성 정보 요약"),
+        ]
     )
     @PostMapping
     fun createSchedule(
@@ -70,7 +92,17 @@ class ScheduleController(
 
     @Operation(
         summary = "일정 수정",
-        description = "일정을 수정합니다. 일정을 메모로 변경할 때 사용할 수 있습니다.",
+        description = """
+            ### 일정을 수정합니다.
+            
+            1. 일정의 정보를 단순히 수정하고 싶을 경우
+                - `startDateTime`을 포함해야 합니다.
+            
+            2. 일정을 메모로 전환하고 싶은 경우
+                - 날짜와 타임존 정보를 포함하지 않거나, null로 설정하여 요청을 전송합니다.
+            
+            - title과 description의 제약 조건은 `일정 생성`과 동일합니다.
+        """,
     )
     @PutMapping("/{schedule-id}")
     fun updateSchedule(
@@ -86,7 +118,11 @@ class ScheduleController(
 
     @Operation(
         summary = "일정 삭제",
-        description = "일정을 삭제합니다.",
+        description = """
+            ### schedule-id에 해당하는 일정을 삭제합니다.
+            
+            - 같은 커플에 속한 유저의 일정만 삭제할 수 있습니다. 
+        """,
     )
     @DeleteMapping("/{schedule-id}")
     fun deleteSchedule(@PathVariable("schedule-id") scheduleId: Long): CaramelApiResponse<Unit> {
