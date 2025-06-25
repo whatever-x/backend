@@ -11,12 +11,12 @@ import java.time.LocalDateTime
 
 @Schema(description = "콘텐츠 생성 요청 모델")
 data class CreateContentRequest(
-    @Schema(description = "콘텐츠 제목. title, description 둘 중 하나는 필수입니다.", example = "맛집 리스트")
+    @Schema(description = "콘텐츠 제목. 제목은 최대 ${MAX_TITLE_LENGTH}자까지 가능합니다.", example = "맛집 리스트")
     @field:CodePointLength(max = MAX_TITLE_LENGTH, message = "제목은 최대 ${MAX_TITLE_LENGTH}자까지 가능합니다.")
     val title: String? = null,
 
-    @Schema(description = "콘텐츠 설명. title, description 둘 중 하나는 필수입니다.", example = "어제 함께 갔던 맛집들")
-    @field:CodePointLength(max = MAX_DESCRIPTION_LENGTH, message = "설명은 최대 ${MAX_DESCRIPTION_LENGTH}자까지 가능합니다.")
+    @Schema(description = "콘텐츠 본문. 본문은 최대 ${MAX_DESCRIPTION_LENGTH}자까지 가능합니다.", example = "어제 함께 갔던 맛집들")
+    @field:CodePointLength(max = MAX_DESCRIPTION_LENGTH, message = "본문은 최대 ${MAX_DESCRIPTION_LENGTH}자까지 가능합니다.")
     val description: String? = null,
 
     @Schema(
