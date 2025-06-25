@@ -11,6 +11,7 @@ data class CalendarEventsDto(
     val scheduleList: List<ScheduleDetailDto>,
 )
 
+@Schema(description = "일정 상세 정보 DTO")
 data class ScheduleDetailDto(
     @Schema(description = "현재 스케줄 id", example = "2")
     val scheduleId: Long,
