@@ -8,6 +8,8 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '2.1.20'
     id 'org.jetbrains.kotlin.plugin.spring' version '2.1.20'
     id 'org.jetbrains.kotlin.plugin.jpa' version '2.1.20'
+
+    id 'jacoco'
 }
 
 ext {
@@ -121,4 +123,30 @@ dependencyManagement {
 
 tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+    reportsDirectory = layout.buildDirectory.dir("customJacocoReportDir")
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+    }
+}
+
+tasks.test {
+    configure {
+        exclude(
+            // 논의후 추가
+        )
+    }
 }
