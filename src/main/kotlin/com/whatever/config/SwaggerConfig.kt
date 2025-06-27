@@ -65,8 +65,9 @@ class SwaggerConfig {
                 operation.security = emptyList()
             }
 
-            operation.description = operation.description?.trimIndent()
-            operation
+            operation.apply { 
+                description = description?.trimIndent()
+            }
         }
     }
 
