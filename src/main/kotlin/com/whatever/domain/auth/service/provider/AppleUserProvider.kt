@@ -7,6 +7,8 @@ import com.whatever.domain.auth.dto.AppleUserName
 import com.whatever.domain.auth.service.OIDCHelper
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
+import com.whatever.domain.user.model.User.Companion.MAX_NICKNAME_LENGTH
+import com.whatever.domain.user.model.User.Companion.MIN_NICKNAME_LENGTH
 import com.whatever.domain.user.repository.UserRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.dao.DataIntegrityViolationException
@@ -74,5 +76,5 @@ private fun AppleIdTokenPayload.toUser(userName: AppleUserName? = null) = User(
     platform = LoginPlatform.APPLE,
     platformUserId = sub,
     email = email,
-    nickname = userName?.toString()
+    nickname = userName?.toString()?.takeIf { it.length in MIN_NICKNAME_LENGTH..MAX_NICKNAME_LENGTH }
 )

@@ -10,7 +10,6 @@ import com.whatever.global.exception.ErrorUi
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.*
 import org.hibernate.validator.constraints.CodePointLength
-import org.springframework.context.annotation.DependsOn
 import org.springframework.security.crypto.encrypt.TextEncryptor
 import org.springframework.stereotype.Component
 import java.time.LocalDate
@@ -44,7 +43,7 @@ class User(
     val platformUserId: String,
 
     @Column(length = 8)
-    @field:CodePointLength(min = 2, max = 8)
+    @field:CodePointLength(min = MIN_NICKNAME_LENGTH, max = MAX_NICKNAME_LENGTH)
     var nickname: String? = null,
 
     @Enumerated(EnumType.STRING)
@@ -98,6 +97,8 @@ class User(
     companion object {
         const val MAX_GENDER_LENGTH = 50
         const val MAX_STATUS_LENGTH = 50
+        const val MIN_NICKNAME_LENGTH = 2
+        const val MAX_NICKNAME_LENGTH = 8
     }
 }
 
