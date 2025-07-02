@@ -8,8 +8,9 @@ import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 import java.time.LocalDate
 
+@Schema(description = "유저 프로필 생성 요청 DTO")
 data class PostUserProfileRequest(
-    @Schema(description = "닉네임")
+    @Schema(description = "한글과 영어로 이루어진 2-8자의 문자열.")
     @field:NotBlank(message = "닉네임은 공백일 수 없습니다.")
     @field:Size(min = 2, max = 8, message = "닉네임은 2~8자 이내로 입력해주세요.")
     @field:Pattern(regexp = "^[가-힣a-zA-Z0-9]+$")

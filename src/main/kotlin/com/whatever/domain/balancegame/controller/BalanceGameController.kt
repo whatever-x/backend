@@ -7,6 +7,7 @@ import com.whatever.domain.balancegame.service.BalanceGameService
 import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.succeed
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Positive
@@ -19,8 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @Tag(
-    name = "Balance Game",
-    description = "밸런스 게임 API"
+    name = "밸런스 게임 API",
+    description = "밸런스 게임 관련 기능을 제공하는 API"
 )
 @RestController
 @RequestMapping("/v1/balance-game")
@@ -31,7 +32,14 @@ class BalanceGameController(
 
     @Operation(
         summary = "오늘의 밸런스 게임 조회",
-        description = "밸런스 게임 정보와 커플의 선택 정보를 조회합니다.",
+        description = """
+            ### Asia/Seoul 시간 기준 오늘의 밸런스 게임을 조회합니다.
+            
+            - 커플 멤버들이 선택지를 골랐다면, 해당 정보를 포함하여 전송합니다.
+        """,
+        responses = [
+            ApiResponse(responseCode = "200", description = "밸런스 게임 정보 + 커플 멤버 선택 정보"),
+        ]
     )
     @GetMapping("/today")
     fun getTodayBalanceGame(): CaramelApiResponse<GetBalanceGameResponse> {
@@ -41,7 +49,14 @@ class BalanceGameController(
 
     @Operation(
         summary = "밸런스 게임 선택",
-        description = "밸런스 게임을 선택합니다."
+        description = """
+            ### 밸런스 게임의 선택지를 고릅니다.
+            
+            - 상대방이 이미 선택지를 골랐다면, 상대방의 선택 정보를 포함하여 전송합니다.
+        """,
+        responses = [
+            ApiResponse(responseCode = "200", description = "밸런스 게임 정보 + 커플 멤버 선택 정보"),
+        ]
     )
     @PostMapping("/{gameId}")
     fun chooseBalanceGameOption(

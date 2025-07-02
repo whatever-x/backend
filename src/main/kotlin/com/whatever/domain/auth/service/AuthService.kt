@@ -122,6 +122,7 @@ class AuthService(
         if (serviceToken.refreshToken != refreshToken) {
             throw AuthException(errorCode = AuthExceptionCode.UNAUTHORIZED)
         }
+        // TODO(준용) access token black list 등록
 
         return createTokenAndSave(userId = userId, deviceId = deviceId)
     }
