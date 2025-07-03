@@ -97,7 +97,7 @@ class User(
     companion object {
         const val MAX_GENDER_LENGTH = 50
         const val MAX_STATUS_LENGTH = 50
-        const val MIN_NICKNAME_LENGTH = 2
+        const val MIN_NICKNAME_LENGTH = 1
         const val MAX_NICKNAME_LENGTH = 8
     }
 }

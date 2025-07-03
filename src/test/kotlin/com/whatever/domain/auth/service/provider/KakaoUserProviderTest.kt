@@ -91,9 +91,9 @@ class KakaoUserProviderTest @Autowired constructor(
         assertThat(failCnt.toInt()).isEqualTo(0)
     }
 
-    @DisplayName("카카오로 가입 시, 카카오 닉네임이 2~8자를 벗어나면, null로 취급한다.")
+    @DisplayName("카카오로 가입 시 카카오 닉네임이 white space를 제외하고 1~8자를 벗어나면, null로 취급한다.")
     @ParameterizedTest
-    @CsvSource("1", "123456789")
+    @CsvSource("''", "'   '", "123456789")
     fun findOrCreateUser_WithInvalidLengthKakaoNickname(invalidLengthNickname: String) {
         // given
         Mockito.`when`(kakaoOIDCClient.getOIDCPublicKey())
@@ -121,9 +121,9 @@ class KakaoUserProviderTest @Autowired constructor(
         assertThat(savedUsers.first().nickname).isNull()
     }
 
-    @DisplayName("카카오로 가입 시, 카카오 닉네임이 2~8자 이내라면 DB에 저장한다.")
+    @DisplayName("카카오로 가입 시, 카카오 닉네임이 1~8자 이내라면 DB에 저장한다.")
     @ParameterizedTest
-    @CsvSource("12", "12345678")
+    @CsvSource("\uD83D\uDC4D", "1", "12345678")
     fun findOrCreateUser_WithValidLengthKakaoNickname(validLengthNickname: String) {
         // given
         Mockito.`when`(kakaoOIDCClient.getOIDCPublicKey())

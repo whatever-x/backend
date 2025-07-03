@@ -70,6 +70,6 @@ class KakaoUserProvider(
 private fun KakaoIdTokenPayload.toUser() = User(
     platform = LoginPlatform.KAKAO,
     platformUserId = platformUserId,
-    nickname = nickname?.takeIf { it.length in MIN_NICKNAME_LENGTH..MAX_NICKNAME_LENGTH },
+    nickname = nickname?.takeIf { it.trim().length in MIN_NICKNAME_LENGTH..MAX_NICKNAME_LENGTH },
     email = email,
 )

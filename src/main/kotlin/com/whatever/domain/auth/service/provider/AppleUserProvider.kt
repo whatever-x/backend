@@ -76,5 +76,5 @@ private fun AppleIdTokenPayload.toUser(userName: AppleUserName? = null) = User(
     platform = LoginPlatform.APPLE,
     platformUserId = sub,
     email = email,
-    nickname = userName?.toString()?.takeIf { it.length in MIN_NICKNAME_LENGTH..MAX_NICKNAME_LENGTH }
+    nickname = userName?.toString()?.takeIf { it.trim().length in MIN_NICKNAME_LENGTH..MAX_NICKNAME_LENGTH }
 )
