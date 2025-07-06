@@ -2,17 +2,22 @@ package com.whatever.domain.user.model
 
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.couple.model.Couple
+import com.whatever.domain.user.exception.UserExceptionCode.INVALID_BIRTH_DATE
 import com.whatever.domain.user.exception.UserExceptionCode.INVALID_USER_STATUS_FOR_COUPLING
+import com.whatever.domain.user.exception.UserIllegalArgumentException
 import com.whatever.domain.user.exception.UserIllegalStateException
 import com.whatever.domain.user.model.UserStatus.COUPLED
 import com.whatever.domain.user.model.UserStatus.SINGLE
 import com.whatever.global.exception.ErrorUi
+import com.whatever.util.DateTimeUtil
+import com.whatever.util.DateTimeUtil.KST_ZONE_ID
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.*
 import org.hibernate.validator.constraints.CodePointLength
 import org.springframework.security.crypto.encrypt.TextEncryptor
 import org.springframework.stereotype.Component
 import java.time.LocalDate
+import java.time.ZoneId
 
 private val logger = KotlinLogging.logger {  }
 
@@ -83,13 +88,29 @@ class User(
         userStatus = newStatus
     }
 
+    fun updateBirthDate(
+        newBirthDate: LocalDate,
+        userZoneId: ZoneId = KST_ZONE_ID,
+    ) {
+        val todayInUserZone = DateTimeUtil.zonedNow(userZoneId).toLocalDate()
+        if (newBirthDate.isAfter(todayInUserZone)) {
+            throw UserIllegalArgumentException(
+                errorCode = INVALID_BIRTH_DATE,
+                errorUi = ErrorUi.Toast("미래의 날짜를 생일로 설정할 수 없어요.")
+            )
+        }
+
+        birthDate = newBirthDate
+    }
+
     fun register(
         nickname: String,
         birthday: LocalDate,
         gender: UserGender,
+        userTimeZone: ZoneId = KST_ZONE_ID,
     ) {
         this.nickname = nickname
-        this.birthDate = birthday
+        updateBirthDate(birthday, userTimeZone)
         this.gender = gender
         this.userStatus = SINGLE
     }
