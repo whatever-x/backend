@@ -141,6 +141,15 @@ tasks.jacocoTestReport {
         csv.required = false
         html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
     }
+
+    def filteredClasses = files(classDirectories.files.collect { dir ->
+        fileTree(dir) {
+            include "**/domain/**/service/*Service.class"
+            exclude "**/dto/**", "**/controller/**", "**/config/**", "**/global/**"
+        }
+    })
+
+    classDirectories.setFrom(filteredClasses)
 }
 
 tasks.test {
