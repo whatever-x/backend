@@ -6,13 +6,13 @@ import com.whatever.domain.auth.client.KakaoOIDCClient
 import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
 import com.whatever.domain.auth.client.dto.KakaoUnlinkUserRequest
 import com.whatever.domain.auth.service.OIDCHelper
-import com.whatever.domain.user.exception.UserExceptionCode
 import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
+import com.whatever.domain.user.model.User.Companion.MAX_NICKNAME_LENGTH
+import com.whatever.domain.user.model.User.Companion.MIN_NICKNAME_LENGTH
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.findByIdAndNotDeleted
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.dao.DataIntegrityViolationException
@@ -70,6 +70,6 @@ class KakaoUserProvider(
 private fun KakaoIdTokenPayload.toUser() = User(
     platform = LoginPlatform.KAKAO,
     platformUserId = platformUserId,
-    nickname = nickname,
+    nickname = nickname?.takeIf { it.trim().length in MIN_NICKNAME_LENGTH..MAX_NICKNAME_LENGTH },
     email = email,
 )

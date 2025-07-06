@@ -7,7 +7,10 @@ import com.whatever.domain.auth.service.OIDCHelper
 import com.whatever.domain.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -86,5 +89,65 @@ class KakaoUserProviderTest @Autowired constructor(
 
         assertThat(successCnt.toInt()).isEqualTo(threadCount)
         assertThat(failCnt.toInt()).isEqualTo(0)
+    }
+
+    @DisplayName("카카오로 가입 시 카카오 닉네임이 white space를 제외하고 1~8자를 벗어나면, null로 취급한다.")
+    @ParameterizedTest
+    @CsvSource("''", "'   '", "123456789")
+    fun findOrCreateUser_WithInvalidLengthKakaoNickname(invalidLengthNickname: String) {
+        // given
+        Mockito.`when`(kakaoOIDCClient.getOIDCPublicKey())
+            .thenReturn(OIDCPublicKeysResponse())
+
+        Mockito.`when`(oidcHelper.parseKakaoIdToken(Mockito.anyString(), Mockito.anyList()))
+            .thenReturn(KakaoIdTokenPayload(
+                iss = "",
+                aud = "",
+                sub = "social-user-id",
+                iat = 1L,
+                exp = 1L,
+                authTime = 1L,
+                nickname = invalidLengthNickname,
+            ))
+
+        // when
+        val result = kakaoUserProvider.findOrCreateUser("any-id-token")
+
+        // then
+        assertThat(result.nickname).isNull()
+
+        val savedUsers = userRepository.findAll()
+        assertThat(savedUsers).hasSize(1)
+        assertThat(savedUsers.first().nickname).isNull()
+    }
+
+    @DisplayName("카카오로 가입 시, 카카오 닉네임이 1~8자 이내라면 DB에 저장한다.")
+    @ParameterizedTest
+    @CsvSource("\uD83D\uDC4D", "1", "12345678")
+    fun findOrCreateUser_WithValidLengthKakaoNickname(validLengthNickname: String) {
+        // given
+        Mockito.`when`(kakaoOIDCClient.getOIDCPublicKey())
+            .thenReturn(OIDCPublicKeysResponse())
+
+        Mockito.`when`(oidcHelper.parseKakaoIdToken(Mockito.anyString(), Mockito.anyList()))
+            .thenReturn(KakaoIdTokenPayload(
+                iss = "",
+                aud = "",
+                sub = "social-user-id",
+                iat = 1L,
+                exp = 1L,
+                authTime = 1L,
+                nickname = validLengthNickname,
+            ))
+
+        // when
+        val result = kakaoUserProvider.findOrCreateUser("any-id-token")
+
+        // then
+        assertThat(result.nickname).isEqualTo(validLengthNickname)
+
+        val savedUsers = userRepository.findAll()
+        assertThat(savedUsers).hasSize(1)
+        assertThat(savedUsers.first().nickname).isEqualTo(validLengthNickname)
     }
 }
