@@ -6,9 +6,11 @@ import com.whatever.global.cursor.Sortable
 import com.whatever.global.cursor.Sortables
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
 
+@Schema(description = "커서 기반 메모 리스트 조회 DTO")
 data class GetContentListQueryParameter(
     @field:Parameter(
         name = "size",

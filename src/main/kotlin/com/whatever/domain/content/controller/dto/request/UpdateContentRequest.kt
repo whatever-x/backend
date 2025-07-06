@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED
 import org.hibernate.validator.constraints.CodePointLength
 
-@Schema(description = "콘텐츠 수정 요청 모델")
+@Schema(description = "콘텐츠 수정 요청 DTO")
 data class UpdateContentRequest(
     @Schema(description = "콘텐츠 제목", example = "맛집 리스트")
     @field:CodePointLength(max = MAX_TITLE_LENGTH, message = "제목은 최대 ${MAX_TITLE_LENGTH}자까지 가능합니다.")

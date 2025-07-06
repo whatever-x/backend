@@ -7,8 +7,9 @@ import com.whatever.domain.user.model.UserStatus
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
-@Schema(description = "유저 정보 모델")
+@Schema(description = "내 정보 조회 응답 DTO")
 data class GetUserInfoResponse(
+    @Schema(description = "유저의 id")
     val id: Long,
 
     @Schema(
@@ -23,6 +24,7 @@ data class GetUserInfoResponse(
     )
     val birthDate: LocalDate?,
 
+    @Schema(description = "가입한 소셜 플랫폼")
     val signInPlatform: LoginPlatform,
 
     @Schema(
@@ -37,6 +39,7 @@ data class GetUserInfoResponse(
     )
     val gender: UserGender?,
 
+    @Schema(description = "유저의 현재 상태")
     val userStatus: UserStatus,
 ) {
     companion object {

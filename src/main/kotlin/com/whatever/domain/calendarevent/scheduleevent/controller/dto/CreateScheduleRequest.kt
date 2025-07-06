@@ -5,16 +5,11 @@ import com.whatever.domain.content.model.ContentDetail
 import com.whatever.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
 import com.whatever.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
 import io.swagger.v3.oas.annotations.media.Schema
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.Size
 import org.hibernate.validator.constraints.CodePointLength
 import java.time.LocalDateTime
 
-@Schema(description = "일정 생성 요청 모델")
+@Schema(description = "일정 생성 요청 DTO")
 data class CreateScheduleRequest(
-
-//    @Schema(description = "콘텐츠(메모) id", example = "1")
-//    val contentId: Long,
 
     @Schema(description = "콘텐츠 제목. title, description 둘 중 하나는 필수입니다.", example = "맛집 리스트", nullable = true)
     @field:CodePointLength(max = MAX_TITLE_LENGTH, message = "제목은 최대 ${MAX_TITLE_LENGTH}자까지 가능합니다.")
