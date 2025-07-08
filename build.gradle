@@ -151,11 +151,3 @@ tasks.jacocoTestReport {
 
     classDirectories.setFrom(filteredClasses)
 }
-
-tasks.test {
-    configure {
-        exclude(
-            // 논의후 추가
-        )
-    }
-}
