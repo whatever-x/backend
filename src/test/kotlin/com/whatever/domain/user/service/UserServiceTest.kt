@@ -79,7 +79,7 @@ class UserServiceTest {
     }
 }
 
-fun createNewUser(
+internal fun createNewUser(
     userRepository: UserRepository,
 ): User {
     return createUser(
@@ -88,7 +88,7 @@ fun createNewUser(
     )
 }
 
-fun createSingleUser(
+internal fun createSingleUser(
     userRepository: UserRepository,
     birthDate: LocalDate,
     nickname: String,
@@ -103,7 +103,7 @@ fun createSingleUser(
     )
 }
 
-fun createUser(
+internal fun createUser(
     userRepository: UserRepository,
     email: String? = null,
     birthDate: LocalDate? = null,
