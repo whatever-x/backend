@@ -85,7 +85,7 @@ class UserService(
             )
 
         with(request) {
-            request.notificationEnabled?.let { userSetting.notificationEnabled = it }
+            notificationEnabled?.let { userSetting.notificationEnabled = it }
         }
 
         return UserSettingResponse.from(userSetting)
