@@ -48,7 +48,7 @@ jobs:
       redis:
         image: redis
         ports:
-          - '6370:6370'
+          - '6379:6379'
 
     steps:
       - uses: actions/checkout@v4
@@ -78,7 +78,7 @@ jobs:
         run: ./gradlew --info test
         env:
           REDIS_HOST: localhost
-          REDIS_PORT: 6370
+          REDIS_PORT: 6379
 
       # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
       # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
