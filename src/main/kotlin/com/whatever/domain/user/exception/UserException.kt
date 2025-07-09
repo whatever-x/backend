@@ -17,3 +17,8 @@ class UserIllegalStateException(
     errorCode: UserExceptionCode,
     errorUi: ErrorUi,
 ) : UserException(errorCode, errorUi)
+
+class UserIllegalArgumentException(
+    errorCode: UserExceptionCode,
+    errorUi: ErrorUi,
+) : UserException(errorCode, errorUi)

@@ -16,7 +16,6 @@ import com.whatever.domain.couple.exception.CoupleExceptionCode.INVITATION_CODE_
 import com.whatever.domain.couple.exception.CoupleExceptionCode.MEMBER_NOT_FOUND
 import com.whatever.domain.couple.exception.CoupleExceptionCode.NOT_A_MEMBER
 import com.whatever.domain.couple.exception.CoupleExceptionCode.UPDATE_FAIL
-import com.whatever.domain.couple.exception.CoupleIllegalArgumentException
 import com.whatever.domain.couple.exception.CoupleIllegalStateException
 import com.whatever.domain.couple.exception.CoupleNotFoundException
 import com.whatever.domain.couple.model.Couple
@@ -24,7 +23,6 @@ import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.repository.InvitationCodeRedisRepository
 import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
 import com.whatever.domain.firebase.service.event.dto.CoupleConnectedEvent
-import com.whatever.domain.user.exception.UserExceptionCode
 import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.User
@@ -36,7 +34,7 @@ import com.whatever.global.security.util.SecurityUtil.getCurrentUserCoupleId
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.findByIdAndNotDeleted
-import com.whatever.util.toZonId
+import com.whatever.util.toZoneId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.viascom.nanoid.NanoId
 import org.springframework.context.ApplicationEventPublisher
@@ -114,7 +112,7 @@ class CoupleService(
         val updatedCouple = couple.apply {
             updateStartDate(
                 newDate = request.startDate,
-                userZoneId = timeZone.toZonId()
+                userZoneId = timeZone.toZoneId()
             )
         }
 

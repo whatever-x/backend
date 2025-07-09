@@ -1,60 +1,42 @@
 package com.whatever.domain.calendarevent.scheduleevent.service
 
-import com.whatever.domain.calendarevent.controller.dto.request.GetCalendarQueryParameter
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleAccessDeniedException
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalArgumentException
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalStateException
 import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
 import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
-import com.whatever.domain.content.model.Content
-import com.whatever.domain.content.model.ContentDetail
 import com.whatever.domain.content.model.ContentType
 import com.whatever.domain.content.repository.ContentRepository
-import com.whatever.domain.content.tag.model.Tag
-import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
-import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
-import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
-import com.whatever.util.endOfDay
 import com.whatever.util.findByIdAndNotDeleted
-import com.whatever.util.toDateTime
-import com.whatever.util.toZonId
+import com.whatever.util.toZoneId
 import com.whatever.util.withoutNano
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.reset
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
-import java.time.LocalDate
 import java.time.ZoneId
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.test.Test
-import kotlin.test.assertNotNull
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -180,9 +162,9 @@ class ScheduleEventServiceOptimisticLockTest @Autowired constructor(
             assertThat(content.contentDetail.title).isEqualTo(request.title)
             assertThat(content.contentDetail.description).isEqualTo(request.description)
             assertThat(content.contentDetail.isCompleted).isTrue()
-            assertThat(startTimeZone).isEqualTo(request.startTimeZone!!.toZonId())
+            assertThat(startTimeZone).isEqualTo(request.startTimeZone!!.toZoneId())
             assertThat(startDateTime).isEqualTo(request.startDateTime!!.withoutNano)
-            assertThat(endTimeZone).isEqualTo(request.endTimeZone!!.toZonId())
+            assertThat(endTimeZone).isEqualTo(request.endTimeZone!!.toZoneId())
             assertThat(endDateTime).isEqualTo(request.endDateTime!!.withoutNano)
         }
     }

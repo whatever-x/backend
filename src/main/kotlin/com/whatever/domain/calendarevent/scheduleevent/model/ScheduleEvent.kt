@@ -10,7 +10,7 @@ import com.whatever.domain.content.model.ContentDetail
 import com.whatever.domain.content.model.ContentType
 import com.whatever.global.exception.ErrorUi
 import com.whatever.util.endOfDay
-import com.whatever.util.toZonId
+import com.whatever.util.toZoneId
 import com.whatever.util.withoutNano
 import jakarta.persistence.Column
 import jakarta.persistence.Convert
@@ -91,9 +91,9 @@ class ScheduleEvent(
         endTimeZone: String? = null,
     ) {
         this.startDateTime = startDateTime.withoutNano
-        this.startTimeZone = startTimeZone.toZonId()
+        this.startTimeZone = startTimeZone.toZoneId()
         this.endDateTime = endDateTime ?: startDateTime.endOfDay.withoutNano
-        this.endTimeZone = endTimeZone?.toZonId() ?: startTimeZone.toZonId()
+        this.endTimeZone = endTimeZone?.toZoneId() ?: startTimeZone.toZoneId()
     }
 
     fun updateEvent(
