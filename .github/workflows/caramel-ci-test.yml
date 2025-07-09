@@ -99,9 +99,9 @@ jobs:
           # Github personal token to add comments to Pull Request
           token: ${{ secrets.GIT_TOKEN }}
           # The minimum code coverage that is required to pass for overall project
-          min-coverage-overall: 40 # optional, default is 80
+          # min-coverage-overall: 40 # optional, default is 80
           # The minimum code coverage that is required to pass for changed files
-          min-coverage-changed-files: 40 # optional, default is 80
+          # min-coverage-changed-files: 40 # optional, default is 80
           # Optional title for the Pull Request comment
           title: Caramel Code Coverage # optional
           # Update the coverage report comment instead of creating new ones. Requires title to works properly.
