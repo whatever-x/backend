@@ -99,7 +99,7 @@ jobs:
           # Comma separated paths of the generated jacoco xml files (supports wildcard glob pattern)
           paths: ${{ github.workspace }}/build/jacocoXml/test/jacocoTestRepost.xml
           # Github personal token to add comments to Pull Request
-          token: ${{ secrets.GIT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           # The minimum code coverage that is required to pass for overall project
           # min-coverage-overall: 40 # optional, default is 80
           # The minimum code coverage that is required to pass for changed files
