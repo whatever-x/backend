@@ -14,7 +14,7 @@ jobs:
       contents: read
 
     steps:
-      # - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -25,9 +25,54 @@ jobs:
       # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+      - name: create-json
+        # You may pin to the exact commit or the version.
+        # uses: jsdaniell/create-json@b8e77fa01397ca39cc4a6198cc29a3be5481afef
+        uses: jsdaniell/create-json@v1.2.3
+        with:
+          # The name of the file to be written. | file.json
+          name: fireaabse-test-sdk.json
+          # The json string that can be a secret of the github repo or a string of a json. | "{"title": "my json"}"
+          json: ${{ secrets.FIREBAE_ADMIN_SDK }}
+          # Optional subfolder directory to save the json file. | src/
+          dir: ./
+
 
       - name: Gradle Test
         run: ./gradlew --info test
+        env:
+          SPRING_SERVER_PORT: ${{ secrets.SPRING_SERVER_PORT }}
+          SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
+          SECRET_KEY_STR: ${{ secrets.SECRET_KEY_STR }}
+          ACCESS_EXPIRATION_SEC: ${{ secrets.ACCESS_EXPIRATION_SEC }}
+          REFRESH_EXPIRATION_SEC: ${{ secrets.REFRESH_EXPIRATION_SEC }}
+          OAUTH_BASE_URL: ${{ secrets.OAUTH_BASE_URL }}
+          OAUTH_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
+          OAUTH_CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}
+          OAUTH_REDIRECT_URL: ${{ secrets.OAUTH_REDIRECT_URL }}
+          OAUTH_APP_ID: ${{ secrets.OAUTH_APP_ID }}
+          OAUTH_ADMIN_KEY: ${{ secrets.OAUTH_ADMIN_KEY }}
+          APPLE_BASE_URL: ${{ secrets.APPLE_BASE_URL }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_SERVICE_ID: ${{ secrets.APPLE_SERVICE_ID }}
+          APPLE_KEY_ID: ${{ secrets.APPLE_KEY_ID }}
+          APPLE_KEY_PATH: ${{ secrets.APPLE_KEY_PATH }}
+          APPLE_REDIRECT_URI: ${{ secrets.APPLE_REDIRECT_URI }}
+          SWAGGER_USER: ${{ secrets.SWAGGER_USER }}
+          SWAGGER_PASSWORD: ${{ secrets.SWAGGER_PASSWORD }}
+          DEV_SERVER_URL: ${{ secrets.DEV_SERVER_URL }}
+          LOCAL_SERVER_URL: ${{ secrets.LOCAL_SERVER_URL }}
+          ACTUATOR_BASE_PATH: ${{ secrets.ACTUATOR_BASE_PATH }}
+          ACTUATOR_BASE_PORT: ${{ secrets.ACTUATOR_BASE_PORT }}
+          ACTUATOR_APPLICATION_NAME: ${{ secrets.ACTUATOR_APPLICATION_NAME }}
+          ACTUATOR_EXPOSURE_API: ${{ secrets.ACTUATOR_EXPOSURE_API }}
+          OPENAPI_SPECIALDAY_KEY: ${{ secrets.OPENAPI_SPECIALDAY_KEY }}
+          GOOGLE_APPLICATION_CREDENTIALS: ./fireaabse-test-sdk.json
+          FCM_ENABLED: ${{ secrets.FCM_ENABLED }}
+          DB_MAX_CONNECTION: ${{ secrets.DB_MAX_CONNECTION }}
+          CRYPTO_PASSWORD: ${{ secrets.CRYPTO_PASSWORD }}
+          CRYPTO_SALT: ${{ secrets.CRYPTO_SALT }}
+
 
       # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
       # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
@@ -69,7 +114,7 @@ jobs:
             # When there is an error do not fail the action, but log a warning
             # continue-on-error: # optional, default is true
             # Run the action in debug mode and get debug logs printed in console
-            # debug-mode: # optional, default is false
+          # debug-mode: # optional, default is false
 
 
       - name: Upload Jacoco HTML report
