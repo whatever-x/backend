@@ -5,7 +5,6 @@ import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventR
 import com.whatever.domain.content.controller.dto.request.DateTimeInfoDto
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
-import com.whatever.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
 import com.whatever.domain.content.model.ContentType
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.model.TagContentMapping
@@ -14,7 +13,7 @@ import com.whatever.domain.content.tag.repository.TagRepository
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.util.endOfDay
-import com.whatever.util.toZonId
+import com.whatever.util.toZoneId
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -56,8 +55,8 @@ class ScheduleCreator(
             uid = UUID.randomUUID().toString(),
             startDateTime = dateTimeInfo.startDateTime,
             endDateTime = dateTimeInfo.endDateTime ?: dateTimeInfo.startDateTime.endOfDay,
-            startTimeZone = dateTimeInfo.startTimezone.toZonId(),
-            endTimeZone = dateTimeInfo.endTimezone?.toZonId() ?: dateTimeInfo.startTimezone.toZonId(),
+            startTimeZone = dateTimeInfo.startTimezone.toZoneId(),
+            endTimeZone = dateTimeInfo.endTimezone?.toZoneId() ?: dateTimeInfo.startTimezone.toZoneId(),
         )
         scheduleEventRepository.save(scheduleEvent)
 

@@ -34,7 +34,7 @@ import com.whatever.global.exception.common.CaramelException
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserCoupleId
 import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.util.CursorUtil
-import com.whatever.util.toZonId
+import com.whatever.util.toZoneId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.OptimisticLockingFailureException
@@ -169,8 +169,8 @@ class ContentService(
                 memo = memo,
                 startDateTime = startDateTime,
                 endDateTime = endDateTime,
-                startTimeZone = startTimezone.toZonId(),
-                endTimeZone = endTimezone?.toZonId(),
+                startTimeZone = startTimezone.toZoneId(),
+                endTimeZone = endTimezone?.toZoneId(),
             )
         }
         val savedScheduleEvent = scheduleEventRepository.save(scheduleEvent)

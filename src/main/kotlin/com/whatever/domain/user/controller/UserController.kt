@@ -11,7 +11,7 @@ import com.whatever.domain.user.service.UserService
 import com.whatever.global.constants.CaramelHttpHeaders.TIME_ZONE
 import com.whatever.global.exception.dto.CaramelApiResponse
 import com.whatever.global.exception.dto.succeed
-import com.whatever.util.toZonId
+import com.whatever.util.toZoneId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -44,7 +44,7 @@ class UserController(
         @Valid @RequestBody putUserProfileRequest: PutUserProfileRequest,
         @RequestHeader(TIME_ZONE) timeZone: String,
     ): CaramelApiResponse<PutUserProfileResponse> {
-        val userProfileResponse = userService.updateProfile(putUserProfileRequest, timeZone.toZonId())
+        val userProfileResponse = userService.updateProfile(putUserProfileRequest, timeZone.toZoneId())
         return userProfileResponse.succeed()
     }
 
@@ -66,7 +66,7 @@ class UserController(
         @Valid @RequestBody postUserProfileRequest: PostUserProfileRequest,
         @RequestHeader(TIME_ZONE) timeZone: String,
     ): CaramelApiResponse<PostUserProfileResponse> {
-        val userProfileResponse = userService.createProfile(postUserProfileRequest, timeZone.toZonId())
+        val userProfileResponse = userService.createProfile(postUserProfileRequest, timeZone.toZoneId())
         return userProfileResponse.succeed()
     }
 

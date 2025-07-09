@@ -7,7 +7,6 @@ import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExcepti
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.COUPLE_NOT_MATCHED
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.SCHEDULE_NOT_FOUND
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalArgumentException
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalStateException
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleNotFoundException
 import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
 import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
@@ -31,7 +30,7 @@ import com.whatever.util.DateTimeUtil
 import com.whatever.util.endOfDay
 import com.whatever.util.findByIdAndNotDeleted
 import com.whatever.util.toDateTime
-import com.whatever.util.toZonId
+import com.whatever.util.toZoneId
 import com.whatever.util.withoutNano
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -218,9 +217,9 @@ class ScheduleEventServiceTest @Autowired constructor(
             assertThat(content.contentDetail.title).isEqualTo(request.title)
             assertThat(content.contentDetail.description).isEqualTo(request.description)
             assertThat(content.contentDetail.isCompleted).isTrue()
-            assertThat(startTimeZone).isEqualTo(request.startTimeZone!!.toZonId())
+            assertThat(startTimeZone).isEqualTo(request.startTimeZone!!.toZoneId())
             assertThat(startDateTime).isEqualTo(request.startDateTime!!.withoutNano)
-            assertThat(endTimeZone).isEqualTo(request.endTimeZone!!.toZonId())
+            assertThat(endTimeZone).isEqualTo(request.endTimeZone!!.toZoneId())
             assertThat(endDateTime).isEqualTo(request.endDateTime!!.withoutNano)
         }
     }
@@ -265,9 +264,9 @@ class ScheduleEventServiceTest @Autowired constructor(
             assertThat(content.contentDetail.title).isEqualTo(request.title)
             assertThat(content.contentDetail.description).isEqualTo(request.description)
             assertThat(content.contentDetail.isCompleted).isTrue()
-            assertThat(startTimeZone).isEqualTo(request.startTimeZone!!.toZonId())
+            assertThat(startTimeZone).isEqualTo(request.startTimeZone!!.toZoneId())
             assertThat(startDateTime).isEqualTo(request.startDateTime!!.withoutNano)
-            assertThat(endTimeZone).isEqualTo(request.endTimeZone!!.toZonId())
+            assertThat(endTimeZone).isEqualTo(request.endTimeZone!!.toZoneId())
             assertThat(endDateTime).isEqualTo(request.endDateTime!!.withoutNano)
         }
     }
@@ -308,7 +307,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         updatedScheduleEvent.run {
             assertThat(id).isEqualTo(oldSchedule.id)
             assertThat(endDateTime).isEqualTo(request.startDateTime!!.endOfDay.withoutNano)
-            assertThat(endTimeZone).isEqualTo(request.startTimeZone!!.toZonId())
+            assertThat(endTimeZone).isEqualTo(request.startTimeZone!!.toZoneId())
         }
     }
 
