@@ -13,28 +13,30 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.mockito.InjectMocks
+import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.mockStatic
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
+import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.util.UUID
 import kotlin.test.Test
 
 @ActiveProfiles("test")
-@SpringBootTest
+@ExtendWith(MockitoExtension::class)
 class UserServiceUnitTest {
 
-    @MockitoBean
+    @Mock
     private lateinit var mockUserRepository: UserRepository
 
-    @MockitoBean
+    @Mock
     private lateinit var mockUserSettingRepository: UserSettingRepository
 
-    @Autowired
+    @InjectMocks
     private lateinit var userService: UserService
 
     private lateinit var mockSecurityUtil: AutoCloseable
@@ -46,7 +48,7 @@ class UserServiceUnitTest {
 
     @AfterEach
     fun tearDown() {
-        mockSecurityUtil.close()  // static mock 초기화
+        mockSecurityUtil.close()
     }
 
     @ParameterizedTest
@@ -60,18 +62,15 @@ class UserServiceUnitTest {
             platform = LoginPlatform.TEST,
             platformUserId = UUID.randomUUID().toString()
         )
-        Mockito.`when`(mockUserRepository.save(Mockito.any(User::class.java)))
-            .thenReturn(user)
-
         val userSetting = UserSetting(user = user, notificationEnabled = setting)
-        Mockito.`when`(
+        whenever(
             mockUserSettingRepository.findByUserAndIsDeleted(
                 user = user,
                 isDeleted = false,
             )
         ).thenReturn(userSetting)
 
-        Mockito.`when`(mockUserRepository.getReferenceById(Mockito.anyLong()))
+        whenever(mockUserRepository.getReferenceById(Mockito.anyLong()))
             .thenReturn(user)
 
         /**
@@ -96,18 +95,16 @@ class UserServiceUnitTest {
             platform = LoginPlatform.TEST,
             platformUserId = UUID.randomUUID().toString()
         )
-        Mockito.`when`(mockUserRepository.save(Mockito.any(User::class.java)))
-            .thenReturn(user)
 
         val userSetting = UserSetting(user = user, notificationEnabled = setting)
-        Mockito.`when`(
+        whenever(
             mockUserSettingRepository.findByUserAndIsDeleted(
                 user = user,
                 isDeleted = false,
             )
         ).thenReturn(userSetting)
 
-        Mockito.`when`(mockUserRepository.getReferenceById(Mockito.anyLong()))
+        whenever(mockUserRepository.getReferenceById(Mockito.anyLong()))
             .thenReturn(user)
 
         // when
@@ -126,10 +123,8 @@ class UserServiceUnitTest {
             platform = LoginPlatform.TEST,
             platformUserId = UUID.randomUUID().toString()
         )
-        Mockito.`when`(mockUserRepository.save(Mockito.any(User::class.java)))
-            .thenReturn(user)
 
-        Mockito.`when`(mockUserRepository.getReferenceById(Mockito.anyLong()))
+        whenever(mockUserRepository.getReferenceById(Mockito.anyLong()))
             .thenReturn(user)
 
         // when
@@ -150,10 +145,10 @@ class UserServiceUnitTest {
             platformUserId = UUID.randomUUID().toString()
         )
         mockSecurityUtil.apply {
-            Mockito.`when`(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
+            whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
         }
 
-        Mockito.`when`(mockUserRepository.getReferenceById(Mockito.anyLong()))
+        whenever(mockUserRepository.getReferenceById(Mockito.anyLong()))
             .thenReturn(user)
 
         // when
