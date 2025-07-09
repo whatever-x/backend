@@ -19,6 +19,7 @@ import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.util.findByIdAndNotDeleted
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZoneId
 
 
 @Service
@@ -27,13 +28,13 @@ class UserService(
     private val userSettingRepository: UserSettingRepository,
 ) {
     @Transactional
-    fun createProfile(postUserProfileRequest: PostUserProfileRequest): PostUserProfileResponse {
+    fun createProfile(postUserProfileRequest: PostUserProfileRequest, userTimeZone: ZoneId): PostUserProfileResponse {
         val userId = getCurrentUserId()
         val user = userRepository.findByIdAndNotDeleted(userId)
             ?: throw UserNotFoundException(NOT_FOUND)
 
         with(postUserProfileRequest) {
-            user.register(nickname, birthday, gender)
+            user.register(nickname, birthday, gender, userTimeZone)
         }
 
         if (!userSettingRepository.existsByUserAndIsDeleted(user)) {
@@ -48,7 +49,7 @@ class UserService(
     }
 
     @Transactional
-    fun updateProfile(putUserProfileRequest: PutUserProfileRequest): PutUserProfileResponse {
+    fun updateProfile(putUserProfileRequest: PutUserProfileRequest, userTimeZone: ZoneId): PutUserProfileResponse {
         val userId = getCurrentUserId()
         val user = userRepository.findByIdAndNotDeleted(userId)?.apply {
             if (putUserProfileRequest.nickname.isNullOrBlank().not()) {
@@ -56,7 +57,7 @@ class UserService(
             }
 
             if (putUserProfileRequest.birthday != null) {
-                birthDate = putUserProfileRequest.birthday
+                updateBirthDate(putUserProfileRequest.birthday, userTimeZone)
             }
         }
 
@@ -85,7 +86,7 @@ class UserService(
             )
 
         with(request) {
-            request.notificationEnabled?.let { userSetting.notificationEnabled = it }
+            notificationEnabled?.let { userSetting.notificationEnabled = it }
         }
 
         return UserSettingResponse.from(userSetting)

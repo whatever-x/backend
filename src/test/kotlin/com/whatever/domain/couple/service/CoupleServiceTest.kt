@@ -25,7 +25,7 @@ import com.whatever.domain.user.model.UserStatus.SINGLE
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
-import com.whatever.util.toZonId
+import com.whatever.util.toZoneId
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.data.TemporalUnitWithinOffset
@@ -333,7 +333,7 @@ class CoupleServiceTest @Autowired constructor(
         }
 
         // 미래 시간으로 설정
-        val zonedStartDateTime = DateTimeUtil.zonedNow("Asia/Seoul".toZonId()).plusDays(1)
+        val zonedStartDateTime = DateTimeUtil.zonedNow("Asia/Seoul".toZoneId()).plusDays(1)
         val request = UpdateCoupleStartDateRequest(
             startDate = zonedStartDateTime.toLocalDate()
         )

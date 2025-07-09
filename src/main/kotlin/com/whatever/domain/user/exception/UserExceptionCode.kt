@@ -31,6 +31,10 @@ enum class UserExceptionCode(
         message = "설정 정보가 존재하지 않습니다.",
         status = HttpStatus.CONFLICT
     ),
+    INVALID_BIRTH_DATE(
+        sequence = "010",
+        message = "생일은 미래 날짜로 설정할 수 없습니다."
+    ),
     ;
 
     override val code = "USER$sequence"

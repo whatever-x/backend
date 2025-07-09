@@ -5,6 +5,7 @@ import com.whatever.domain.user.dto.PostUserProfileRequest
 import com.whatever.domain.user.dto.PutUserProfileRequest
 import com.whatever.domain.user.dto.PutUserProfileResponse
 import com.whatever.domain.user.model.UserGender
+import com.whatever.global.constants.CaramelHttpHeaders
 import com.whatever.global.exception.GlobalExceptionCode
 import com.whatever.util.DateTimeUtil
 import org.junit.jupiter.api.DisplayName
@@ -34,6 +35,7 @@ class UserControllerTest : ControllerTestSupport() {
         mockMvc.post("/v1/user/profile") {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
+            header(CaramelHttpHeaders.TIME_ZONE, DateTimeUtil.KST_ZONE_ID.toString())
         }
             .andDo { print() }
             .andExpect {
@@ -57,6 +59,7 @@ class UserControllerTest : ControllerTestSupport() {
         mockMvc.post("/v1/user/profile") {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
+            header(CaramelHttpHeaders.TIME_ZONE, DateTimeUtil.KST_ZONE_ID.toString())
         }
             .andDo { print() }
             .andExpect {
@@ -65,12 +68,12 @@ class UserControllerTest : ControllerTestSupport() {
             }
     }
 
-    @DisplayName("프로필을 등록할 때 닉네임은 1자 초과여야 한다.")
+    @DisplayName("프로필을 등록할 때 닉네임은 0자 초과여야 한다.")
     @Test
     fun createProfile_WithBelowMinLengthNickname() {
         // given
         val request = PostUserProfileRequest(
-            nickname = "1",
+            nickname = "",
             birthday = DateTimeUtil.localNow().toLocalDate(),
             agreementServiceTerms = true,
             agreementPrivatePolicy = true,
@@ -126,6 +129,7 @@ class UserControllerTest : ControllerTestSupport() {
         mockMvc.put("/v1/user/profile") {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
+            header(CaramelHttpHeaders.TIME_ZONE, DateTimeUtil.KST_ZONE_ID.toString())
         }
             .andDo { print() }
             .andExpect {
@@ -154,12 +158,12 @@ class UserControllerTest : ControllerTestSupport() {
             }
     }
 
-    @DisplayName("프로필을 수정할 때 닉네임은 2~8자여야 한다. (최소 길이 미만)")
+    @DisplayName("프로필을 수정할 때 닉네임은 1~8자여야 한다. (최소 길이 미만)")
     @Test
     fun updateProfile_WithBelowMinLengthNickname() {
         // given
         val request = PutUserProfileRequest(
-            nickname = "a",  // 1자
+            nickname = "",  // 0자
             birthday = DateTimeUtil.localNow().toLocalDate(),
         )
 
@@ -188,6 +192,7 @@ class UserControllerTest : ControllerTestSupport() {
         mockMvc.put("/v1/user/profile") {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
+            header(CaramelHttpHeaders.TIME_ZONE, DateTimeUtil.KST_ZONE_ID.toString())
         }
             .andDo { print() }
             .andExpect {
@@ -209,6 +214,7 @@ class UserControllerTest : ControllerTestSupport() {
         mockMvc.put("/v1/user/profile") {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
+            header(CaramelHttpHeaders.TIME_ZONE, DateTimeUtil.KST_ZONE_ID.toString())
         }
             .andDo { print() }
             .andExpect {
@@ -228,6 +234,7 @@ class UserControllerTest : ControllerTestSupport() {
         mockMvc.put("/v1/user/profile") {
             content = objectMapper.writeValueAsString(request)
             contentType = MediaType.APPLICATION_JSON
+            header(CaramelHttpHeaders.TIME_ZONE, DateTimeUtil.KST_ZONE_ID.toString())
         }
             .andDo { print() }
             .andExpect {
@@ -243,7 +250,7 @@ class UserControllerTest : ControllerTestSupport() {
         fun updateProfile_WithBlankNickname_NoChange() {
             val originalNickname = "변경전닉네임"
             val originalBirthday = LocalDate.of(2025, 4, 20)
-            given(userService.updateProfile(any()))
+            given(userService.updateProfile(any(), any()))
                 .willReturn(
                     PutUserProfileResponse(
                         id = 1,
@@ -261,6 +268,7 @@ class UserControllerTest : ControllerTestSupport() {
             mockMvc.put("/v1/user/profile") {
                 content = objectMapper.writeValueAsString(updateRequest)
                 contentType = MediaType.APPLICATION_JSON
+                header(CaramelHttpHeaders.TIME_ZONE, DateTimeUtil.KST_ZONE_ID.toString())
             }
                 .andDo { print() }
                 .andExpect {
