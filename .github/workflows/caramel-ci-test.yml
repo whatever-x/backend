@@ -5,8 +5,12 @@ on:
   pull_request:
     types: [ opened, ready_for_review, synchronize ]
 
+concurrency:
+  group: build-and-push-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  test:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
