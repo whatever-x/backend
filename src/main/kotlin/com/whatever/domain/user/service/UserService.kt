@@ -98,7 +98,7 @@ class UserService(
         val userRef = userRepository.getReferenceById(userId)
         val userSetting = userSettingRepository.findByUserAndIsDeleted(userRef)
             ?: throw UserIllegalStateException(
-                SETTING_DATA_NOT_FOUND,
+                errorCode = SETTING_DATA_NOT_FOUND,
                 errorUi = ErrorUi.Toast("유저 설정 정보를 찾을 수 없어요."),
             )
         return UserSettingResponse.from(userSetting)
