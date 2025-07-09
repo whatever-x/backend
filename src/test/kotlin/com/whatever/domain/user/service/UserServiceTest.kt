@@ -8,15 +8,9 @@ import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
-import org.mockito.Mockito.mockStatic
-import org.mockito.Mockito.`when`
-import org.mockito.kotlin.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
@@ -85,7 +79,7 @@ class UserServiceTest {
     }
 }
 
-fun createNewUser(
+internal fun createNewUser(
     userRepository: UserRepository,
 ): User {
     return createUser(
@@ -94,7 +88,7 @@ fun createNewUser(
     )
 }
 
-fun createSingleUser(
+internal fun createSingleUser(
     userRepository: UserRepository,
     birthDate: LocalDate,
     nickname: String,
@@ -109,7 +103,7 @@ fun createSingleUser(
     )
 }
 
-fun createUser(
+internal fun createUser(
     userRepository: UserRepository,
     email: String? = null,
     birthDate: LocalDate? = null,
