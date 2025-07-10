@@ -12,8 +12,9 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-24.04
-#    permissions:
-#      contents: read
+    permissions:
+      contents: read
+      pull-requests: write
     env:
       SPRING_SERVER_PORT: ${{ secrets.SPRING_SERVER_PORT }}
       SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
