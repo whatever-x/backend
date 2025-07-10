@@ -12,8 +12,8 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-24.04
-    permissions:
-      contents: read
+#    permissions:
+#      contents: read
     env:
       SPRING_SERVER_PORT: ${{ secrets.SPRING_SERVER_PORT }}
       SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
@@ -70,7 +70,7 @@ jobs:
         uses: jsdaniell/create-json@v1.2.3
         with:
           # The name of the file to be written. | file.json
-          name: fireaabse-test-sdk.json
+          name: firebase-test-sdk.json
           # The json string that can be a secret of the github repo or a string of a json. | "{"title": "my json"}"
           json: ${{ secrets.FIREBAE_ADMIN_SDK }}
           # Optional subfolder directory to save the json file. | src/
@@ -97,7 +97,7 @@ jobs:
         uses: Madrapps/jacoco-report@v1.7.2
         with:
           # Comma separated paths of the generated jacoco xml files (supports wildcard glob pattern)
-          paths: ${{ github.workspace }}/build/jacocoXml/test/jacocoTestRepost.xml
+          paths: ${{ github.workspace }}/testReport/jacocoXml/test/jacocoTestRepost.xml
           # Github personal token to add comments to Pull Request
           token: ${{ secrets.GITHUB_TOKEN }}
           # The minimum code coverage that is required to pass for overall project
@@ -129,4 +129,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-html-report
-          path: ${{ github.workspace }}/build/jacocoReport/test/html
+          path: ${{ github.workspace }}/testReport/jacocoReport/test/html
