@@ -72,7 +72,7 @@ jobs:
           # The name of the file to be written. | file.json
           name: firebase-test-sdk.json
           # The json string that can be a secret of the github repo or a string of a json. | "{"title": "my json"}"
-          json: ${{ secrets.FIREBAE_ADMIN_SDK }}
+          json: ${{ secrets.FIREBASE_ADMIN_SDK }}
           # Optional subfolder directory to save the json file. | src/
           dir: ./
 
