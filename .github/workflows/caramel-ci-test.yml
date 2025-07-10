@@ -60,11 +60,34 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+          cache: 'gradle'
 
       # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
       # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+#      - name: Setup Gradle
+#        uses: gradle/actions/setup-gradle@v4
+      # Gradle 캐싱
+      - name: Gradle Caching
+        id: cache-gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Cache Hit Check
+        if: steps.cache-gradle.outputs.cache-hit == 'true'
+        run: echo 'Gradle cache hit!'
+
+      - name: Gradle Test
+        run: ./gradlew --info test
+        env:
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+
       - name: create-json
         # You may pin to the exact commit or the version.
         # uses: jsdaniell/create-json@b8e77fa01397ca39cc4a6198cc29a3be5481afef
@@ -76,12 +99,6 @@ jobs:
           json: ${{ secrets.FIREBASE_ADMIN_SDK }}
           # Optional subfolder directory to save the json file. | src/
           dir: ./
-
-      - name: Gradle Test
-        run: ./gradlew --info test
-        env:
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
 
       # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
       # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
