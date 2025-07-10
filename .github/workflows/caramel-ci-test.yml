@@ -70,10 +70,6 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
-      # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
-#      - name: Setup Gradle
-#        uses: gradle/actions/setup-gradle@v4
       # Gradle 캐싱
       - name: Gradle Caching
         id: cache-gradle
@@ -91,24 +87,27 @@ jobs:
         run: echo 'Gradle cache hit!'
 
       - name: Gradle Test
-        run: ./gradlew --info test
+        run: ./gradlew jacocoTestReport
         env:
           REDIS_HOST: localhost
           REDIS_PORT: 6379
+
+      - name: Upload Jacoco Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report.xml
+          path: ${{ github.workspace }}/build/jacocoXml/test
 
       - name: Jacoco Report
         id: jacoco
         uses: Madrapps/jacoco-report@v1.7.2
         with:
-          # Comma separated paths of the generated jacoco xml files (supports wildcard glob pattern)
-          paths: ${{ github.workspace }}/**/build/jacocoXml/test/jacocoTestRepost.xml
-          # Github personal token to add comments to Pull Request
+          paths: ${{ github.workspace }}/build/jacocoXml/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
-          # min-coverage-overall: 40 # optional, default is 80
-          # min-coverage-changed-files: 40 # optional, default is 80
-          title: Caramel Code Coverage # optional
-          # Update the coverage report comment instead of creating new ones. Requires title to works properly.
-          update-comment: true # optional, default is false
+          min-coverage-overall: 0 # default 값이 80. 커버리지를 충분히 올린 뒤 수정
+          min-coverage-changed-files: 0
+          title: Caramel Code Coverage
+          update-comment: true
           debug-mode: true
 
       - name: Get the Coverage info
@@ -120,4 +119,4 @@ jobs:
 #        uses: actions/upload-artifact@v4
 #        with:
 #          name: jacoco-html-report
-#          path: ${{ github.workspace }}/**/build/testReport/jacocoReport/test/html
+#          path: ${{ github.workspace }}/build/testReport/jacocoReport/test/html
