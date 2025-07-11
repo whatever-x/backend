@@ -1,15 +1,19 @@
 package com.whatever.domain.user.service
 
+import com.whatever.domain.user.dto.GetUserInfoResponse
 import com.whatever.domain.user.dto.PatchUserSettingRequest
 import com.whatever.domain.user.dto.UserSettingResponse
 import com.whatever.domain.user.exception.UserExceptionCode
+import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.domain.user.exception.UserIllegalStateException
+import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserSetting
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.repository.UserSettingRepository
 import com.whatever.global.security.util.SecurityUtil
+import com.whatever.util.findByIdAndNotDeleted
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -28,6 +32,7 @@ import org.mockito.Mockito.mockStatic
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
+import java.util.Optional
 import java.util.UUID
 import kotlin.test.Test
 
@@ -241,6 +246,48 @@ class UserServiceUnitTest {
 
         verify(exactly = 1) {
             spykUserService.getUserSetting(userId = eq(user.id))
+        }
+    }
+
+    @Test
+    fun `내 정보를 가져오는데 성공`() {
+        // given
+        val user = User(
+            id = 1L,
+            platform = LoginPlatform.TEST,
+            platformUserId = UUID.randomUUID().toString()
+        )
+        val expected = GetUserInfoResponse.from(user)
+        every { mockkUserRepository.findById(user.id) } returns Optional.of(user)
+
+        // when
+        val result = spykUserService.getUserInfo(userId = user.id)
+
+        assertThat(result).isEqualTo(expected)
+        verify(exactly = 1) {
+            mockkUserRepository.findById(any())
+        }
+    }
+
+    @Test
+    fun `내 정보를 가져오는데, null을 반화나는 경우`() {
+        // given
+        val user = User(
+            id = 1L,
+            platform = LoginPlatform.TEST,
+            platformUserId = UUID.randomUUID().toString()
+        )
+        every { mockkUserRepository.findById(user.id) } returns Optional.empty()
+
+        // when
+        val result = kotlin.runCatching { spykUserService.getUserInfo(userId = user.id) }
+            .exceptionOrNull() as? UserNotFoundException
+
+        assertThat(result).isNotNull()
+        assertThat(result!!.errorCode).isEqualTo(NOT_FOUND)
+
+        verify(exactly = 1) {
+            mockkUserRepository.findById(any())
         }
     }
 }
