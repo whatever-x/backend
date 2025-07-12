@@ -47,6 +47,7 @@ class UserServiceTest {
     private lateinit var userSettingRepository: UserSettingRepository
 
     private lateinit var mockSecurityUtil: AutoCloseable
+
     @BeforeEach
     fun setUp() {
         mockSecurityUtil = mockStatic(SecurityUtil::class.java)
@@ -157,7 +158,6 @@ class UserServiceTest {
         // then
         assertThat(result.notificationEnabled).isEqualTo(expected.notificationEnabled)
     }
-
 }
 
 internal fun createNewUser(
