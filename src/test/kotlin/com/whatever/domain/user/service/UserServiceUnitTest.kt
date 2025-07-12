@@ -88,6 +88,11 @@ class UserServiceUnitTest {
             assertThat(nickname).isEqualTo(request.nickname)
             assertThat(birthday).isEqualTo(request.birthday)
         }
+        verify(exactly = 1) {
+            SecurityUtil.getCurrentUserId()
+            mockkUserRepository.findById(any())
+            user.updateBirthDate(result.birthday, DateTimeUtil.KST_ZONE_ID)
+        }
     }
 
     @Test
@@ -111,6 +116,11 @@ class UserServiceUnitTest {
             assertThat(nickname).isEqualTo(user.nickname)
             assertThat(nickname).isNotNull()
             assertThat(birthday).isEqualTo(request.birthday)
+        }
+        verify(exactly = 1) {
+            SecurityUtil.getCurrentUserId()
+            mockkUserRepository.findById(any())
+            user.updateBirthDate(result.birthday, DateTimeUtil.KST_ZONE_ID)
         }
     }
 
@@ -136,17 +146,27 @@ class UserServiceUnitTest {
             assertThat(nickname).isNotNull()
             assertThat(birthday).isEqualTo(request.birthday)
         }
+        verify(exactly = 1) {
+            SecurityUtil.getCurrentUserId()
+            mockkUserRepository.findById(any())
+            user.updateBirthDate(result.birthday, DateTimeUtil.KST_ZONE_ID)
+        }
     }
 
+    /**
+     * user 내부의 함수가 안 불렸는지 체크하기 위해 spyk 로 user 를 감쌌습니다
+     */
     @Test
     fun `user 의 프로필을 업데이트 합니다 - birthday가 null`() {
         val request = PutUserProfileRequest(nickname = "pita", birthday = null)
-        val user = User(
-            id = 1L,
-            platform = LoginPlatform.TEST,
-            platformUserId = UUID.randomUUID().toString(),
-            nickname = "tjrwn",
-            birthDate = LocalDate.now(),
+        val user = spyk(
+            User(
+                id = 1L,
+                platform = LoginPlatform.TEST,
+                platformUserId = UUID.randomUUID().toString(),
+                nickname = "tjrwn",
+                birthDate = LocalDate.now(),
+            )
         )
         mockSecurityUtil.apply {
             whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
@@ -161,6 +181,13 @@ class UserServiceUnitTest {
             assertThat(birthday).isNotNull()
             assertThat(birthday).isNotEqualTo(request.birthday)
             assertThat(birthday).isEqualTo(user.birthDate)
+        }
+        verify(exactly = 1) {
+            SecurityUtil.getCurrentUserId()
+            mockkUserRepository.findById(any())
+        }
+        verify(exactly = 0) {
+            user.updateBirthDate(result.birthday, DateTimeUtil.KST_ZONE_ID)
         }
     }
 
