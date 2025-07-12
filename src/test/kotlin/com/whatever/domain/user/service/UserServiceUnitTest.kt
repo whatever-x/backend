@@ -117,7 +117,6 @@ class UserServiceUnitTest {
             assertThat(user.gender).isEqualTo(request.gender)
         }
         verify(exactly = 1) {
-            SecurityUtil.getCurrentUserId()
             mockkUserRepository.findById(any())
             user.register(eq(request.nickname), eq(request.birthday), eq(request.gender), eq(DateTimeUtil.KST_ZONE_ID))
         }
@@ -171,7 +170,6 @@ class UserServiceUnitTest {
             assertThat(user.gender).isEqualTo(request.gender)
         }
         verify(exactly = 1) {
-            SecurityUtil.getCurrentUserId()
             mockkUserRepository.findById(any())
             user.register(eq(request.nickname), eq(request.birthday), eq(request.gender), eq(DateTimeUtil.KST_ZONE_ID))
             mockkUserSettingRepository.save(any())
@@ -223,7 +221,6 @@ class UserServiceUnitTest {
         assertThat(result!!.errorCode).isEqualTo(NOT_FOUND)
 
         verify(exactly = 1) {
-            SecurityUtil.getCurrentUserId()
             mockkUserRepository.findById(any())
         }
         verify(exactly = 0) {
@@ -254,7 +251,6 @@ class UserServiceUnitTest {
             assertThat(birthday).isEqualTo(request.birthday)
         }
         verify(exactly = 1) {
-            SecurityUtil.getCurrentUserId()
             mockkUserRepository.findById(any())
             user.updateBirthDate(result.birthday, DateTimeUtil.KST_ZONE_ID)
         }
@@ -283,7 +279,6 @@ class UserServiceUnitTest {
             assertThat(birthday).isEqualTo(request.birthday)
         }
         verify(exactly = 1) {
-            SecurityUtil.getCurrentUserId()
             mockkUserRepository.findById(any())
             user.updateBirthDate(result.birthday, DateTimeUtil.KST_ZONE_ID)
         }
@@ -312,7 +307,6 @@ class UserServiceUnitTest {
             assertThat(birthday).isEqualTo(request.birthday)
         }
         verify(exactly = 1) {
-            SecurityUtil.getCurrentUserId()
             mockkUserRepository.findById(any())
             user.updateBirthDate(result.birthday, DateTimeUtil.KST_ZONE_ID)
         }
@@ -348,7 +342,6 @@ class UserServiceUnitTest {
             assertThat(birthday).isEqualTo(user.birthDate)
         }
         verify(exactly = 1) {
-            SecurityUtil.getCurrentUserId()
             mockkUserRepository.findById(any())
         }
         verify(exactly = 0) {
@@ -380,7 +373,6 @@ class UserServiceUnitTest {
         assertThat(result!!.errorCode).isEqualTo(NOT_FOUND)
 
         verify(exactly = 1) {
-            SecurityUtil.getCurrentUserId()
             mockkUserRepository.findById(any())
         }
         verify(exactly = 0) {
