@@ -2,6 +2,7 @@ package com.whatever.domain.user.service
 
 import com.whatever.domain.user.dto.GetUserInfoResponse
 import com.whatever.domain.user.dto.PatchUserSettingRequest
+import com.whatever.domain.user.dto.PutUserProfileRequest
 import com.whatever.domain.user.dto.UserSettingResponse
 import com.whatever.domain.user.exception.UserExceptionCode
 import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
@@ -13,7 +14,7 @@ import com.whatever.domain.user.model.UserSetting
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.repository.UserSettingRepository
 import com.whatever.global.security.util.SecurityUtil
-import com.whatever.util.findByIdAndNotDeleted
+import com.whatever.util.DateTimeUtil
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -32,6 +33,7 @@ import org.mockito.Mockito.mockStatic
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
+import java.time.LocalDate
 import java.util.Optional
 import java.util.UUID
 import kotlin.test.Test
@@ -63,6 +65,27 @@ class UserServiceUnitTest {
     @AfterEach
     fun tearDown() {
         mockSecurityUtil.close()
+    }
+
+    @Test
+    fun `user 의 프로필을 업데이트 합니다 - nickname, birthdate 존재`() {
+        val request = PutUserProfileRequest(nickname = "pita", birthday = LocalDate.now())
+        val user = User(
+            id = 1L,
+            platform = LoginPlatform.TEST,
+            platformUserId = UUID.randomUUID().toString(),
+            nickname = "tjrwn",
+        )
+        mockSecurityUtil.apply {
+            whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
+        }
+        every { mockkUserRepository.findById(any()) } returns Optional.of(user)
+
+        val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
+
+        assertThat(result.id).isEqualTo(user.id)
+        assertThat(result.nickname).isEqualTo(request.nickname)
+        assertThat(result.birthday).isEqualTo(request.birthday)
     }
 
     @ParameterizedTest
