@@ -68,7 +68,7 @@ class UserServiceUnitTest {
     }
 
     @Test
-    fun `user 의 프로필을 업데이트 합니다 - nickname, birthdate 존재`() {
+    fun `user 의 프로필을 업데이트- nickname, birthdate 존재`() {
         val request = PutUserProfileRequest(nickname = "pita", birthday = LocalDate.now())
         val user = User(
             id = 1L,
@@ -96,7 +96,7 @@ class UserServiceUnitTest {
     }
 
     @Test
-    fun `user 의 프로필을 업데이트 합니다 - nickname 이 null`() {
+    fun `user 의 프로필을 업데이트 - nickname null`() {
         val request = PutUserProfileRequest(nickname = null, birthday = LocalDate.now())
         val user = User(
             id = 1L,
@@ -125,7 +125,7 @@ class UserServiceUnitTest {
     }
 
     @Test
-    fun `user 의 프로필을 업데이트 합니다 - nickname 이 "" 로 빈값`() {
+    fun `user 의 프로필을 업데이트 - nickname 이 "" 로 빈값`() {
         val request = PutUserProfileRequest(nickname = "", birthday = LocalDate.now())
         val user = User(
             id = 1L,
@@ -157,7 +157,7 @@ class UserServiceUnitTest {
      * user 내부의 함수가 안 불렸는지 체크하기 위해 spyk 로 user 를 감쌌습니다
      */
     @Test
-    fun `user 의 프로필을 업데이트 합니다 - birthday가 null`() {
+    fun `user 의 프로필을 업데이트 - birthday 가 null`() {
         val request = PutUserProfileRequest(nickname = "pita", birthday = null)
         val user = spyk(
             User(
@@ -192,7 +192,7 @@ class UserServiceUnitTest {
     }
 
     @Test
-    fun `user 의 프로필을 업데이트 합니다 - findByIdAndNotDeleted가 null 반환`() {
+    fun `user 의 프로필을 업데이트 - findByIdAndNotDeleted가 null 반환`() {
         val request = PutUserProfileRequest(nickname = "", birthday = LocalDate.now())
         val user = spyk(
             User(
