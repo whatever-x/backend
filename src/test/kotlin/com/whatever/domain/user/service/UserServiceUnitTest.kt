@@ -2,6 +2,7 @@ package com.whatever.domain.user.service
 
 import com.whatever.domain.user.dto.GetUserInfoResponse
 import com.whatever.domain.user.dto.PatchUserSettingRequest
+import com.whatever.domain.user.dto.PostUserProfileRequest
 import com.whatever.domain.user.dto.PutUserProfileRequest
 import com.whatever.domain.user.dto.UserSettingResponse
 import com.whatever.domain.user.exception.UserExceptionCode
@@ -10,7 +11,9 @@ import com.whatever.domain.user.exception.UserIllegalStateException
 import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
+import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserSetting
+import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.repository.UserSettingRepository
 import com.whatever.global.security.util.SecurityUtil
@@ -65,6 +68,168 @@ class UserServiceUnitTest {
     @AfterEach
     fun tearDown() {
         mockSecurityUtil.close()
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "MALE, true, true",
+        "MALE, true, false",
+        "MALE, false, true",
+        "MALE, false, false",
+        "FEMALE, true, true",
+        "FEMALE, true, false",
+        "FEMALE, false, true",
+        "FEMALE, false, false",
+    )
+    fun `유저 프로필 생성 - user가 기존에 존재`(
+        gender: UserGender,
+        agreementServiceTerms: Boolean,
+        agreementPrivatePolicy: Boolean,
+    ) {
+        val request = PostUserProfileRequest(
+            nickname = "pita",
+            birthday = LocalDate.now(),
+            gender = gender,
+            agreementServiceTerms = agreementServiceTerms,
+            agreementPrivatePolicy = agreementPrivatePolicy,
+        )
+        val user = spyk(
+            User(
+                id = 1L,
+                platform = LoginPlatform.TEST,
+                platformUserId = UUID.randomUUID().toString(),
+                nickname = "tjrwn",
+            )
+        )
+        mockSecurityUtil.apply {
+            whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
+        }
+        every { mockkUserRepository.findById(any()) } returns Optional.of(user)
+        every { mockkUserSettingRepository.existsByUserAndIsDeleted(any()) } returns true
+
+        val result = spykUserService.createProfile(request, DateTimeUtil.KST_ZONE_ID)
+
+        with(result) {
+            assertThat(id).isEqualTo(user.id)
+            assertThat(nickname).isEqualTo(request.nickname)
+            assertThat(userStatus).isEqualTo(UserStatus.SINGLE)
+            assertThat(user.birthDate).isEqualTo(request.birthday)
+            assertThat(user.gender).isEqualTo(request.gender)
+        }
+        verify(exactly = 1) {
+            SecurityUtil.getCurrentUserId()
+            mockkUserRepository.findById(any())
+            user.register(eq(request.nickname), eq(request.birthday), eq(request.gender), eq(DateTimeUtil.KST_ZONE_ID))
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "MALE, true, true",
+        "MALE, true, false",
+        "MALE, false, true",
+        "MALE, false, false",
+        "FEMALE, true, true",
+        "FEMALE, true, false",
+        "FEMALE, false, true",
+        "FEMALE, false, false",
+    )
+    fun `유저 프로필 생성 - user가 기존에 미존재`(
+        gender: UserGender,
+        agreementServiceTerms: Boolean,
+        agreementPrivatePolicy: Boolean,
+    ) {
+        val request = PostUserProfileRequest(
+            nickname = "pita",
+            birthday = LocalDate.now(),
+            gender = gender,
+            agreementServiceTerms = agreementServiceTerms,
+            agreementPrivatePolicy = agreementPrivatePolicy,
+        )
+        val user = spyk(
+            User(
+                id = 1L,
+                platform = LoginPlatform.TEST,
+                platformUserId = UUID.randomUUID().toString(),
+                nickname = "tjrwn",
+            )
+        )
+        mockSecurityUtil.apply {
+            whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
+        }
+        every { mockkUserRepository.findById(any()) } returns Optional.of(user)
+        every { mockkUserSettingRepository.existsByUserAndIsDeleted(any()) } returns false
+        every { mockkUserSettingRepository.save(any()) } returns UserSetting(user)
+
+        val result = spykUserService.createProfile(request, DateTimeUtil.KST_ZONE_ID)
+
+        with(result) {
+            assertThat(id).isEqualTo(user.id)
+            assertThat(nickname).isEqualTo(request.nickname)
+            assertThat(userStatus).isEqualTo(UserStatus.SINGLE)
+            assertThat(user.birthDate).isEqualTo(request.birthday)
+            assertThat(user.gender).isEqualTo(request.gender)
+        }
+        verify(exactly = 1) {
+            SecurityUtil.getCurrentUserId()
+            mockkUserRepository.findById(any())
+            user.register(eq(request.nickname), eq(request.birthday), eq(request.gender), eq(DateTimeUtil.KST_ZONE_ID))
+            mockkUserSettingRepository.save(any())
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "MALE, true, true",
+        "MALE, true, false",
+        "MALE, false, true",
+        "MALE, false, false",
+        "FEMALE, true, true",
+        "FEMALE, true, false",
+        "FEMALE, false, true",
+        "FEMALE, false, false",
+    )
+    fun `유저 프로필 생성 - findByIdAndNotDeleted 가 null 인 경우`(
+        gender: UserGender,
+        agreementServiceTerms: Boolean,
+        agreementPrivatePolicy: Boolean,
+    ) {
+        val request = PostUserProfileRequest(
+            nickname = "pita",
+            birthday = LocalDate.now(),
+            gender = gender,
+            agreementServiceTerms = agreementServiceTerms,
+            agreementPrivatePolicy = agreementPrivatePolicy,
+        )
+        val user = spyk(
+            User(
+                id = 1L,
+                platform = LoginPlatform.TEST,
+                platformUserId = UUID.randomUUID().toString(),
+                nickname = "tjrwn",
+            )
+        )
+        mockSecurityUtil.apply {
+            whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
+        }
+        every { mockkUserRepository.findById(any()) } returns Optional.empty()
+        every { mockkUserSettingRepository.save(any()) } returns UserSetting(user)
+
+        val result = kotlin.runCatching {
+            spykUserService.createProfile(request, DateTimeUtil.KST_ZONE_ID)
+        }.exceptionOrNull() as? UserNotFoundException
+
+        assertThat(result).isNotNull()
+        assertThat(result!!.errorCode).isEqualTo(NOT_FOUND)
+
+        verify(exactly = 1) {
+            SecurityUtil.getCurrentUserId()
+            mockkUserRepository.findById(any())
+        }
+        verify(exactly = 0) {
+            user.register(any(), any(), any(), eq(DateTimeUtil.KST_ZONE_ID))
+            mockkUserSettingRepository.save(any())
+        }
     }
 
     @Test
