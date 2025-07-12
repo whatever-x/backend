@@ -232,11 +232,13 @@ class UserServiceUnitTest {
     @Test
     fun `user 의 프로필을 업데이트- nickname, birthdate 존재`() {
         val request = PutUserProfileRequest(nickname = "pita", birthday = LocalDate.now())
-        val user = User(
-            id = 1L,
-            platform = LoginPlatform.TEST,
-            platformUserId = UUID.randomUUID().toString(),
-            nickname = "tjrwn",
+        val user = spyk(
+            User(
+                id = 1L,
+                platform = LoginPlatform.TEST,
+                platformUserId = UUID.randomUUID().toString(),
+                nickname = "tjrwn",
+            )
         )
         mockSecurityUtil.apply {
             whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
@@ -259,11 +261,13 @@ class UserServiceUnitTest {
     @Test
     fun `user 의 프로필을 업데이트 - nickname null`() {
         val request = PutUserProfileRequest(nickname = null, birthday = LocalDate.now())
-        val user = User(
-            id = 1L,
-            platform = LoginPlatform.TEST,
-            platformUserId = UUID.randomUUID().toString(),
-            nickname = "tjrwn"
+        val user = spyk(
+            User(
+                id = 1L,
+                platform = LoginPlatform.TEST,
+                platformUserId = UUID.randomUUID().toString(),
+                nickname = "tjrwn"
+            )
         )
         mockSecurityUtil.apply {
             whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
@@ -287,11 +291,13 @@ class UserServiceUnitTest {
     @Test
     fun `user 의 프로필을 업데이트 - nickname 이 "" 로 빈값`() {
         val request = PutUserProfileRequest(nickname = "", birthday = LocalDate.now())
-        val user = User(
-            id = 1L,
-            platform = LoginPlatform.TEST,
-            platformUserId = UUID.randomUUID().toString(),
-            nickname = "tjrwn"
+        val user = spyk(
+            User(
+                id = 1L,
+                platform = LoginPlatform.TEST,
+                platformUserId = UUID.randomUUID().toString(),
+                nickname = "tjrwn"
+            )
         )
         mockSecurityUtil.apply {
             whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
