@@ -59,11 +59,11 @@ class UserService(
             if (putUserProfileRequest.birthday != null) {
                 updateBirthDate(putUserProfileRequest.birthday, userTimeZone)
             }
-        }
+        } ?: throw UserNotFoundException(errorCode = NOT_FOUND)
 
         return PutUserProfileResponse(
             id = userId,
-            nickname = user?.nickname!!,
+            nickname = user.nickname!!,
             birthday = user.birthDate!!,
         )
     }

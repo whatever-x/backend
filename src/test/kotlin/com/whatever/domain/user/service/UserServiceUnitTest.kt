@@ -191,6 +191,38 @@ class UserServiceUnitTest {
         }
     }
 
+    @Test
+    fun `user 의 프로필을 업데이트 합니다 - findByIdAndNotDeleted가 null 반환`() {
+        val request = PutUserProfileRequest(nickname = "", birthday = LocalDate.now())
+        val user = spyk(
+            User(
+                id = 1L,
+                platform = LoginPlatform.TEST,
+                platformUserId = UUID.randomUUID().toString(),
+                nickname = "tjrwn",
+            )
+        )
+        mockSecurityUtil.apply {
+            whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
+        }
+        every { mockkUserRepository.findById(any()) } returns Optional.empty()
+
+        val result = kotlin.runCatching {
+            spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
+        }.exceptionOrNull() as? UserNotFoundException
+
+        assertThat(result).isNotNull()
+        assertThat(result!!.errorCode).isEqualTo(NOT_FOUND)
+
+        verify(exactly = 1) {
+            SecurityUtil.getCurrentUserId()
+            mockkUserRepository.findById(any())
+        }
+        verify(exactly = 0) {
+            user.updateBirthDate(any(), any())
+        }
+    }
+
     @ParameterizedTest
     @CsvSource(
         "true", "false"
