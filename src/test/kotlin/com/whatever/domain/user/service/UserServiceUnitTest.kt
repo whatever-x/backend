@@ -83,9 +83,11 @@ class UserServiceUnitTest {
 
         val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
 
-        assertThat(result.id).isEqualTo(user.id)
-        assertThat(result.nickname).isEqualTo(request.nickname)
-        assertThat(result.birthday).isEqualTo(request.birthday)
+        with(result) {
+            assertThat(id).isEqualTo(user.id)
+            assertThat(nickname).isEqualTo(request.nickname)
+            assertThat(birthday).isEqualTo(request.birthday)
+        }
     }
 
     @Test
@@ -104,10 +106,12 @@ class UserServiceUnitTest {
 
         val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
 
-        assertThat(result.id).isEqualTo(user.id)
-        assertThat(result.nickname).isEqualTo(user.nickname)
-        assertThat(result.nickname).isNotNull()
-        assertThat(result.birthday).isEqualTo(request.birthday)
+        with(result) {
+            assertThat(id).isEqualTo(user.id)
+            assertThat(nickname).isEqualTo(user.nickname)
+            assertThat(nickname).isNotNull()
+            assertThat(birthday).isEqualTo(request.birthday)
+        }
     }
 
     @Test
@@ -126,10 +130,12 @@ class UserServiceUnitTest {
 
         val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
 
-        assertThat(result.id).isEqualTo(user.id)
-        assertThat(result.nickname).isEqualTo(user.nickname)
-        assertThat(result.nickname).isNotNull()
-        assertThat(result.birthday).isEqualTo(request.birthday)
+        with(result) {
+            assertThat(id).isEqualTo(user.id)
+            assertThat(nickname).isEqualTo(user.nickname)
+            assertThat(nickname).isNotNull()
+            assertThat(birthday).isEqualTo(request.birthday)
+        }
     }
 
     @Test
