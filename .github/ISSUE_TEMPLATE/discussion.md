@@ -2,7 +2,7 @@
 name: Discussion
 about: 논의용 템플릿
 title: ''
-labels: ''
+labels: question
 assignees: ''
 
 ---
