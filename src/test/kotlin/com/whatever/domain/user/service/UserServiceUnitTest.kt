@@ -132,6 +132,32 @@ class UserServiceUnitTest {
         assertThat(result.birthday).isEqualTo(request.birthday)
     }
 
+    @Test
+    fun `user 의 프로필을 업데이트 합니다 - birthday가 null`() {
+        val request = PutUserProfileRequest(nickname = "pita", birthday = null)
+        val user = User(
+            id = 1L,
+            platform = LoginPlatform.TEST,
+            platformUserId = UUID.randomUUID().toString(),
+            nickname = "tjrwn",
+            birthDate = LocalDate.now(),
+        )
+        mockSecurityUtil.apply {
+            whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
+        }
+        every { mockkUserRepository.findById(any()) } returns Optional.of(user)
+
+        val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
+
+        with(result) {
+            assertThat(id).isEqualTo(user.id)
+            assertThat(nickname).isEqualTo(request.nickname)
+            assertThat(birthday).isNotNull()
+            assertThat(birthday).isNotEqualTo(request.birthday)
+            assertThat(birthday).isEqualTo(user.birthDate)
+        }
+    }
+
     @ParameterizedTest
     @CsvSource(
         "true", "false"
