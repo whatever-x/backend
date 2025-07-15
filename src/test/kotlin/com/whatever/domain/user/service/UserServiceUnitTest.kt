@@ -80,18 +80,19 @@ class UserServiceUnitTest {
     fun `user 의 프로필을 업데이트- nickname, birthdate 존재`() {
         val request = PutUserProfileRequest(nickname = "pita", birthday = LocalDate.now())
         val user = spyk(createUser())
+        val userId = user.id
         every { mockkUserRepository.findById(any()) } returns Optional.of(user)
 
         val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
 
         with(result) {
-            assertThat(id).isEqualTo(user.id)
+            assertThat(id).isEqualTo(userId)
             assertThat(nickname).isEqualTo(request.nickname)
             assertThat(birthday).isEqualTo(request.birthday)
         }
         verify(exactly = 1) {
-            mockkUserRepository.findById(any())
-            user.updateBirthDate(result.birthday, DateTimeUtil.KST_ZONE_ID)
+            mockkUserRepository.findById(eq(userId))
+            user.updateBirthDate(eq(result.birthday), eq(DateTimeUtil.KST_ZONE_ID))
         }
     }
 
@@ -99,19 +100,20 @@ class UserServiceUnitTest {
     fun `user 의 프로필을 업데이트 - nickname null`() {
         val request = PutUserProfileRequest(nickname = null, birthday = LocalDate.now())
         val user = spyk(createUser())
+        val userId = user.id
         every { mockkUserRepository.findById(any()) } returns Optional.of(user)
 
         val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
 
         with(result) {
-            assertThat(id).isEqualTo(user.id)
+            assertThat(id).isEqualTo(userId)
             assertThat(nickname).isEqualTo(user.nickname)
             assertThat(nickname).isNotNull()
             assertThat(birthday).isEqualTo(request.birthday)
         }
         verify(exactly = 1) {
-            mockkUserRepository.findById(any())
-            user.updateBirthDate(result.birthday, DateTimeUtil.KST_ZONE_ID)
+            mockkUserRepository.findById(eq(userId))
+            user.updateBirthDate(eq(result.birthday), eq(DateTimeUtil.KST_ZONE_ID))
         }
     }
 
@@ -119,19 +121,20 @@ class UserServiceUnitTest {
     fun `user 의 프로필을 업데이트 - nickname 이 "" 로 빈값`() {
         val request = PutUserProfileRequest(nickname = "", birthday = LocalDate.now())
         val user = spyk(createUser())
+        val userId = user.id
         every { mockkUserRepository.findById(any()) } returns Optional.of(user)
 
         val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
 
         with(result) {
-            assertThat(id).isEqualTo(user.id)
+            assertThat(id).isEqualTo(userId)
             assertThat(nickname).isEqualTo(user.nickname)
             assertThat(nickname).isNotNull()
             assertThat(birthday).isEqualTo(request.birthday)
         }
         verify(exactly = 1) {
-            mockkUserRepository.findById(any())
-            user.updateBirthDate(result.birthday, DateTimeUtil.KST_ZONE_ID)
+            mockkUserRepository.findById(eq(userId))
+            user.updateBirthDate(eq(result.birthday), eq(DateTimeUtil.KST_ZONE_ID))
         }
     }
 
@@ -142,19 +145,20 @@ class UserServiceUnitTest {
     fun `user 의 프로필을 업데이트 - birthday 가 null`() {
         val request = PutUserProfileRequest(nickname = "pita", birthday = null)
         val user = spyk(createUser())
+        val userId = user.id
         every { mockkUserRepository.findById(any()) } returns Optional.of(user)
 
         val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
 
         with(result) {
-            assertThat(id).isEqualTo(user.id)
+            assertThat(id).isEqualTo(userId)
             assertThat(nickname).isEqualTo(request.nickname)
             assertThat(birthday).isNotNull()
             assertThat(birthday).isNotEqualTo(request.birthday)
             assertThat(birthday).isEqualTo(user.birthDate)
         }
         verify(exactly = 1) {
-            mockkUserRepository.findById(any())
+            mockkUserRepository.findById(eq(userId))
         }
         verify(exactly = 0) {
             user.updateBirthDate(result.birthday, DateTimeUtil.KST_ZONE_ID)
@@ -165,6 +169,7 @@ class UserServiceUnitTest {
     fun `user 의 프로필을 업데이트 - findByIdAndNotDeleted가 null 반환`() {
         val request = PutUserProfileRequest(nickname = "", birthday = LocalDate.now())
         val user = spyk(createUser())
+        val userId = user.id
         every { mockkUserRepository.findById(any()) } returns Optional.empty()
 
         val result = assertThrows<UserNotFoundException> {
@@ -174,7 +179,7 @@ class UserServiceUnitTest {
         assertThat(result.errorCode).isEqualTo(NOT_FOUND)
 
         verify(exactly = 1) {
-            mockkUserRepository.findById(any())
+            mockkUserRepository.findById(eq(userId))
         }
         verify(exactly = 0) {
             user.updateBirthDate(any(), any())
