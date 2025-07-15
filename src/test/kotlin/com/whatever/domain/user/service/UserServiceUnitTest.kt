@@ -20,6 +20,7 @@ import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.DateTimeUtil
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
@@ -101,17 +102,6 @@ class UserServiceUnitTest {
             agreementServiceTerms = agreementServiceTerms,
             agreementPrivatePolicy = agreementPrivatePolicy,
         )
-        val user = spyk(
-            User(
-                id = 1L,
-                platform = LoginPlatform.TEST,
-                platformUserId = UUID.randomUUID().toString(),
-                nickname = "tjrwn",
-            )
-        )
-        mockSecurityUtil.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
-        }
         every { mockkUserRepository.findById(any()) } returns Optional.of(user)
         every { mockkUserSettingRepository.existsByUserAndIsDeleted(any()) } returns true
 
@@ -125,7 +115,11 @@ class UserServiceUnitTest {
             assertThat(user.gender).isEqualTo(request.gender)
         }
         verify(exactly = 1) {
+            mockkUserSettingRepository.existsByUserAndIsDeleted(eq(user))
             user.register(eq(request.nickname), eq(request.birthday), eq(request.gender), eq(DateTimeUtil.KST_ZONE_ID))
+        }
+        verify(exactly = 0) {
+            mockkUserSettingRepository.save(any())
         }
     }
 
@@ -152,20 +146,11 @@ class UserServiceUnitTest {
             agreementServiceTerms = agreementServiceTerms,
             agreementPrivatePolicy = agreementPrivatePolicy,
         )
-        val user = spyk(
-            User(
-                id = 1L,
-                platform = LoginPlatform.TEST,
-                platformUserId = UUID.randomUUID().toString(),
-                nickname = "tjrwn",
-            )
-        )
-        mockSecurityUtil.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
-        }
+        val slot = slot<UserSetting>()
+        val userSetting = UserSetting(user)
         every { mockkUserRepository.findById(any()) } returns Optional.of(user)
         every { mockkUserSettingRepository.existsByUserAndIsDeleted(any()) } returns false
-        every { mockkUserSettingRepository.save(any()) } returns UserSetting(user)
+        every { mockkUserSettingRepository.save(any()) } returns userSetting
 
         val result = spykUserService.createProfile(request, DateTimeUtil.KST_ZONE_ID)
 
@@ -177,8 +162,11 @@ class UserServiceUnitTest {
             assertThat(user.gender).isEqualTo(request.gender)
         }
         verify(exactly = 1) {
+            mockkUserSettingRepository.existsByUserAndIsDeleted(eq(user))
+            mockkUserSettingRepository.save(capture(slot))
             user.register(eq(request.nickname), eq(request.birthday), eq(request.gender), eq(DateTimeUtil.KST_ZONE_ID))
         }
+        assertThat(slot.captured.user).isEqualTo(userSetting.user)
     }
 
     @ParameterizedTest
@@ -204,29 +192,15 @@ class UserServiceUnitTest {
             agreementServiceTerms = agreementServiceTerms,
             agreementPrivatePolicy = agreementPrivatePolicy,
         )
-        val user = spyk(
-            User(
-                id = 1L,
-                platform = LoginPlatform.TEST,
-                platformUserId = UUID.randomUUID().toString(),
-                nickname = "tjrwn",
-            )
-        )
-        mockSecurityUtil.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
-        }
         every { mockkUserRepository.findById(any()) } returns Optional.empty()
-        every { mockkUserSettingRepository.save(any()) } returns UserSetting(user)
 
-        val result = kotlin.runCatching {
+        val result = assertThrows<UserNotFoundException> {
             spykUserService.createProfile(request, DateTimeUtil.KST_ZONE_ID)
-        }.exceptionOrNull() as? UserNotFoundException
-
-        assertThat(result).isNotNull()
-        assertThat(result!!.errorCode).isEqualTo(NOT_FOUND)
+        }
+        assertThat(result.errorCode).isEqualTo(NOT_FOUND)
 
         verify(exactly = 1) {
-            mockkUserRepository.findById(any())
+            mockkUserRepository.findById(eq(userId))
         }
         verify(exactly = 0) {
             user.register(any(), any(), any(), eq(DateTimeUtil.KST_ZONE_ID))
