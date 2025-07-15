@@ -476,6 +476,21 @@ class UserServiceUnitTest {
         }
     }
 
+    @Test
+    fun `내 정보를 가져오는데, default value 로 userId 를 세팅`() {
+        // given
+        val expected = GetUserInfoResponse.from(user)
+        every { mockkUserRepository.findById(any()) } returns Optional.of(user)
+
+        // when
+        val result = spykUserService.getUserInfo()
+        assertThat(result).isEqualTo(expected)
+
+        verify(exactly = 1) {
+            mockkUserRepository.findById(eq(userId))
+        }
+    }
+
     private fun createUser() = User(
         id = 1L,
         platform = LoginPlatform.TEST,
