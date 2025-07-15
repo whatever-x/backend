@@ -224,7 +224,7 @@ class UserServiceUnitTest {
     }
 
     @Test
-    fun `내 정보를 가져오는데, null을 반화나는 경우`() {
+    fun `내 정보를 가져오는데, null을 반환하는 경우`() {
         // given
         every { mockkUserRepository.findById(user.id) } returns Optional.empty()
 
