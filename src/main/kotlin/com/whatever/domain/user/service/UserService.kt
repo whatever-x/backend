@@ -2,11 +2,11 @@ package com.whatever.domain.user.service
 
 import com.whatever.domain.user.dto.GetUserInfoResponse
 import com.whatever.domain.user.dto.PatchUserSettingRequest
-import com.whatever.domain.user.dto.UserSettingResponse
 import com.whatever.domain.user.dto.PostUserProfileRequest
 import com.whatever.domain.user.dto.PostUserProfileResponse
 import com.whatever.domain.user.dto.PutUserProfileRequest
 import com.whatever.domain.user.dto.PutUserProfileResponse
+import com.whatever.domain.user.dto.UserSettingResponse
 import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.domain.user.exception.UserExceptionCode.SETTING_DATA_NOT_FOUND
 import com.whatever.domain.user.exception.UserIllegalStateException
@@ -20,7 +20,6 @@ import com.whatever.util.findByIdAndNotDeleted
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneId
-
 
 @Service
 class UserService(
@@ -59,11 +58,11 @@ class UserService(
             if (putUserProfileRequest.birthday != null) {
                 updateBirthDate(putUserProfileRequest.birthday, userTimeZone)
             }
-        }
+        } ?: throw UserNotFoundException(errorCode = NOT_FOUND)
 
         return PutUserProfileResponse(
             id = userId,
-            nickname = user?.nickname!!,
+            nickname = user.nickname!!,
             birthday = user.birthDate!!,
         )
     }
