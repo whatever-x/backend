@@ -57,13 +57,16 @@ class UserServiceUnitTest {
     private val mockkUserSettingRepository = mockk<UserSettingRepository>()
     private val spykUserService = spyk(UserService(mockkUserRepository, mockkUserSettingRepository))
 
-    private val user: User = createUser()
+    private lateinit var user: User
+    private var userId: Long = Long.MIN_VALUE
 
     @BeforeEach
     fun setUp() {
         mockSecurityUtil = mockStatic(SecurityUtil::class.java)
+        user = spyk(createUser())
+        userId = user.id
         mockSecurityUtil.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
+            whenever(SecurityUtil.getCurrentUserId()).thenReturn(userId)
         }
     }
 
@@ -72,15 +75,9 @@ class UserServiceUnitTest {
         mockSecurityUtil.close()
     }
 
-    /**
-     * beforeEach 에서 mockSecurityUtil 의 whenever 의 user 랑은 다른 객체지만
-     * 같은 id 1L을 전달해주어 AuthenticationException 를 회피
-     */
     @Test
     fun `user 의 프로필을 업데이트- nickname, birthdate 존재`() {
         val request = PutUserProfileRequest(nickname = "pita", birthday = LocalDate.now())
-        val user = spyk(createUser())
-        val userId = user.id
         every { mockkUserRepository.findById(any()) } returns Optional.of(user)
 
         val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
@@ -99,8 +96,6 @@ class UserServiceUnitTest {
     @Test
     fun `user 의 프로필을 업데이트 - nickname null`() {
         val request = PutUserProfileRequest(nickname = null, birthday = LocalDate.now())
-        val user = spyk(createUser())
-        val userId = user.id
         every { mockkUserRepository.findById(any()) } returns Optional.of(user)
 
         val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
@@ -120,8 +115,6 @@ class UserServiceUnitTest {
     @Test
     fun `user 의 프로필을 업데이트 - nickname 이 "" 로 빈값`() {
         val request = PutUserProfileRequest(nickname = "", birthday = LocalDate.now())
-        val user = spyk(createUser())
-        val userId = user.id
         every { mockkUserRepository.findById(any()) } returns Optional.of(user)
 
         val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
@@ -144,8 +137,6 @@ class UserServiceUnitTest {
     @Test
     fun `user 의 프로필을 업데이트 - birthday 가 null`() {
         val request = PutUserProfileRequest(nickname = "pita", birthday = null)
-        val user = spyk(createUser())
-        val userId = user.id
         every { mockkUserRepository.findById(any()) } returns Optional.of(user)
 
         val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
@@ -168,8 +159,6 @@ class UserServiceUnitTest {
     @Test
     fun `user 의 프로필을 업데이트 - findByIdAndNotDeleted가 null 반환`() {
         val request = PutUserProfileRequest(nickname = "", birthday = LocalDate.now())
-        val user = spyk(createUser())
-        val userId = user.id
         every { mockkUserRepository.findById(any()) } returns Optional.empty()
 
         val result = assertThrows<UserNotFoundException> {
@@ -208,7 +197,7 @@ class UserServiceUnitTest {
          */
         // when
         val request = PatchUserSettingRequest(notificationEnabled = setting.not())
-        val result = userService.updateUserSetting(request = request, userId = user.id)
+        val result = userService.updateUserSetting(request = request, userId = userId)
 
         // then
         assertThat(result.notificationEnabled).isEqualTo(setting.not())
@@ -233,7 +222,7 @@ class UserServiceUnitTest {
 
         // when
         val request = PatchUserSettingRequest(notificationEnabled = null)
-        val result = userService.updateUserSetting(request = request, userId = user.id)
+        val result = userService.updateUserSetting(request = request, userId = userId)
 
         // then
         assertThat(result.notificationEnabled).isEqualTo(setting)
@@ -248,7 +237,7 @@ class UserServiceUnitTest {
         // when
         val request = PatchUserSettingRequest(notificationEnabled = true)
         val result = assertThrows<UserIllegalStateException> {
-            userService.updateUserSetting(request = request, userId = user.id)
+            userService.updateUserSetting(request = request, userId = userId)
         }
         // then
         assertThat(result.errorCode).isEqualTo(UserExceptionCode.SETTING_DATA_NOT_FOUND)
@@ -279,12 +268,12 @@ class UserServiceUnitTest {
         every { mockkUserSettingRepository.findByUserAndIsDeleted(user = any(), isDeleted = any()) } returns response
 
         // when
-        val result = spykUserService.getUserSetting(userId = user.id)
+        val result = spykUserService.getUserSetting(userId = userId)
 
         // then
         assertThat(result).isEqualTo(expected)
         verify(exactly = 1) {
-            spykUserService.getUserSetting(userId = eq(user.id))
+            spykUserService.getUserSetting(userId = eq(userId))
         }
     }
 
@@ -314,14 +303,14 @@ class UserServiceUnitTest {
 
         // when
         val result = assertThrows<UserIllegalStateException> {
-            spykUserService.getUserSetting(userId = user.id)
+            spykUserService.getUserSetting(userId = userId)
         }
 
         // then
         assertThat(result.errorCode).isEqualTo(UserExceptionCode.SETTING_DATA_NOT_FOUND)
 
         verify(exactly = 1) {
-            spykUserService.getUserSetting(userId = eq(user.id))
+            spykUserService.getUserSetting(userId = eq(userId))
         }
     }
 
@@ -332,11 +321,11 @@ class UserServiceUnitTest {
         every { mockkUserRepository.findById(any()) } returns Optional.of(user)
 
         // when
-        val result = spykUserService.getUserInfo(userId = user.id)
+        val result = spykUserService.getUserInfo(userId = userId)
 
         assertThat(result).isEqualTo(expected)
         verify(exactly = 1) {
-            mockkUserRepository.findById(eq(user.id))
+            mockkUserRepository.findById(eq(userId))
         }
     }
 
@@ -346,12 +335,12 @@ class UserServiceUnitTest {
         every { mockkUserRepository.findById(any()) } returns Optional.empty()
 
         // when
-        val result = assertThrows<UserNotFoundException> { spykUserService.getUserInfo(userId = user.id) }
+        val result = assertThrows<UserNotFoundException> { spykUserService.getUserInfo(userId = userId) }
 
         assertThat(result.errorCode).isEqualTo(NOT_FOUND)
 
         verify(exactly = 1) {
-            mockkUserRepository.findById(eq(user.id))
+            mockkUserRepository.findById(eq(userId))
         }
     }
 
