@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.Mockito
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
@@ -40,10 +41,10 @@ class KakaoUserProviderTest @Autowired constructor(
 
     @Test
     fun findOrCreateUserWithMultiThread() {
-        Mockito.`when`(kakaoOIDCClient.getOIDCPublicKey())
+        whenever(kakaoOIDCClient.getOIDCPublicKey())
             .thenReturn(OIDCPublicKeysResponse())
 
-        Mockito.`when`(oidcHelper.parseKakaoIdToken(Mockito.anyString(), Mockito.anyList()))
+        whenever(oidcHelper.parseKakaoIdToken(Mockito.anyString(), Mockito.anyList()))
             .thenReturn(KakaoIdTokenPayload(
                 iss = "",
                 aud = "",
@@ -96,10 +97,10 @@ class KakaoUserProviderTest @Autowired constructor(
     @CsvSource("''", "'   '", "123456789")
     fun findOrCreateUser_WithInvalidLengthKakaoNickname(invalidLengthNickname: String) {
         // given
-        Mockito.`when`(kakaoOIDCClient.getOIDCPublicKey())
+        whenever(kakaoOIDCClient.getOIDCPublicKey())
             .thenReturn(OIDCPublicKeysResponse())
 
-        Mockito.`when`(oidcHelper.parseKakaoIdToken(Mockito.anyString(), Mockito.anyList()))
+        whenever(oidcHelper.parseKakaoIdToken(Mockito.anyString(), Mockito.anyList()))
             .thenReturn(KakaoIdTokenPayload(
                 iss = "",
                 aud = "",
@@ -126,10 +127,10 @@ class KakaoUserProviderTest @Autowired constructor(
     @CsvSource("\uD83D\uDC4D", "1", "12345678")
     fun findOrCreateUser_WithValidLengthKakaoNickname(validLengthNickname: String) {
         // given
-        Mockito.`when`(kakaoOIDCClient.getOIDCPublicKey())
+        whenever(kakaoOIDCClient.getOIDCPublicKey())
             .thenReturn(OIDCPublicKeysResponse())
 
-        Mockito.`when`(oidcHelper.parseKakaoIdToken(Mockito.anyString(), Mockito.anyList()))
+        whenever(oidcHelper.parseKakaoIdToken(Mockito.anyString(), Mockito.anyList()))
             .thenReturn(KakaoIdTokenPayload(
                 iss = "",
                 aud = "",
