@@ -55,9 +55,14 @@ class UserServiceUnitTest {
     private val mockkUserSettingRepository = mockk<UserSettingRepository>()
     private val spykUserService = spyk(UserService(mockkUserRepository, mockkUserSettingRepository))
 
+    private val user: User = createUser()
+
     @BeforeEach
     fun setUp() {
         mockSecurityUtil = mockStatic(SecurityUtil::class.java)
+        mockSecurityUtil.apply {
+            whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
+        }
     }
 
     @AfterEach
@@ -71,11 +76,6 @@ class UserServiceUnitTest {
     )
     fun `유저의 세팅을 업데이트 합니다`(setting: Boolean) {
         // given
-        val user = User(
-            id = 1L,
-            platform = LoginPlatform.TEST,
-            platformUserId = UUID.randomUUID().toString()
-        )
         val userSetting = UserSetting(user = user, notificationEnabled = setting)
         whenever(
             mockUserSettingRepository.findByUserAndIsDeleted(
@@ -104,12 +104,6 @@ class UserServiceUnitTest {
     )
     fun `유저의 세팅을 업데이트 - Request null 이면 기존 그대로 응답`(setting: Boolean) {
         // given
-        val user = User(
-            id = 1L,
-            platform = LoginPlatform.TEST,
-            platformUserId = UUID.randomUUID().toString()
-        )
-
         val userSetting = UserSetting(user = user, notificationEnabled = setting)
         whenever(
             mockUserSettingRepository.findByUserAndIsDeleted(
@@ -132,12 +126,6 @@ class UserServiceUnitTest {
     @Test
     fun `유저의 세팅을 업데이트 하려하지만, 유저 설정 정보를 찾을 수 없음`() {
         // given
-        val user = User(
-            id = 1L,
-            platform = LoginPlatform.TEST,
-            platformUserId = UUID.randomUUID().toString()
-        )
-
         whenever(mockUserRepository.getReferenceById(Mockito.anyLong()))
             .thenReturn(user)
 
@@ -153,15 +141,6 @@ class UserServiceUnitTest {
     @Test
     fun `유저의 세팅을 업데이트 - getCurrentUserId() 에 문제 없음`() {
         // given
-        val user = User(
-            id = 1L,
-            platform = LoginPlatform.TEST,
-            platformUserId = UUID.randomUUID().toString()
-        )
-        mockSecurityUtil.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
-        }
-
         whenever(mockUserRepository.getReferenceById(Mockito.anyLong()))
             .thenReturn(user)
 
@@ -178,11 +157,6 @@ class UserServiceUnitTest {
     @Test
     fun `유저의 세팅을 가져옵니다`() {
         // given
-        val user = User(
-            id = 1L,
-            platform = LoginPlatform.TEST,
-            platformUserId = UUID.randomUUID().toString()
-        )
         val response = UserSetting(user = user, notificationEnabled = false)
         val expected = UserSettingResponse.from(response)
         every { mockkUserRepository.getReferenceById(any()) } returns user
@@ -201,14 +175,6 @@ class UserServiceUnitTest {
     @Test
     fun `유저의 세팅을 가져옵니다 - 기본값 userId 기본 세팅`() {
         // given
-        val user = User(
-            id = 1L,
-            platform = LoginPlatform.TEST,
-            platformUserId = UUID.randomUUID().toString()
-        )
-        mockSecurityUtil.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
-        }
         val response = UserSetting(user = user, notificationEnabled = false)
         val expected = UserSettingResponse.from(response)
         every { mockkUserRepository.getReferenceById(any()) } returns user
@@ -227,22 +193,16 @@ class UserServiceUnitTest {
     @Test
     fun `유저의 세팅을 가져오는데, null이 나온 경우 UserIllegalStateException 을 받는다`() {
         // given
-        val user = User(
-            id = 1L,
-            platform = LoginPlatform.TEST,
-            platformUserId = UUID.randomUUID().toString()
-        )
         every { mockkUserRepository.getReferenceById(any()) } returns user
         every { mockkUserSettingRepository.findByUserAndIsDeleted(user = user, isDeleted = any()) } returns null
 
         // when
-        val result = runCatching {
+        val result = assertThrows<UserIllegalStateException> {
             spykUserService.getUserSetting(userId = user.id)
-        }.exceptionOrNull() as? UserIllegalStateException
+        }
 
         // then
-        assertThat(result).isNotNull()
-        assertThat(result!!.errorCode).isEqualTo(UserExceptionCode.SETTING_DATA_NOT_FOUND)
+        assertThat(result.errorCode).isEqualTo(UserExceptionCode.SETTING_DATA_NOT_FOUND)
 
         verify(exactly = 1) {
             spykUserService.getUserSetting(userId = eq(user.id))
@@ -290,4 +250,10 @@ class UserServiceUnitTest {
             mockkUserRepository.findById(any())
         }
     }
+
+    private fun createUser() = User(
+        id = 1L,
+        platform = LoginPlatform.TEST,
+        platformUserId = UUID.randomUUID().toString()
+    )
 }
