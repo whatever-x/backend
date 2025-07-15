@@ -13,7 +13,6 @@ import com.whatever.domain.user.model.UserSetting
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.repository.UserSettingRepository
 import com.whatever.global.security.util.SecurityUtil
-import com.whatever.util.findByIdAndNotDeleted
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -212,11 +211,6 @@ class UserServiceUnitTest {
     @Test
     fun `내 정보를 가져오는데 성공`() {
         // given
-        val user = User(
-            id = 1L,
-            platform = LoginPlatform.TEST,
-            platformUserId = UUID.randomUUID().toString()
-        )
         val expected = GetUserInfoResponse.from(user)
         every { mockkUserRepository.findById(user.id) } returns Optional.of(user)
 
@@ -225,29 +219,22 @@ class UserServiceUnitTest {
 
         assertThat(result).isEqualTo(expected)
         verify(exactly = 1) {
-            mockkUserRepository.findById(any())
+            mockkUserRepository.findById(eq(user.id))
         }
     }
 
     @Test
     fun `내 정보를 가져오는데, null을 반화나는 경우`() {
         // given
-        val user = User(
-            id = 1L,
-            platform = LoginPlatform.TEST,
-            platformUserId = UUID.randomUUID().toString()
-        )
         every { mockkUserRepository.findById(user.id) } returns Optional.empty()
 
         // when
-        val result = kotlin.runCatching { spykUserService.getUserInfo(userId = user.id) }
-            .exceptionOrNull() as? UserNotFoundException
+        val result = assertThrows<UserNotFoundException> { spykUserService.getUserInfo(userId = user.id) }
 
-        assertThat(result).isNotNull()
-        assertThat(result!!.errorCode).isEqualTo(NOT_FOUND)
+        assertThat(result.errorCode).isEqualTo(NOT_FOUND)
 
         verify(exactly = 1) {
-            mockkUserRepository.findById(any())
+            mockkUserRepository.findById(eq(user.id))
         }
     }
 
