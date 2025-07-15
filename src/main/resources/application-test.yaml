@@ -30,7 +30,7 @@ spring:
   data:
     redis:
       host: localhost
-      port: 6370
+      port: 6379
       password: ""
   cache:
     type: caffeine

@@ -98,7 +98,7 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.4.0'
     testImplementation 'org.awaitility:awaitility-kotlin:4.3.0'
-    testImplementation 'com.github.codemonstur:embedded-redis:1.4.3'
+//    testImplementation 'com.github.codemonstur:embedded-redis:1.4.3'
     testImplementation 'io.mockk:mockk:1.14.4'
 }
 
