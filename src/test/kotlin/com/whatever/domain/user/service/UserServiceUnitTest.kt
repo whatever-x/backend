@@ -192,13 +192,12 @@ class UserServiceUnitTest {
         every { mockkUserSettingRepository.findByUserAndIsDeleted(user = user, isDeleted = any()) } returns null
 
         // when
-        val result = runCatching {
+        val result = assertThrows<UserIllegalStateException> {
             spykUserService.getUserSetting(userId = user.id)
-        }.exceptionOrNull() as? UserIllegalStateException
+        }
 
         // then
-        assertThat(result).isNotNull()
-        assertThat(result!!.errorCode).isEqualTo(UserExceptionCode.SETTING_DATA_NOT_FOUND)
+        assertThat(result.errorCode).isEqualTo(UserExceptionCode.SETTING_DATA_NOT_FOUND)
 
         verify(exactly = 1) {
             spykUserService.getUserSetting(userId = eq(user.id))
