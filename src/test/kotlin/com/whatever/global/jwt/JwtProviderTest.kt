@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
-import java.util.*
+import java.util.Base64
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -46,5 +46,4 @@ class JwtProviderTest @Autowired constructor(
         assertThat(payloadMap["key1"]).isEqualTo(claims["key1"])
         assertThat(payloadMap["key2"]).isEqualTo(claims["key2"])
     }
-
 }

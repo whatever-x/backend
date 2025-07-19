@@ -8,7 +8,9 @@ assignees: ''
 ---
 
 ## AS - IS
+
 - 기능 설명
 
 ## TO - BE
+
 - 변경할 내용

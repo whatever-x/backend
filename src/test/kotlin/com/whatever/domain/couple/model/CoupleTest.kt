@@ -89,10 +89,7 @@ class CoupleTest {
         // when
         val result = assertThrows<CoupleIllegalStateException> { couple.addMembers(user3, user2) }
 
-
         // then
         assertThat(result.errorCode).isEqualTo(ILLEGAL_MEMBER_SIZE)
     }
-
-
 }

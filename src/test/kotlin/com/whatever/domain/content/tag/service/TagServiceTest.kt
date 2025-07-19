@@ -36,7 +36,6 @@ class TagServiceTest @Autowired constructor(
         }
         val activeTags = allCreatedTags.filter { (it.id % 2).toInt() != 0 }
 
-
         // when
         val result = tagService.getTags()
 
@@ -58,5 +57,4 @@ class TagServiceTest @Autowired constructor(
     private fun createTag(label: String): Tag {
         return tagRepository.save(Tag(label = label))
     }
-
 }

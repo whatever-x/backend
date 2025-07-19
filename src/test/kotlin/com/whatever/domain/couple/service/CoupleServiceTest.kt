@@ -296,7 +296,6 @@ class CoupleServiceTest @Autowired constructor(
         }
         whenever(inviCodeRedisRepository.getInvitationUser(request.invitationCode)).doReturn(hostUser.id)
 
-
         // when, then
         assertThatThrownBy { coupleService.createCouple(request) }
             .isInstanceOf(CoupleException::class.java)

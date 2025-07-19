@@ -3,7 +3,6 @@ package com.whatever.global.security.filter
 import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.service.AuthService
 import com.whatever.domain.auth.service.JwtHelper
-import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.service.createUser
@@ -54,5 +53,4 @@ class JwtAuthenticationFilterTest @Autowired constructor(
                 status { isUnauthorized() }
             }
     }
-
 }

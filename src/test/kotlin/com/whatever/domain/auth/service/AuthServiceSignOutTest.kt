@@ -165,6 +165,5 @@ class AuthServiceSignOutTest @Autowired constructor(
         // then
         assertThat(result.errorCode).isEqualTo(JwtExceptionCode.PARSE_FAILED)
     }
-
 }
 

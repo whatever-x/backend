@@ -85,7 +85,7 @@ fun createTags(tagRepository: TagRepository, count: Int): List<Tag> {
 fun createTagContentMappings(
     tagContentMappingRepository: TagContentMappingRepository,
     tags: List<Tag>,
-    contents: List<Content>
+    contents: List<Content>,
 ): List<TagContentMapping> {
     if (tags.isEmpty() || contents.isEmpty()) return emptyList()
     val mappingsToSave = mutableListOf<TagContentMapping>()

@@ -278,7 +278,6 @@ class CoupleAnniversaryServiceTest @Autowired constructor(
                 LocalDate.of(2027, 2, 28) to "3주년" to true,
                 LocalDate.of(2028, 2, 29) to "4주년" to false,
             )
-
     }
 
     @DisplayName("윤년 2월 29일 시작일에 대해 잘못 보정했다면, 평년에는 2월 28일로 보정된 n주년 기념일이 반환된다")

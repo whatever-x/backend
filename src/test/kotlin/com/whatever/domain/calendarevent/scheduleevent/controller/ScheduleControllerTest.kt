@@ -140,5 +140,4 @@ class ScheduleControllerTest : ControllerTestSupport() {
                 jsonPath("$.error.code") { value(GlobalExceptionCode.ARGS_VALIDATION_FAILED.code) }
             }
     }
-
 }

@@ -17,7 +17,7 @@ import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
-import java.util.*
+import java.util.UUID
 import kotlin.test.Test
 
 @ActiveProfiles("test")
@@ -61,14 +61,13 @@ class ScheduleEventCleanupServiceTest @Autowired constructor(
         val remainingScheduleIds = scheduleEventRepository.findAll().filter { !it.isDeleted }.map { it.id }
         assertThat(remainingScheduleIds).containsExactlyInAnyOrderElementsOf(partnerSchedule.map { it.id })
     }
-
 }
 
 fun createSchedules(
     scheduleEventRepository: ScheduleEventRepository,
     contentRepository: ContentRepository,
     user: User,
-    count: Int
+    count: Int,
 ): List<ScheduleEvent> {
     if (count == 0) return emptyList()
     val contentsToSave = mutableListOf<Content>()

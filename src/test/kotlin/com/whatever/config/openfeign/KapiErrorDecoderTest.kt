@@ -74,7 +74,8 @@ class KapiErrorDecoderTest {
     fun decode_ThrowsKakaoServerException() {
         // given
         val unexpectedErrorCode = -9999
-        val response = createDummyResponse(HttpStatus.INTERNAL_SERVER_ERROR, unexpectedErrorCode, "Internal server error")
+        val response =
+            createDummyResponse(HttpStatus.INTERNAL_SERVER_ERROR, unexpectedErrorCode, "Internal server error")
         // when, then:
         assertThatThrownBy { kapiErrorDecoder.decode("testMethod", response) }
             .isInstanceOf(KakaoServerException::class.java)
@@ -82,10 +83,12 @@ class KapiErrorDecoderTest {
     }
 
     private fun createDummyResponse(status: HttpStatus, code: Int, msg: String): Response {
-        val json = objectMapper.writeValueAsString(mapOf(
-            "code" to code,
-            "msg" to msg
-        ))
+        val json = objectMapper.writeValueAsString(
+            mapOf(
+                "code" to code,
+                "msg" to msg
+            )
+        )
         val dummyRequest = Request.create(
             Request.HttpMethod.GET,
             "http://localhost.test",

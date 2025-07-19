@@ -16,7 +16,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import kotlin.test.Test
 
-
 class FcmSenderTest {
 
     private val fcmSender = FcmSender()

@@ -86,15 +86,21 @@ class ScheduleEventServiceTest @Autowired constructor(
 
     private fun setUpCouple(
         myPlatformId: String = "my-user-id",
-        partnerPlatformId: String = "partner-user-id"
+        partnerPlatformId: String = "partner-user-id",
     ): Triple<User, User, Couple> {
         return createCouple(userRepository, coupleRepository, myPlatformId, partnerPlatformId)
     }
+
     private fun setUpCoupleAndSecurity(
         myPlatformId: String = "my-user-id",
-        partnerPlatformId: String = "partner-user-id"
+        partnerPlatformId: String = "partner-user-id",
     ): Triple<User, User, Couple> {
-        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository, myPlatformId, partnerPlatformId)
+        val (myUser, partnerUser, couple) = createCouple(
+            userRepository,
+            coupleRepository,
+            myPlatformId,
+            partnerPlatformId
+        )
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
             whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
@@ -745,7 +751,8 @@ class ScheduleEventServiceTest @Autowired constructor(
         val numberOfEvents = 30
         val scheduleEvents = mutableListOf<ScheduleEvent>()
         repeat(numberOfEvents) { idx ->
-            val content = contentRepository.save(createContent(if (idx % 2 == 0) myUser else partnerUser, ContentType.SCHEDULE))
+            val content =
+                contentRepository.save(createContent(if (idx % 2 == 0) myUser else partnerUser, ContentType.SCHEDULE))
             val eventStartDate = startDate.plusDays(idx.toLong())
             val event = scheduleEventRepository.save(
                 ScheduleEvent(
@@ -837,7 +844,8 @@ class ScheduleEventServiceTest @Autowired constructor(
         val numberOfEvents = 10
         val scheduleEvents = mutableListOf<ScheduleEvent>()
         repeat(numberOfEvents) { idx ->
-            val content = contentRepository.save(createContent(if (idx % 2 == 0) myUser else partnerUser, ContentType.SCHEDULE))
+            val content =
+                contentRepository.save(createContent(if (idx % 2 == 0) myUser else partnerUser, ContentType.SCHEDULE))
             val eventStartDate = startDate.plusDays(idx.toLong())
             val event = scheduleEventRepository.save(
                 ScheduleEvent(
@@ -894,7 +902,7 @@ class ScheduleEventServiceTest @Autowired constructor(
 
 internal fun createTags(
     tagNames: Set<String>,
-    tagRepository: TagRepository
+    tagRepository: TagRepository,
 ): Set<Tag> {
     val tagSet = mutableSetOf<Tag>()
     for (name in tagNames) {
@@ -902,6 +910,7 @@ internal fun createTags(
     }
     return tagRepository.saveAll(tagSet).toSet()
 }
+
 internal fun addTags(
     content: Content,
     tags: Set<Tag>,
@@ -938,7 +947,7 @@ internal fun createCouple(
 internal fun createUser(
     nickname: String,
     platformUserId: String,
-    userStatus: UserStatus = UserStatus.SINGLE
+    userStatus: UserStatus = UserStatus.SINGLE,
 ): User {
     return User(
         nickname = nickname,

@@ -78,15 +78,21 @@ class ScheduleEventServiceOptimisticLockTest @Autowired constructor(
 
     private fun setUpCouple(
         myPlatformId: String = "my-user-id",
-        partnerPlatformId: String = "partner-user-id"
+        partnerPlatformId: String = "partner-user-id",
     ): Triple<User, User, Couple> {
         return createCouple(userRepository, coupleRepository, myPlatformId, partnerPlatformId)
     }
+
     private fun setUpCoupleAndSecurity(
         myPlatformId: String = "my-user-id",
-        partnerPlatformId: String = "partner-user-id"
+        partnerPlatformId: String = "partner-user-id",
     ): Triple<User, User, Couple> {
-        val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository, myPlatformId, partnerPlatformId)
+        val (myUser, partnerUser, couple) = createCouple(
+            userRepository,
+            coupleRepository,
+            myPlatformId,
+            partnerPlatformId
+        )
         securityUtilMock.apply {
             whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
             whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
@@ -169,7 +175,7 @@ class ScheduleEventServiceOptimisticLockTest @Autowired constructor(
         }
     }
 
-     // TODO(준용) 항상 통과하지 않는 테스트. 안정화 필요
+    // TODO(준용) 항상 통과하지 않는 테스트. 안정화 필요
 //    @DisplayName("Schedule 삭제 시 충돌이 발생해도 최대 3회까지 재시도 후 반영된다.")
 //    @Test
 //    fun deleteSchedule_WithOptimisticLock() {
@@ -276,5 +282,4 @@ class ScheduleEventServiceOptimisticLockTest @Autowired constructor(
         val unDeletedSchedule = scheduleEventRepository.findByIdAndNotDeleted(oldSchedule.id)
         assertThat(unDeletedSchedule).isNotNull
     }
-
 }

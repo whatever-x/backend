@@ -26,11 +26,12 @@ import java.util.concurrent.atomic.AtomicInteger
 @SpringBootTest
 class KakaoUserProviderTest @Autowired constructor(
     private val kakaoUserProvider: KakaoUserProvider,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) {
 
     @MockitoBean
     private lateinit var kakaoOIDCClient: KakaoOIDCClient
+
     @MockitoBean
     private lateinit var oidcHelper: OIDCHelper
 
@@ -45,15 +46,17 @@ class KakaoUserProviderTest @Autowired constructor(
             .thenReturn(OIDCPublicKeysResponse())
 
         whenever(oidcHelper.parseKakaoIdToken(Mockito.anyString(), Mockito.anyList()))
-            .thenReturn(KakaoIdTokenPayload(
-                iss = "",
-                aud = "",
-                sub = "social-user-id",
-                iat = 1L,
-                exp = 1L,
-                authTime = 1L,
-                nickname = "testnick",
-            ))
+            .thenReturn(
+                KakaoIdTokenPayload(
+                    iss = "",
+                    aud = "",
+                    sub = "social-user-id",
+                    iat = 1L,
+                    exp = 1L,
+                    authTime = 1L,
+                    nickname = "testnick",
+                )
+            )
 
         // given
         val kakaoAccessToken = "test-kakao-id-token"
@@ -101,15 +104,17 @@ class KakaoUserProviderTest @Autowired constructor(
             .thenReturn(OIDCPublicKeysResponse())
 
         whenever(oidcHelper.parseKakaoIdToken(Mockito.anyString(), Mockito.anyList()))
-            .thenReturn(KakaoIdTokenPayload(
-                iss = "",
-                aud = "",
-                sub = "social-user-id",
-                iat = 1L,
-                exp = 1L,
-                authTime = 1L,
-                nickname = invalidLengthNickname,
-            ))
+            .thenReturn(
+                KakaoIdTokenPayload(
+                    iss = "",
+                    aud = "",
+                    sub = "social-user-id",
+                    iat = 1L,
+                    exp = 1L,
+                    authTime = 1L,
+                    nickname = invalidLengthNickname,
+                )
+            )
 
         // when
         val result = kakaoUserProvider.findOrCreateUser("any-id-token")
@@ -131,15 +136,17 @@ class KakaoUserProviderTest @Autowired constructor(
             .thenReturn(OIDCPublicKeysResponse())
 
         whenever(oidcHelper.parseKakaoIdToken(Mockito.anyString(), Mockito.anyList()))
-            .thenReturn(KakaoIdTokenPayload(
-                iss = "",
-                aud = "",
-                sub = "social-user-id",
-                iat = 1L,
-                exp = 1L,
-                authTime = 1L,
-                nickname = validLengthNickname,
-            ))
+            .thenReturn(
+                KakaoIdTokenPayload(
+                    iss = "",
+                    aud = "",
+                    sub = "social-user-id",
+                    iat = 1L,
+                    exp = 1L,
+                    authTime = 1L,
+                    nickname = validLengthNickname,
+                )
+            )
 
         // when
         val result = kakaoUserProvider.findOrCreateUser("any-id-token")

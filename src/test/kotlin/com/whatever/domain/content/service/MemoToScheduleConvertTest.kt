@@ -68,7 +68,7 @@ class MemoToScheduleConvertTest @Autowired constructor(
 
     private fun setUpCoupleAndSecurity(
         myPlatformId: String = "my-user-id",
-        partnerPlatformId: String = "partner-user-id"
+        partnerPlatformId: String = "partner-user-id",
     ): Triple<User, User, Couple> {
         val (myUser, partnerUser, couple) = createCouple(
             userRepository,

@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
-import java.util.*
+import java.util.UUID
 import kotlin.test.Test
 
 @ActiveProfiles("test")
@@ -54,7 +54,6 @@ class FirebaseServiceTest @Autowired constructor(
 
         val deviceId = "new-device"
         val token = "new-token"
-
 
         // when
         firebaseService.setFcmToken(
@@ -270,7 +269,8 @@ class FirebaseServiceTest @Autowired constructor(
     }
 
     @DisplayName("타겟 유저들에게 등록된 토큰이 여러개라면 sendDataAll()이 실행된다.")
-    @Test fun sendData_WithMultipleTokensUsers() {
+    @Test
+    fun sendData_WithMultipleTokensUsers() {
         // given
         val (myUser, partnerUser, couple) = createCouple(userRepository, coupleRepository)
         createFcmToken("test-device-1", myUser)
@@ -292,7 +292,7 @@ class FirebaseServiceTest @Autowired constructor(
     private fun createFcmToken(
         deviceId: String,
         user: User,
-        notificationEnabled: Boolean = true
+        notificationEnabled: Boolean = true,
     ): FcmToken {
         setUserSetting(user, notificationEnabled)
         return fcmTokenRepository.save(

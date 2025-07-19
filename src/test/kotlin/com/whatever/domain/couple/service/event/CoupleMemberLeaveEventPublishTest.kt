@@ -32,15 +32,18 @@ import kotlin.test.Test
 @ActiveProfiles("test")
 @SpringBootTest
 class CoupleMemberLeaveEventPublishTest @Autowired constructor(
-    private val applicationEventPublisher: ApplicationEventPublisher
-) : ExcludeAsyncConfigBean(){
+    private val applicationEventPublisher: ApplicationEventPublisher,
+) : ExcludeAsyncConfigBean() {
 
     @MockitoBean
     private lateinit var scheduleEventCleanupService: ScheduleEventCleanupService
+
     @MockitoBean
     private lateinit var contentCleanupService: ContentCleanupService
+
     @MockitoBean
     private lateinit var tagContentMappingCleanupService: TagContentMappingCleanupService
+
     @MockitoBean
     private lateinit var userChoiceOptionCleanupService: UserChoiceOptionCleanupService
 

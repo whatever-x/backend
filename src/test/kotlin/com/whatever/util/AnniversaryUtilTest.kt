@@ -61,7 +61,6 @@ class AnniversaryUtilTest {
             )
     }
 
-
     @DisplayName("조회 범위에 포함된 30일 단위 기념일을 반환한다.")
     @Test
     fun findNThDayAnniversary_WithInterval30() {
