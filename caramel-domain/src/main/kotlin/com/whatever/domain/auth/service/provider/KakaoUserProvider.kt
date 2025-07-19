@@ -1,12 +1,12 @@
-package com.whatever.auth.service.provider
+package com.whatever.domain.auth.service.provider
 
-import com.whatever.config.properties.OauthProperties
-import com.whatever.domain.auth.client.KakaoKapiClient
-import com.whatever.domain.auth.client.KakaoOIDCClient
-import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
-import com.whatever.domain.auth.client.dto.KakaoUnlinkUserRequest
+import com.whatever.caramel.infrastructure.client.KakaoKapiClient
+import com.whatever.caramel.infrastructure.client.KakaoOIDCClient
+import com.whatever.caramel.infrastructure.client.dto.KakaoIdTokenPayload
+import com.whatever.caramel.infrastructure.client.dto.KakaoUnlinkUserRequest
+import com.whatever.caramel.infrastructure.properties.OauthProperties
 import com.whatever.domain.auth.service.OIDCHelper
-import com.whatever.domain.auth.service.provider.SocialUserProvider
+import com.whatever.domain.findByIdAndNotDeleted
 import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.LoginPlatform
@@ -14,7 +14,6 @@ import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.User.Companion.MAX_NICKNAME_LENGTH
 import com.whatever.domain.user.model.User.Companion.MIN_NICKNAME_LENGTH
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.util.findByIdAndNotDeleted
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Component

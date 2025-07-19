@@ -1,4 +1,4 @@
-package com.whatever.domain.auth.dto
+package com.whatever.caramel.infrastructure.client.dto
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 

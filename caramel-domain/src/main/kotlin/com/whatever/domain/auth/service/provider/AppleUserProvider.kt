@@ -1,11 +1,10 @@
-package com.whatever.auth.service.provider
+package com.whatever.domain.auth.service.provider
 
-import com.whatever.domain.auth.client.AppleOIDCClient
-import com.whatever.domain.auth.client.dto.AppleIdTokenPayload
-import com.whatever.domain.auth.dto.AppleAuthFormData
-import com.whatever.domain.auth.dto.AppleUserName
+import com.whatever.caramel.infrastructure.client.AppleOIDCClient
+import com.whatever.caramel.infrastructure.client.dto.AppleAuthFormData
+import com.whatever.caramel.infrastructure.client.dto.AppleIdTokenPayload
+import com.whatever.caramel.infrastructure.client.dto.AppleUserName
 import com.whatever.domain.auth.service.OIDCHelper
-import com.whatever.domain.auth.service.provider.SocialUserProvider
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.User.Companion.MAX_NICKNAME_LENGTH
