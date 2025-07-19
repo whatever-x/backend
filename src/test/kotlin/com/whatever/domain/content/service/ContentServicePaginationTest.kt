@@ -19,7 +19,7 @@ import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.cursor.Cursor
 import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.CursorUtil
-import com.whatever.util.DateTimeUtil // Assuming DateTimeUtil exists for date/time handling
+import com.whatever.caramel.common.util.DateTimeUtil // Assuming DateTimeUtil exists for date/time handling
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach

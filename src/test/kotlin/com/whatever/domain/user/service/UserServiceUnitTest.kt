@@ -17,7 +17,7 @@ import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.repository.UserSettingRepository
 import com.whatever.global.security.util.SecurityUtil
-import com.whatever.util.DateTimeUtil
+import com.whatever.caramel.common.util.DateTimeUtil
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot

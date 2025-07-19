@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id("org.springframework.boot") version "3.4.1"
     id("io.spring.dependency-management") version "1.1.7"
@@ -29,12 +31,20 @@ dependencies {
     implementation(project(":caramel-common"))
     implementation(project(":caramel-infrastructure"))
     // Spring
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("com.linecorp.kotlin-jdsl:jpql-dsl:3.5.3")
     implementation("com.linecorp.kotlin-jdsl:jpql-render:3.5.3")
     implementation("com.linecorp.kotlin-jdsl:spring-data-jpa-support:3.5.3")
-    // implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-aop")  // dddd
+    implementation("org.springframework.retry:spring-retry")
+
+
+    // Logging
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
+    implementation("org.springframework.boot:spring-boot-starter-log4j2")
 
     // Cache
     implementation("org.springframework.boot:spring-boot-starter-cache")
@@ -70,7 +80,12 @@ tasks.test {
 }
 kotlin {
     jvmToolchain(21)
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
+        jvmTarget.set(JvmTarget.JVM_21)
+    }
 }
+
 configurations.configureEach {
     // 기본 로깅 스타터 제외
     exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")

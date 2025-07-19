@@ -24,7 +24,7 @@ import com.whatever.domain.user.model.UserStatus.COUPLED
 import com.whatever.domain.user.model.UserStatus.SINGLE
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
-import com.whatever.util.DateTimeUtil
+import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.util.toZoneId
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy

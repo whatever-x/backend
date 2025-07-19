@@ -7,7 +7,7 @@ import com.whatever.domain.user.dto.PutUserProfileResponse
 import com.whatever.domain.user.model.UserGender
 import com.whatever.global.constants.CaramelHttpHeaders
 import com.whatever.global.exception.GlobalExceptionCode
-import com.whatever.util.DateTimeUtil
+import com.whatever.caramel.common.util.DateTimeUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any

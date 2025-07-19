@@ -21,7 +21,7 @@ import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.exception.GlobalException
 import com.whatever.global.exception.GlobalExceptionCode.UNKNOWN
 import com.whatever.global.security.util.SecurityUtil
-import com.whatever.util.DateTimeUtil
+import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.util.findByIdAndNotDeleted
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy

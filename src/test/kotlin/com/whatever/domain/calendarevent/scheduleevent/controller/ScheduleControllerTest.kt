@@ -3,7 +3,7 @@ package com.whatever.domain.calendarevent.scheduleevent.controller
 import com.whatever.domain.ControllerTestSupport
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
 import com.whatever.global.exception.GlobalExceptionCode
-import com.whatever.util.DateTimeUtil
+import com.whatever.caramel.common.util.DateTimeUtil
 import org.junit.jupiter.api.DisplayName
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.put

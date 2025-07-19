@@ -14,10 +14,10 @@ import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.security.util.SecurityUtil
-import com.whatever.util.DateTimeUtil
+import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.util.findByIdAndNotDeleted
 import com.whatever.util.toZoneId
-import com.whatever.util.withoutNano
+import com.whatever.caramel.common.util.withoutNano
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach

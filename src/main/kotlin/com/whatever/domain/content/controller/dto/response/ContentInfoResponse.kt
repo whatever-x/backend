@@ -3,7 +3,7 @@ package com.whatever.domain.content.controller.dto.response
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentType
 import com.whatever.domain.content.tag.model.Tag
-import com.whatever.util.DateTimeUtil.KST_ZONE_ID
+import com.whatever.caramel.common.util.DateTimeUtil.KST_ZONE_ID
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 

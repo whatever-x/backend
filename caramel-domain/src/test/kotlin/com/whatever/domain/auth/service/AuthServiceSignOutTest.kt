@@ -6,8 +6,8 @@ import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.global.jwt.exception.JwtExceptionCode
 import com.whatever.global.jwt.exception.JwtMalformedException
-import com.whatever.util.DateTimeUtil
-import com.whatever.util.withoutNano
+import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.common.util.withoutNano
 import io.jsonwebtoken.ExpiredJwtException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within

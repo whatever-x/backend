@@ -1,6 +1,6 @@
 package com.whatever.domain.couple.repository
 
-import com.whatever.util.DateTimeUtil
+import com.whatever.caramel.common.util.DateTimeUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.TemporalUnitWithinOffset
 import org.junit.jupiter.api.BeforeEach
