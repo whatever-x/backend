@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.calendarevent.specialday.model
+package com.whatever.domain.specialday.model
 
 enum class SpecialDayType {
     HOLI,
