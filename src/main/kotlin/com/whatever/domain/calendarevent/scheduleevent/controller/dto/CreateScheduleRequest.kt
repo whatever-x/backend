@@ -44,13 +44,4 @@ data class CreateScheduleRequest(
             isCompleted = isCompleted,
         )
     }
-
-    fun toDateTimeInfoDto(): DateTimeInfoDto {
-        return DateTimeInfoDto(
-            startDateTime = startDateTime,
-            startTimezone = startTimeZone,
-            endDateTime = endDateTime,
-            endTimezone = endTimeZone,
-        )
-    }
 }

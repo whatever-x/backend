@@ -1,8 +1,8 @@
-package com.whatever.calendarevent.service.event
+package com.whatever.domain.calendarevent.service.event
 
 import com.whatever.domain.base.AbstractEntityCleanupService
-import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
-import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
+import com.whatever.domain.calendarevent.model.ScheduleEvent
+import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
 import org.springframework.stereotype.Service
 
 @Service

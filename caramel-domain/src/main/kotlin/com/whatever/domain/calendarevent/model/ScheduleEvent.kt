@@ -1,17 +1,17 @@
 package com.whatever.domain.calendarevent.model
 
+import com.whatever.caramel.common.global.exception.ErrorUi
+import com.whatever.caramel.common.util.endOfDay
+import com.whatever.caramel.common.util.toZoneId
+import com.whatever.caramel.common.util.withoutNano
 import com.whatever.domain.base.BaseEntity
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_CONTENT_TYPE
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_DURATION
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalArgumentException
-import com.whatever.domain.calendarevent.scheduleevent.model.converter.ZonedIdConverter
+import com.whatever.domain.calendarevent.exception.ScheduleExceptionCode.ILLEGAL_CONTENT_TYPE
+import com.whatever.domain.calendarevent.exception.ScheduleExceptionCode.ILLEGAL_DURATION
+import com.whatever.domain.calendarevent.exception.ScheduleIllegalArgumentException
+import com.whatever.domain.calendarevent.model.converter.ZonedIdConverter
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
 import com.whatever.domain.content.vo.ContentType
-import com.whatever.global.exception.ErrorUi
-import com.whatever.util.endOfDay
-import com.whatever.util.toZoneId
-import com.whatever.caramel.common.util.withoutNano
 import jakarta.persistence.Column
 import jakarta.persistence.Convert
 import jakarta.persistence.Entity

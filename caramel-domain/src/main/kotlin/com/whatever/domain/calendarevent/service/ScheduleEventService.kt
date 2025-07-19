@@ -6,9 +6,6 @@ import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.common.util.endOfDay
 import com.whatever.caramel.common.util.toDateTime
 import com.whatever.caramel.common.util.withoutNano
-import com.whatever.domain.content.service.ScheduleCreator
-import com.whatever.domain.calendarevent.controller.dto.response.ScheduleDetailDto
-import com.whatever.domain.content.vo.DateTimeInfoVo
 import com.whatever.domain.calendarevent.exception.ScheduleAccessDeniedException
 import com.whatever.domain.calendarevent.exception.ScheduleExceptionCode
 import com.whatever.domain.calendarevent.exception.ScheduleExceptionCode.COUPLE_NOT_MATCHED
@@ -20,12 +17,15 @@ import com.whatever.domain.calendarevent.exception.ScheduleIllegalStateException
 import com.whatever.domain.calendarevent.exception.ScheduleNotFoundException
 import com.whatever.domain.calendarevent.model.ScheduleEvent
 import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
-import com.whatever.domain.calendarevent.scheduleevent.controller.dto.CreateScheduleRequest
-import com.whatever.domain.calendarevent.scheduleevent.controller.dto.GetScheduleResponse
-import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
-import com.whatever.domain.content.controller.dto.response.ContentSummaryResponse
+import com.whatever.domain.calendarevent.vo.ContentSummaryVo
+import com.whatever.domain.calendarevent.vo.CreateScheduleVo
+import com.whatever.domain.calendarevent.vo.DateTimeInfoVo
+import com.whatever.domain.calendarevent.vo.GetScheduleVo
+import com.whatever.domain.calendarevent.vo.ScheduleDetailsVo
+import com.whatever.domain.calendarevent.vo.UpdateScheduleVo
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
+import com.whatever.domain.content.service.ScheduleCreator
 import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
@@ -62,7 +62,7 @@ class ScheduleEventService(
     fun getSchedule(
         scheduleId: Long,
         ownerCoupleId: Long,
-    ): GetScheduleResponse {
+    ): GetScheduleVo {
         val schedule = scheduleEventRepository.findByIdWithContent(scheduleId)
             ?: throw ScheduleNotFoundException(errorCode = ScheduleExceptionCode.SCHEDULE_NOT_FOUND)
 
@@ -73,7 +73,7 @@ class ScheduleEventService(
 
         val tags = tagContentMappingRepository.findAllWithTagByContentId(schedule.content.id)
             .map { it.tag }
-        return GetScheduleResponse.of(
+        return GetScheduleVo.from(
             schedule = schedule,
             content = schedule.content,
             tags = tags,
@@ -85,7 +85,7 @@ class ScheduleEventService(
         endDate: LocalDate,
         userTimeZone: String,
         currentUserCoupleId: Long,
-    ): List<ScheduleDetailDto> {
+    ): ScheduleDetailsVo {
         val startDateTime = startDate.toDateTime().withoutNano
         val endDateTime = endDate.toDateTime().endOfDay.withoutNano
         validateRequestDuration(
@@ -107,27 +107,16 @@ class ScheduleEventService(
             memberIds = memberIds
         )
 
-        return coupleSchedules.map { se ->
-            ScheduleDetailDto(
-                scheduleId = se.id,
-                startDateTime = se.startDateTime,
-                endDateTime = se.endDateTime,
-                startDateTimezone = se.startTimeZone.id,
-                endDateTimezone = se.endTimeZone.id,
-                isCompleted = se.content.contentDetail.isCompleted,
-                title = se.content.contentDetail.title,
-                description = se.content.contentDetail.description,
-            )
-        }
+        return ScheduleDetailsVo.from(coupleSchedules = coupleSchedules)
     }
 
     @Transactional
     fun createSchedule(
-        request: CreateScheduleRequest,
+        scheduleVo: CreateScheduleVo,
         currentUserCoupleId: Long,
         currentUserId: Long,
-    ): ContentSummaryResponse {
-        request.apply {
+    ): ContentSummaryVo {
+        scheduleVo.apply {
             validateRequestContentDetail(title, description)
             validateRequestDuration(startDateTime, endDateTime)
         }
@@ -136,12 +125,17 @@ class ScheduleEventService(
             ?: throw CoupleNotFoundException(COUPLE_NOT_FOUND)
 
         val savedScheduleEvent = scheduleCreator.createSchedule(
-            title = request.title,
-            description = request.description,
-            isCompleted = request.isCompleted,
-            tagIds = request.tagIds,
-            dateTimeInfo = DateTimeInfoVo.from(request.toDateTimeInfoDto()),
-            getCurrentUserId = currentUserId
+            title = scheduleVo.title,
+            description = scheduleVo.description,
+            isCompleted = scheduleVo.isCompleted,
+            tagIds = scheduleVo.tagIds,
+            dateTimeInfo = DateTimeInfoVo.from(
+                startTimezone = scheduleVo.startTimeZone,
+                startDateTime = scheduleVo.startDateTime,
+                endTimezone = scheduleVo.endTimeZone,
+                endDateTime = scheduleVo.endDateTime,
+            ),
+            getCurrentUserId = currentUserId,
         )
 
         applicationEventPublisher.publishEvent(
@@ -153,7 +147,7 @@ class ScheduleEventService(
             )
         )
 
-        return ContentSummaryResponse(
+        return ContentSummaryVo.from(
             contentId = savedScheduleEvent.id,
             contentType = savedScheduleEvent.content.type,
         )
@@ -168,9 +162,11 @@ class ScheduleEventService(
     @Transactional
     fun updateSchedule(
         scheduleId: Long,
-        request: UpdateScheduleRequest,
+        currentUserId: Long,
+        currentUserCoupleId: Long,
+        scheduleVo: UpdateScheduleVo,
     ) {
-        request.apply {
+        scheduleVo.apply {
             validateRequestContentDetail(title, description)
             validateRequestDuration(startDateTime, endDateTime)
         }
@@ -178,9 +174,13 @@ class ScheduleEventService(
         val scheduleEvent = scheduleEventRepository.findByIdWithContentAndUser(scheduleId)
             ?: throw ScheduleNotFoundException(errorCode = ScheduleExceptionCode.SCHEDULE_NOT_FOUND)
 
-        validateUserAccess(scheduleEvent)
+        validateUserAccess(
+            scheduleEvent = scheduleEvent,
+            currentUserId = currentUserId,
+            currentUserCoupleId = currentUserCoupleId,
+        )
 
-        with(request) {
+        with(scheduleVo) {
             val contentDetail = ContentDetail(
                 title = title,
                 description = description,
@@ -216,10 +216,14 @@ class ScheduleEventService(
         recover = "deleteRecover",
     )
     @Transactional
-    fun deleteSchedule(scheduleId: Long) {
+    fun deleteSchedule(scheduleId: Long, currentUserId: Long, currentUserCoupleId: Long) {
         val scheduleEvent = scheduleEventRepository.findByIdWithContentAndUser(scheduleId)
             ?: throw ScheduleNotFoundException(errorCode = ScheduleExceptionCode.SCHEDULE_NOT_FOUND)
-        validateUserAccess(scheduleEvent)
+        validateUserAccess(
+            scheduleEvent = scheduleEvent,
+            currentUserId = currentUserId,
+            currentUserCoupleId = currentUserCoupleId,
+        )
         scheduleEvent.apply {
             deleteEntity()
             content.deleteEntity()
@@ -313,18 +317,4 @@ class ScheduleEventService(
             tagContentMappingRepository.saveAll(newMappings)
         }
     }
-}
-
-private fun CreateScheduleRequest.toUpdateRequest(): UpdateScheduleRequest {
-    return UpdateScheduleRequest(
-        selectedDate = startDateTime.toLocalDate(),
-        title = title,
-        description = description,
-        isCompleted = isCompleted,
-        startDateTime = startDateTime,
-        startTimeZone = startTimeZone,
-        endDateTime = endDateTime,
-        endTimeZone = endTimeZone,
-        tagIds = tagIds
-    )
 }

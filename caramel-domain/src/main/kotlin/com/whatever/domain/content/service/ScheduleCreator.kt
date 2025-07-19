@@ -4,6 +4,7 @@ import com.whatever.caramel.common.util.endOfDay
 import com.whatever.caramel.common.util.toZoneId
 import com.whatever.domain.calendarevent.model.ScheduleEvent
 import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
+import com.whatever.domain.calendarevent.vo.DateTimeInfoVo
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
 import com.whatever.domain.content.vo.ContentType
@@ -11,7 +12,6 @@ import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
-import com.whatever.domain.content.vo.DateTimeInfoVo
 import com.whatever.domain.content.vo.ScheduleEventVo
 import com.whatever.domain.user.repository.UserRepository
 import org.springframework.stereotype.Component
