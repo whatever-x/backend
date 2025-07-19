@@ -11,7 +11,6 @@ import com.google.firebase.messaging.MessagingErrorCode.SENDER_ID_MISMATCH
 import com.google.firebase.messaging.MessagingErrorCode.UNAVAILABLE
 import com.google.firebase.messaging.MessagingErrorCode.UNREGISTERED
 import com.google.firebase.messaging.MulticastMessage
-import com.google.firebase.messaging.Notification
 import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.infrastructure.firebase.exception.FcmIllegalArgumentException
 import com.whatever.caramel.infrastructure.firebase.exception.FcmSendException
@@ -23,6 +22,7 @@ import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionC
 import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_SERVER_UNAVAILABLE
 import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_UNREGISTERED_TOKEN
 import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.UNKNOWN
+import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.annotation.DependsOn
 import org.springframework.stereotype.Component
@@ -35,10 +35,10 @@ class FcmSender {
 
     fun sendNotification(
         token: String,
-        notification: Notification,
+        fcmNotification: FcmNotification,
     ): String {
         val message = Message.builder()
-            .setNotification(notification)
+            .setNotification(fcmNotification.toNotification())
             .setToken(token)
             .build()
 
@@ -49,8 +49,8 @@ class FcmSender {
 
     fun sendNotificationAll(
         tokens: List<String>,
-        notification: Notification,
-    ): BatchResponse {
+        fcmNotification: FcmNotification,
+    ) {
         if (tokens.isEmpty()) {
             logger.info { "No tokens provided for sendNotificationAll. Skipping." }
             throw FcmIllegalArgumentException(
@@ -59,7 +59,7 @@ class FcmSender {
             )
         }
         val message = MulticastMessage.builder()
-            .setNotification(notification)
+            .setNotification(fcmNotification.toNotification())
             .addAllTokens(tokens)
             .build()
 
@@ -85,7 +85,7 @@ class FcmSender {
     fun sendDataAll(
         tokens: List<String>,
         data: Map<String, String>,
-    ): BatchResponse {
+    ) {
         if (tokens.isEmpty()) {
             logger.info { "No tokens provided for sendDataAll. Skipping." }
             throw FcmIllegalArgumentException(

@@ -61,12 +61,12 @@ class FirebaseService(
         if (tokens.size == 1) {
             fcmSender.sendNotification(
                 token = tokens.single(),
-                notification = fcmNotification.toNotification(),
+                fcmNotification = fcmNotification,
             )
         } else {
             fcmSender.sendNotificationAll(
                 tokens = tokens,
-                notification = fcmNotification.toNotification(),
+                fcmNotification = fcmNotification,
             )
         }
     }
