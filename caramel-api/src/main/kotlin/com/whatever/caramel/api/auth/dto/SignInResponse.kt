@@ -1,5 +1,6 @@
 package com.whatever.com.whatever.caramel.api.auth.dto
 
+import com.whatever.domain.sample.vo.SignInVo
 import com.whatever.domain.user.model.UserStatus
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
@@ -20,4 +21,19 @@ data class SignInResponse(
 
     @Schema(description = "유저가 속한 커플 id. null일 수 있음.", nullable = true)
     val coupleId: Long?,
-)
+) {
+    companion object {
+        fun from(signInVo: SignInVo): SignInResponse {
+            return SignInResponse(
+                serviceTokenResponse = ServiceTokenResponse(
+                    accessToken = signInVo.serviceToken.accessToken,
+                    refreshToken = signInVo.serviceToken.refreshToken,
+                ),
+                userStatus = signInVo.userInfo.userStatus,
+                nickname = signInVo.userInfo.nickname,
+                birthDay = signInVo.userInfo.birthDate,
+                coupleId = null,
+            )
+        }
+    }
+}

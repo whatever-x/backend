@@ -14,12 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 
 @Profile("dev", "local-mem")
@@ -146,7 +141,9 @@ class SampleController(
         @Parameter(description = "access 토큰 만료 시간(초)", example = "3600")
         @RequestParam expSec: Long,
     ): CaramelApiResponse<SignInResponse> {
-        return sampleService.testSignIn(email, expSec).succeed()
+        return sampleService.testSignIn(email, expSec).let {
+            SignInResponse.from(it)
+        }.succeed()
     }
 
     @Operation(
