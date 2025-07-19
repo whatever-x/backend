@@ -1,6 +1,6 @@
 package com.whatever.domain.auth.controller
 
-import com.whatever.domain.auth.dto.ServiceToken
+import com.whatever.domain.auth.dto.ServiceTokenResponse
 import com.whatever.domain.auth.dto.SignInRequest
 import com.whatever.domain.auth.dto.SignInResponse
 import com.whatever.domain.auth.service.AuthService
@@ -96,8 +96,8 @@ class AuthController(
     @PostMapping("/refresh")
     fun refresh(
         @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
-        @RequestBody request: ServiceToken,
-    ): CaramelApiResponse<ServiceToken> {
+        @RequestBody request: ServiceTokenResponse,
+    ): CaramelApiResponse<ServiceTokenResponse> {
         val serviceToken = authService.refresh(request, deviceId)
         return serviceToken.succeed()
     }

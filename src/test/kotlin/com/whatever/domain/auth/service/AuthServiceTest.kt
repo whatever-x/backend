@@ -3,7 +3,7 @@ package com.whatever.domain.auth.service
 import com.whatever.domain.auth.client.KakaoKapiClient
 import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
 import com.whatever.domain.auth.client.dto.KakaoUnlinkUserResponse
-import com.whatever.domain.auth.dto.ServiceToken
+import com.whatever.domain.auth.dto.ServiceTokenResponse
 import com.whatever.domain.auth.exception.AuthException
 import com.whatever.domain.auth.exception.AuthExceptionCode
 import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
@@ -97,16 +97,16 @@ class AuthServiceTest @Autowired constructor(
     @Test
     fun refresh_WithInvalidRefreshToken_ThrowsException() {
         // given
-        val serviceToken = ServiceToken(accessToken = "accessToken", refreshToken = "invalidRefreshToken")
+        val serviceTokenResponse = ServiceTokenResponse(accessToken = "accessToken", refreshToken = "invalidRefreshToken")
         val deviceId = "test-device"
         val userId = 1L
         doReturn(userId)
-            .whenever(jwtHelper).extractUserIdIgnoringSignature(serviceToken.accessToken)
+            .whenever(jwtHelper).extractUserIdIgnoringSignature(serviceTokenResponse.accessToken)
         doReturn(false)
-            .whenever(jwtHelper).isValidJwt(serviceToken.refreshToken)
+            .whenever(jwtHelper).isValidJwt(serviceTokenResponse.refreshToken)
 
         // when, then
-        assertThatThrownBy { authService.refresh(serviceToken, deviceId) }
+        assertThatThrownBy { authService.refresh(serviceTokenResponse, deviceId) }
             .isInstanceOf(AuthException::class.java)
     }
 
@@ -114,20 +114,20 @@ class AuthServiceTest @Autowired constructor(
     @Test
     fun refresh_WithMismatchedRefreshToken_ThrowsException() {
         // given
-        val serviceToken = ServiceToken(accessToken = "accessToken", refreshToken = "refreshToken")
+        val serviceTokenResponse = ServiceTokenResponse(accessToken = "accessToken", refreshToken = "refreshToken")
         val deviceId = "test-device"
         val userId = 1L
         val storedRefreshToken = "differentRefreshToken"
         doReturn(userId)
-            .whenever(jwtHelper).extractUserIdIgnoringSignature(serviceToken.accessToken)
+            .whenever(jwtHelper).extractUserIdIgnoringSignature(serviceTokenResponse.accessToken)
         doReturn(true)
-            .whenever(jwtHelper).isValidJwt(serviceToken.refreshToken)
+            .whenever(jwtHelper).isValidJwt(serviceTokenResponse.refreshToken)
         `when`(authRedisRepository.getRefreshToken(userId = userId, deviceId = "tempDeviceIds")).thenReturn(
             storedRefreshToken
         )
 
         // when, then
-        assertThatThrownBy { authService.refresh(serviceToken, deviceId) }
+        assertThatThrownBy { authService.refresh(serviceTokenResponse, deviceId) }
             .isInstanceOf(AuthException::class.java)
     }
 
@@ -155,7 +155,7 @@ class AuthServiceTest @Autowired constructor(
             exp = 1000000L,
             authTime = 1000000L,
         )
-        val fakeServiceToken = ServiceToken(
+        val fakeServiceTokenResponse = ServiceTokenResponse(
             accessToken = "test-access-token",
             refreshToken = "test-refresh-token",
         )
@@ -164,9 +164,9 @@ class AuthServiceTest @Autowired constructor(
             .thenThrow(exception)  // Oidc PublicKey가 만료되어 불일치 발생
             .thenReturn(fakeKakaoIdTokenPayload)  // 캐싱 후 다시 정상값 반환
 
-        doReturn(fakeServiceToken.accessToken)
+        doReturn(fakeServiceTokenResponse.accessToken)
             .whenever(jwtHelper).createAccessToken(user.id)
-        doReturn(fakeServiceToken.refreshToken)
+        doReturn(fakeServiceTokenResponse.refreshToken)
             .whenever(jwtHelper).createRefreshToken()
         whenever(oidcCacheManager.getCache(oidcPublicKeyCacheName))
             .thenReturn(mock(Cache::class.java))
@@ -181,8 +181,8 @@ class AuthServiceTest @Autowired constructor(
         // then
         verify(oidcCacheManager.getCache(oidcPublicKeyCacheName))!!.evictIfPresent(user.platform.name)
         assertThat(result.nickname).isEqualTo(user.nickname)
-        assertThat(result.serviceToken.accessToken).isEqualTo(fakeServiceToken.accessToken)
-        assertThat(result.serviceToken.refreshToken).isEqualTo(fakeServiceToken.refreshToken)
+        assertThat(result.serviceToken.accessToken).isEqualTo(fakeServiceTokenResponse.accessToken)
+        assertThat(result.serviceToken.refreshToken).isEqualTo(fakeServiceTokenResponse.refreshToken)
     }
 
     @DisplayName("회원 탈퇴 시 유저 상태가 COUPLED라면 커플탈퇴와 유저삭제, 로그아웃을 진행한다.")

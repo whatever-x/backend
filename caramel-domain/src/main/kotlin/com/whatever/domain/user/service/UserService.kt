@@ -1,5 +1,7 @@
-package com.whatever.user.service
+package com.whatever.domain.user.service
 
+import com.whatever.caramel.common.global.exception.ErrorUi
+import com.whatever.domain.findByIdAndNotDeleted
 import com.whatever.domain.user.dto.GetUserInfoResponse
 import com.whatever.domain.user.dto.PatchUserSettingRequest
 import com.whatever.domain.user.dto.PostUserProfileRequest
@@ -14,9 +16,6 @@ import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.UserSetting
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.repository.UserSettingRepository
-import com.whatever.global.exception.ErrorUi
-import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
-import com.whatever.util.findByIdAndNotDeleted
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneId
@@ -27,8 +26,11 @@ class UserService(
     private val userSettingRepository: UserSettingRepository,
 ) {
     @Transactional
-    fun createProfile(postUserProfileRequest: PostUserProfileRequest, userTimeZone: ZoneId): PostUserProfileResponse {
-        val userId = getCurrentUserId()
+    fun createProfile(
+        postUserProfileRequest: PostUserProfileRequest,
+        userTimeZone: ZoneId,
+        userId: Long,
+    ): PostUserProfileResponse {
         val user = userRepository.findByIdAndNotDeleted(userId)
             ?: throw UserNotFoundException(NOT_FOUND)
 
@@ -48,8 +50,11 @@ class UserService(
     }
 
     @Transactional
-    fun updateProfile(putUserProfileRequest: PutUserProfileRequest, userTimeZone: ZoneId): PutUserProfileResponse {
-        val userId = getCurrentUserId()
+    fun updateProfile(
+        putUserProfileRequest: PutUserProfileRequest,
+        userTimeZone: ZoneId,
+        userId: Long,
+        ): PutUserProfileResponse {
         val user = userRepository.findByIdAndNotDeleted(userId)?.apply {
             if (putUserProfileRequest.nickname.isNullOrBlank().not()) {
                 nickname = putUserProfileRequest.nickname
@@ -67,7 +72,9 @@ class UserService(
         )
     }
 
-    fun getUserInfo(userId: Long = getCurrentUserId()): GetUserInfoResponse {
+    fun getUserInfo(
+        userId: Long,
+    ): GetUserInfoResponse {
         val user = userRepository.findByIdAndNotDeleted(userId) ?: throw UserNotFoundException(errorCode = NOT_FOUND)
         return GetUserInfoResponse.from(user)
     }
@@ -75,7 +82,7 @@ class UserService(
     @Transactional
     fun updateUserSetting(
         request: PatchUserSettingRequest,
-        userId: Long = getCurrentUserId(),
+        userId: Long,
     ): UserSettingResponse {
         val userRef = userRepository.getReferenceById(userId)
         val userSetting = userSettingRepository.findByUserAndIsDeleted(userRef)
@@ -92,7 +99,7 @@ class UserService(
     }
 
     fun getUserSetting(
-        userId: Long = getCurrentUserId(),
+        userId: Long,
     ): UserSettingResponse {
         val userRef = userRepository.getReferenceById(userId)
         val userSetting = userSettingRepository.findByUserAndIsDeleted(userRef)

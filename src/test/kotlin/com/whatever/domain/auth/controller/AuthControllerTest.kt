@@ -1,7 +1,7 @@
 package com.whatever.domain.auth.controller
 
 import com.whatever.domain.ControllerTestSupport
-import com.whatever.domain.auth.dto.ServiceToken
+import com.whatever.domain.auth.dto.ServiceTokenResponse
 import com.whatever.domain.auth.dto.SignInRequest
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
@@ -65,7 +65,7 @@ class AuthControllerTest : ControllerTestSupport() {
     fun refresh_Success() {
         // given
         val deviceId = "test-device"
-        val requestDto = ServiceToken(
+        val requestDto = ServiceTokenResponse(
             accessToken = "old-access",
             refreshToken = "old-refresh"
         )

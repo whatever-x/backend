@@ -1,7 +1,7 @@
 package com.whatever.domain.user.exception
 
-import com.whatever.global.exception.ErrorUi
-import com.whatever.global.exception.common.CaramelException
+import com.whatever.caramel.common.global.exception.ErrorUi
+import com.whatever.caramel.common.global.exception.common.CaramelException
 
 open class UserException(
     errorCode: UserExceptionCode,

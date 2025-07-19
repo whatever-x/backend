@@ -1,13 +1,10 @@
-package com.whatever.content.service
+package com.whatever.domain.content.service
 
-import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
-import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
-import com.whatever.domain.content.controller.dto.request.CreateContentRequest
-import com.whatever.domain.content.controller.dto.request.GetContentListQueryParameter
-import com.whatever.domain.content.controller.dto.request.UpdateContentRequest
-import com.whatever.domain.content.controller.dto.response.ContentResponse
-import com.whatever.domain.content.controller.dto.response.ContentSummaryResponse
-import com.whatever.domain.content.controller.dto.response.TagDto
+import com.whatever.caramel.common.global.exception.ErrorUi
+import com.whatever.caramel.common.global.exception.common.CaramelException
+import com.whatever.caramel.common.util.CursorUtil
+import com.whatever.content.service.MemoCreator
+import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.domain.content.exception.ContentAccessDeniedException
 import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.exception.ContentExceptionCode.CONTENT_NOT_FOUND
@@ -28,13 +25,6 @@ import com.whatever.domain.couple.exception.CoupleNotFoundException
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.firebase.service.event.dto.MemoCreateEvent
 import com.whatever.domain.firebase.service.event.dto.ScheduleCreateEvent
-import com.whatever.global.cursor.CursoredResponse
-import com.whatever.global.exception.ErrorUi
-import com.whatever.global.exception.common.CaramelException
-import com.whatever.global.security.util.SecurityUtil.getCurrentUserCoupleId
-import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
-import com.whatever.util.CursorUtil
-import com.whatever.util.toZoneId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.OptimisticLockingFailureException
@@ -58,7 +48,7 @@ class ContentService(
 ) {
     fun getMemo(
         memoId: Long,
-        ownerCoupleId: Long = getCurrentUserCoupleId(),
+        ownerCoupleId: Long,
     ): ContentResponse {
         val memo = contentRepository.findContentByIdAndType(
             id = memoId,
@@ -79,8 +69,10 @@ class ContentService(
     }
 
     @Transactional(readOnly = true) // 읽기 전용 트랜잭션
-    fun getContentList(queryParameter: GetContentListQueryParameter): CursoredResponse<ContentResponse> {
-        val coupleId = getCurrentUserCoupleId()
+    fun getContentList(
+        queryParameter: GetContentListQueryParameter,
+        coupleId: Long,
+    ): CursoredResponse<ContentResponse> {
         val memberIds = coupleRepository.findByIdWithMembers(coupleId)?.members?.map { it.id }
             ?: emptyList()
 
@@ -109,8 +101,11 @@ class ContentService(
     }
 
     @Transactional
-    fun createContent(contentRequest: CreateContentRequest): ContentSummaryResponse {
-        val couple = coupleRepository.findByIdWithMembers(getCurrentUserCoupleId())
+    fun createContent(
+        contentRequest: CreateContentRequest,
+        userId: Long,
+    ): ContentSummaryResponse {
+        val couple = coupleRepository.findByIdWithMembers(userId)
             ?: throw CoupleNotFoundException(COUPLE_NOT_FOUND)
 
         val memo = memoCreator.createMemo(
@@ -122,7 +117,7 @@ class ContentService(
 
         applicationEventPublisher.publishEvent(
             MemoCreateEvent(
-                userId = getCurrentUserId(),
+                userId = userId,
                 coupleId = couple.id,
                 memberIds = couple.members.map { it.id }.toSet(),
                 contentDetail = memo.contentDetail,
@@ -138,13 +133,18 @@ class ContentService(
         recover = "updateRecover",
     )
     @Transactional
-    fun updateContent(contentId: Long, request: UpdateContentRequest): ContentSummaryResponse {
+    fun updateContent(
+        contentId: Long,
+        request: UpdateContentRequest,
+        userCoupleId: Long,
+        userId: Long,
+    ): ContentSummaryResponse {
         val memo = contentRepository.findContentByIdAndType(
             id = contentId,
             type = ContentType.MEMO
         ) ?: throw ContentNotFoundException(errorCode = MEMO_NOT_FOUND)
 
-        val couple = coupleRepository.findByIdWithMembers(getCurrentUserCoupleId())
+        val couple = coupleRepository.findByIdWithMembers(userCoupleId)
             ?: throw CoupleNotFoundException(COUPLE_NOT_FOUND)
 
         val contentOwnerCoupleId = memo.user.couple?.id
@@ -178,7 +178,7 @@ class ContentService(
 
         applicationEventPublisher.publishEvent(
             ScheduleCreateEvent(
-                userId = getCurrentUserId(),
+                userId = userId,
                 coupleId = couple.id,
                 memberIds = couple.members.map { it.id }.toSet(),
                 contentDetail = savedScheduleEvent.content.contentDetail,

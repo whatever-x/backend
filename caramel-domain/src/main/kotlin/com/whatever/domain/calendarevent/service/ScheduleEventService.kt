@@ -1,5 +1,6 @@
 package com.whatever.domain.calendarevent.service
 
+import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.common.global.exception.common.CaramelException
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.common.util.endOfDay
@@ -9,7 +10,14 @@ import com.whatever.content.service.ScheduleCreator
 import com.whatever.domain.calendarevent.controller.dto.response.ScheduleDetailDto
 import com.whatever.domain.calendarevent.exception.ScheduleAccessDeniedException
 import com.whatever.domain.calendarevent.exception.ScheduleExceptionCode
+import com.whatever.domain.calendarevent.exception.ScheduleExceptionCode.COUPLE_NOT_MATCHED
+import com.whatever.domain.calendarevent.exception.ScheduleExceptionCode.ILLEGAL_CONTENT_DETAIL
+import com.whatever.domain.calendarevent.exception.ScheduleExceptionCode.ILLEGAL_DURATION
+import com.whatever.domain.calendarevent.exception.ScheduleExceptionCode.ILLEGAL_PARTNER_STATUS
+import com.whatever.domain.calendarevent.exception.ScheduleIllegalArgumentException
+import com.whatever.domain.calendarevent.exception.ScheduleIllegalStateException
 import com.whatever.domain.calendarevent.exception.ScheduleNotFoundException
+import com.whatever.domain.calendarevent.model.ScheduleEvent
 import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.CreateScheduleRequest
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.GetScheduleResponse
@@ -75,7 +83,7 @@ class ScheduleEventService(
 
         val couple = coupleRepository.findByIdWithMembers(ownerCoupleId)
         if (couple == null || !couple.members.map { it.id }.contains(schedule.content.user.id)) {
-            throw ScheduleAccessDeniedException(errorCode = ScheduleExceptionCode.COUPLE_NOT_MATCHED)
+            throw ScheduleAccessDeniedException(errorCode = COUPLE_NOT_MATCHED)
         }
 
         val tags = tagContentMappingRepository.findAllWithTagByContentId(schedule.content.id)
@@ -104,7 +112,7 @@ class ScheduleEventService(
             ?: throw CoupleException(errorCode = COUPLE_NOT_FOUND)
 
         if (couple.members.any { it.userStatus == SINGLE }) {
-            throw ScheduleAccessDeniedException(errorCode = ScheduleExceptionCode.ILLEGAL_PARTNER_STATUS)
+            throw ScheduleAccessDeniedException(errorCode = ILLEGAL_PARTNER_STATUS)
         }
 
         val memberIds = couple.members.map { it.id }.toSet()
@@ -182,7 +190,7 @@ class ScheduleEventService(
         }
 
         val scheduleEvent = scheduleEventRepository.findByIdWithContentAndUser(scheduleId)
-            ?: throw ScheduleNotFoundException(errorCode = SCHEDULE_NOT_FOUND)
+            ?: throw ScheduleNotFoundException(errorCode = ScheduleExceptionCode.SCHEDULE_NOT_FOUND)
 
         validateUserAccess(scheduleEvent)
 
@@ -224,7 +232,7 @@ class ScheduleEventService(
     @Transactional
     fun deleteSchedule(scheduleId: Long) {
         val scheduleEvent = scheduleEventRepository.findByIdWithContentAndUser(scheduleId)
-            ?: throw ScheduleNotFoundException(errorCode = SCHEDULE_NOT_FOUND)
+            ?: throw ScheduleNotFoundException(errorCode = ScheduleExceptionCode.SCHEDULE_NOT_FOUND)
         validateUserAccess(scheduleEvent)
         scheduleEvent.apply {
             deleteEntity()
@@ -241,7 +249,7 @@ class ScheduleEventService(
     ) {
         logger.error { "update schedule fail. schedule id: ${scheduleId}" }
         throw ScheduleIllegalStateException(
-            errorCode = UPDATE_CONFLICT,
+            errorCode = ScheduleExceptionCode.UPDATE_CONFLICT,
             errorUi = ErrorUi.Toast("일정 수정을 실패했어요. 다시 시도해주세요.")
         )
     }
@@ -253,7 +261,7 @@ class ScheduleEventService(
     ) {
         logger.error { "delete schedule fail. schedule id: ${scheduleId}" }
         throw ScheduleIllegalStateException(
-            errorCode = UPDATE_CONFLICT,
+            errorCode = ScheduleExceptionCode.UPDATE_CONFLICT,
             errorUi = ErrorUi.Toast("일정 삭제를 실패했어요. 다시 시도해주세요.")
         )
     }
@@ -282,12 +290,14 @@ class ScheduleEventService(
         }
     }
 
-    private fun validateUserAccess(scheduleEvent: ScheduleEvent) {
+    private fun validateUserAccess(
+        scheduleEvent: ScheduleEvent,
+        currentUserId: Long,
+        currentUserCoupleId: Long,
+    ) {
         val scheduleOwnerUser = scheduleEvent.content.user
-        val currentUserId = SecurityUtil.getCurrentUserId()
 
         if (currentUserId != scheduleOwnerUser.id) {
-            val currentUserCoupleId = getCurrentUserCoupleId()
             if (scheduleOwnerUser.userStatus == SINGLE) {
                 throw ScheduleAccessDeniedException(errorCode = ILLEGAL_PARTNER_STATUS)
             }

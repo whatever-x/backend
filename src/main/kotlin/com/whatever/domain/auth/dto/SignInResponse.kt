@@ -7,7 +7,7 @@ import java.time.LocalDate
 @Schema(description = "로그인 성공 응답 DTO")
 data class SignInResponse(
     @Schema(description = "서버에서 발급한 JWT(access, refresh) 정보")
-    val serviceToken: ServiceToken,
+    val serviceTokenResponse: ServiceTokenResponse,
 
     @Schema(description = "유저의 현재 상태")
     val userStatus: UserStatus,

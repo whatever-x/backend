@@ -1,11 +1,10 @@
-package com.whatever.couple.service
+package com.whatever.domain.couple.service
 
-import com.whatever.domain.couple.controller.dto.request.CreateCoupleRequest
-import com.whatever.domain.couple.controller.dto.request.UpdateCoupleSharedMessageRequest
-import com.whatever.domain.couple.controller.dto.request.UpdateCoupleStartDateRequest
-import com.whatever.domain.couple.controller.dto.response.CoupleBasicResponse
-import com.whatever.domain.couple.controller.dto.response.CoupleDetailResponse
-import com.whatever.domain.couple.controller.dto.response.CoupleInvitationCodeResponse
+import com.whatever.caramel.common.global.exception.ErrorUi
+import com.whatever.caramel.common.global.exception.common.CaramelException
+import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.common.util.toZoneId
+import com.whatever.couple.service.event.dto.CoupleMemberLeaveEvent
 import com.whatever.domain.couple.exception.CoupleAccessDeniedException
 import com.whatever.domain.couple.exception.CoupleException
 import com.whatever.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
@@ -21,20 +20,13 @@ import com.whatever.domain.couple.exception.CoupleNotFoundException
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.repository.InvitationCodeRedisRepository
-import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
+import com.whatever.domain.findByIdAndNotDeleted
 import com.whatever.domain.firebase.service.event.dto.CoupleConnectedEvent
-import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
+import com.whatever.domain.user.exception.UserExceptionCode.*
 import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.exception.ErrorUi
-import com.whatever.global.exception.common.CaramelException
-import com.whatever.global.security.util.SecurityUtil.getCurrentUserCoupleId
-import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
-import com.whatever.caramel.common.util.DateTimeUtil
-import com.whatever.util.findByIdAndNotDeleted
-import com.whatever.util.toZoneId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.viascom.nanoid.NanoId
 import org.springframework.context.ApplicationEventPublisher
@@ -69,9 +61,12 @@ class CoupleService(
         recover = "updateSharedMessageRecover",
     )
     @Transactional
-    fun updateSharedMessage(coupleId: Long, request: UpdateCoupleSharedMessageRequest): CoupleBasicResponse {
+    fun updateSharedMessage(
+        coupleId: Long,
+        request: UpdateCoupleSharedMessageRequest,
+    ): CoupleBasicResponse {
         val couple = coupleRepository.findCoupleById(coupleId)
-        if (couple.id != getCurrentUserCoupleId()) {
+        if (couple.id != coupleId) {
             throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
         }
 
@@ -105,9 +100,6 @@ class CoupleService(
         timeZone: String,
     ): CoupleBasicResponse {
         val couple = coupleRepository.findCoupleById(coupleId)
-        if (couple.id != getCurrentUserCoupleId()) {
-            throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
-        }
 
         val updatedCouple = couple.apply {
             updateStartDate(
@@ -133,7 +125,7 @@ class CoupleService(
     }
 
     fun getCoupleInfo(
-        coupleId: Long = getCurrentUserCoupleId(),
+        coupleId: Long,
     ): CoupleBasicResponse {
         val couple = coupleRepository.findByIdAndNotDeleted(coupleId)
             ?: throw CoupleNotFoundException(COUPLE_NOT_FOUND)
@@ -141,8 +133,10 @@ class CoupleService(
     }
 
     @Transactional(readOnly = true)
-    fun getCoupleAndMemberInfo(coupleId: Long): CoupleDetailResponse {
-        val currentUserId = getCurrentUserId()
+    fun getCoupleAndMemberInfo(
+        coupleId: Long,
+        currentUserId: Long,
+    ): CoupleDetailResponse {
         val couple = coupleRepository.findCoupleById(coupleId)
 
         val myUser = couple.members.firstOrNull { it.id == currentUserId }
@@ -163,7 +157,7 @@ class CoupleService(
     @Transactional
     fun leaveCouple(
         coupleId: Long,
-        userId: Long = getCurrentUserId(),
+        userId: Long,
     ) {
         val couple = coupleRepository.findByIdWithMembers(coupleId)
             ?: throw CoupleNotFoundException(errorCode = COUPLE_NOT_FOUND)
@@ -175,14 +169,17 @@ class CoupleService(
     }
 
     @Transactional
-    fun createCouple(request: CreateCoupleRequest): CoupleDetailResponse {
+    fun createCouple(
+        request: CreateCoupleRequest,
+        joinerUserId: Long,
+    ): CoupleDetailResponse {
         val invitationCode = request.invitationCode
         val creatorUserId = inviCodeRedisRepository.getInvitationUser(invitationCode)
             ?: throw CoupleException(
                 errorCode = INVITATION_CODE_EXPIRED,
                 errorUi = ErrorUi.Dialog("사용할 수 없는 초대코드에요.")
             )
-        val joinerUserId = getCurrentUserId()
+        // val joinerUserId = getCurrentUserId()  // 초대를 수락한(api를 실행한) 유져 id
 
         if (creatorUserId == joinerUserId) {
             throw CoupleException(
@@ -221,8 +218,9 @@ class CoupleService(
         )
     }
 
-    fun createInvitationCode(): CoupleInvitationCodeResponse {
-        val userId = getCurrentUserId()
+    fun createInvitationCode(
+        userId: Long,
+    ): CoupleInvitationCodeResponse {
         val user = userRepository.findUserById(userId)
         validateSingleUser(user)
 
