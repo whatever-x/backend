@@ -1,28 +1,31 @@
 package com.whatever.domain.sample.service
 
-import com.whatever.domain.auth.service.JwtHelper
 import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.common.global.jwt.JwtProperties
 import com.whatever.caramel.common.global.jwt.JwtProvider
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import com.whatever.domain.auth.repository.AuthRedisRepository
+import com.whatever.domain.auth.service.JwtHelper
+import com.whatever.domain.auth.vo.ServiceTokenVo
 import com.whatever.domain.sample.exception.SampleExceptionCode
 import com.whatever.domain.sample.exception.SampleNotFoundException
 import com.whatever.domain.sample.repository.SampleUserRepository
 import com.whatever.domain.sample.repository.SampleUserSettingRepository
+import com.whatever.domain.sample.vo.SignInVo
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserSetting
 import com.whatever.domain.user.model.UserStatus
+import com.whatever.domain.user.vo.UserInfoVo
 import com.whatever.firebase.service.FirebaseService
 import io.viascom.nanoid.NanoId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 
 @Profile("dev", "local-mem")
 @Service
@@ -55,7 +58,7 @@ class SampleService(
         return "sample String"
     }
 
-    fun testSignIn(email: String, expSec: Long): SignInResponse {
+    fun testSignIn(email: String, expSec: Long): SignInVo {
         val testUser = sampleUserRepository.findByEmailAndIsDeleted(email)
             ?: throw SampleNotFoundException(
                 errorCode = SampleExceptionCode.SAMPLE_CODE,
@@ -63,12 +66,11 @@ class SampleService(
             )
 
         val serviceToken = createTokenAndSave(userId = testUser.id, expSec)
-        return SignInResponse(
-            serviceToken = serviceToken,
-            userStatus = testUser.userStatus,
-            nickname = testUser.nickname,
-            birthDay = testUser.birthDate,
-            coupleId = testUser.couple?.id,
+        UserInfoVo.from(testUser)
+        return SignInVo.from(
+            testUser,
+            serviceToken.accessToken,
+            serviceToken.refreshToken,
         )
     }
 
@@ -104,7 +106,7 @@ class SampleService(
         return dummyUser.email!!
     }
 
-    private fun createTokenAndSave(userId: Long, expSec: Long): ServiceTokenResponse {
+    private fun createTokenAndSave(userId: Long, expSec: Long): ServiceTokenVo {
         val accessToken = jwtHelper.createAccessToken(userId, expSec)  // access token 발행
         val refreshToken = jwtHelper.createRefreshToken()  // refresh token 발행
         authRedisRepository.saveRefreshToken(
@@ -113,7 +115,7 @@ class SampleService(
             refreshToken = refreshToken,
             ttlSeconds = jwtProperties.refreshExpirationSec
         )
-        return ServiceTokenResponse(
+        return ServiceTokenVo(
             accessToken,
             refreshToken,
         )
