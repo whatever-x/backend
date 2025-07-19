@@ -1,7 +1,7 @@
 package com.whatever.caramel.infrastructure.client
 
-import com.whatever.domain.calendarevent.specialday.client.dto.request.HolidayInfoRequestParams
-import com.whatever.domain.calendarevent.specialday.client.dto.response.HolidayApiResponse
+import com.whatever.caramel.infrastructure.client.dto.HolidayApiResponse
+import com.whatever.caramel.infrastructure.client.dto.HolidayInfoRequestParams
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.cloud.openfeign.SpringQueryMap
 import org.springframework.web.bind.annotation.GetMapping

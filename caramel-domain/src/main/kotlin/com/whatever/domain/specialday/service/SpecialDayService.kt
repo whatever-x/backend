@@ -1,12 +1,20 @@
 package com.whatever.domain.specialday.service
 
+import com.whatever.caramel.common.global.exception.externalserver.specialday.SpecialDayApiExceptionCode.EMPTY_HEADER
+import com.whatever.caramel.common.global.exception.externalserver.specialday.SpecialDayApiExceptionCode.FAILED_RESPONSE_CODE
+import com.whatever.caramel.common.global.exception.externalserver.specialday.SpecialDayApiExceptionCode.RESPONSE_TYPE_UNMATCHED
+import com.whatever.caramel.common.global.exception.externalserver.specialday.SpecialDayDecodeException
+import com.whatever.caramel.common.global.exception.externalserver.specialday.SpecialDayFailedOperationException
 import com.whatever.caramel.infrastructure.client.SpecialDayApiFeignClient
 import com.whatever.caramel.infrastructure.client.dto.HolidayApiResponse
 import com.whatever.caramel.infrastructure.client.dto.HolidayInfoRequestParams
 import com.whatever.caramel.infrastructure.properties.SpecialDayApiProperties
 import com.whatever.domain.specialday.model.SpecialDayType
 import com.whatever.domain.specialday.repository.SpecialDayRepository
+import com.whatever.domain.specialday.vo.HolidayDetailListVo
+import com.whatever.domain.specialday.vo.HolidayDetailVo
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.websocket.DecodeException
 import org.springframework.stereotype.Service
 import java.time.MonthDay
 import java.time.Year
@@ -24,7 +32,7 @@ class SpecialDayService(
         private const val HOLIDAY_INFO_SUCCESS_CODE = "00"
     }
 
-    fun getHolidaysInYear(year: Year): HolidayDetailListResponse {
+    fun getHolidaysInYear(year: Year): HolidayDetailListVo {
         val startDate = year.atMonthDay(MonthDay.of(1, 1))
         val endDate = year.atMonthDay(MonthDay.of(12, 31))
         val holidays = specialDayRepository.findAllByTypeAndBetweenStartDateAndEndDate(
@@ -33,14 +41,14 @@ class SpecialDayService(
             endDate = endDate,
         )
 
-        val holidayDetailDtos = holidays.mapNotNull { HolidayDetailDto.from(it) }
-        return HolidayDetailListResponse(holidayList = holidayDetailDtos)
+        val holidayDetailVoList = holidays.mapNotNull { HolidayDetailVo.from(it) }
+        return HolidayDetailListVo.from(holidayList = holidayDetailVoList)
     }
 
     fun getHolidays(
         startYearMonth: YearMonth,
         endYearMonth: YearMonth,
-    ): HolidayDetailListResponse {
+    ): HolidayDetailListVo {
         val startDate = startYearMonth.atDay(1)
         var endDate = endYearMonth.atEndOfMonth()
         if (endDate.isBefore(startDate)) {
@@ -52,8 +60,8 @@ class SpecialDayService(
             endDate = endDate,
         )
 
-        val holidayDetailDtos = holidays.mapNotNull { HolidayDetailDto.from(it) }
-        return HolidayDetailListResponse(holidayList = holidayDetailDtos)
+        val holidayDetailVoList = holidays.mapNotNull { HolidayDetailVo.from(it) }
+        return HolidayDetailListVo.from(holidayList = holidayDetailVoList)
     }
 
     private fun getHolidayInfo(yearMonth: YearMonth): HolidayApiResponse {

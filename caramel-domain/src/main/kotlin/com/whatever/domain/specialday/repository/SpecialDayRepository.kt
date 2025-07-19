@@ -1,7 +1,7 @@
 package com.whatever.domain.specialday.repository
 
-import com.whatever.domain.calendarevent.specialday.model.SpecialDay
-import com.whatever.domain.calendarevent.specialday.model.SpecialDayType
+import com.whatever.domain.specialday.model.SpecialDay
+import com.whatever.domain.specialday.model.SpecialDayType
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import java.time.LocalDate
