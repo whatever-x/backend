@@ -1,6 +1,6 @@
-package com.whatever.domain.firebase.exception
+package firebase.exception
 
-import com.whatever.global.exception.common.CaramelExceptionCode
+import global.exception.common.CaramelExceptionCode
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR

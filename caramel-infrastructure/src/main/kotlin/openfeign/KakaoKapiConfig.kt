@@ -1,17 +1,16 @@
-package com.whatever.config.openfeign
+package openfeign
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.whatever.global.exception.externalserver.kakao.KakaoBadRequestException
-import com.whatever.global.exception.externalserver.kakao.KakaoForbiddenException
-import com.whatever.global.exception.externalserver.kakao.KakaoServerException
-import com.whatever.global.exception.externalserver.kakao.KakaoServerExceptionCode
-import com.whatever.global.exception.externalserver.kakao.KakaoServerExceptionCode.UNKNOWN
-import com.whatever.global.exception.externalserver.kakao.KakaoServiceUnavailableException
-import com.whatever.global.exception.externalserver.kakao.KakaoUnauthorizedException
 import feign.Response
 import feign.codec.Encoder
 import feign.codec.ErrorDecoder
 import feign.form.spring.SpringFormEncoder
+import global.exception.externalserver.kakao.KakaoBadRequestException
+import global.exception.externalserver.kakao.KakaoForbiddenException
+import global.exception.externalserver.kakao.KakaoServerException
+import global.exception.externalserver.kakao.KakaoServerExceptionCode
+import global.exception.externalserver.kakao.KakaoServiceUnavailableException
+import global.exception.externalserver.kakao.KakaoUnauthorizedException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.ObjectFactory
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters
@@ -65,7 +64,7 @@ class KapiErrorDecoder() : ErrorDecoder {
                     errorCode = KakaoServerExceptionCode.fromKakaoErrorCode(errorResponse.code),
                 )
 
-            else -> throw KakaoServerException(errorCode = UNKNOWN)
+            else -> throw KakaoServerException(errorCode = KakaoServerExceptionCode.UNKNOWN)
         }
     }
 }
@@ -82,6 +81,6 @@ internal fun <T : Any> Response.toObject(objectType: KClass<T>): T {
         }
     } catch (e: Exception) {
         logger.warn { "Kakao Api 에러 메시지 파싱에 실패했습니다. 대상 class: ${objectType.simpleName}" }
-        throw KakaoServerException(errorCode = UNKNOWN)
+        throw KakaoServerException(errorCode = KakaoServerExceptionCode.UNKNOWN)
     }
 }

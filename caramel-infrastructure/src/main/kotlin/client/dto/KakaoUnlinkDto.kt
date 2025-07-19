@@ -1,4 +1,4 @@
-package com.whatever.domain.auth.client.dto
+package client.dto
 
 import feign.form.FormProperty
 

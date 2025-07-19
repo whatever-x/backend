@@ -10,7 +10,7 @@ plugins {
     kotlin("plugin.jpa") version "2.1.20"
 }
 
-group = "com.whatever.caramel-domain"
+group = "com.whatever.caramel-common"
 version = "0.0.1-SNAPSHOT"
 
 repositories {
@@ -18,6 +18,7 @@ repositories {
 }
 
 val opentelemetryVersion = "2.14.0"
+
 dependencies {
     // Spring
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -37,6 +38,13 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 }
+
+dependencyManagement {
+    imports {
+        mavenBom("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:$opentelemetryVersion")
+    }
+}
+
 
 tasks.test {
     useJUnitPlatform()

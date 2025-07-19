@@ -1,8 +1,8 @@
-package com.whatever.domain.auth.client
+package client
 
-import com.whatever.domain.auth.client.dto.AppleGenerateAndValidateTokenDto
-import com.whatever.domain.auth.client.dto.AppleTokenResponse
-import com.whatever.domain.auth.client.dto.OIDCPublicKeysResponse
+import client.dto.AppleGenerateAndValidateTokenDto
+import client.dto.AppleTokenResponse
+import client.dto.OIDCPublicKeysResponse
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.http.MediaType

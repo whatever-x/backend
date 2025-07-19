@@ -1,6 +1,6 @@
-package com.whatever.firebase.service.event.dto
+package firebase.service.event.dto
 
-import com.whatever.domain.content.model.ContentDetail
+import content.model.ContentDetail
 
 data class MemoCreateEvent(
     val userId: Long,

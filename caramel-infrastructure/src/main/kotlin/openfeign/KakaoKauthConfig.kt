@@ -1,11 +1,11 @@
-package com.whatever.config.openfeign
+package openfeign
 
-import com.whatever.global.exception.externalserver.kakao.KakaoServerException
-import com.whatever.global.exception.externalserver.kakao.KakaoServerExceptionCode
 import feign.Response
 import feign.codec.Encoder
 import feign.codec.ErrorDecoder
 import feign.form.spring.SpringFormEncoder
+import global.exception.externalserver.kakao.KakaoServerException
+import global.exception.externalserver.kakao.KakaoServerExceptionCode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.ObjectFactory
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters

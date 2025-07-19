@@ -1,4 +1,4 @@
-package com.whatever.domain.auth.client.dto
+package client.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

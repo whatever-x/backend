@@ -1,11 +1,11 @@
-package com.whatever.domain.auth.client.dto
+package client.dto
 
 import feign.form.FormProperty
 
 /**
  * Sign in with Apple REST API의 Generate and validate tokens에 사용되는 dto
  */
-data class AppleGenerateAndValidateTokenDto private constructor(
+data class AppleGenerateAndValidateTokenDto(
     @FormProperty("client_id")
     val clientId: String,
     @FormProperty("client_secret")
