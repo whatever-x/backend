@@ -17,6 +17,7 @@ repositories {
     mavenCentral()
 }
 
+val opentelemetryVersion = "2.14.0"
 dependencies {
     // Spring
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -25,6 +26,8 @@ dependencies {
     // Logging
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
+    implementation("io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.17:$opentelemetryVersion-alpha")
 
     // Jackson과 Kotlin의 호환성을 위한 모듈
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
