@@ -1,6 +1,6 @@
 package com.whatever
 
-import global.exception.ErrorUi
+import com.whatever.caramel.common.global.exception.ErrorUi
 import global.exception.common.CaramelExceptionCode
 
 /**

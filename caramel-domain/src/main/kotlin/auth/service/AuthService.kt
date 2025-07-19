@@ -1,5 +1,7 @@
 package com.whatever.auth.service
 
+import com.whatever.auth.service.JwtHelper.Companion.BEARER_TYPE
+import com.whatever.auth.service.provider.SocialUserProvider
 import com.whatever.config.properties.JwtProperties
 import com.whatever.domain.auth.dto.ServiceToken
 import com.whatever.domain.auth.dto.SignInResponse
@@ -10,8 +12,6 @@ import com.whatever.domain.auth.exception.AuthFailedException
 import com.whatever.domain.auth.exception.IllegalOidcTokenException
 import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
 import com.whatever.domain.auth.repository.AuthRedisRepository
-import com.whatever.auth.service.JwtHelper.Companion.BEARER_TYPE
-import com.whatever.auth.service.provider.SocialUserProvider
 import com.whatever.domain.couple.service.CoupleService
 import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.domain.user.exception.UserNotFoundException

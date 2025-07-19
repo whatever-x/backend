@@ -1,11 +1,10 @@
 package com.whatever.firebase.service.event
 
 import com.google.firebase.messaging.Notification
-import com.whatever.domain.firebase.service.FirebaseService
-import firebase.service.event.dto.CoupleConnectedEvent
-import firebase.service.event.dto.MemoCreateEvent
 import com.whatever.domain.firebase.service.event.dto.ScheduleCreateEvent
 import com.whatever.firebase.service.FirebaseService
+import firebase.service.event.dto.CoupleConnectedEvent
+import firebase.service.event.dto.MemoCreateEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component

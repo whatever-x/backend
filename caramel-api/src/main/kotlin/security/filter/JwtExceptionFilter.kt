@@ -1,7 +1,7 @@
 package com.whatever.security.filter
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import global.exception.ErrorUi
+import com.whatever.caramel.common.global.exception.ErrorUi
 import global.exception.GlobalExceptionCode
 import global.jwt.exception.CaramelJwtException
 import com.whatever.security.exception.CaramelSecurityException

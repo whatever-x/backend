@@ -1,4 +1,4 @@
-package com.whatever.auth.repository
+package auth.repository
 
 import com.whatever.config.properties.JwtProperties
 import com.whatever.domain.base.RedisRepository

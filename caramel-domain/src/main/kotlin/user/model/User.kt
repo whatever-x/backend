@@ -6,8 +6,6 @@ import com.whatever.domain.user.exception.UserExceptionCode.INVALID_BIRTH_DATE
 import com.whatever.domain.user.exception.UserExceptionCode.INVALID_USER_STATUS_FOR_COUPLING
 import com.whatever.domain.user.exception.UserIllegalArgumentException
 import com.whatever.domain.user.exception.UserIllegalStateException
-import user.model.UserStatus.COUPLED
-import user.model.UserStatus.SINGLE
 import com.whatever.global.exception.ErrorUi
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.DateTimeUtil.KST_ZONE_ID
@@ -30,6 +28,8 @@ import jakarta.persistence.UniqueConstraint
 import org.hibernate.validator.constraints.CodePointLength
 import org.springframework.security.crypto.encrypt.TextEncryptor
 import org.springframework.stereotype.Component
+import user.model.UserStatus.COUPLED
+import user.model.UserStatus.SINGLE
 import java.time.LocalDate
 import java.time.ZoneId
 

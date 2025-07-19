@@ -7,10 +7,10 @@ import com.whatever.domain.couple.exception.CoupleExceptionCode.ILLEGAL_START_DA
 import com.whatever.domain.couple.exception.CoupleExceptionCode.SHARED_MESSAGE_OUT_OF_LENGTH
 import com.whatever.domain.couple.exception.CoupleIllegalArgumentException
 import com.whatever.domain.couple.exception.CoupleIllegalStateException
-import couple.model.CoupleStatus.INACTIVE
 import com.whatever.domain.user.model.User
 import com.whatever.global.exception.ErrorUi
 import com.whatever.util.DateTimeUtil
+import couple.model.CoupleStatus.INACTIVE
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType

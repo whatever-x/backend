@@ -6,8 +6,8 @@ import client.dto.KakaoUnlinkUserRequest
 import client.dto.KakaoUnlinkUserResponse
 import client.dto.KakaoUserInfoResponse
 import client.dto.OIDCPublicKeysResponse
-import openfeign.KakaoKapiConfig
-import openfeign.KakaoKauthConfig
+import com.whatever.caramel.infrastructure.openfeign.KakaoKapiConfig
+import com.whatever.caramel.infrastructure.openfeign.KakaoKauthConfig
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.http.MediaType

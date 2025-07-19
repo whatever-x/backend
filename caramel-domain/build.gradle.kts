@@ -12,7 +12,7 @@ plugins {
 val springCloudVersion = "2024.0.0"
 val opentelemetryVersion = "2.14.0"
 
-group = "com.whatever"
+group = "com.whatever.carmel-domain"
 version = "0.0.1-SNAPSHOT"
 
 allOpen {
@@ -26,6 +26,8 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":caramel-common"))
+    implementation(project(":caramel-infrastructure"))
     // Spring
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")

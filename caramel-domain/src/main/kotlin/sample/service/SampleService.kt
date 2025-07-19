@@ -9,8 +9,6 @@ import com.whatever.domain.firebase.service.FirebaseService
 import com.whatever.domain.firebase.service.event.FcmNotification
 import com.whatever.domain.sample.exception.SampleExceptionCode
 import com.whatever.domain.sample.exception.SampleNotFoundException
-import com.whatever.sample.repository.SampleUserRepository
-import com.whatever.sample.repository.SampleUserSettingRepository
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
@@ -18,6 +16,8 @@ import com.whatever.domain.user.model.UserSetting
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.global.exception.ErrorUi
 import com.whatever.global.jwt.JwtProvider
+import com.whatever.sample.repository.SampleUserRepository
+import com.whatever.sample.repository.SampleUserSettingRepository
 import com.whatever.util.DateTimeUtil
 import io.viascom.nanoid.NanoId
 import org.springframework.context.annotation.Profile
