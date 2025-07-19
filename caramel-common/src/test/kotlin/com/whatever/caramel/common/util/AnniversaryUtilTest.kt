@@ -1,8 +1,7 @@
 package com.whatever.caramel.common.util
 
 import com.whatever.caramel.common.util.AnniversaryUtil.findNThDayAnniversary
-import com.whatever.util.AnniversaryUtil.findNThDayAnniversary
-import com.whatever.util.AnniversaryUtil.findYearlyAnniversary
+import com.whatever.caramel.common.util.AnniversaryUtil.findYearlyAnniversary
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.params.ParameterizedTest
@@ -147,7 +146,7 @@ class AnniversaryUtilTest {
 
     @DisplayName("일반 날짜에 대해 기본 주년 기념일이 반환된다.")
     @Test
-    fun findYearlyAnniversary() {
+    fun findYearlyAnniversary_success() {
         // given
         val targetDate = LocalDate.of(2025, 1, 1)
         val searchStart = targetDate
@@ -170,7 +169,7 @@ class AnniversaryUtilTest {
 
     @DisplayName("윤년 2월 29일에 대해 기본 보정(2월 28일)이 적용된다.")
     @Test
-    fun findYearlyAnniversary_WithFeb29AdjustedToDefault() {
+    fun findYearlyAnniversary_2_WithFeb29AdjustedToDefault() {
         // given
         val targetDate = LocalDate.of(2024, 2, 29)
         val searchStart = targetDate
@@ -195,7 +194,7 @@ class AnniversaryUtilTest {
 
     @DisplayName("보정을 nul로 하면 평년 기념일은 건너뛴다.")
     @Test
-    fun findYearlyAnniversary_WithFeb29AdjustedToNull() {
+    fun findYearlyAnniversary_2_WithFeb29AdjustedToNull() {
         // given
         val targetDate = LocalDate.of(2024, 2, 29)
         val searchStart = targetDate
@@ -218,7 +217,7 @@ class AnniversaryUtilTest {
 
     @DisplayName("사용자 지정 보정일(3월 1일)이 적용된다.")
     @Test
-    fun findYearlyAnniversary_WithFeb29AdjustedToMarch01() {
+    fun findYearlyAnniversary_2_WithFeb29AdjustedToMarch01() {
         // given
         val targetDate = LocalDate.of(2024, 2, 29)
         val searchStart = targetDate
@@ -245,7 +244,7 @@ class AnniversaryUtilTest {
 
     @DisplayName("검색 범위가 targetDate의 1주년보다 이전이면 빈 리스트를 반환한다.")
     @Test
-    fun findYearlyAnniversary_WithSearchEndBeforeFirstYearAnniversary() {
+    fun findYearlyAnniversary_WithSearchEndBeforeFirstYearAnniversary2() {
         // given
         val targetDate = LocalDate.of(2025, 1, 1)
         val searchEnd = targetDate
@@ -266,7 +265,7 @@ class AnniversaryUtilTest {
 
     @DisplayName("illegal feb29Adjust(2/29) 입력 시에도, 2/28로 자동 보정")
     @Test
-    fun findYearlyAnniversary_WithIllegalFeb29Adjust() {
+    fun findYearlyAnniversary_2_WithIllegalFeb29Adjust() {
         // given
         val targetDate = LocalDate.of(2024, 2, 29)
         val searchEnd = targetDate.plusYears(4)
@@ -292,7 +291,7 @@ class AnniversaryUtilTest {
 
     @DisplayName("targetDate이 2월 29일이 아닐 때, 윤년 보정값을 전달해도 반영되지 않는다.")
     @Test
-    fun findYearlyAnniversary_WithNonFeb29WithAdjustParam() {
+    fun findYearlyAnniversary_2_WithNonFeb29WithAdjustParam() {
         // given
         val targetDate = LocalDate.of(2025, 2, 28)
         val searchEdn = targetDate.plusYears(2)
