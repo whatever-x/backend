@@ -20,6 +20,12 @@ import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.repository.InvitationCodeRedisRepository
 import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
+import com.whatever.domain.couple.vo.CoupleVo
+import com.whatever.domain.couple.vo.CoupleDetailVo
+import com.whatever.domain.couple.vo.CoupleInvitationCodeVo
+import com.whatever.domain.couple.vo.CreateCoupleVo
+import com.whatever.domain.couple.vo.UpdateCoupleSharedMessageVo
+import com.whatever.domain.couple.vo.UpdateCoupleStartDateVo
 import com.whatever.domain.findByIdAndNotDeleted
 import com.whatever.domain.firebase.service.event.dto.CoupleConnectedEvent
 import com.whatever.domain.user.exception.UserExceptionCode.*
@@ -63,22 +69,22 @@ class CoupleService(
     @Transactional
     fun updateSharedMessage(
         coupleId: Long,
-        request: UpdateCoupleSharedMessageRequest,
-    ): CoupleBasicResponse {
+        updateCoupleSharedMessageVo: UpdateCoupleSharedMessageVo,
+    ): CoupleVo {
         val couple = coupleRepository.findCoupleById(coupleId)
         if (couple.id != coupleId) {
             throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
         }
 
         val updatedCouple = couple.apply {
-            updateSharedMessage(request.sharedMessage)
+            updateSharedMessage(updateCoupleSharedMessageVo.sharedMessage)
         }
 
-        return CoupleBasicResponse.from(updatedCouple)
+        return CoupleVo.from(updatedCouple)
     }
 
     @Recover
-    fun updateSharedMessageRecover(e: OptimisticLockingFailureException, coupleId: Long): CoupleBasicResponse {
+    fun updateSharedMessageRecover(e: OptimisticLockingFailureException, coupleId: Long): CoupleVo {
         logger.error { "couple shared message update fail. couple id: ${coupleId}" }
         throw CoupleIllegalStateException(
             errorCode = UPDATE_FAIL,
@@ -96,27 +102,27 @@ class CoupleService(
     @Transactional
     fun updateStartDate(
         coupleId: Long,
-        request: UpdateCoupleStartDateRequest,
+        updateCoupleStartDateVo: UpdateCoupleStartDateVo,
         timeZone: String,
-    ): CoupleBasicResponse {
+    ): CoupleVo {
         val couple = coupleRepository.findCoupleById(coupleId)
 
         val updatedCouple = couple.apply {
             updateStartDate(
-                newDate = request.startDate,
+                newDate = updateCoupleStartDateVo.startDate,
                 userZoneId = timeZone.toZoneId()
             )
         }
 
-        return CoupleBasicResponse.from(updatedCouple)
+        return CoupleVo.from(updatedCouple)
     }
 
     @Recover
     fun updateStartDateRecover(
         e: OptimisticLockingFailureException,
         coupleId: Long,
-        request: UpdateCoupleStartDateRequest,
-    ): CoupleBasicResponse {
+        updateCoupleStartDateVo: UpdateCoupleStartDateVo,
+    ): CoupleVo {
         logger.error { "couple start date update fail. couple id: ${coupleId}" }
         throw CoupleIllegalStateException(
             errorCode = UPDATE_FAIL,
@@ -126,17 +132,17 @@ class CoupleService(
 
     fun getCoupleInfo(
         coupleId: Long,
-    ): CoupleBasicResponse {
+    ): CoupleVo {
         val couple = coupleRepository.findByIdAndNotDeleted(coupleId)
             ?: throw CoupleNotFoundException(COUPLE_NOT_FOUND)
-        return CoupleBasicResponse.from(couple)
+        return CoupleVo.from(couple)
     }
 
     @Transactional(readOnly = true)
     fun getCoupleAndMemberInfo(
         coupleId: Long,
         currentUserId: Long,
-    ): CoupleDetailResponse {
+    ): CoupleDetailVo {
         val couple = coupleRepository.findCoupleById(coupleId)
 
         val myUser = couple.members.firstOrNull { it.id == currentUserId }
@@ -147,7 +153,7 @@ class CoupleService(
                 errorUi = ErrorUi.Toast("커플 멤버 정보가 없어 불러올 수 없어요."),
             )
 
-        return CoupleDetailResponse.from(
+        return CoupleDetailVo.from(
             couple = couple,
             myUser = myUser,
             partnerUser = partnerUser
@@ -170,10 +176,10 @@ class CoupleService(
 
     @Transactional
     fun createCouple(
-        request: CreateCoupleRequest,
+        createCoupleVo: CreateCoupleVo,
         joinerUserId: Long,
-    ): CoupleDetailResponse {
-        val invitationCode = request.invitationCode
+    ): CoupleDetailVo {
+        val invitationCode = createCoupleVo.invitationCode
         val creatorUserId = inviCodeRedisRepository.getInvitationUser(invitationCode)
             ?: throw CoupleException(
                 errorCode = INVITATION_CODE_EXPIRED,
@@ -211,7 +217,7 @@ class CoupleService(
         )
 
         logger.debug { "New couple created. CreatorUser:${creatorUserId}, JoinerUser:${joinerUserId}" }
-        return CoupleDetailResponse.from(
+        return CoupleDetailVo.from(
             couple = savedCouple,
             myUser = joinerUser,
             partnerUser = creatorUser
@@ -220,13 +226,13 @@ class CoupleService(
 
     fun createInvitationCode(
         userId: Long,
-    ): CoupleInvitationCodeResponse {
+    ): CoupleInvitationCodeVo {
         val user = userRepository.findUserById(userId)
         validateSingleUser(user)
 
         inviCodeRedisRepository.getInvitationCode(userId)?.let {
             val expirationTime = inviCodeRedisRepository.getInvitationExpirationTime(it)
-            return CoupleInvitationCodeResponse(
+            return CoupleInvitationCodeVo(
                 invitationCode = it,
                 expirationDateTime = expirationTime,
             )
@@ -248,7 +254,7 @@ class CoupleService(
             )
         }
 
-        return CoupleInvitationCodeResponse(
+        return CoupleInvitationCodeVo(
             invitationCode = newInvitationCode,
             expirationDateTime = expirationDateTime.toLocalDateTime()
         )
