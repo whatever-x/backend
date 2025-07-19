@@ -1,4 +1,4 @@
-package com.whatever.couple.service.event.dto
+package com.whatever.domain.couple.service.event.dto
 
 data class CoupleMemberLeaveEvent(
     val coupleId: Long,

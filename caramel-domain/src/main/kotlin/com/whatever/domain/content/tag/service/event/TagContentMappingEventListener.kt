@@ -1,6 +1,6 @@
 package com.whatever.domain.content.tag.service.event
 
-import com.whatever.couple.service.event.dto.CoupleMemberLeaveEvent
+import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component

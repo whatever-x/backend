@@ -4,7 +4,7 @@ import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.common.global.exception.common.CaramelException
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.common.util.toZoneId
-import com.whatever.couple.service.event.dto.CoupleMemberLeaveEvent
+import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
 import com.whatever.domain.couple.exception.CoupleAccessDeniedException
 import com.whatever.domain.couple.exception.CoupleException
 import com.whatever.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
