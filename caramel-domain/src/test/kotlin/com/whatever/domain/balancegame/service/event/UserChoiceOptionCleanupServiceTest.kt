@@ -1,5 +1,6 @@
 package com.whatever.domain.balancegame.service.event
 
+import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.balancegame.model.BalanceGame
 import com.whatever.domain.balancegame.model.BalanceGameOption
 import com.whatever.domain.balancegame.model.UserChoiceOption
@@ -11,7 +12,6 @@ import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.service.makeCouple
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.caramel.common.util.DateTimeUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName

@@ -1,5 +1,6 @@
 package com.whatever.domain.user.service
 
+import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.content.service.createCouple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.dto.GetUserInfoResponse
@@ -13,7 +14,6 @@ import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.repository.UserSettingRepository
 import com.whatever.global.security.util.SecurityUtil
-import com.whatever.caramel.common.util.DateTimeUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach

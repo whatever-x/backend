@@ -11,7 +11,7 @@ data class ScheduleEventVo(
     val endDateTime: LocalDateTime,
     val startTimeZone: ZoneId,
     val endTimeZone: ZoneId,
-    val content: ContentVo
+    val content: ContentVo,
 ) {
     companion object {
         fun from(scheduleEvent: ScheduleEvent): ScheduleEventVo {

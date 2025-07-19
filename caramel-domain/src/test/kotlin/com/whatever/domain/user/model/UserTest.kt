@@ -1,11 +1,11 @@
 package com.whatever.domain.user.model
 
+import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.user.exception.UserExceptionCode.INVALID_BIRTH_DATE
 import com.whatever.domain.user.exception.UserExceptionCode.INVALID_USER_STATUS_FOR_COUPLING
 import com.whatever.domain.user.exception.UserIllegalArgumentException
 import com.whatever.domain.user.exception.UserIllegalStateException
-import com.whatever.caramel.common.util.DateTimeUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows

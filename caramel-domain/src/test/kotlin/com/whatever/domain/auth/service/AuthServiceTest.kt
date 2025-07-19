@@ -1,5 +1,6 @@
 package com.whatever.domain.auth.service
 
+import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.auth.client.KakaoKapiClient
 import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
 import com.whatever.domain.auth.client.dto.KakaoUnlinkUserResponse
@@ -21,7 +22,6 @@ import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.exception.GlobalException
 import com.whatever.global.exception.GlobalExceptionCode.UNKNOWN
 import com.whatever.global.security.util.SecurityUtil
-import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.util.findByIdAndNotDeleted
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy

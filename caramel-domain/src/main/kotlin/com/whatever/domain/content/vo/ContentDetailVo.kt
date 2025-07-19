@@ -5,7 +5,7 @@ import com.whatever.domain.content.model.ContentDetail
 data class ContentDetailVo(
     val title: String?,
     val description: String?,
-    val isCompleted: Boolean
+    val isCompleted: Boolean,
 ) {
     companion object {
         fun from(contentDetail: ContentDetail): ContentDetailVo {

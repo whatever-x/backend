@@ -8,7 +8,7 @@ class CoupleChoiceOptionVo(
     companion object {
         fun from(
             myChoice: UserChoiceOptionVo?,
-            partnerChoice: UserChoiceOptionVo?
+            partnerChoice: UserChoiceOptionVo?,
         ): CoupleChoiceOptionVo {
             return CoupleChoiceOptionVo(
                 myChoice = myChoice,
@@ -16,5 +16,4 @@ class CoupleChoiceOptionVo(
             )
         }
     }
-
 }

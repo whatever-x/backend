@@ -1,7 +1,7 @@
 package com.whatever.domain.firebase.repository
 
-import com.whatever.domain.firebase.model.FcmToken
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.domain.firebase.model.FcmToken
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import java.time.LocalDateTime

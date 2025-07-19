@@ -2,11 +2,11 @@ package com.whatever.domain.content.service
 
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
-import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
+import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.content.vo.ContentVo
 import com.whatever.domain.user.repository.UserRepository
 import org.springframework.stereotype.Component

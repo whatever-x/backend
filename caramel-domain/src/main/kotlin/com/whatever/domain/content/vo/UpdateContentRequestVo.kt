@@ -7,5 +7,5 @@ data class UpdateContentRequestVo(
     val description: String?,
     val isCompleted: Boolean,
     val tagList: List<TagIdVo>,
-    val dateTimeInfo: DateTimeInfoVo?
+    val dateTimeInfo: DateTimeInfoVo?,
 )

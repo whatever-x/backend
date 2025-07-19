@@ -20,7 +20,7 @@ data class BalanceGameVo(
     companion object {
         fun from(
             balanceGame: BalanceGame,
-            balanceGameOptions: List<BalanceGameOption>
+            balanceGameOptions: List<BalanceGameOption>,
         ): BalanceGameVo {
             if (balanceGameOptions.size < 2) {
                 throw BalanceGameIllegalStateException(
@@ -40,5 +40,4 @@ data class BalanceGameVo(
             )
         }
     }
-
 }

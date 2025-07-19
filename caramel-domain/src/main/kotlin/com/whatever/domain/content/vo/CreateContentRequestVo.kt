@@ -6,5 +6,5 @@ data class CreateContentRequestVo(
     val title: String?,
     val description: String?,
     val isCompleted: Boolean,
-    val tags: List<TagIdVo>
+    val tags: List<TagIdVo>,
 )

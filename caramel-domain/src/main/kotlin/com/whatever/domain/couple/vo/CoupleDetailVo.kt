@@ -17,7 +17,7 @@ data class CoupleDetailVo(
         fun from(
             couple: Couple,
             myUser: User,
-            partnerUser: User
+            partnerUser: User,
         ): CoupleDetailVo {
             return CoupleDetailVo(
                 coupleId = couple.id,

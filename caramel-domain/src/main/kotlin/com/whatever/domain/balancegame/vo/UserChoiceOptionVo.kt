@@ -22,5 +22,4 @@ data class UserChoiceOptionVo(
             )
         }
     }
-
 }

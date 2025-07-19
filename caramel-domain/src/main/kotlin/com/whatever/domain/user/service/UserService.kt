@@ -2,13 +2,6 @@ package com.whatever.domain.user.service
 
 import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.domain.findByIdAndNotDeleted
-import com.whatever.domain.user.vo.UserInfoVo
-import com.whatever.domain.user.vo.UpdateUserSettingVo
-import com.whatever.domain.user.vo.CreateUserProfileVo
-import com.whatever.domain.user.vo.CreatedUserProfileVo
-import com.whatever.domain.user.vo.UpdateUserProfileVo
-import com.whatever.domain.user.vo.UpdatedUserProfileVo
-import com.whatever.domain.user.vo.UserSettingVo
 import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.domain.user.exception.UserExceptionCode.SETTING_DATA_NOT_FOUND
 import com.whatever.domain.user.exception.UserIllegalStateException
@@ -16,6 +9,13 @@ import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.UserSetting
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.repository.UserSettingRepository
+import com.whatever.domain.user.vo.CreateUserProfileVo
+import com.whatever.domain.user.vo.CreatedUserProfileVo
+import com.whatever.domain.user.vo.UpdateUserProfileVo
+import com.whatever.domain.user.vo.UpdateUserSettingVo
+import com.whatever.domain.user.vo.UpdatedUserProfileVo
+import com.whatever.domain.user.vo.UserInfoVo
+import com.whatever.domain.user.vo.UserSettingVo
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneId
@@ -50,7 +50,7 @@ class UserService(
         updateUserProfileVo: UpdateUserProfileVo,
         userTimeZone: ZoneId,
         userId: Long,
-        ): UpdatedUserProfileVo {
+    ): UpdatedUserProfileVo {
         val user = userRepository.findByIdAndNotDeleted(userId)?.apply {
             if (updateUserProfileVo.nickname.isNullOrBlank().not()) {
                 nickname = updateUserProfileVo.nickname

@@ -1,5 +1,6 @@
 package com.whatever.domain.user.service
 
+import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.user.dto.GetUserInfoResponse
 import com.whatever.domain.user.dto.PatchUserSettingRequest
 import com.whatever.domain.user.dto.PostUserProfileRequest
@@ -17,7 +18,6 @@ import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.repository.UserSettingRepository
 import com.whatever.global.security.util.SecurityUtil
-import com.whatever.caramel.common.util.DateTimeUtil
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot

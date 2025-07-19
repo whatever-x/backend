@@ -16,5 +16,4 @@ data class BalanceGameOptionVo(
             )
         }
     }
-
 }

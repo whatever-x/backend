@@ -7,16 +7,16 @@ import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.domain.calendarevent.vo.DateTimeInfoVo
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
-import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
+import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.content.vo.ScheduleEventVo
 import com.whatever.domain.user.repository.UserRepository
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
+import java.util.UUID
 
 @Component
 class ScheduleCreator(

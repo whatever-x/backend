@@ -13,7 +13,6 @@ import com.whatever.domain.content.exception.ContentIllegalStateException
 import com.whatever.domain.content.exception.ContentNotFoundException
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
-import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository

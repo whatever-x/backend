@@ -20,15 +20,15 @@ import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.repository.InvitationCodeRedisRepository
 import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
-import com.whatever.domain.couple.vo.CoupleVo
 import com.whatever.domain.couple.vo.CoupleDetailVo
 import com.whatever.domain.couple.vo.CoupleInvitationCodeVo
+import com.whatever.domain.couple.vo.CoupleVo
 import com.whatever.domain.couple.vo.CreateCoupleVo
 import com.whatever.domain.couple.vo.UpdateCoupleSharedMessageVo
 import com.whatever.domain.couple.vo.UpdateCoupleStartDateVo
 import com.whatever.domain.findByIdAndNotDeleted
 import com.whatever.domain.firebase.service.event.dto.CoupleConnectedEvent
-import com.whatever.domain.user.exception.UserExceptionCode.*
+import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus

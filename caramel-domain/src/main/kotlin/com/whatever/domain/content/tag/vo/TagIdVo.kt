@@ -3,7 +3,7 @@ package com.whatever.domain.content.tag.vo
 import com.whatever.domain.content.controller.dto.request.TagIdDto
 
 data class TagIdVo(
-    val tagId: Long
+    val tagId: Long,
 ) {
     companion object {
         fun from(tagIdDto: TagIdDto): TagIdVo {

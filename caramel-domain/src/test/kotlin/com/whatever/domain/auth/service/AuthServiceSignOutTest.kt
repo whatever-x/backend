@@ -1,13 +1,13 @@
 package com.whatever.domain.auth.service
 
+import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.common.util.withoutNano
 import com.whatever.config.properties.JwtProperties
 import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.global.jwt.exception.JwtExceptionCode
 import com.whatever.global.jwt.exception.JwtMalformedException
-import com.whatever.caramel.common.util.DateTimeUtil
-import com.whatever.caramel.common.util.withoutNano
 import io.jsonwebtoken.ExpiredJwtException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within

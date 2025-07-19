@@ -11,12 +11,12 @@ data class ContentResponseVo(
     val description: String,
     val isCompleted: Boolean,
     val tagList: List<TagVo>,
-    val createdAt: LocalDate
+    val createdAt: LocalDate,
 ) {
     companion object {
         fun from(
             content: Content,
-            tagList: List<TagVo>
+            tagList: List<TagVo>,
         ): ContentResponseVo {
             return ContentResponseVo(
                 id = content.id,

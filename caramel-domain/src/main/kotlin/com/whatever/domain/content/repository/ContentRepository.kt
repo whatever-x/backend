@@ -5,11 +5,11 @@ import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicate
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import com.whatever.caramel.common.util.CursorUtil
 import com.whatever.domain.content.model.Content
-import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.vo.ContentListSortType
 import com.whatever.domain.content.vo.ContentQueryVo
+import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.user.model.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying

@@ -9,7 +9,7 @@ data class ContentQueryVo(
     override val size: Int,
     override val cursor: String?,
     override val sortType: ContentListSortType,
-    val tagId: Long?
+    val tagId: Long?,
 ) : CursorRequest
 
 enum class ContentListSortType : Sortables {

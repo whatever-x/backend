@@ -7,12 +7,12 @@ import com.whatever.domain.content.exception.ContentExceptionCode.MEMO_NOT_FOUND
 import com.whatever.domain.content.exception.ContentNotFoundException
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
-import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
+import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.LoginPlatform
@@ -58,7 +58,6 @@ class ContentServiceUnitTest {
     fun tearDown() {
         unmockkStatic(SecurityUtil::class)
     }
-
 
     @Test
     @DisplayName("메모 ID로 메모를 정상적으로 조회할 수 있다")
@@ -261,7 +260,11 @@ class ContentServiceUnitTest {
         every { SecurityUtil.getCurrentUserCoupleId() } returns coupleId
         every { contentRepository.findContentByIdAndType(memoId, ContentType.MEMO) } returns memo
         every { coupleRepository.findByIdWithMembers(coupleId) } returns couple
-        every { tagContentMappingRepository.findAllWithTagByContentId(memoId) } returns listOf(tagMapping1, tagMapping2, tagMapping3)
+        every { tagContentMappingRepository.findAllWithTagByContentId(memoId) } returns listOf(
+            tagMapping1,
+            tagMapping2,
+            tagMapping3
+        )
 
         // when
         val result = contentService.getMemo(memoId)
@@ -384,7 +387,7 @@ class ContentServiceUnitTest {
         nickname: String = "테스트유저",
         gender: UserGender = UserGender.MALE,
         userStatus: UserStatus = UserStatus.SINGLE,
-        birthYear: Int = 1990
+        birthYear: Int = 1990,
     ): User {
         return User(
             id = id,
@@ -400,7 +403,7 @@ class ContentServiceUnitTest {
     private fun createTestCouple(
         id: Long = 1L,
         user1: User,
-        user2: User
+        user2: User,
     ): Couple {
         return Couple(id = id).apply {
             addMembers(user1, user2)
@@ -413,7 +416,7 @@ class ContentServiceUnitTest {
         title: String? = "테스트 메모",
         description: String? = "테스트 메모 내용",
         isCompleted: Boolean = false,
-        type: ContentType = ContentType.MEMO
+        type: ContentType = ContentType.MEMO,
     ): Content {
         val contentDetail = ContentDetail(
             title = title,
@@ -443,7 +446,7 @@ class ContentServiceUnitTest {
 
     private fun createTestTag(
         id: Long = 1L,
-        label: String = "테스트태그"
+        label: String = "테스트태그",
     ): Tag {
         return Tag(id = id, label = label)
     }
@@ -451,7 +454,7 @@ class ContentServiceUnitTest {
     private fun createTestTagContentMapping(
         id: Long = 1L,
         tag: Tag,
-        content: Content
+        content: Content,
     ): TagContentMapping {
         return TagContentMapping(
             id = id,
@@ -459,5 +462,4 @@ class ContentServiceUnitTest {
             content = content
         )
     }
-
-} 
+}
