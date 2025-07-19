@@ -222,11 +222,13 @@ class BalanceGameServiceTest @Autowired constructor(
             whenever(DateTimeUtil.localNow(any())).thenReturn(now)
             val gameInfo = makeBalanceGame(1, now.toLocalDate()).first()
             val firstChoiceOption = gameInfo.second.first()
-            userChoiceOptionRepository.save(UserChoiceOption(
-                balanceGame = gameInfo.first,
-                balanceGameOption = firstChoiceOption,
-                user = myUser,
-            ))
+            userChoiceOptionRepository.save(
+                UserChoiceOption(
+                    balanceGame = gameInfo.first,
+                    balanceGameOption = firstChoiceOption,
+                    user = myUser,
+                )
+            )
 
             val secondChoiceOption = gameInfo.second.last()
             val gameId = gameInfo.first.id
@@ -252,11 +254,13 @@ class BalanceGameServiceTest @Autowired constructor(
             whenever(DateTimeUtil.localNow(any())).thenReturn(now)
             val gameInfo = makeBalanceGame(1, now.toLocalDate()).first()
             val partnerChoiceOption = gameInfo.second.first()
-            userChoiceOptionRepository.save(UserChoiceOption(
-                balanceGame = gameInfo.first,
-                balanceGameOption = partnerChoiceOption,
-                user = partnerUser,
-            ))
+            userChoiceOptionRepository.save(
+                UserChoiceOption(
+                    balanceGame = gameInfo.first,
+                    balanceGameOption = partnerChoiceOption,
+                    user = partnerUser,
+                )
+            )
 
             val myChoiceOption = gameInfo.second.last()
             val gameId = gameInfo.first.id
@@ -324,7 +328,7 @@ class BalanceGameServiceTest @Autowired constructor(
 
     private fun setUpCoupleAndSecurity(
         myPlatformId: String = "my-user-id",
-        partnerPlatformId: String = "partner-user-id"
+        partnerPlatformId: String = "partner-user-id",
     ): Triple<User, User, Couple> {
         val (myUser, partnerUser, couple) = createCouple(
             userRepository,
@@ -343,9 +347,12 @@ class BalanceGameServiceTest @Autowired constructor(
      * @param count 시작일로부터 count개수 만큼의 게임을 만듭니다.
      * @param startGameDate 게임을 생성할 시작일을 지정합니다.
      */
-    private fun makeBalanceGame(count: Int, startGameDate: LocalDate): ArrayList<Pair<BalanceGame, List<BalanceGameOption>>> {
+    private fun makeBalanceGame(
+        count: Int,
+        startGameDate: LocalDate,
+    ): ArrayList<Pair<BalanceGame, List<BalanceGameOption>>> {
         val gameList = arrayListOf<Pair<BalanceGame, List<BalanceGameOption>>>()
-        for (i in 0..(count-1)) {
+        for (i in 0..(count - 1)) {
             val gameDate = startGameDate.plusDays(i.toLong())
             val question = "question: ${i}"
             val option1 = "option: ${i}-1"

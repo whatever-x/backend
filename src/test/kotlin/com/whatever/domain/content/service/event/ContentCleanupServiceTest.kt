@@ -19,7 +19,7 @@ import kotlin.test.Test
 
 @ActiveProfiles("test")
 @SpringBootTest
-class ContentCleanupServiceTest  @Autowired constructor(
+class ContentCleanupServiceTest @Autowired constructor(
     private val contentCleanupService: ContentCleanupService,
     private val coupleRepository: CoupleRepository,
     private val userRepository: UserRepository,
@@ -42,7 +42,12 @@ class ContentCleanupServiceTest  @Autowired constructor(
         val (myUser, partnerUser, _) = makeCouple(userRepository, coupleRepository)
 
         val myDataSize = 20
-        val mySchedules = createSchedules(scheduleEventRepository, contentRepository, myUser, myDataSize)  // Schedule, Content(Schedule)
+        val mySchedules = createSchedules(
+            scheduleEventRepository,
+            contentRepository,
+            myUser,
+            myDataSize
+        )  // Schedule, Content(Schedule)
         val myMemos = createMemos(contentRepository, myUser, myDataSize)  // Content(Memo)
 
         val partnerDataSize = 10

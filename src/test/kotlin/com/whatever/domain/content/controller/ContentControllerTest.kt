@@ -90,7 +90,6 @@ class ContentControllerTest : ControllerTestSupport() {
             }
     }
 
-
     @DisplayName("콘텐츠를 업데이트한다.")
     @Test
     fun updateContent() {
@@ -125,5 +124,4 @@ class ContentControllerTest : ControllerTestSupport() {
                 status { isOk() }
             }
     }
-
 }

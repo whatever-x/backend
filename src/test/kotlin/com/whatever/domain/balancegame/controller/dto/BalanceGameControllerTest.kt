@@ -80,5 +80,4 @@ class BalanceGameControllerTest : ControllerTestSupport() {
                 status { isBadRequest() }
             }
     }
-
 }

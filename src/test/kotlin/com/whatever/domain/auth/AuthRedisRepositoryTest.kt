@@ -14,7 +14,7 @@ import java.time.Duration
 @SpringBootTest
 class AuthRedisRepositoryTest @Autowired constructor(
     private val redisTemplate: RedisTemplate<String, String>,
-    private val authRedisRepository: AuthRedisRepository
+    private val authRedisRepository: AuthRedisRepository,
 ) {
 
     @Test

@@ -47,7 +47,6 @@ class UserTest {
         // when
         user.updateBirthDate(pastDate, requestTimeZone)
 
-
         // then
         assertThat(user.birthDate).isEqualTo(pastDate)
     }
@@ -68,5 +67,4 @@ class UserTest {
         // then
         assertThat(exception.errorCode).isEqualTo(INVALID_BIRTH_DATE)
     }
-
 }

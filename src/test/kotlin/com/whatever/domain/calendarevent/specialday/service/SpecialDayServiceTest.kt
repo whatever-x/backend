@@ -71,5 +71,4 @@ class SpecialDayServiceTest @Autowired constructor(
 
         return holidays
     }
-
 }

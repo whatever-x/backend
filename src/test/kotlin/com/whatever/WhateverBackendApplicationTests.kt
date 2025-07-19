@@ -11,5 +11,4 @@ class WhateverBackendApplicationTests {
     @Test
     fun contextLoads() {
     }
-
 }

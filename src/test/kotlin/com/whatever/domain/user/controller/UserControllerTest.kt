@@ -242,7 +242,6 @@ class UserControllerTest : ControllerTestSupport() {
             }
     }
 
-
     @DisplayName("프로필 수정 시 nickname이 비어있을 경우 변경되지 않는다.")
     @Test
     fun updateProfile_WithBlankNickname_NoChange() {

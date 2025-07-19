@@ -104,7 +104,6 @@ class InvitationCodeRedisRepositoryTest @Autowired constructor(
         )
     }
 
-
     @DisplayName("만료된 초대 코드의 만료 시간을 조회하면 null을 반환한다.")
     @Test
     fun getCoupleInvitationExpirationTime_WithExpiredToken() {
@@ -122,6 +121,4 @@ class InvitationCodeRedisRepositoryTest @Autowired constructor(
         // then
         assertThat(expirationDateTime).isNull()
     }
-
-
 }

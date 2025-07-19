@@ -13,7 +13,6 @@ import com.whatever.domain.content.service.createCouple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.service.CoupleService
 import com.whatever.domain.couple.service.event.ExcludeAsyncConfigBean
-import com.whatever.domain.couple.service.event.SyncAsyncConfig
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
@@ -42,7 +41,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.cache.Cache
 import org.springframework.cache.CacheManager
-import org.springframework.context.annotation.Import
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -60,7 +58,6 @@ class AuthServiceTest @Autowired constructor(
     private val coupleRepository: CoupleRepository,
 ) : ExcludeAsyncConfigBean() {
 
-
     @MockitoBean
     private lateinit var oidcCacheManager: CacheManager
 
@@ -72,6 +69,7 @@ class AuthServiceTest @Autowired constructor(
 
     @MockitoSpyBean
     private lateinit var jwtHelper: JwtHelper
+
     @MockitoSpyBean
     private lateinit var coupleService: CoupleService
 
@@ -124,7 +122,9 @@ class AuthServiceTest @Autowired constructor(
             .whenever(jwtHelper).extractUserIdIgnoringSignature(serviceToken.accessToken)
         doReturn(true)
             .whenever(jwtHelper).isValidJwt(serviceToken.refreshToken)
-        `when`(authRedisRepository.getRefreshToken(userId = userId, deviceId = "tempDeviceIds")).thenReturn(storedRefreshToken)
+        `when`(authRedisRepository.getRefreshToken(userId = userId, deviceId = "tempDeviceIds")).thenReturn(
+            storedRefreshToken
+        )
 
         // when, then
         assertThatThrownBy { authService.refresh(serviceToken, deviceId) }
@@ -139,12 +139,14 @@ class AuthServiceTest @Autowired constructor(
         val idToken = "idTokenWithPublicKeyIssue"
         val deviceId = "test-device"
         val exception = OidcPublicKeyMismatchException(AuthExceptionCode.ILLEGAL_KID)
-        val user = userRepository.save(User(
-            nickname = "testuser",
-            platform = LoginPlatform.KAKAO,
-            platformUserId = "test-kakao-user-id",
-            userStatus = UserStatus.SINGLE,
-        ))
+        val user = userRepository.save(
+            User(
+                nickname = "testuser",
+                platform = LoginPlatform.KAKAO,
+                platformUserId = "test-kakao-user-id",
+                userStatus = UserStatus.SINGLE,
+            )
+        )
         val fakeKakaoIdTokenPayload = KakaoIdTokenPayload(
             iss = "fake-kakao",
             aud = "fake-kakao",
@@ -168,7 +170,6 @@ class AuthServiceTest @Autowired constructor(
             .whenever(jwtHelper).createRefreshToken()
         whenever(oidcCacheManager.getCache(oidcPublicKeyCacheName))
             .thenReturn(mock(Cache::class.java))
-
 
         // when
         val result = authService.signUpOrSignIn(

@@ -100,7 +100,7 @@ class ContentServiceTest @Autowired constructor(
         title: String = "Test Memo",
         description: String? = "Memo Description",
         isCompleted: Boolean = false,
-        tags: List<Tag> = emptyList()
+        tags: List<Tag> = emptyList(),
     ): Content {
         val contentDetail = ContentDetail(title = title, description = description, isCompleted = isCompleted)
         val content = contentRepository.save(
@@ -312,7 +312,7 @@ class ContentServiceTest @Autowired constructor(
         // when
         val result = assertThrows<ContentNotFoundException> {
             contentService.getMemo(
-                memoId = 0L ,  // illegal memo id
+                memoId = 0L,  // illegal memo id
                 ownerCoupleId = testCouple.id
             )
         }

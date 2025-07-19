@@ -100,7 +100,6 @@ class ContentServicePaginationTest @Autowired constructor(
                 assertThat(response.list).hasSize(expectedLastPageSize)
                 assertThat(response.cursor.next as String?).isNull()
             }
-
         } while (currentCursor != null)
 
         assertThat(pagesFetched).isEqualTo(maxPages)
@@ -108,7 +107,6 @@ class ContentServicePaginationTest @Autowired constructor(
 
         assertThat(allFetchedContents.map { it.id }).containsExactlyElementsOf(allExpectedMemos.map { it.id })
     }
-
 
     @DisplayName("메모 목록 조회 시 해당 커플의 메모가 없으면 빈 리스트를 반환한다")
     @Test
@@ -157,7 +155,7 @@ class ContentServicePaginationTest @Autowired constructor(
 
     private fun setUpCoupleAndSecurity(
         myPlatformId: String = "me",
-        partnerPlatformId: String = "partner"
+        partnerPlatformId: String = "partner",
     ): Triple<User, User, Couple> {
         val (myUser, partnerUser, couple) = createCouple(
             userRepository,
@@ -218,7 +216,6 @@ class ContentServicePaginationTest @Autowired constructor(
         assertThat(response.tagList.map { it.id }).containsExactlyInAnyOrder(tag1.id, tag2.id)
         assertThat(response.tagList.map { it.label }).containsExactlyInAnyOrder(tag1.label, tag2.label)
     }
-
 }
 
 internal fun createCouple(
@@ -247,7 +244,7 @@ internal fun createCouple(
 internal fun createUser(
     nickname: String,
     platformUserId: String,
-    userStatus: UserStatus = UserStatus.COUPLED
+    userStatus: UserStatus = UserStatus.COUPLED,
 ): User {
     return User(
         nickname = nickname,
@@ -262,7 +259,7 @@ internal fun createContent(
     user: User,
     type: ContentType,
     title: String = "Default Title",
-    description: String = "Default Description"
+    description: String = "Default Description",
 ): Content {
     return Content(
         user = user,

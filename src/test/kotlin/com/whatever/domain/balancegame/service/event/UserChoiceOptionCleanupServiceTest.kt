@@ -7,7 +7,6 @@ import com.whatever.domain.balancegame.repository.BalanceGameOptionRepository
 import com.whatever.domain.balancegame.repository.BalanceGameRepository
 import com.whatever.domain.balancegame.repository.UserChoiceOptionRepository
 import com.whatever.domain.calendarevent.scheduleevent.service.event.ScheduleEventListener
-import com.whatever.domain.calendarevent.scheduleevent.service.event.createSchedules
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.service.makeCouple
 import com.whatever.domain.user.model.User
@@ -72,7 +71,6 @@ class UserChoiceOptionCleanupServiceTest @Autowired constructor(
         val remainingChoiceIds = userChoiceOptionRepository.findAll().filter { !it.isDeleted }.map { it.id }
         assertThat(remainingChoiceIds).containsExactlyInAnyOrderElementsOf(partnerChoices.map { it.id })
     }
-
 }
 
 fun createUserChoiceOption(
@@ -92,7 +90,7 @@ fun createUserChoiceOption(
 
 fun createBalanceGames(
     balanceGameRepository: BalanceGameRepository,
-    count: Int
+    count: Int,
 ): List<BalanceGame> {
     if (count <= 0) return emptyList()
 
@@ -109,7 +107,7 @@ fun createBalanceGames(
 fun createBalanceGameOptions(
     balanceGameOptionRepository: BalanceGameOptionRepository,
     balanceGame: BalanceGame,
-    count: Int
+    count: Int,
 ): List<BalanceGameOption> {
     if (count <= 0) return emptyList()
 
@@ -126,7 +124,7 @@ fun createBalanceGamesWithOptions(
     balanceGameRepository: BalanceGameRepository,
     balanceGameOptionRepository: BalanceGameOptionRepository,
     gamesCount: Int,
-    optionsPerGame: Int
+    optionsPerGame: Int,
 ): List<BalanceGame> {
     val games = createBalanceGames(balanceGameRepository, gamesCount)
     return games.map {
