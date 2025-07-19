@@ -10,7 +10,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 @Service
 class FirebaseService(
@@ -58,7 +58,7 @@ class FirebaseService(
         }
         logger.info { "Sending FCM notification to ${tokens.size} tokens." }
 
-        if (tokens.size == 1){
+        if (tokens.size == 1) {
             fcmSender.sendNotification(
                 token = tokens.single(),
                 notification = fcmNotification.toNotification(),
@@ -88,7 +88,7 @@ class FirebaseService(
         }
         logger.info { "Sending FCM notification to ${tokens.size} tokens." }
 
-        if (tokens.size == 1){
+        if (tokens.size == 1) {
             fcmSender.sendData(
                 token = tokens.single(),
                 data = data,

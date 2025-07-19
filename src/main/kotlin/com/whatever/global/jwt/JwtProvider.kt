@@ -3,18 +3,31 @@ package com.whatever.global.jwt
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.whatever.config.properties.JwtProperties
-import com.whatever.global.jwt.exception.*
+import com.whatever.global.jwt.exception.CaramelJwtException
+import com.whatever.global.jwt.exception.JwtExceptionCode
+import com.whatever.global.jwt.exception.JwtExpiredException
+import com.whatever.global.jwt.exception.JwtMalformedException
+import com.whatever.global.jwt.exception.JwtSecurityException
+import com.whatever.global.jwt.exception.JwtSignatureException
+import com.whatever.global.jwt.exception.JwtUnsupportedException
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.toDate
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.jsonwebtoken.*
+import io.jsonwebtoken.Claims
+import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.Jws
 import io.jsonwebtoken.JwtException
+import io.jsonwebtoken.JwtParser
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.MalformedJwtException
+import io.jsonwebtoken.UnsupportedJwtException
 import io.jsonwebtoken.security.SecurityException
 import io.jsonwebtoken.security.SignatureException
 import org.springframework.stereotype.Component
-import java.util.*
+import java.util.Base64
+import java.util.UUID
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 @Component
 class JwtProvider(
@@ -74,7 +87,7 @@ class JwtProvider(
         return objectMapper.readValue(jwtHeader)
     }
 
-    fun getUnsecuredPayload(token: String): Map<String, String>{
+    fun getUnsecuredPayload(token: String): Map<String, String> {
         val jwtChunk = getJwtChunk(token)
         val jwtHeader = Base64.getDecoder().decode(jwtChunk[1])
         return objectMapper.readValue(jwtHeader)
@@ -87,5 +100,4 @@ class JwtProvider(
         }
         return jwtChunk
     }
-
 }

@@ -31,6 +31,6 @@ interface AppleOIDCClient {
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE]
     )
     fun generateAndValidateToken(
-        tokenDto: AppleGenerateAndValidateTokenDto
+        tokenDto: AppleGenerateAndValidateTokenDto,
     ): AppleTokenResponse
 }

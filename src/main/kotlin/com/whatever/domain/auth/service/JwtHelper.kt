@@ -126,5 +126,4 @@ class JwtHelper(
         private const val REFRESH_SUBJECT_NAME = "refresh"
         const val BEARER_TYPE = "Bearer "
     }
-
 }

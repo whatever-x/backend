@@ -106,7 +106,7 @@ class FcmSender {
 
     private fun <T> executeFcmCall(
         callDescription: String,
-        fcmCall: () -> T
+        fcmCall: () -> T,
     ): T {
         try {
             return fcmCall()

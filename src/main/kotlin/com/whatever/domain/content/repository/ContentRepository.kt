@@ -15,7 +15,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
-import org.springframework.transaction.annotation.Transactional
 
 interface ContentRepository : JpaRepository<Content, Long>, ContentRepositoryCustom {
 
@@ -23,12 +22,14 @@ interface ContentRepository : JpaRepository<Content, Long>, ContentRepositoryCus
     fun findContentByIdAndType(id: Long, type: ContentType): Content?
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query("""
+    @Query(
+        """
         update Content c
         set c.isDeleted = true
         where c.user.id = :userId
             and c.isDeleted = false
-    """)
+    """
+    )
     fun softDeleteAllByUserIdInBulk(userId: Long): Int
 }
 
@@ -43,7 +44,7 @@ interface ContentRepositoryCustom {
 
 @Repository
 class ContentRepositoryCustomImpl(
-    private val jpqlExecutor: KotlinJdslJpqlExecutor
+    private val jpqlExecutor: KotlinJdslJpqlExecutor,
 ) : ContentRepositoryCustom {
 
     override fun findByTypeWithCursor(
@@ -73,7 +74,7 @@ class ContentRepositoryCustomImpl(
 }
 
 private fun Jpql.applyCursor(
-    queryParameter: GetContentListQueryParameter
+    queryParameter: GetContentListQueryParameter,
 ): Predicate? {
     val cursor = queryParameter.cursor
     if (cursor.isNullOrBlank()) return null

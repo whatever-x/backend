@@ -76,7 +76,7 @@ class EventRecurrence(
         fun daily(
             interval: Int = 1,
             until: LocalDateTime? = null,
-            count: Int? = null
+            count: Int? = null,
         ): EventRecurrence {
             return EventRecurrence(
                 frequency = RecurrenceFrequency.DAILY,
@@ -98,7 +98,7 @@ class EventRecurrence(
             interval: Int = 1,
             byDay: Set<RecurrenceDay>,
             until: LocalDateTime? = null,
-            count: Int? = null
+            count: Int? = null,
         ): EventRecurrence {
             require(byDay.isNotEmpty()) { "Weekly recurrence must have at least one day specified." }
             return EventRecurrence(
@@ -122,7 +122,7 @@ class EventRecurrence(
             interval: Int = 1,
             byMonthDay: Int,
             until: LocalDateTime? = null,
-            count: Int? = null
+            count: Int? = null,
         ): EventRecurrence {
             require(byMonthDay in 1..31)
             return EventRecurrence(
@@ -146,7 +146,7 @@ class EventRecurrence(
             interval: Int = 1,
             byDay: RecurrenceDay,
             until: LocalDateTime? = null,
-            count: Int? = null
+            count: Int? = null,
         ): EventRecurrence {
             return EventRecurrence(
                 frequency = RecurrenceFrequency.MONTHLY,
@@ -169,7 +169,7 @@ class EventRecurrence(
             interval: Int = 1,
             byMonthDay: Int,
             until: LocalDateTime? = null,
-            count: Int? = null
+            count: Int? = null,
         ): EventRecurrence {
             require(byMonthDay in 1..31)
             return EventRecurrence(
@@ -193,7 +193,7 @@ class EventRecurrence(
             interval: Int = 1,
             byDay: RecurrenceDay,
             until: LocalDateTime? = null,
-            count: Int? = null
+            count: Int? = null,
         ): EventRecurrence {
             return EventRecurrence(
                 frequency = RecurrenceFrequency.YEARLY,

@@ -5,8 +5,8 @@ import com.whatever.domain.couple.controller.dto.request.UpdateCoupleSharedMessa
 import com.whatever.domain.couple.controller.dto.request.UpdateCoupleStartDateRequest
 import com.whatever.domain.couple.controller.dto.response.CoupleAnniversaryResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleBasicResponse
-import com.whatever.domain.couple.controller.dto.response.CoupleInvitationCodeResponse
 import com.whatever.domain.couple.controller.dto.response.CoupleDetailResponse
+import com.whatever.domain.couple.controller.dto.response.CoupleInvitationCodeResponse
 import com.whatever.domain.couple.model.Couple.Companion.MAX_SHARED_MESSAGE_LENGTH
 import com.whatever.domain.couple.service.CoupleAnniversaryService
 import com.whatever.domain.couple.service.CoupleService

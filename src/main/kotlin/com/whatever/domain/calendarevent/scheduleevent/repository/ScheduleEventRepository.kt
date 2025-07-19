@@ -7,7 +7,8 @@ import org.springframework.data.jpa.repository.Query
 import java.time.LocalDateTime
 
 interface ScheduleEventRepository : JpaRepository<ScheduleEvent, Long> {
-    @Query("""
+    @Query(
+        """
         select se from ScheduleEvent se
             join fetch se.content c
             join c.user u
@@ -15,28 +16,33 @@ interface ScheduleEventRepository : JpaRepository<ScheduleEvent, Long> {
             and u.id in :memberIds
             and se.isDeleted = false
         order by se.startDateTime, se.endDateTime, se.id
-    """)
+    """
+    )
     fun findAllByDurationAndUsers(
         startDateTime: LocalDateTime,
         endDateTime: LocalDateTime,
         memberIds: Set<Long>,
     ): List<ScheduleEvent>
 
-    @Query("""
+    @Query(
+        """
         select se from ScheduleEvent se
             join fetch se.content c
             join fetch c.user u
         where se.id = :scheduleId
             and se.isDeleted = false 
-    """)
+    """
+    )
     fun findByIdWithContentAndUser(scheduleId: Long): ScheduleEvent?
 
-    @Query("""
+    @Query(
+        """
         select se from ScheduleEvent se
             join fetch se.content c
         where se.id = :scheduleId
             and se.isDeleted = false 
-    """)
+    """
+    )
     fun findByIdWithContent(scheduleId: Long): ScheduleEvent?
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
@@ -53,5 +59,4 @@ interface ScheduleEventRepository : JpaRepository<ScheduleEvent, Long> {
     """
     )
     fun softDeleteAllByUserIdInBulk(userId: Long): Int
-
 }

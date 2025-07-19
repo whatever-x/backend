@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class ContentCleanupService(
-    private val contentRepository: ContentRepository
+    private val contentRepository: ContentRepository,
 ) : AbstractEntityCleanupService<Content>() {
 
     override fun runCleanup(userId: Long): Int {

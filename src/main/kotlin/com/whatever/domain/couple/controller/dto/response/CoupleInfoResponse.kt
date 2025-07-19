@@ -26,7 +26,7 @@ data class CoupleDetailResponse(
     val myInfo: CoupleUserInfoDto,
 
     @Schema(description = "상대방 정보")
-    val partnerInfo: CoupleUserInfoDto
+    val partnerInfo: CoupleUserInfoDto,
 ) {
     companion object {
         fun from(couple: Couple, myUser: User, partnerUser: User): CoupleDetailResponse {

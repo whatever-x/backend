@@ -3,7 +3,7 @@ package com.whatever.config.properties
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties("oauth")
-data class OauthProperties (
+data class OauthProperties(
     val kakao: KakaoOauthSecret,
     val apple: AppleOauthSecret,
 )

@@ -4,7 +4,7 @@ import com.whatever.global.exception.externalserver.ExternalServerException
 
 open class SpecialDayApiException(
     errorCode: SpecialDayApiExceptionCode,
-) : ExternalServerException(errorCode, )
+) : ExternalServerException(errorCode)
 
 class SpecialDayDecodeException(
     errorCode: SpecialDayApiExceptionCode,

@@ -33,6 +33,6 @@ class BalanceGame(
     val question: String,
 
     @OneToMany(mappedBy = "balanceGame", fetch = FetchType.LAZY)
-    val options: List<BalanceGameOption> = listOf()
+    val options: List<BalanceGameOption> = listOf(),
 
-) : BaseEntity()
+    ) : BaseEntity()

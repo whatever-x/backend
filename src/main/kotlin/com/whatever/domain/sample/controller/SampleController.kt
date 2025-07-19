@@ -136,7 +136,7 @@ class SampleController(
             - 로그인할 이메일로 가입된 유저가 존재해야합니다
         """,
         responses = [
-            ApiResponse(responseCode = "200", description = "JWT(access, refresh) 정보 및 유저 정보 반환",)
+            ApiResponse(responseCode = "200", description = "JWT(access, refresh) 정보 및 유저 정보 반환")
         ]
     )
     @GetMapping("/test/sign-in")
@@ -144,7 +144,7 @@ class SampleController(
         @Parameter(description = "로그인할 테스트 유저의 이메일")
         @RequestParam email: String,
         @Parameter(description = "access 토큰 만료 시간(초)", example = "3600")
-        @RequestParam expSec: Long
+        @RequestParam expSec: Long,
     ): CaramelApiResponse<SignInResponse> {
         return sampleService.testSignIn(email, expSec).succeed()
     }

@@ -3,7 +3,7 @@ package com.whatever.domain.auth.client.dto
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class OIDCPublicKeysResponse(
-    val keys: List<JsonWebKey> = emptyList()
+    val keys: List<JsonWebKey> = emptyList(),
 )
 
 data class JsonWebKey(
@@ -12,5 +12,5 @@ data class JsonWebKey(
     @JsonProperty("alg") val alg: String,
     @JsonProperty("use") val use: String,
     @JsonProperty("n") val n: String,
-    @JsonProperty("e") val e: String
+    @JsonProperty("e") val e: String,
 )

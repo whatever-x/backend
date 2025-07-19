@@ -90,7 +90,7 @@ class ContentController(
     )
     @PostMapping("/memo")
     fun createContent(
-        @Valid @RequestBody request: CreateContentRequest
+        @Valid @RequestBody request: CreateContentRequest,
     ): CaramelApiResponse<ContentSummaryResponse> {
         if (request.title.isNullOrBlank() && request.description.isNullOrBlank()) {
             throw ContentException(errorCode = ContentExceptionCode.TITLE_OR_DESCRIPTION_REQUIRED)

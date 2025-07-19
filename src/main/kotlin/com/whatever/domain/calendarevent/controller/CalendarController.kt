@@ -27,7 +27,7 @@ import java.time.YearMonth
 @RequestMapping("/v1/calendar")
 class CalendarController(
     private val scheduleEventService: ScheduleEventService,
-    private val specialDayService: SpecialDayService
+    private val specialDayService: SpecialDayService,
 ) {
 
     @Operation(

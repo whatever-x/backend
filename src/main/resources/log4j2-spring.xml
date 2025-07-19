@@ -3,7 +3,9 @@
 <Configuration status="WARN" monitorInterval="0">
 
     <Properties>
-        <Property name="CONSOLE_LOG_PATTERN">%style{%d{yyyy-MM-dd HH:mm:ss.SSS}{GMT+0}}{blue} [%thread] %highlight{%-5level} %style{%logger{36}}{cyan} - %msg%n</Property>
+        <Property name="CONSOLE_LOG_PATTERN">%style{%d{yyyy-MM-dd HH:mm:ss.SSS}{GMT+0}}{blue} [%thread]
+            %highlight{%-5level} %style{%logger{36}}{cyan} - %msg%n
+        </Property>
     </Properties>
 
     <Appenders>
@@ -13,7 +15,7 @@
 
         <OpenTelemetry name="OTEL_APPENDER"
                        captureContextDataAttributes="*"
-                       captureExperimentalAttributes="true" />
+                       captureExperimentalAttributes="true"/>
     </Appenders>
 
     <Loggers>

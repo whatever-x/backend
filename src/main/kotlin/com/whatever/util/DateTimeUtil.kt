@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.util.*
+import java.util.Date
 
 object DateTimeUtil {
     val SYS_ZONE_ID = ZoneId.systemDefault()
@@ -76,7 +76,7 @@ fun LocalDate.toDateTime(localTime: LocalTime = LocalTime.MIDNIGHT): LocalDateTi
 }
 
 fun LocalDateTime.toDate(
-    sourceZone: ZoneId = DateTimeUtil.UTC_ZONE_ID
+    sourceZone: ZoneId = DateTimeUtil.UTC_ZONE_ID,
 ): Date {
     return DateTimeUtil.toDate(this, sourceZone)
 }

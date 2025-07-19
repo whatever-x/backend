@@ -10,12 +10,12 @@ open class BalanceGameException(
 
 class BalanceGameIllegalStateException(
     errorCode: BalanceGameExceptionCode,
-    errorUi: ErrorUi
+    errorUi: ErrorUi,
 ) : BalanceGameException(errorCode, errorUi)
 
 class BalanceGameIllegalArgumentException(
     errorCode: BalanceGameExceptionCode,
-    errorUi: ErrorUi
+    errorUi: ErrorUi,
 ) : BalanceGameException(errorCode, errorUi)
 
 class BalanceGameNotFoundException(

@@ -8,11 +8,10 @@ import org.springframework.stereotype.Repository
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.ZonedDateTime
 
 @Repository
 class InvitationCodeRedisRepository(
-    redisTemplate: RedisTemplate<String, String>
+    redisTemplate: RedisTemplate<String, String>,
 ) : RedisRepository(redisTemplate) {
 
     fun deleteInvitationCode(

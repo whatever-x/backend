@@ -20,7 +20,7 @@ import java.time.MonthDay
 import java.time.Year
 import java.time.YearMonth
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 @Service
 class SpecialDayService(
@@ -88,13 +88,16 @@ class SpecialDayService(
                 is SpecialDayFailedOperationException -> {
                     logger.error(e) { "getHolidayInfo failed. SpecialDayApi returned error. Code: ${e.resultCode}, Message: ${e.resultMsg}" }
                 }
+
                 is SpecialDayDecodeException -> {
                     logger.error(e) { "getHolidayInfo failed due to internal decoding logic." }
                 }
+
                 is DecodeException -> {
                     logger.error(e) { "getHolidayInfo failed due to Feign decoding error." }
                     throw SpecialDayDecodeException(errorCode = RESPONSE_TYPE_UNMATCHED)
                 }
+
                 else -> {
                     logger.error(e) { "getHolidayInfo failed due to unexpected exception." }
                 }

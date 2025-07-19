@@ -49,10 +49,9 @@ class NullToEmptyObjectSerializer : StdSerializer<Any?>(Any::class.java as Class
     override fun serialize(
         value: Any?,
         gen: JsonGenerator,
-        provider: SerializerProvider
+        provider: SerializerProvider,
     ) {
         gen.writeStartObject()
         gen.writeEndObject()
     }
-
 }

@@ -38,10 +38,11 @@ data class ScheduleDetailDto(
     val title: String?,
 
     @Schema(description = "캘린더 본문", example = "본문입니다.")
-    val description: String?
+    val description: String?,
 )
 
-data class ScheduleDetailDtoV2(  // 반복 도입후 해당 response dto로 교체
+data class ScheduleDetailDtoV2(
+    // 반복 도입후 해당 response dto로 교체
     val scheduleId: Long,
     val startDateTime: LocalDateTime,
     val endDateTime: LocalDateTime,
@@ -52,17 +53,17 @@ data class ScheduleDetailDtoV2(  // 반복 도입후 해당 response dto로 교�
     val isCompleted: Boolean,
     val parentScheduleId: Long?,  // 예외 처리된 반복일 경우, 부모(원본) 일정 id
     val title: String,
-    val description: String?
+    val description: String?,
 )
 
 data class RecurrenceRuleDto(
     // TODO(준용): 규칙 상세 추가 예정
     val startDateTime: LocalDateTime,
     val endDateTime: LocalDateTime,
-    val recurrenceDesc: String
+    val recurrenceDesc: String,
 )
 
 data class RecurrenceDateTimeDto(
     val startDateTime: LocalDateTime,
-    val endDateTime: LocalDateTime
+    val endDateTime: LocalDateTime,
 )

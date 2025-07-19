@@ -71,7 +71,7 @@ class ScheduleEvent(
 
     init {
         val startInstant = startDateTime.atZone(startTimeZone).toInstant()
-        val endInstant   = endDateTime.atZone(endTimeZone).toInstant()
+        val endInstant = endDateTime.atZone(endTimeZone).toInstant()
 
         if (endInstant.isBefore(startInstant)) {
             throw ScheduleIllegalArgumentException(

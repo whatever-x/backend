@@ -14,12 +14,12 @@ import org.springframework.web.filter.OncePerRequestFilter
 
 @Component
 class JwtExceptionFilter(
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
 ) : OncePerRequestFilter() {
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        filterChain: FilterChain
+        filterChain: FilterChain,
     ) {
         try {
             filterChain.doFilter(request, response)

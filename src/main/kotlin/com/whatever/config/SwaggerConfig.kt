@@ -1,7 +1,6 @@
 package com.whatever.config
 
 import com.whatever.global.annotation.DisableSwaggerAuthButton
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.models.Components
@@ -30,6 +29,7 @@ class SwaggerConfig {
 
     @Value("\${swagger.local-server-url}")
     lateinit var localServerUrl: String
+
     @Value("\${swagger.dev-server-url}")
     lateinit var devServerUrl: String
 
@@ -65,7 +65,7 @@ class SwaggerConfig {
                 operation.security = emptyList()
             }
 
-            operation.apply { 
+            operation.apply {
                 description = description?.trimIndent()
             }
         }

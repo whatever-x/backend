@@ -23,5 +23,5 @@ data class UpdateContentRequest(
     val tagList: List<TagIdDto> = emptyList(),
 
     @Schema(description = "일정 정보 (캘린더 추가시에만 사용)", requiredMode = NOT_REQUIRED)
-    val dateTimeInfo: DateTimeInfoDto? = null
+    val dateTimeInfo: DateTimeInfoDto? = null,
 )

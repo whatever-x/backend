@@ -2,7 +2,6 @@ package com.whatever.domain.content.service
 
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
-import com.whatever.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
 import com.whatever.domain.content.model.ContentType
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.model.TagContentMapping
@@ -18,7 +17,7 @@ class MemoCreator(
     private val contentRepository: ContentRepository,
     private val tagContentMappingRepository: TagContentMappingRepository,
     private val userRepository: UserRepository,
-    private val tagRepository: TagRepository
+    private val tagRepository: TagRepository,
 ) {
     @Transactional
     fun createMemo(

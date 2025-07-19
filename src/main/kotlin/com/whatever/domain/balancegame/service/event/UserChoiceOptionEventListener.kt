@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 @Component
 class UserChoiceOptionEventListener(
-    private val userChoiceOptionCleanupService: UserChoiceOptionCleanupService
+    private val userChoiceOptionCleanupService: UserChoiceOptionCleanupService,
 ) {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async

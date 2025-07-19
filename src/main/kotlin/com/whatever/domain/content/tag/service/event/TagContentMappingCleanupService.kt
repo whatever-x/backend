@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class TagContentMappingCleanupService(
-    private val tagContentMappingRepository: TagContentMappingRepository
+    private val tagContentMappingRepository: TagContentMappingRepository,
 ) : AbstractEntityCleanupService<TagContentMapping>() {
 
     override fun runCleanup(userId: Long): Int {

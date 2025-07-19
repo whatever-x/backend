@@ -28,7 +28,7 @@ import org.springframework.cache.CacheManager
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 @Service
 class AuthService(
@@ -144,7 +144,8 @@ class AuthService(
         }
         userProviderMap[user.platform]?.unlinkUser(userId)
         user.deleteEntity()
-        signOut(  // 인증 토큰 제거
+        signOut(
+            // 인증 토큰 제거
             bearerAccessToken = bearerAccessToken,
             deviceId = deviceId,
             userId = userId,

@@ -45,5 +45,6 @@ enum class ContentExceptionCode(
         message = "본문 길이가 초과되었습니다."
     ),
     ;
+
     override val code = "Content$sequence"
 }

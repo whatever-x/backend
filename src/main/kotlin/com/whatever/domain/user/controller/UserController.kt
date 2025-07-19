@@ -2,11 +2,11 @@ package com.whatever.domain.user.controller
 
 import com.whatever.domain.user.dto.GetUserInfoResponse
 import com.whatever.domain.user.dto.PatchUserSettingRequest
-import com.whatever.domain.user.dto.UserSettingResponse
 import com.whatever.domain.user.dto.PostUserProfileRequest
 import com.whatever.domain.user.dto.PostUserProfileResponse
 import com.whatever.domain.user.dto.PutUserProfileRequest
 import com.whatever.domain.user.dto.PutUserProfileResponse
+import com.whatever.domain.user.dto.UserSettingResponse
 import com.whatever.domain.user.service.UserService
 import com.whatever.global.constants.CaramelHttpHeaders.TIME_ZONE
 import com.whatever.global.exception.dto.CaramelApiResponse
@@ -16,7 +16,14 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @Tag(
     name = "유저 API",
@@ -25,7 +32,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/v1/user")
 class UserController(
-    private val userService: UserService
+    private val userService: UserService,
 ) {
     @Operation(
         summary = "프로필 수정",
@@ -97,7 +104,7 @@ class UserController(
     )
     @PatchMapping("/settings")
     fun updateUserSetting(
-        @RequestBody request: PatchUserSettingRequest
+        @RequestBody request: PatchUserSettingRequest,
     ): CaramelApiResponse<UserSettingResponse> {
         val response = userService.updateUserSetting(request)
         return response.succeed()

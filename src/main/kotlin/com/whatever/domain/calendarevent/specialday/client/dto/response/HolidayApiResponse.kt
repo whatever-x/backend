@@ -72,7 +72,8 @@ private class BasicIsoDateDeserializer : StdDeserializer<LocalDate>(LocalDate::c
     }
 }
 
-private class EmptyStringToEmptyListHolidayItemsContainerDeserializer : StdDeserializer<HolidayItemsContainer>(HolidayItemsContainer::class.java) {
+private class EmptyStringToEmptyListHolidayItemsContainerDeserializer :
+    StdDeserializer<HolidayItemsContainer>(HolidayItemsContainer::class.java) {
 
     @Throws(IOException::class)
     override fun deserialize(parser: JsonParser, context: DeserializationContext): HolidayItemsContainer {
