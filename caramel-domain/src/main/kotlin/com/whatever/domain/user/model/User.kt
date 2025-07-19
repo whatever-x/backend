@@ -1,12 +1,12 @@
 package com.whatever.domain.user.model
 
+import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.user.exception.UserExceptionCode.INVALID_BIRTH_DATE
 import com.whatever.domain.user.exception.UserExceptionCode.INVALID_USER_STATUS_FOR_COUPLING
 import com.whatever.domain.user.exception.UserIllegalArgumentException
 import com.whatever.domain.user.exception.UserIllegalStateException
-import com.whatever.global.exception.ErrorUi
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.common.util.DateTimeUtil.KST_ZONE_ID
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -26,10 +26,10 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import org.hibernate.validator.constraints.CodePointLength
-import org.springframework.security.crypto.encrypt.TextEncryptor
 import org.springframework.stereotype.Component
 import com.whatever.domain.user.model.UserStatus.COUPLED
 import com.whatever.domain.user.model.UserStatus.SINGLE
+import org.springframework.security.crypto.encrypt.TextEncryptor
 import java.time.LocalDate
 import java.time.ZoneId
 

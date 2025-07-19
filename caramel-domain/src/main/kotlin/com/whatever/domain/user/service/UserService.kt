@@ -2,13 +2,13 @@ package com.whatever.domain.user.service
 
 import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.domain.findByIdAndNotDeleted
-import com.whatever.domain.user.dto.GetUserInfoResponse
-import com.whatever.domain.user.dto.PatchUserSettingRequest
-import com.whatever.domain.user.dto.PostUserProfileRequest
-import com.whatever.domain.user.dto.PostUserProfileResponse
-import com.whatever.domain.user.dto.PutUserProfileRequest
-import com.whatever.domain.user.dto.PutUserProfileResponse
-import com.whatever.domain.user.dto.UserSettingResponse
+import com.whatever.domain.user.vo.UserInfoVo
+import com.whatever.domain.user.vo.UpdateUserSettingVo
+import com.whatever.domain.user.vo.CreateUserProfileVo
+import com.whatever.domain.user.vo.CreatedUserProfileVo
+import com.whatever.domain.user.vo.UpdateUserProfileVo
+import com.whatever.domain.user.vo.UpdatedUserProfileVo
+import com.whatever.domain.user.vo.UserSettingVo
 import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.domain.user.exception.UserExceptionCode.SETTING_DATA_NOT_FOUND
 import com.whatever.domain.user.exception.UserIllegalStateException
@@ -27,14 +27,14 @@ class UserService(
 ) {
     @Transactional
     fun createProfile(
-        postUserProfileRequest: PostUserProfileRequest,
+        createUserProfileVo: CreateUserProfileVo,
         userTimeZone: ZoneId,
         userId: Long,
-    ): PostUserProfileResponse {
+    ): CreatedUserProfileVo {
         val user = userRepository.findByIdAndNotDeleted(userId)
             ?: throw UserNotFoundException(NOT_FOUND)
 
-        with(postUserProfileRequest) {
+        with(createUserProfileVo) {
             user.register(nickname, birthday, gender, userTimeZone)
         }
 
@@ -42,48 +42,40 @@ class UserService(
             userSettingRepository.save(UserSetting(user))
         }
 
-        return PostUserProfileResponse(
-            id = userId,
-            nickname = user.nickname!!,
-            userStatus = user.userStatus,
-        )
+        return CreatedUserProfileVo.from(user, userId)
     }
 
     @Transactional
     fun updateProfile(
-        putUserProfileRequest: PutUserProfileRequest,
+        updateUserProfileVo: UpdateUserProfileVo,
         userTimeZone: ZoneId,
         userId: Long,
-        ): PutUserProfileResponse {
+        ): UpdatedUserProfileVo {
         val user = userRepository.findByIdAndNotDeleted(userId)?.apply {
-            if (putUserProfileRequest.nickname.isNullOrBlank().not()) {
-                nickname = putUserProfileRequest.nickname
+            if (updateUserProfileVo.nickname.isNullOrBlank().not()) {
+                nickname = updateUserProfileVo.nickname
             }
 
-            if (putUserProfileRequest.birthday != null) {
-                updateBirthDate(putUserProfileRequest.birthday, userTimeZone)
+            if (updateUserProfileVo.birthday != null) {
+                updateBirthDate(updateUserProfileVo.birthday, userTimeZone)
             }
         } ?: throw UserNotFoundException(errorCode = NOT_FOUND)
 
-        return PutUserProfileResponse(
-            id = userId,
-            nickname = user.nickname!!,
-            birthday = user.birthDate!!,
-        )
+        return UpdatedUserProfileVo.from(user, userId)
     }
 
     fun getUserInfo(
         userId: Long,
-    ): GetUserInfoResponse {
+    ): UserInfoVo {
         val user = userRepository.findByIdAndNotDeleted(userId) ?: throw UserNotFoundException(errorCode = NOT_FOUND)
-        return GetUserInfoResponse.from(user)
+        return UserInfoVo.from(user)
     }
 
     @Transactional
     fun updateUserSetting(
-        request: PatchUserSettingRequest,
+        request: UpdateUserSettingVo,
         userId: Long,
-    ): UserSettingResponse {
+    ): UserSettingVo {
         val userRef = userRepository.getReferenceById(userId)
         val userSetting = userSettingRepository.findByUserAndIsDeleted(userRef)
             ?: throw UserIllegalStateException(
@@ -95,18 +87,18 @@ class UserService(
             notificationEnabled?.let { userSetting.notificationEnabled = it }
         }
 
-        return UserSettingResponse.from(userSetting)
+        return UserSettingVo.from(userSetting)
     }
 
     fun getUserSetting(
         userId: Long,
-    ): UserSettingResponse {
+    ): UserSettingVo {
         val userRef = userRepository.getReferenceById(userId)
         val userSetting = userSettingRepository.findByUserAndIsDeleted(userRef)
             ?: throw UserIllegalStateException(
                 errorCode = SETTING_DATA_NOT_FOUND,
                 errorUi = ErrorUi.Toast("유저 설정 정보를 찾을 수 없어요."),
             )
-        return UserSettingResponse.from(userSetting)
+        return UserSettingVo.from(userSetting)
     }
 }

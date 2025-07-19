@@ -40,7 +40,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-aop")  // dddd
     implementation("org.springframework.retry:spring-retry")
-
+    implementation("org.springframework.boot:spring-boot-starter-security")
 
     // Logging
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
