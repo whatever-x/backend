@@ -1,10 +1,10 @@
-package com.whatever.auth.service
+package com.whatever.domain.auth.service
 
-import com.whatever.config.properties.JwtProperties
-import com.whatever.global.jwt.JwtProvider
-import com.whatever.global.jwt.exception.CaramelJwtException
-import com.whatever.global.jwt.exception.JwtExceptionCode
-import com.whatever.global.jwt.exception.JwtMissingClaimException
+import com.whatever.caramel.common.global.jwt.JwtProperties
+import com.whatever.caramel.common.global.jwt.JwtProvider
+import com.whatever.caramel.common.global.jwt.exception.CaramelJwtException
+import com.whatever.caramel.common.global.jwt.exception.JwtExceptionCode
+import com.whatever.caramel.common.global.jwt.exception.JwtMissingClaimException
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jws
 import io.jsonwebtoken.JwtParser

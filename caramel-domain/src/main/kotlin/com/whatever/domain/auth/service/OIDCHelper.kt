@@ -1,12 +1,12 @@
-package com.whatever.auth.service
+package com.whatever.domain.auth.service
 
-import com.whatever.config.properties.OauthProperties
-import com.whatever.domain.auth.client.dto.AppleIdTokenPayload
-import com.whatever.domain.auth.client.dto.JsonWebKey
-import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
+import com.whatever.caramel.common.global.jwt.JwtProvider
+import com.whatever.caramel.infrastructure.client.dto.AppleIdTokenPayload
+import com.whatever.caramel.infrastructure.client.dto.JsonWebKey
+import com.whatever.caramel.infrastructure.client.dto.KakaoIdTokenPayload
+import com.whatever.caramel.infrastructure.properties.OauthProperties
 import com.whatever.domain.auth.exception.AuthExceptionCode
 import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
-import com.whatever.global.jwt.JwtProvider
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jws
@@ -135,8 +135,7 @@ private fun Jws<Claims>.toKakaoIdTokenPayload(): KakaoIdTokenPayload {
 }
 
 private fun Jws<Claims>.toAppleIdTokenPayload(): AppleIdTokenPayload {
-    val isPrivateEmailValue = payload["is_private_email"]
-    val isPrivateEmail = when (isPrivateEmailValue) {
+    val isPrivateEmail = when (val isPrivateEmailValue = payload["is_private_email"]) {
         is Boolean -> isPrivateEmailValue
         is String -> isPrivateEmailValue.toBoolean()
         else -> false

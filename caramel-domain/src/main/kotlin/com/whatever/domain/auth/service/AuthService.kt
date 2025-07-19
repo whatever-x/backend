@@ -1,10 +1,8 @@
-package com.whatever.auth.service
+package com.whatever.domain.auth.service
 
-import com.whatever.auth.service.JwtHelper.Companion.BEARER_TYPE
-import com.whatever.auth.service.provider.SocialUserProvider
-import com.whatever.config.properties.JwtProperties
-import com.whatever.domain.auth.dto.ServiceToken
-import com.whatever.domain.auth.dto.SignInResponse
+import com.whatever.caramel.common.global.exception.ErrorUi
+import com.whatever.caramel.common.global.jwt.JwtProperties
+import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.auth.exception.AuthException
 import com.whatever.domain.auth.exception.AuthExceptionCode
 import com.whatever.domain.auth.exception.AuthExceptionCode.USER_PROVIDER_NOT_FOUND
@@ -12,15 +10,16 @@ import com.whatever.domain.auth.exception.AuthFailedException
 import com.whatever.domain.auth.exception.IllegalOidcTokenException
 import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
 import com.whatever.domain.auth.repository.AuthRedisRepository
+import com.whatever.domain.auth.service.JwtHelper.Companion.BEARER_TYPE
+import com.whatever.domain.auth.service.provider.SocialUserProvider
+import com.whatever.domain.auth.vo.ServiceTokenVo
+import com.whatever.domain.auth.vo.SignInVo
 import com.whatever.domain.couple.service.CoupleService
+import com.whatever.domain.findByIdAndNotDeleted
 import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.exception.ErrorUi
-import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
-import com.whatever.caramel.common.util.DateTimeUtil
-import com.whatever.util.findByIdAndNotDeleted
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.ExpiredJwtException
 import org.springframework.beans.factory.annotation.Qualifier
@@ -46,7 +45,7 @@ class AuthService(
         loginPlatform: LoginPlatform,
         idToken: String,
         deviceId: String,
-    ): SignInResponse {
+    ): SignInVo {
         val userProvider = userProviderMap[loginPlatform]
             ?: throw AuthFailedException(
                 errorCode = USER_PROVIDER_NOT_FOUND,
@@ -75,22 +74,18 @@ class AuthService(
             }
 
         val userId = user.id
-        val coupleId = user.couple?.id
 
         val serviceToken = createTokenAndSave(userId = userId, deviceId = deviceId)
-        return SignInResponse(
+        return SignInVo.from(
             serviceToken = serviceToken,
-            userStatus = user.userStatus,
-            nickname = user.nickname,
-            birthDay = user.birthDate,
-            coupleId = coupleId,
+            user = user
         )
     }
 
     fun signOut(
         bearerAccessToken: String,
         deviceId: String,
-        userId: Long = getCurrentUserId(),
+        userId: Long,
     ) {
         logger.debug { "SignOut Start - UserId: $userId, DeviceId: $deviceId" }
 
@@ -111,15 +106,15 @@ class AuthService(
         logger.debug { "SignOut End - UserId: $userId, DeviceId: $deviceId" }
     }
 
-    fun refresh(serviceToken: ServiceToken, deviceId: String): ServiceToken {
-        val userId = jwtHelper.extractUserIdIgnoringSignature(serviceToken.accessToken)
-        val isValid = jwtHelper.isValidJwt(serviceToken.refreshToken)
+    fun refresh(accessToken: String, refreshToken: String, deviceId: String): ServiceTokenVo {
+        val userId = jwtHelper.extractUserIdIgnoringSignature(accessToken)
+        val isValid = jwtHelper.isValidJwt(refreshToken)
 
         if (isValid.not()) throw AuthException(errorCode = AuthExceptionCode.UNAUTHORIZED)
 
-        val refreshToken = authRedisRepository.getRefreshToken(userId = userId, deviceId = deviceId)
+        val localRefreshToken = authRedisRepository.getRefreshToken(userId = userId, deviceId = deviceId)
 
-        if (serviceToken.refreshToken != refreshToken) {
+        if (refreshToken != localRefreshToken) {
             throw AuthException(errorCode = AuthExceptionCode.UNAUTHORIZED)
         }
         // TODO(준용) access token black list 등록
@@ -131,7 +126,7 @@ class AuthService(
     fun deleteUser(
         bearerAccessToken: String,
         deviceId: String,
-        userId: Long = getCurrentUserId(),
+        userId: Long,
     ) {
         val user = userRepository.findByIdAndNotDeleted(userId)
             ?: throw UserNotFoundException(errorCode = NOT_FOUND)
@@ -153,7 +148,7 @@ class AuthService(
         authRedisRepository.deleteAllRefreshToken(userId)
     }
 
-    private fun createTokenAndSave(userId: Long, deviceId: String): ServiceToken {
+    private fun createTokenAndSave(userId: Long, deviceId: String): ServiceTokenVo {
         val accessToken = jwtHelper.createAccessToken(userId)  // access token 발행
         val refreshToken = jwtHelper.createRefreshToken()  // refresh token 발행
         authRedisRepository.saveRefreshToken(
@@ -162,7 +157,7 @@ class AuthService(
             refreshToken = refreshToken,
             ttlSeconds = jwtProperties.refreshExpirationSec
         )
-        return ServiceToken(
+        return ServiceTokenVo.from(
             accessToken,
             refreshToken,
         )

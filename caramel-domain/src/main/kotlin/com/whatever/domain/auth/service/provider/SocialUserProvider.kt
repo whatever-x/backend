@@ -1,4 +1,4 @@
-package com.whatever.auth.service.provider
+package com.whatever.domain.auth.service.provider
 
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User

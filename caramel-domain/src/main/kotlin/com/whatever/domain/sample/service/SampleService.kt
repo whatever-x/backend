@@ -1,6 +1,6 @@
 package com.whatever.domain.sample.service
 
-import com.whatever.auth.service.JwtHelper
+import com.whatever.domain.auth.service.JwtHelper
 import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.common.global.jwt.JwtProperties
 import com.whatever.caramel.common.global.jwt.JwtProvider

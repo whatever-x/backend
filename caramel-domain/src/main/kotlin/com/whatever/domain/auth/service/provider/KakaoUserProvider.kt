@@ -6,6 +6,7 @@ import com.whatever.domain.auth.client.KakaoOIDCClient
 import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
 import com.whatever.domain.auth.client.dto.KakaoUnlinkUserRequest
 import com.whatever.domain.auth.service.OIDCHelper
+import com.whatever.domain.auth.service.provider.SocialUserProvider
 import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.domain.user.exception.UserNotFoundException
 import com.whatever.domain.user.model.LoginPlatform
