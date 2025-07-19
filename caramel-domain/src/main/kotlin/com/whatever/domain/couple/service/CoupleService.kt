@@ -4,7 +4,6 @@ import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.common.global.exception.common.CaramelException
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.common.util.toZoneId
-import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
 import com.whatever.domain.couple.exception.CoupleAccessDeniedException
 import com.whatever.domain.couple.exception.CoupleException
 import com.whatever.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
@@ -20,6 +19,7 @@ import com.whatever.domain.couple.exception.CoupleNotFoundException
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.repository.InvitationCodeRedisRepository
+import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
 import com.whatever.domain.findByIdAndNotDeleted
 import com.whatever.domain.firebase.service.event.dto.CoupleConnectedEvent
 import com.whatever.domain.user.exception.UserExceptionCode.*
