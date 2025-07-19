@@ -1,5 +1,3 @@
-package util
-
 import com.whatever.domain.base.BaseEntity
 import org.springframework.data.jpa.repository.JpaRepository
 

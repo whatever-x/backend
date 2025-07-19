@@ -1,8 +1,7 @@
-package global.exception
+package com.whatever
 
-import com.whatever.global.exception.common.CaramelControllerAdvice
-import com.whatever.global.exception.common.CaramelException
-import com.whatever.global.exception.dto.CaramelApiResponse
+import global.exception.common.CaramelControllerAdvice
+import global.exception.common.CaramelException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.ServletException
 import jakarta.validation.ConstraintViolationException

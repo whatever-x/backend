@@ -1,7 +1,7 @@
-package global.exception.dto
+package com.whatever
 
-import com.whatever.global.exception.ErrorUi
-import com.whatever.global.exception.common.CaramelExceptionCode
+import global.exception.ErrorUi
+import global.exception.common.CaramelExceptionCode
 
 /**
  * 클라이언트가 수신할 예외 정보 객체

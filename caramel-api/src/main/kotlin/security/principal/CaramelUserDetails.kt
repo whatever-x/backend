@@ -1,4 +1,4 @@
-package global.security.principal
+package com.whatever.security.principal
 
 import com.whatever.domain.user.model.UserStatus
 import org.springframework.security.core.authority.SimpleGrantedAuthority

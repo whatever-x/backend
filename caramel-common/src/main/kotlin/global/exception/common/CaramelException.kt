@@ -1,6 +1,6 @@
 package global.exception.common
 
-import com.whatever.global.exception.ErrorUi
+import global.exception.ErrorUi
 
 /**
  * 커스텀 예외 객체들의 부모

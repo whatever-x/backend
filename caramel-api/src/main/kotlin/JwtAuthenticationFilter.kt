@@ -1,4 +1,4 @@
-package global.security.filter
+package com.whatever
 
 import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.service.JwtHelper
@@ -6,7 +6,6 @@ import com.whatever.domain.auth.service.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
 import com.whatever.global.exception.ErrorUi
-import com.whatever.global.security.exception.AccessDeniedException
 import com.whatever.global.security.exception.SecurityExceptionCode
 import com.whatever.global.security.principal.CaramelUserDetails
 import jakarta.servlet.FilterChain

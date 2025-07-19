@@ -1,4 +1,4 @@
-package global.security.util
+package com.whatever.security.util
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.whatever.global.exception.ErrorUi

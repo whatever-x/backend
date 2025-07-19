@@ -1,6 +1,6 @@
 package global.exception
 
-import com.whatever.global.exception.common.CaramelException
+import global.exception.common.CaramelException
 
 class GlobalException(
     errorCode: GlobalExceptionCode,

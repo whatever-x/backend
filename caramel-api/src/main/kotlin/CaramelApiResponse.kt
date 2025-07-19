@@ -1,22 +1,22 @@
-package global.exception.dto
+package com.whatever
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
-import com.whatever.global.exception.ErrorUi
-import com.whatever.global.exception.common.CaramelExceptionCode
+import global.exception.ErrorUi
+import global.exception.common.CaramelExceptionCode
 
 data class CaramelApiResponse<T>(
     val success: Boolean,
-    @JsonSerialize(nullsUsing = global.exception.dto.NullToEmptyObjectSerializer::class)
+    @JsonSerialize(nullsUsing = NullToEmptyObjectSerializer::class)
     val data: T?,
     val error: global.exception.dto.ErrorResponse?,
 ) {
 
     companion object {
-        fun <T> succeed(data: T? = null): global.exception.dto.CaramelApiResponse<T> {
-            return global.exception.dto.CaramelApiResponse(
+        fun <T> succeed(data: T? = null): CaramelApiResponse<T> {
+            return CaramelApiResponse(
                 success = true,
                 data = data,
                 error = null,
@@ -26,8 +26,8 @@ data class CaramelApiResponse<T>(
         fun failed(
             code: CaramelExceptionCode,
             errorUi: ErrorUi,
-        ): global.exception.dto.CaramelApiResponse<*> {
-            return global.exception.dto.CaramelApiResponse(
+        ): CaramelApiResponse<*> {
+            return CaramelApiResponse(
                 success = false,
                 data = null,
                 error = global.exception.dto.ErrorResponse.Companion.of(
@@ -39,7 +39,7 @@ data class CaramelApiResponse<T>(
     }
 }
 
-fun <T> T.succeed() = global.exception.dto.CaramelApiResponse(
+fun <T> T.succeed() = CaramelApiResponse(
     success = true,
     data = this,
     error = null,

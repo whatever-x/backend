@@ -1,6 +1,6 @@
 package global.exception.externalserver.kakao
 
-import com.whatever.global.exception.externalserver.ExternalServerExceptionCode
+import global.exception.externalserver.ExternalServerExceptionCode
 import org.springframework.http.HttpStatus
 
 enum class KakaoServerExceptionCode(

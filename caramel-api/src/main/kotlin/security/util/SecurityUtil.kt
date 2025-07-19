@@ -1,4 +1,4 @@
-package global.security.util
+package com.whatever.security.util
 
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.global.exception.ErrorUi

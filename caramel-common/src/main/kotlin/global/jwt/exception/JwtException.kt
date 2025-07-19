@@ -1,7 +1,7 @@
 package global.jwt.exception
 
-import com.whatever.global.exception.ErrorUi
-import com.whatever.global.exception.common.CaramelException
+import global.exception.ErrorUi
+import global.exception.common.CaramelException
 
 open class CaramelJwtException(
     errorCode: JwtExceptionCode,

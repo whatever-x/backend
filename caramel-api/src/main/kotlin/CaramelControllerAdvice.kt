@@ -1,7 +1,6 @@
-package global.exception.common
+package com.whatever
 
-import com.whatever.global.exception.ErrorUi
-import com.whatever.global.exception.dto.CaramelApiResponse
+import global.exception.ErrorUi
 import org.springframework.http.ResponseEntity
 
 abstract class CaramelControllerAdvice {

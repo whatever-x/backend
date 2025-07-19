@@ -1,6 +1,6 @@
-package global.security.exception
+package com.whatever.security.exception
 
-import com.whatever.global.exception.common.CaramelExceptionCode
+import global.exception.common.CaramelExceptionCode
 import org.springframework.http.HttpStatus
 
 enum class SecurityExceptionCode(

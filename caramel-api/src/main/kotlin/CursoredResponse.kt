@@ -1,4 +1,4 @@
-package global.cursor
+package com.whatever
 
 import io.swagger.v3.oas.annotations.media.Schema
 

@@ -1,7 +1,7 @@
 package global.exception.externalserver.kakao
 
-import com.whatever.global.exception.ErrorUi
-import com.whatever.global.exception.externalserver.ExternalServerException
+import global.exception.ErrorUi
+import global.exception.externalserver.ExternalServerException
 
 open class KakaoServerException(
     errorCode: KakaoServerExceptionCode,

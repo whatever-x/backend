@@ -1,6 +1,6 @@
 package global.exception
 
-import com.whatever.global.exception.common.CaramelExceptionCode
+import global.exception.common.CaramelExceptionCode
 import org.springframework.http.HttpStatus
 
 enum class GlobalExceptionCode(

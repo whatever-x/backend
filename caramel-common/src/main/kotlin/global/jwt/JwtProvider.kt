@@ -2,16 +2,13 @@ package global.jwt
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.whatever.config.properties.JwtProperties
-import com.whatever.global.jwt.exception.CaramelJwtException
-import com.whatever.global.jwt.exception.JwtExceptionCode
-import com.whatever.global.jwt.exception.JwtExpiredException
-import com.whatever.global.jwt.exception.JwtMalformedException
-import com.whatever.global.jwt.exception.JwtSecurityException
-import com.whatever.global.jwt.exception.JwtSignatureException
-import com.whatever.global.jwt.exception.JwtUnsupportedException
-import com.whatever.util.DateTimeUtil
-import com.whatever.util.toDate
+import global.jwt.exception.CaramelJwtException
+import global.jwt.exception.JwtExceptionCode
+import global.jwt.exception.JwtExpiredException
+import global.jwt.exception.JwtMalformedException
+import global.jwt.exception.JwtSecurityException
+import global.jwt.exception.JwtSignatureException
+import global.jwt.exception.JwtUnsupportedException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
@@ -24,6 +21,8 @@ import io.jsonwebtoken.UnsupportedJwtException
 import io.jsonwebtoken.security.SecurityException
 import io.jsonwebtoken.security.SignatureException
 import org.springframework.stereotype.Component
+import util.DateTimeUtil
+import util.toDate
 import java.util.Base64
 import java.util.UUID
 
@@ -89,7 +88,7 @@ class JwtProvider(
 
     fun getUnsecuredPayload(token: String): Map<String, String> {
         val jwtChunk = getJwtChunk(token)
-        val jwtHeader = Base64.getDecoder().decode(jwtChunk[1])
+        val jwtHeader: ByteArray = Base64.getDecoder().decode(jwtChunk[1])
         return objectMapper.readValue(jwtHeader)
     }
 

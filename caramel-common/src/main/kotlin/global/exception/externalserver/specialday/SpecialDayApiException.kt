@@ -1,6 +1,6 @@
 package global.exception.externalserver.specialday
 
-import com.whatever.global.exception.externalserver.ExternalServerException
+import global.exception.externalserver.ExternalServerException
 
 open class SpecialDayApiException(
     errorCode: SpecialDayApiExceptionCode,
