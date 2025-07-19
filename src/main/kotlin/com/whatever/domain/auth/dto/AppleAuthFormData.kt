@@ -6,7 +6,7 @@ class AppleAuthFormData(
     val code: String,
     id_token: String,  // apple에서 formdata 전송 시 snake-case를 사용
     val state: String? = null,
-    private val user: String? = null
+    private val user: String? = null,
 ) {
     val idToken = id_token
 
@@ -23,7 +23,7 @@ class AppleAuthFormData(
 
 data class AppleUser(
     val email: String? = null,
-    val name: AppleUserName? = null
+    val name: AppleUserName? = null,
 )
 
 data class AppleUserName(

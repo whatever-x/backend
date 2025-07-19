@@ -17,9 +17,9 @@ import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.PublicKey
 import java.security.spec.RSAPublicKeySpec
-import java.util.*
+import java.util.Base64
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 @Component
 class OIDCHelper(
@@ -87,7 +87,7 @@ class OIDCHelper(
     private fun getIdTokenParser(
         issuer: String,
         audience: String,
-        rsaPublicKey: PublicKey
+        rsaPublicKey: PublicKey,
     ): JwtParser {
         return Jwts.parser()
             .requireIssuer(issuer)
@@ -117,7 +117,6 @@ class OIDCHelper(
         val keyFactory = KeyFactory.getInstance("RSA")  // RSA KeyFactory 인스턴스화
         return keyFactory.generatePublic(rsaPublicKeySpec)  // 공개키 생성
     }
-
 }
 
 private fun Jws<Claims>.toKakaoIdTokenPayload(): KakaoIdTokenPayload {

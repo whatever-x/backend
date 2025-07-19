@@ -8,7 +8,7 @@ import java.time.LocalDate
 @Schema(description = "휴일 상세 정보 리스트 응답 DTO")
 data class HolidayDetailListResponse(
     @Schema(description = "휴일 상세 정보 리스트")
-    val holidayList: List<HolidayDetailDto>
+    val holidayList: List<HolidayDetailDto>,
 )
 
 @Schema(description = "휴일 상세 정보 DTO")

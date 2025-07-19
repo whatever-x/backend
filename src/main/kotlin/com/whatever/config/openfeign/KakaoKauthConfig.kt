@@ -5,7 +5,6 @@ import com.whatever.global.exception.externalserver.kakao.KakaoServerExceptionCo
 import feign.Response
 import feign.codec.Encoder
 import feign.codec.ErrorDecoder
-import feign.form.FormEncoder
 import feign.form.spring.SpringFormEncoder
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.ObjectFactory
@@ -13,7 +12,7 @@ import org.springframework.boot.autoconfigure.http.HttpMessageConverters
 import org.springframework.cloud.openfeign.support.SpringEncoder
 import org.springframework.context.annotation.Bean
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 class KakaoKauthConfig {
 
@@ -45,5 +44,5 @@ class KauthErrorDecoder() : ErrorDecoder {
 
 private data class KauthErrorResponse(
     val error: String?,  // 에러 코드
-    val errorDescription: String?
+    val errorDescription: String?,
 )

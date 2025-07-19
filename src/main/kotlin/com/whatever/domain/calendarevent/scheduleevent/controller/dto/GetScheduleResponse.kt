@@ -12,7 +12,7 @@ data class GetScheduleResponse(
     @Schema(description = "일정 상세 정보")
     val scheduleDetail: ScheduleDetailDto,
     @Schema(description = "연관 태그 리스트")
-    val tags: List<TagDto> = emptyList()
+    val tags: List<TagDto> = emptyList(),
 ) {
     companion object {
         fun of(

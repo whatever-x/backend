@@ -9,9 +9,9 @@ import org.springframework.retry.support.RetrySynchronizationManager
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
-abstract class AbstractEntityCleanupService<E: BaseEntity> {
+abstract class AbstractEntityCleanupService<E : BaseEntity> {
 
     /**
      * 해당 도메인 entity를 모두 Soft Delete하고, 영향을 받은 row를 반환하는 함수

@@ -80,7 +80,6 @@ enum class KakaoServerExceptionCode(
         status = HttpStatus.SERVICE_UNAVAILABLE
     ),
 
-
     // 카카오 로그인 에러코드 https://developers.kakao.com/docs/latest/ko/rest-api/reference#error-code-kakaologin
     NOT_CONNECTED_KAKAO_ACCOUNT(
         sequence = "012",
@@ -146,8 +145,9 @@ enum class KakaoServerExceptionCode(
         fun fromKakaoErrorCode(kakaoErrorCode: Int): KakaoServerExceptionCode {
             return entries.firstOrNull { it.kakaoErrorCode == kakaoErrorCode.toString() } ?: UNKNOWN
         }
+
         fun fromKakaoErrorCode(kakaoErrorCode: String?): KakaoServerExceptionCode {
-            return entries.firstOrNull { it.kakaoErrorCode == kakaoErrorCode} ?: UNKNOWN
+            return entries.firstOrNull { it.kakaoErrorCode == kakaoErrorCode } ?: UNKNOWN
         }
     }
 }

@@ -25,5 +25,5 @@ class ScheduleIllegalStateException(
 
 class ScheduleAccessDeniedException(
     errorCode: ScheduleExceptionCode,
-    errorUi: ErrorUi = ErrorUi.Toast("커플 멤버가 작성한 일정만 접근할 수 있어요.")
+    errorUi: ErrorUi = ErrorUi.Toast("커플 멤버가 작성한 일정만 접근할 수 있어요."),
 ) : CaramelScheduleException(errorCode)

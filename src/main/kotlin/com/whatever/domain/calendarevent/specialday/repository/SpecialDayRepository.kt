@@ -8,7 +8,8 @@ import java.time.LocalDate
 
 interface SpecialDayRepository : JpaRepository<SpecialDay, Long> {
 
-    @Query("""
+    @Query(
+        """
         select spd
         from SpecialDay spd
         where spd.locDate between :startDate and :endDate
@@ -16,7 +17,8 @@ interface SpecialDayRepository : JpaRepository<SpecialDay, Long> {
           and spd.isHoliday = :isHoliday
           and spd.isDeleted = false
         order by spd.locDate
-    """)
+    """
+    )
     fun findAllByTypeAndBetweenStartDateAndEndDate(
         type: SpecialDayType,
         startDate: LocalDate,

@@ -8,11 +8,13 @@ import java.time.LocalDate
 interface BalanceGameRepository : JpaRepository<BalanceGame, Long> {
     fun findByGameDateAndIsDeleted(gameDate: LocalDate, isDeleted: Boolean = false): BalanceGame?
 
-    @Query("""
+    @Query(
+        """
         select bg from BalanceGame bg
             join fetch bg.options
         where bg.gameDate = :gameDate
             and bg.isDeleted = false
-    """)
+    """
+    )
     fun findWithOptionsByGameDate(gameDate: LocalDate): BalanceGame?
 }

@@ -4,9 +4,7 @@ import com.whatever.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION
 import com.whatever.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED
-import jakarta.validation.constraints.Size
 import org.hibernate.validator.constraints.CodePointLength
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Schema(description = "콘텐츠 생성 요청 모델")
@@ -58,5 +56,5 @@ data class DateTimeInfoDto(
         example = "Asia/Seoul",
         requiredMode = NOT_REQUIRED,
     )
-    val endTimezone: String? = null
+    val endTimezone: String? = null,
 )

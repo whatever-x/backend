@@ -25,5 +25,4 @@ class CaramelUserDetails(
     override fun getUsername(): String {
         return userIdStr
     }
-
 }

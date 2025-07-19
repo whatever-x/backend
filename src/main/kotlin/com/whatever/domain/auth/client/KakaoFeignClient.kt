@@ -42,7 +42,6 @@ interface KakaoKapiClient {
         @RequestHeader("Authorization") appAdminKeyWithPrefix: String,
         unlinkUser: KakaoUnlinkUserRequest,
     ): KakaoUnlinkUserResponse
-
 }
 
 @FeignClient(
@@ -70,5 +69,4 @@ interface KakaoOIDCClient {
         consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE]
     )
     fun getIdTokenInfo(idToken: KakaoIdTokenInfoRequest): KakaoIdTokenPayload
-
 }

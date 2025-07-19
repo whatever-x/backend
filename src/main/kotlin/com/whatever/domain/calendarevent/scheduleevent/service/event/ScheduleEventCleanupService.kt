@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class ScheduleEventCleanupService(
-    private val scheduleEventRepository: ScheduleEventRepository
+    private val scheduleEventRepository: ScheduleEventRepository,
 ) : AbstractEntityCleanupService<ScheduleEvent>() {
 
     override fun runCleanup(userId: Long): Int {

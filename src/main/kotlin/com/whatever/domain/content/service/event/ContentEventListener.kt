@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 @Component
 class ContentEventListener(
-    private val contentCleanupService: ContentCleanupService
+    private val contentCleanupService: ContentCleanupService,
 ) {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async

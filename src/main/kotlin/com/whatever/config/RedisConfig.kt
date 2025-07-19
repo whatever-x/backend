@@ -10,7 +10,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 
 @Profile("!test")
 @Configuration
-class RedisConfig (
+class RedisConfig(
     private val redisProperties: RedisProperties,
 ) {
 

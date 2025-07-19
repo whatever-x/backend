@@ -12,13 +12,15 @@ interface UserChoiceOptionRepository : JpaRepository<UserChoiceOption, Long> {
         isDeleted: Boolean = false,
     ): List<UserChoiceOption>
 
-    @Query("""
+    @Query(
+        """
         select uco from UserChoiceOption uco
             join fetch uco.balanceGameOption
         where uco.balanceGame.id = :gameId
             and uco.user.id in :userIds
             and uco.isDeleted = false 
-    """)
+    """
+    )
     fun findAllWithOptionByBalanceGameIdAndUsers(
         gameId: Long,
         userIds: List<Long>,
@@ -26,11 +28,13 @@ interface UserChoiceOptionRepository : JpaRepository<UserChoiceOption, Long> {
     ): List<UserChoiceOption>
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query("""
+    @Query(
+        """
         update UserChoiceOption uco
         set uco.isDeleted = true
         where uco.user.id = :userId
             and uco.isDeleted = false
-    """)
+    """
+    )
     fun softDeleteAllByUserIdInBulk(userId: Long): Int
 }

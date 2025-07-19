@@ -25,7 +25,7 @@ data class ContentResponse(
     companion object {
         fun from(
             content: Content,
-            tagList: List<TagDto>
+            tagList: List<TagDto>,
         ) = ContentResponse(
             id = content.id,
             title = content.contentDetail.title ?: "",
@@ -39,7 +39,7 @@ data class ContentResponse(
 
 data class TagDto(
     val id: Long,
-    val label: String
+    val label: String,
 ) {
     companion object {
         fun from(tag: Tag) = TagDto(
@@ -55,5 +55,5 @@ data class ContentSummaryResponse(
     val contentId: Long,
 
     @Schema(description = "콘텐츠 타입 표시 (예: MEMO, SCHEDULE)")
-    val contentType: ContentType
+    val contentType: ContentType,
 )

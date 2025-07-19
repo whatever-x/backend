@@ -19,14 +19,14 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import org.springframework.web.servlet.resource.NoResourceFoundException
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 @RestControllerAdvice
 class GlobalControllerAdvice : CaramelControllerAdvice() {
 
     @ExceptionHandler(CaramelException::class)
     fun handleCaramelException(e: CaramelException): ResponseEntity<CaramelApiResponse<*>> {
-        logger.error(e) {  }
+        logger.error(e) { }
         return createExceptionResponse(caramelException = e)
     }
 
@@ -35,7 +35,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
         throw e.cause ?: return createExceptionResponse(
             errorCode = GlobalExceptionCode.ILLEGAL_STATE,
             errorUi = ErrorUi.Toast("알 수 없는 오류가 발생했습니다."),
-            )
+        )
     }
 
     @ExceptionHandler(AccessDeniedException::class)
@@ -98,7 +98,7 @@ class GlobalControllerAdvice : CaramelControllerAdvice() {
         return createExceptionResponse(
             errorCode = GlobalExceptionCode.ARGS_TYPE_MISMATCH,
             errorUi = ErrorUi.Toast("알 수 없는 오류가 발생했습니다."),
-            )
+        )
     }
 
     @ExceptionHandler(Exception::class)

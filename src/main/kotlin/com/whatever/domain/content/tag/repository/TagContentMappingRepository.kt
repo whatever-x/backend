@@ -7,28 +7,33 @@ import org.springframework.data.jpa.repository.Query
 
 interface TagContentMappingRepository : JpaRepository<TagContentMapping, Long> {
 
-    @Query("""
+    @Query(
+        """
         select tcm from TagContentMapping tcm
             join fetch tcm.tag t
         where tcm.content.id = :contentId
             and tcm.isDeleted = false
         order by tcm.tag.id
-    """)
+    """
+    )
     fun findAllWithTagByContentId(contentId: Long): List<TagContentMapping>
 
-    @Query("""
+    @Query(
+        """
         select tcm from TagContentMapping tcm
             join fetch tcm.tag t
         where tcm.content.id in :contentIds
             and tcm.isDeleted = false
         order by tcm.tag.id
-    """)
+    """
+    )
     fun findAllWithTagByContentIds(contentIds: Set<Long>): List<TagContentMapping>
 
     fun findAllByContent_IdAndIsDeleted(contentId: Long, isDeleted: Boolean = false): List<TagContentMapping>
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query("""
+    @Query(
+        """
         update TagContentMapping tcm
         set tcm.isDeleted = true
         where tcm.id in (
@@ -37,6 +42,7 @@ interface TagContentMappingRepository : JpaRepository<TagContentMapping, Long> {
             where c.user.id = :userId
                 and ttcm.isDeleted = false
         )
-    """)
+    """
+    )
     fun softDeleteAllByUserIdInBulk(userId: Long): Int
 }

@@ -32,7 +32,7 @@ class BalanceGameService(
     private val balanceGameRepository: BalanceGameRepository,
     private val userChoiceOptionRepository: UserChoiceOptionRepository,
     private val coupleRepository: CoupleRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) {
 
     @Transactional(readOnly = true)
@@ -57,7 +57,7 @@ class BalanceGameService(
     @Transactional
     fun chooseBalanceGameOption(
         gameId: Long,
-        request: ChooseBalanceGameOptionRequest
+        request: ChooseBalanceGameOptionRequest,
     ): ChooseBalanceGameOptionResponse {
         val balanceGame = getBalanceGame()
         if (balanceGame.id != gameId) {
@@ -102,7 +102,7 @@ class BalanceGameService(
     }
 
     private fun getSortedActiveBalanceGameOptions(
-        options: List<BalanceGameOption>
+        options: List<BalanceGameOption>,
     ): List<BalanceGameOption> {
         val sortedOptions = options.filter { !it.isDeleted }.sortedBy { it.id }
         if (sortedOptions.size < 2) {
@@ -115,14 +115,14 @@ class BalanceGameService(
     }
 
     private fun getBalanceGame(
-        date: LocalDate = DateTimeUtil.localNow(TARGET_ZONE_ID).toLocalDate()
+        date: LocalDate = DateTimeUtil.localNow(TARGET_ZONE_ID).toLocalDate(),
     ): BalanceGame {
         return balanceGameRepository.findWithOptionsByGameDate(gameDate = date)
             ?: throw BalanceGameNotFoundException(errorCode = GAME_NOT_EXISTS)
     }
 
     private fun getCoupleMemberChoices(
-        coupleId:Long,
+        coupleId: Long,
         game: BalanceGame,
     ): List<UserChoiceOption> {
         val memberIds = coupleRepository.findByIdWithMembers(coupleId)?.members?.map { it.id }

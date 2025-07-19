@@ -1,6 +1,5 @@
 package com.whatever.domain.base
 
-import com.whatever.util.DateTimeUtil
 import com.whatever.util.DateTimeUtil.SYS_ZONE_ID
 import com.whatever.util.DateTimeUtil.changeTimeZone
 import jakarta.persistence.Column

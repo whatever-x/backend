@@ -2,11 +2,6 @@ package com.whatever.domain.balancegame.controller.dto.response
 
 import com.whatever.domain.balancegame.model.BalanceGame
 import com.whatever.domain.balancegame.model.BalanceGameOption
-import com.whatever.domain.balancegame.model.UserChoiceOption
-import com.whatever.domain.user.exception.UserExceptionCode
-import com.whatever.domain.user.exception.UserIllegalStateException
-import com.whatever.global.exception.GlobalException
-import com.whatever.global.exception.GlobalExceptionCode
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
@@ -49,7 +44,7 @@ data class BalanceGameInfo(
     val question: String,
 
     @Schema(description = "선택지 리스트")
-    val options: List<OptionInfo>
+    val options: List<OptionInfo>,
 ) {
     companion object {
         fun of(game: BalanceGame, options: List<BalanceGameOption>): BalanceGameInfo {

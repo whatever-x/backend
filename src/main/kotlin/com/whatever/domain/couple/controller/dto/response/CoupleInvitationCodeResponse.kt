@@ -9,5 +9,5 @@ data class CoupleInvitationCodeResponse(
     val invitationCode: String,
 
     @Schema(description = "만료 시점", nullable = true)
-    val expirationDateTime: LocalDateTime?
+    val expirationDateTime: LocalDateTime?,
 )

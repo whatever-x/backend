@@ -1,9 +1,9 @@
 package com.whatever.domain.sample.service
 
 import com.whatever.config.properties.JwtProperties
-import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.dto.ServiceToken
 import com.whatever.domain.auth.dto.SignInResponse
+import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.service.JwtHelper
 import com.whatever.domain.firebase.service.FirebaseService
 import com.whatever.domain.firebase.service.event.FcmNotification
@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 
 @Profile("dev", "local-mem")
 @Service

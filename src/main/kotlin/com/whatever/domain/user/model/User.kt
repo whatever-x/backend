@@ -12,14 +12,28 @@ import com.whatever.global.exception.ErrorUi
 import com.whatever.util.DateTimeUtil
 import com.whatever.util.DateTimeUtil.KST_ZONE_ID
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.persistence.*
+import jakarta.persistence.AttributeConverter
+import jakarta.persistence.Column
+import jakarta.persistence.Convert
+import jakarta.persistence.Converter
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import org.hibernate.validator.constraints.CodePointLength
 import org.springframework.security.crypto.encrypt.TextEncryptor
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 import java.time.ZoneId
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 @Entity
 @Table(
@@ -135,5 +149,4 @@ class UserEmailConverter(
     override fun convertToEntityAttribute(encryptedEmail: String?): String? {
         return encryptedEmail?.let { textEncryptor.decrypt(encryptedEmail) }
     }
-
 }

@@ -11,7 +11,6 @@ import com.whatever.global.exception.externalserver.kakao.KakaoUnauthorizedExcep
 import feign.Response
 import feign.codec.Encoder
 import feign.codec.ErrorDecoder
-import feign.form.FormEncoder
 import feign.form.spring.SpringFormEncoder
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.ObjectFactory
@@ -21,7 +20,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpStatus
 import kotlin.reflect.KClass
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 class KakaoKapiConfig {
 
@@ -50,18 +49,22 @@ class KapiErrorDecoder() : ErrorDecoder {
                 throw KakaoBadRequestException(
                     errorCode = KakaoServerExceptionCode.fromKakaoErrorCode(errorResponse.code),
                 )
+
             HttpStatus.UNAUTHORIZED ->
                 throw KakaoUnauthorizedException(
                     errorCode = KakaoServerExceptionCode.fromKakaoErrorCode(errorResponse.code),
                 )
+
             HttpStatus.FORBIDDEN ->
                 throw KakaoForbiddenException(
                     errorCode = KakaoServerExceptionCode.fromKakaoErrorCode(errorResponse.code),
                 )
+
             HttpStatus.SERVICE_UNAVAILABLE ->
                 throw KakaoServiceUnavailableException(
                     errorCode = KakaoServerExceptionCode.fromKakaoErrorCode(errorResponse.code),
                 )
+
             else -> throw KakaoServerException(errorCode = UNKNOWN)
         }
     }

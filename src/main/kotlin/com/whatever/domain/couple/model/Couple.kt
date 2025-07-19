@@ -34,7 +34,10 @@ class Couple(
     var startDate: LocalDate? = null,
 
     @Column(length = MAX_SHARED_MESSAGE_LENGTH_WITH_BUFFER)
-    @field:CodePointLength(max = MAX_SHARED_MESSAGE_LENGTH, message = "Maximum description length is ${MAX_SHARED_MESSAGE_LENGTH}")
+    @field:CodePointLength(
+        max = MAX_SHARED_MESSAGE_LENGTH,
+        message = "Maximum description length is ${MAX_SHARED_MESSAGE_LENGTH}"
+    )
     var sharedMessage: String? = null,
 
     @Enumerated(EnumType.STRING)
@@ -54,7 +57,7 @@ class Couple(
             throw CoupleIllegalArgumentException(
                 errorCode = ILLEGAL_MEMBER_SIZE,
                 errorUi = ErrorUi.Toast("커플 멤버 구성에 문제가 생겼어요. 다시 시도해주세요."),
-                )
+            )
         }
         if (mutableMembers.isNotEmpty()) {
             throw CoupleIllegalStateException(

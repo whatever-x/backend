@@ -1,11 +1,11 @@
 package com.whatever.domain.calendarevent.eventrecurrence.model
 
-data class RecurrenceDay (
+data class RecurrenceDay(
     val day: WeekDay,
     val ordinal: Int? = null,
 ) {
     override fun toString(): String {
-        return if(ordinal == null) day.name else "${ordinal}${day.name}"
+        return if (ordinal == null) day.name else "${ordinal}${day.name}"
     }
 
     override fun equals(other: Any?): Boolean {

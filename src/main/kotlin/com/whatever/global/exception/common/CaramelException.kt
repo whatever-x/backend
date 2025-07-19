@@ -9,5 +9,5 @@ import com.whatever.global.exception.ErrorUi
  */
 abstract class CaramelException(
     val errorCode: CaramelExceptionCode,
-    val errorUi: ErrorUi = ErrorUi.Toast("알 수 없는 에러입니다.")
+    val errorUi: ErrorUi = ErrorUi.Toast("알 수 없는 에러입니다."),
 ) : RuntimeException(errorCode.message)

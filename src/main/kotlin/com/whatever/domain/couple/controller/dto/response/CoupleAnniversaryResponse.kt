@@ -30,7 +30,7 @@ data class CoupleAnniversaryResponse(
             yearlyAnniversaries: List<CoupleAnniversaryDto>,
             myBirthDates: List<CoupleAnniversaryDto>,
             partnerBirthDates: List<CoupleAnniversaryDto>,
-            ): CoupleAnniversaryResponse {
+        ): CoupleAnniversaryResponse {
             return CoupleAnniversaryResponse(
                 coupleId = couple.id,
                 startDate = couple.startDate,
@@ -52,8 +52,9 @@ data class CoupleAnniversaryDto(
     val date: LocalDate,
     @Schema(description = "커플 기념일 라벨")
     val label: String,
-    @Schema(description =
-        "기념일이 원래 2월 29일이었으나, 해당 연도가 윤년이 아니어서 날짜가 조정되었는지 여부 (예: 2월 28일로 조정될 때 ture)"
+    @Schema(
+        description =
+            "기념일이 원래 2월 29일이었으나, 해당 연도가 윤년이 아니어서 날짜가 조정되었는지 여부 (예: 2월 28일로 조정될 때 ture)"
     )
     val isAdjustedForNonLeapYear: Boolean = false,
 )

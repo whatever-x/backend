@@ -5,7 +5,7 @@ import com.whatever.global.exception.common.CaramelException
 
 open class UserException(
     errorCode: UserExceptionCode,
-    errorUi: ErrorUi = ErrorUi.Toast("알 수 없는 에러입니다.")
+    errorUi: ErrorUi = ErrorUi.Toast("알 수 없는 에러입니다."),
 ) : CaramelException(errorCode, errorUi)
 
 class UserNotFoundException(

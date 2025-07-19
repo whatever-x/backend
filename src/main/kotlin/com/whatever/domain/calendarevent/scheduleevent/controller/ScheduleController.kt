@@ -14,7 +14,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @Tag(
     name = "일정 API",
@@ -23,7 +30,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/v1/calendar/schedules")
 class ScheduleController(
-    private val scheduleEventService: ScheduleEventService
+    private val scheduleEventService: ScheduleEventService,
 ) {
 
     @Operation(
@@ -35,7 +42,7 @@ class ScheduleController(
     )
     @GetMapping
     fun getSchedules(
-        @ParameterObject queryParameter: GetCalendarQueryParameter
+        @ParameterObject queryParameter: GetCalendarQueryParameter,
     ): CaramelApiResponse<List<ScheduleDetailDto>> {
         val schedulesResponse = scheduleEventService.getSchedules(
             startDate = queryParameter.startDate,
@@ -59,7 +66,7 @@ class ScheduleController(
     )
     @GetMapping("/{schedule-id}")
     fun getSchedule(
-        @PathVariable("schedule-id") scheduleId: Long
+        @PathVariable("schedule-id") scheduleId: Long,
     ): CaramelApiResponse<GetScheduleResponse> {
         val scheduleResponse = scheduleEventService.getSchedule(scheduleId = scheduleId)
         return scheduleResponse.succeed()

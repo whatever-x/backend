@@ -39,7 +39,7 @@ class SecurityConfig(
     private val jwtExceptionFilter: JwtExceptionFilter,
     private val requestResponseLoggingFilter: RequestResponseLoggingFilter,
     private val caramelAuthenticationEntryPoint: AuthenticationEntryPoint,
-    private val caramelAccessDeniedHandler: AccessDeniedHandler
+    private val caramelAccessDeniedHandler: AccessDeniedHandler,
 ) {
 
     companion object {
@@ -53,8 +53,10 @@ class SecurityConfig(
 
     @Value("\${swagger.user}")
     lateinit var swaggerUser: String
+
     @Value("\${swagger.password}")
     lateinit var swaggerPassword: String
+
     @Value("\${management.endpoints.web.base-path}")
     lateinit var actuatorPath: String
 
@@ -67,7 +69,7 @@ class SecurityConfig(
             authorizeHttpRequests {
                 authorize(anyRequest, authenticated)
             }
-            httpBasic {  }
+            httpBasic { }
         }
         return http.build()
     }
@@ -166,21 +168,24 @@ class SecurityConfig(
 
     @Bean
     fun jwtAuthenticationFilterRegistration(filter: JwtAuthenticationFilter): FilterRegistrationBean<JwtAuthenticationFilter> {
-        val registration: FilterRegistrationBean<JwtAuthenticationFilter> = FilterRegistrationBean<JwtAuthenticationFilter>(filter)
+        val registration: FilterRegistrationBean<JwtAuthenticationFilter> =
+            FilterRegistrationBean<JwtAuthenticationFilter>(filter)
         registration.isEnabled = false
         return registration
     }
 
     @Bean
     fun jwtExceptionFilterRegistration(filter: JwtExceptionFilter): FilterRegistrationBean<JwtExceptionFilter> {
-        val registration: FilterRegistrationBean<JwtExceptionFilter> = FilterRegistrationBean<JwtExceptionFilter>(filter)
+        val registration: FilterRegistrationBean<JwtExceptionFilter> =
+            FilterRegistrationBean<JwtExceptionFilter>(filter)
         registration.isEnabled = false
         return registration
     }
 
     @Bean
     fun requestLoggingFilterRegistration(filter: RequestResponseLoggingFilter): FilterRegistrationBean<RequestResponseLoggingFilter> {
-        val registration: FilterRegistrationBean<RequestResponseLoggingFilter> = FilterRegistrationBean<RequestResponseLoggingFilter>(filter)
+        val registration: FilterRegistrationBean<RequestResponseLoggingFilter> =
+            FilterRegistrationBean<RequestResponseLoggingFilter>(filter)
         registration.isEnabled = false
         return registration
     }
@@ -190,6 +195,7 @@ class SecurityConfig(
 class CryptoConfig {
     @Value("\${crypto.password}")
     lateinit var textEncryptorPassword: String
+
     @Value("\${crypto.salt}")
     lateinit var textEncryptorSalt: String
 

@@ -45,7 +45,6 @@ import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-
 private val logger = KotlinLogging.logger { }
 
 @Service
@@ -76,12 +75,13 @@ class CoupleService(
             throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
         }
 
-        val updatedCouple =  couple.apply {
+        val updatedCouple = couple.apply {
             updateSharedMessage(request.sharedMessage)
         }
 
         return CoupleBasicResponse.from(updatedCouple)
     }
+
     @Recover
     fun updateSharedMessageRecover(e: OptimisticLockingFailureException, coupleId: Long): CoupleBasicResponse {
         logger.error { "couple shared message update fail. couple id: ${coupleId}" }
@@ -118,6 +118,7 @@ class CoupleService(
 
         return CoupleBasicResponse.from(updatedCouple)
     }
+
     @Recover
     fun updateStartDateRecover(
         e: OptimisticLockingFailureException,
@@ -288,7 +289,6 @@ class CoupleService(
             errorUi = ErrorUi.Toast("초대 코드를 만들지 못했어요. 다시 시도해주세요."),
         )
     }
-
 }
 
 private fun UserRepository.findUserById(id: Long): User {

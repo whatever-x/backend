@@ -23,7 +23,7 @@ data class ErrorResponse(
             errorCode: CaramelExceptionCode,
             errorUi: ErrorUi,
         ): ErrorResponse {
-            val (description, type) = when(errorUi) {
+            val (description, type) = when (errorUi) {
                 is ErrorUi.Dialog -> errorUi.description to "DIALOG"
                 is ErrorUi.Toast -> null to "TOAST"
             }

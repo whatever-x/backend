@@ -19,12 +19,12 @@ private val logger = KotlinLogging.logger { }
 
 @Component
 class CaramelAccessDeniedHandler(
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
 ) : AccessDeniedHandler {
     override fun handle(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        accessDeniedException: AccessDeniedException
+        accessDeniedException: AccessDeniedException,
     ) {
 
         val userAuthorities = getCurrentUserAuthorities()

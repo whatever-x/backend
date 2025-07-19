@@ -2,7 +2,6 @@ package com.whatever.domain.auth.service.provider
 
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
-import com.whatever.global.security.util.SecurityUtil
 
 interface SocialUserProvider {
     val platform: LoginPlatform

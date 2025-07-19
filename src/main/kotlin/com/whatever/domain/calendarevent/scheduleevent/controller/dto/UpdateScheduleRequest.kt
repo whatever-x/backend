@@ -3,8 +3,6 @@ package com.whatever.domain.calendarevent.scheduleevent.controller.dto
 import com.whatever.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
 import com.whatever.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
 import io.swagger.v3.oas.annotations.media.Schema
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.Size
 import org.hibernate.validator.constraints.CodePointLength
 import java.time.LocalDate
 import java.time.LocalDateTime

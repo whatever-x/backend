@@ -1,7 +1,7 @@
 package com.whatever.util
 
 import java.nio.charset.StandardCharsets
-import java.util.*
+import java.util.Base64
 
 object CursorUtil {
     private const val SEPARATOR: String = "|"

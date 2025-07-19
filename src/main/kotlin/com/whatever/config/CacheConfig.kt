@@ -28,8 +28,10 @@ class RedisCacheConfig {
 
     @Bean(name = ["oidcCacheManager"])
     fun oidcCacheManager(redisConnectionFactory: RedisConnectionFactory): CacheManager {
-        val stringSerializationPair = RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer())
-        val jsonSerializerPair = RedisSerializationContext.SerializationPair.fromSerializer(GenericJackson2JsonRedisSerializer())
+        val stringSerializationPair =
+            RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer())
+        val jsonSerializerPair =
+            RedisSerializationContext.SerializationPair.fromSerializer(GenericJackson2JsonRedisSerializer())
 
         val redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
             .serializeKeysWith(stringSerializationPair)
@@ -40,7 +42,6 @@ class RedisCacheConfig {
             .cacheDefaults(redisCacheConfiguration)
             .build()
     }
-
 }
 
 @ConditionalOnProperty(
@@ -52,7 +53,7 @@ class RedisCacheConfig {
 @Configuration
 class CaffeineCacheConfig {
 
-    private val logger = KotlinLogging.logger {  }
+    private val logger = KotlinLogging.logger { }
 
     @Bean
     fun caffeineConfig(): Caffeine<Any, Any> {
@@ -69,7 +70,6 @@ class CaffeineCacheConfig {
         cacheManager.setCaffeine(caffeine)
         return cacheManager
     }
-
 }
 
 enum class CacheType(

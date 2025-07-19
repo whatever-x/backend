@@ -49,7 +49,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 @Service
 class ScheduleEventService(
@@ -85,7 +85,7 @@ class ScheduleEventService(
     fun getSchedules(
         startDate: LocalDate,
         endDate: LocalDate,
-        userTimeZone: String
+        userTimeZone: String,
     ): List<ScheduleDetailDto> {
         val startDateTime = startDate.toDateTime().withoutNano
         val endDateTime = endDate.toDateTime().endOfDay.withoutNano

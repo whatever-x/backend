@@ -53,7 +53,8 @@ enum class FirebaseExceptionCode(
         message = "FCM 토큰이 현재 서버의 발신자 ID와 일치하지 않습니다.",
         status = BAD_REQUEST,
     ),
-    FCM_THIRD_PARTY_AUTH_ERROR( // 추가된 에러 코드 (APNs 등 연동 오류)
+    FCM_THIRD_PARTY_AUTH_ERROR(
+        // 추가된 에러 코드 (APNs 등 연동 오류)
         sequence = "009",
         message = "FCM 외부 인증 서비스(예: APNs)에서 오류가 발생했습니다.",
         status = INTERNAL_SERVER_ERROR,

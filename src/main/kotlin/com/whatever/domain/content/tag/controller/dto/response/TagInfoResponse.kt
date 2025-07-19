@@ -13,7 +13,7 @@ data class TagDetailDto(
     @Schema(description = "태그 id")
     val id: Long,
     @Schema(description = "태그 라벨")
-    val label: String
+    val label: String,
 ) {
     companion object {
         fun from(tag: Tag): TagDetailDto {

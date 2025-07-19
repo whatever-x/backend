@@ -11,5 +11,4 @@ class FeignClientGlobalConfig {
     fun feignLoggerLevel(): Logger.Level {
         return Logger.Level.FULL
     }
-
 }

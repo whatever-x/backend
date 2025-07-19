@@ -2,7 +2,6 @@ package com.whatever.domain.firebase.model
 
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.firebase.exception.FcmIllegalArgumentException
-import com.whatever.domain.firebase.exception.FirebaseExceptionCode
 import com.whatever.domain.firebase.exception.FirebaseExceptionCode.FCM_BLANK_TOKEN
 import com.whatever.domain.user.model.User
 import com.whatever.global.exception.ErrorUi
@@ -40,7 +39,7 @@ class FcmToken(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    val user: User
+    val user: User,
 ) : BaseEntity() {
 
     @Id
@@ -79,5 +78,4 @@ class FcmToken(
     fun isActiveToken(): Boolean {
         return DateTimeUtil.localNow() <= updatedAt.plusMonths(1)
     }
-
 }

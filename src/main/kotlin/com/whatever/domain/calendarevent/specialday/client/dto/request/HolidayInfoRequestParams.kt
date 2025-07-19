@@ -6,7 +6,7 @@ data class HolidayInfoRequestParams(
     val solYear: Int,
     val solMonth: String,
     val ServiceKey: String,
-    val numOfRows: Int = 100
+    val numOfRows: Int = 100,
 ) {
     val _type: String = "json"
 

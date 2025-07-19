@@ -43,7 +43,7 @@ object AnniversaryUtil {
             annivDate = annivDate.plusDays(interval.toLong())
 
             AnniversaryDto(
-                date  = annivDate,
+                date = annivDate,
                 nTh = (idx * interval).toInt(),
             )
         }
