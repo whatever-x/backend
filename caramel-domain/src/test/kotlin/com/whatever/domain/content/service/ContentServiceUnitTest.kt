@@ -7,7 +7,7 @@ import com.whatever.domain.content.exception.ContentExceptionCode.MEMO_NOT_FOUND
 import com.whatever.domain.content.exception.ContentNotFoundException
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
-import com.whatever.domain.content.model.ContentType
+import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping

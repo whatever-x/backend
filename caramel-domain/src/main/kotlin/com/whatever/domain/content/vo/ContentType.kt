@@ -1,4 +1,4 @@
-package com.whatever.domain.content.model
+package com.whatever.domain.content.vo
 
 enum class ContentType {
     MEMO,

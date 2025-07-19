@@ -1,23 +1,12 @@
 package com.whatever.domain.content.model
 
+import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.domain.base.BaseEntity
 import com.whatever.domain.content.exception.ContentExceptionCode.ILLEGAL_CONTENT_DETAIL
 import com.whatever.domain.content.exception.ContentIllegalArgumentException
+import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.user.model.User
-import com.whatever.global.exception.ErrorUi
-import jakarta.persistence.Column
-import jakarta.persistence.Embedded
-import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
-import jakarta.persistence.FetchType
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.Index
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.Table
+import jakarta.persistence.*
 
 @Entity
 @Table(

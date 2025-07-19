@@ -4,7 +4,7 @@ import com.whatever.domain.calendarevent.scheduleevent.controller.dto.CreateSche
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalArgumentException
 import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
-import com.whatever.domain.content.model.ContentType
+import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository

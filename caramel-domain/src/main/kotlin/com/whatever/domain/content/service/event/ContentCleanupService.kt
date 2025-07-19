@@ -1,4 +1,4 @@
-package com.whatever.content.service.event
+package com.whatever.domain.content.service.event
 
 import com.whatever.domain.base.AbstractEntityCleanupService
 import com.whatever.domain.content.model.Content

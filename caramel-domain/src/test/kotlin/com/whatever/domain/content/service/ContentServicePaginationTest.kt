@@ -4,7 +4,7 @@ import com.whatever.domain.content.controller.dto.request.GetContentListQueryPar
 import com.whatever.domain.content.controller.dto.response.ContentResponse
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
-import com.whatever.domain.content.model.ContentType
+import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping

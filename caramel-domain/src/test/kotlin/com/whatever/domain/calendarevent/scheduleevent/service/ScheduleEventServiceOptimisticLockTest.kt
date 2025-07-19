@@ -5,7 +5,7 @@ import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExcepti
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalStateException
 import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
 import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
-import com.whatever.domain.content.model.ContentType
+import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository

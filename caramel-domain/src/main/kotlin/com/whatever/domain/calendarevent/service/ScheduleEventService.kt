@@ -6,8 +6,9 @@ import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.common.util.endOfDay
 import com.whatever.caramel.common.util.toDateTime
 import com.whatever.caramel.common.util.withoutNano
-import com.whatever.content.service.ScheduleCreator
+import com.whatever.domain.content.service.ScheduleCreator
 import com.whatever.domain.calendarevent.controller.dto.response.ScheduleDetailDto
+import com.whatever.domain.content.vo.DateTimeInfoVo
 import com.whatever.domain.calendarevent.exception.ScheduleAccessDeniedException
 import com.whatever.domain.calendarevent.exception.ScheduleExceptionCode
 import com.whatever.domain.calendarevent.exception.ScheduleExceptionCode.COUPLE_NOT_MATCHED
@@ -22,16 +23,6 @@ import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.CreateScheduleRequest
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.GetScheduleResponse
 import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleAccessDeniedException
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.COUPLE_NOT_MATCHED
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_CONTENT_DETAIL
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_DURATION
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.ILLEGAL_PARTNER_STATUS
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.SCHEDULE_NOT_FOUND
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.UPDATE_CONFLICT
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalArgumentException
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalStateException
-import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
 import com.whatever.domain.content.controller.dto.response.ContentSummaryResponse
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
@@ -45,12 +36,6 @@ import com.whatever.domain.couple.exception.CoupleNotFoundException
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.firebase.service.event.dto.ScheduleCreateEvent
 import com.whatever.domain.user.model.UserStatus.SINGLE
-import com.whatever.global.exception.ErrorUi
-import com.whatever.global.exception.common.CaramelException
-import com.whatever.global.security.util.SecurityUtil
-import com.whatever.global.security.util.SecurityUtil.getCurrentUserCoupleId
-import com.whatever.util.endOfDay
-import com.whatever.util.toDateTime
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.OptimisticLockingFailureException
@@ -155,7 +140,8 @@ class ScheduleEventService(
             description = request.description,
             isCompleted = request.isCompleted,
             tagIds = request.tagIds,
-            dateTimeInfo = request.toDateTimeInfoDto()
+            dateTimeInfo = DateTimeInfoVo.from(request.toDateTimeInfoDto()),
+            getCurrentUserId = currentUserId
         )
 
         applicationEventPublisher.publishEvent(

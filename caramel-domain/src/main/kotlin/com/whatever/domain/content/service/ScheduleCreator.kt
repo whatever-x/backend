@@ -1,22 +1,22 @@
-package com.whatever.content.service
+package com.whatever.domain.content.service
 
-import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
-import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
-import com.whatever.domain.content.controller.dto.request.DateTimeInfoDto
+import com.whatever.caramel.common.util.endOfDay
+import com.whatever.caramel.common.util.toZoneId
+import com.whatever.domain.calendarevent.model.ScheduleEvent
+import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
-import com.whatever.domain.content.model.ContentType
+import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
+import com.whatever.domain.content.vo.DateTimeInfoVo
+import com.whatever.domain.content.vo.ScheduleEventVo
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
-import com.whatever.util.endOfDay
-import com.whatever.util.toZoneId
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
+import java.util.*
 
 @Component
 class ScheduleCreator(
@@ -32,16 +32,16 @@ class ScheduleCreator(
         description: String?,
         isCompleted: Boolean,
         tagIds: Set<Long>,
-        dateTimeInfo: DateTimeInfoDto,
-    ): ScheduleEvent {
+        dateTimeInfo: DateTimeInfoVo,
+        getCurrentUserId: Long,
+    ): ScheduleEventVo {
         val contentDetail = ContentDetail(
             title = title,
             description = description,
             isCompleted = isCompleted
         )
 
-        val userId = getCurrentUserId()
-        val user = userRepository.getReferenceById(userId)
+        val user = userRepository.getReferenceById(getCurrentUserId)
 
         val content = Content(
             user = user,
@@ -69,7 +69,7 @@ class ScheduleCreator(
             }
         }
 
-        return scheduleEvent
+        return ScheduleEventVo.from(scheduleEvent)
     }
 }
 

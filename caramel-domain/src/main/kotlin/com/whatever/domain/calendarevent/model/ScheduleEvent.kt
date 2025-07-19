@@ -7,7 +7,7 @@ import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegal
 import com.whatever.domain.calendarevent.scheduleevent.model.converter.ZonedIdConverter
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
-import com.whatever.domain.content.model.ContentType
+import com.whatever.domain.content.vo.ContentType
 import com.whatever.global.exception.ErrorUi
 import com.whatever.util.endOfDay
 import com.whatever.util.toZoneId

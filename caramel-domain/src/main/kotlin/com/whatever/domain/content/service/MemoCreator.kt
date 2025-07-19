@@ -1,14 +1,14 @@
-package com.whatever.content.service
+package com.whatever.domain.content.service
 
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
-import com.whatever.domain.content.model.ContentType
+import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
+import com.whatever.domain.content.vo.ContentVo
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.security.util.SecurityUtil.getCurrentUserId
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
@@ -25,15 +25,15 @@ class MemoCreator(
         description: String?,
         isCompleted: Boolean,
         tagIds: Set<Long>,
-    ): Content {
+        currentUserId: Long,
+    ): ContentVo {
         val contentDetail = ContentDetail(
             title = title,
             description = description,
             isCompleted = isCompleted
         )
 
-        val userId = getCurrentUserId()
-        val user = userRepository.getReferenceById(userId)
+        val user = userRepository.getReferenceById(currentUserId)
         val content = Content(
             user = user,
             contentDetail = contentDetail,
@@ -54,6 +54,6 @@ class MemoCreator(
             tagContentMappingRepository.saveAll(mappings)
         }
 
-        return content
+        return ContentVo.from(savedContent)
     }
 }

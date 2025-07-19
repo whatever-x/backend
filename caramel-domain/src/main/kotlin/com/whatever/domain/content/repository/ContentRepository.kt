@@ -3,14 +3,14 @@ package com.whatever.domain.content.repository
 import com.linecorp.kotlinjdsl.dsl.jpql.Jpql
 import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicate
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
-import com.whatever.domain.content.controller.dto.request.ContentListSortType
-import com.whatever.domain.content.controller.dto.request.GetContentListQueryParameter
+import com.whatever.caramel.common.util.CursorUtil
 import com.whatever.domain.content.model.Content
-import com.whatever.domain.content.model.ContentType
+import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
+import com.whatever.domain.content.vo.ContentListSortType
+import com.whatever.domain.content.vo.ContentQueryVo
 import com.whatever.domain.user.model.User
-import com.whatever.util.CursorUtil
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -36,7 +36,7 @@ interface ContentRepository : JpaRepository<Content, Long>, ContentRepositoryCus
 interface ContentRepositoryCustom {
     fun findByTypeWithCursor(
         type: ContentType,
-        queryParameter: GetContentListQueryParameter,
+        queryParameter: ContentQueryVo,
         memberIds: List<Long>,
         tagId: Long?,
     ): List<Content>
@@ -49,7 +49,7 @@ class ContentRepositoryCustomImpl(
 
     override fun findByTypeWithCursor(
         type: ContentType,
-        queryParameter: GetContentListQueryParameter,
+        queryParameter: ContentQueryVo,
         memberIds: List<Long>,
         tagId: Long?,
     ): List<Content> {
@@ -74,7 +74,7 @@ class ContentRepositoryCustomImpl(
 }
 
 private fun Jpql.applyCursor(
-    queryParameter: GetContentListQueryParameter,
+    queryParameter: ContentQueryVo,
 ): Predicate? {
     val cursor = queryParameter.cursor
     if (cursor.isNullOrBlank()) return null

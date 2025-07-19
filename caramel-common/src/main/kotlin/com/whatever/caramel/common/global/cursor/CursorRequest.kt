@@ -5,7 +5,7 @@ import org.springframework.data.domain.PageRequest
 interface CursorRequest {
     val cursor: String?
     val size: Int
-    val sortType: com.whatever.caramel.common.global.cursor.Sortables
+    val sortType: Sortables
 
     fun cursorAwarePageSize(): Int = size + 1
 

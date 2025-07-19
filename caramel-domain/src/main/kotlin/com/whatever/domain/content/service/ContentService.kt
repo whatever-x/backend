@@ -1,25 +1,25 @@
 package com.whatever.domain.content.service
 
+import com.whatever.caramel.common.global.cursor.PagedSlice
 import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.common.global.exception.common.CaramelException
 import com.whatever.caramel.common.util.CursorUtil
-import com.whatever.content.service.MemoCreator
+import com.whatever.domain.calendarevent.model.ScheduleEvent
 import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.domain.content.exception.ContentAccessDeniedException
 import com.whatever.domain.content.exception.ContentExceptionCode
-import com.whatever.domain.content.exception.ContentExceptionCode.CONTENT_NOT_FOUND
-import com.whatever.domain.content.exception.ContentExceptionCode.COUPLE_NOT_MATCHED
-import com.whatever.domain.content.exception.ContentExceptionCode.MEMO_NOT_FOUND
+import com.whatever.domain.content.exception.ContentExceptionCode.*
 import com.whatever.domain.content.exception.ContentIllegalStateException
 import com.whatever.domain.content.exception.ContentNotFoundException
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
-import com.whatever.domain.content.model.ContentType
+import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.content.repository.ContentRepository
-import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
+import com.whatever.domain.content.tag.vo.TagVo
+import com.whatever.domain.content.vo.*
 import com.whatever.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
 import com.whatever.domain.couple.exception.CoupleNotFoundException
 import com.whatever.domain.couple.repository.CoupleRepository
@@ -49,7 +49,7 @@ class ContentService(
     fun getMemo(
         memoId: Long,
         ownerCoupleId: Long,
-    ): ContentResponse {
+    ): ContentResponseVo {
         val memo = contentRepository.findContentByIdAndType(
             id = memoId,
             type = ContentType.MEMO
@@ -60,59 +60,60 @@ class ContentService(
             throw ContentAccessDeniedException(errorCode = COUPLE_NOT_MATCHED)
         }
 
-        val tagDtos = tagContentMappingRepository.findAllWithTagByContentId(contentId = memo.id)
-            .map { TagDto.from(it.tag) }
-        return ContentResponse.from(
+        val tagVos = tagContentMappingRepository.findAllWithTagByContentId(contentId = memo.id)
+            .map { TagVo.from(it.tag) }
+        return ContentResponseVo.from(
             content = memo,
-            tagList = tagDtos,
+            tagList = tagVos,
         )
     }
 
     @Transactional(readOnly = true) // 읽기 전용 트랜잭션
     fun getContentList(
-        queryParameter: GetContentListQueryParameter,
+        queryParameterVo: ContentQueryVo,
         coupleId: Long,
-    ): CursoredResponse<ContentResponse> {
+    ): PagedSlice<ContentResponseVo> {
         val memberIds = coupleRepository.findByIdWithMembers(coupleId)?.members?.map { it.id }
             ?: emptyList()
 
         val contentList = contentRepository.findByTypeWithCursor(
             type = ContentType.MEMO,
-            queryParameter = queryParameter,
+            queryParameter = queryParameterVo,
             memberIds = memberIds,
-            tagId = queryParameter.tagId,
+            tagId = queryParameterVo.tagId,
         )
         val tagContentMap = tagContentMappingRepository.findAllWithTagByContentIds(
             contentList.map { it.id }.toSet()
         ).groupBy { it.content.id }
 
         return contentList.let { contents: List<Content> ->
-            CursoredResponse.from(
+            PagedSlice.from(
                 list = contents,
-                size = queryParameter.size,
+                size = queryParameterVo.size,
                 generateCursor = { content: Content ->
                     CursorUtil.toHash(content.id)
                 }
             )
         }.map { content ->
-            val existingTags = tagContentMap[content.id]?.map { it.tag.toTagDto() } ?: emptyList()
-            ContentResponse.from(content, existingTags)
+            val existingTags = tagContentMap[content.id]?.map { TagVo.from(it.tag) } ?: emptyList()
+            ContentResponseVo.from(content, existingTags)
         }
     }
 
     @Transactional
     fun createContent(
-        contentRequest: CreateContentRequest,
+        contentRequestVo: CreateContentRequestVo,
         userId: Long,
-    ): ContentSummaryResponse {
+    ): ContentSummaryVo {
         val couple = coupleRepository.findByIdWithMembers(userId)
             ?: throw CoupleNotFoundException(COUPLE_NOT_FOUND)
 
         val memo = memoCreator.createMemo(
-            title = contentRequest.title,
-            description = contentRequest.description,
-            isCompleted = contentRequest.isCompleted,
-            tagIds = contentRequest.tags.map { it.tagId }.toSet(),
+            title = contentRequestVo.title,
+            description = contentRequestVo.description,
+            isCompleted = contentRequestVo.isCompleted,
+            tagIds = contentRequestVo.tags.map { it.tagId }.toSet(),
+            currentUserId = userId
         )
 
         applicationEventPublisher.publishEvent(
@@ -123,7 +124,7 @@ class ContentService(
                 contentDetail = memo.contentDetail,
             )
         )
-        return memo.toContentSummaryResponse()
+        return ContentSummaryVo.from(memo)
     }
 
     @Retryable(
@@ -135,10 +136,10 @@ class ContentService(
     @Transactional
     fun updateContent(
         contentId: Long,
-        request: UpdateContentRequest,
+        requestVo: UpdateContentRequestVo,
         userCoupleId: Long,
         userId: Long,
-    ): ContentSummaryResponse {
+    ): ContentSummaryVo {
         val memo = contentRepository.findContentByIdAndType(
             id = contentId,
             type = ContentType.MEMO
@@ -153,24 +154,27 @@ class ContentService(
         }
 
         val newContentDetail = ContentDetail(
-            title = request.title,
-            description = request.description,
-            isCompleted = request.isCompleted
+            title = requestVo.title,
+            description = requestVo.description,
+            isCompleted = requestVo.isCompleted
         )
         memo.updateContentDetail(newContentDetail)
 
-        updateTags(memo, request.tagList.map { it.tagId }.toSet())
-        if (request.dateTimeInfo == null) {  // 날짜 정보가 없다면 메모 업데이트만 진행
-            return memo.toContentSummaryResponse()
+        updateTags(memo, requestVo.tagList.map { it.tagId }.toSet())
+        if (requestVo.dateTimeInfo == null) {  // 날짜 정보가 없다면 메모 업데이트만 진행
+            return ContentSummaryVo(
+                contentId = memo.id,
+                contentType = memo.type
+            )
         }
 
-        val scheduleEvent = with(request.dateTimeInfo) {
+        val scheduleEvent = with(requestVo.dateTimeInfo!!) {
             ScheduleEvent.fromMemo(
                 memo = memo,
                 startDateTime = startDateTime,
                 endDateTime = endDateTime,
-                startTimeZone = startTimezone.toZoneId(),
-                endTimeZone = endTimezone?.toZoneId(),
+                startTimeZone = java.time.ZoneId.of(startTimezone),
+                endTimeZone = endTimezone?.let { java.time.ZoneId.of(it) },
             )
         }
         val savedScheduleEvent = scheduleEventRepository.save(scheduleEvent)
@@ -185,7 +189,7 @@ class ContentService(
             )
         )
 
-        return ContentSummaryResponse(
+        return ContentSummaryVo(
             contentId = savedScheduleEvent.id,
             contentType = ContentType.SCHEDULE,
         )
@@ -250,13 +254,3 @@ class ContentService(
         )
     }
 }
-
-private fun Content.toContentSummaryResponse() = ContentSummaryResponse(
-    contentId = id,
-    contentType = type
-)
-
-private fun Tag.toTagDto() = TagDto(
-    id = id,
-    label = label,
-)
