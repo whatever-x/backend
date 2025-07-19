@@ -98,7 +98,7 @@ class ContentServiceUnitTest {
     @DisplayName("존재하지 않는 메모 ID로 조회하면 ContentNotFoundException이 발생한다")
     fun getMemo_memoNotFound() {
         // given
-        val memoId = 999L
+        val memoId = -1L
         val coupleId = 1L
 
         every { SecurityUtil.getCurrentUserCoupleId() } returns coupleId
@@ -118,7 +118,7 @@ class ContentServiceUnitTest {
     fun getMemo_coupleNotFound() {
         // given
         val memoId = 1L
-        val coupleId = 999L
+        val coupleId = -1L
         val userId = 1L
 
         val user = createTestUser(id = userId)
