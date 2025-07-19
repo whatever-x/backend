@@ -66,7 +66,7 @@ class ContentService(
         ) ?: throw ContentNotFoundException(errorCode = MEMO_NOT_FOUND)
 
         val couple = coupleRepository.findByIdWithMembers(ownerCoupleId)
-        if (couple == null || !couple.members.map { it.id }.contains(memo.user.id)) {
+        if (couple == null || couple.members.none { it.id == memo.user.id }) {
             throw ContentAccessDeniedException(errorCode = COUPLE_NOT_MATCHED)
         }
 
