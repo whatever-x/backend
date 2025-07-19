@@ -167,7 +167,7 @@ class ContentService(
             )
         }
 
-        val scheduleEvent = with(requestVo.dateTimeInfo!!) {
+        val scheduleEvent = with(requestVo.dateTimeInfo) {
             ScheduleEvent.fromMemo(
                 memo = memo,
                 startDateTime = startDateTime,
@@ -184,7 +184,7 @@ class ContentService(
                 userId = userId,
                 coupleId = couple.id,
                 memberIds = couple.members.map { it.id }.toSet(),
-                contentDetail = savedScheduleEvent.content.contentDetail,
+                contentDetail = ContentDetailVo.from(savedScheduleEvent.content.contentDetail)
             )
         )
 

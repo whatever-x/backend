@@ -1,5 +1,6 @@
 package com.whatever.domain.content.vo
 
+import com.whatever.domain.calendarevent.vo.DateTimeInfoVo
 import com.whatever.domain.content.tag.vo.TagIdVo
 
 data class UpdateContentRequestVo(

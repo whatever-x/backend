@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id("org.springframework.boot") version "3.4.1"
@@ -52,8 +53,6 @@ dependencies {
 
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
-    // runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
-    // runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 
     // Jackson과 Kotlin의 호환성을 위한 모듈
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
@@ -70,7 +69,6 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
-    // testImplementation("com.github.codemonstur:embedded-redis:1.4.3")
     testImplementation("io.mockk:mockk:1.14.4")
     testImplementation(kotlin("test"))
 }
@@ -84,6 +82,19 @@ kotlin {
         freeCompilerArgs.addAll("-Xjsr305=strict")
         jvmTarget.set(JvmTarget.JVM_21)
     }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
+        mavenBom("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:$opentelemetryVersion")
+    }
+}
+tasks.getByName<BootJar>("bootJar") {
+    enabled = false
+}
+tasks.getByName<Jar>("jar") {
+    enabled = true
 }
 
 configurations.configureEach {
