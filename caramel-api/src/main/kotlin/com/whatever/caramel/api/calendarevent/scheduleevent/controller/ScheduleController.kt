@@ -1,17 +1,16 @@
-package com.whatever.com.whatever.caramel.api.calendarevent.scheduleevent.controller
+package com.whatever.caramel.api.calendarevent.scheduleevent.controller
 
 import com.whatever.CaramelApiResponse
+import com.whatever.SecurityUtil.getCurrentUserCoupleId
+import com.whatever.SecurityUtil.getCurrentUserId
+import com.whatever.caramel.api.calendarevent.controller.dto.response.ScheduleDetailDto
+import com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto.GetScheduleResponse
+import com.whatever.caramel.api.content.controller.dto.response.ContentSummaryResponse
 import com.whatever.com.whatever.caramel.api.calendarevent.controller.dto.request.GetCalendarQueryParameter
-import com.whatever.com.whatever.caramel.api.calendarevent.controller.dto.response.ScheduleDetailDto
 import com.whatever.com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto.CreateScheduleRequest
-import com.whatever.com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto.GetScheduleResponse
 import com.whatever.com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
-import com.whatever.com.whatever.caramel.api.content.controller.dto.response.ContentSummaryResponse
-import com.whatever.domain.calendarevent.scheduleevent.controller.dto.CreateScheduleRequest
-import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
 import com.whatever.domain.calendarevent.service.ScheduleEventService
-import com.whatever.domain.content.controller.dto.response.ContentSummaryResponse
-import com.whatever.global.exception.dto.succeed
+import com.whatever.succeed
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -47,13 +46,16 @@ class ScheduleController(
     fun getSchedules(
         @ParameterObject queryParameter: GetCalendarQueryParameter,
     ): CaramelApiResponse<List<ScheduleDetailDto>> {
-        val schedulesResponse = scheduleEventService.getSchedules(
+        val scheduleDetailsVo = scheduleEventService.getSchedules(
             startDate = queryParameter.startDate,
             endDate = queryParameter.endDate,
-            userTimeZone = queryParameter.userTimeZone
+            userTimeZone = queryParameter.userTimeZone,
+            currentUserCoupleId = getCurrentUserCoupleId(),
         )
 
-        return schedulesResponse.succeed()
+        return scheduleDetailsVo.scheduleDetailVoList
+            .map { ScheduleDetailDto.from(it) }
+            .succeed()
     }
 
     @Operation(
@@ -71,8 +73,11 @@ class ScheduleController(
     fun getSchedule(
         @PathVariable("schedule-id") scheduleId: Long,
     ): CaramelApiResponse<GetScheduleResponse> {
-        val scheduleResponse = scheduleEventService.getSchedule(scheduleId = scheduleId)
-        return scheduleResponse.succeed()
+        val getScheduleVo = scheduleEventService.getSchedule(
+            scheduleId = scheduleId,
+            ownerCoupleId = getCurrentUserCoupleId(),
+        )
+        return GetScheduleResponse.from(getScheduleVo).succeed()
     }
 
     @Operation(
@@ -94,10 +99,12 @@ class ScheduleController(
     fun createSchedule(
         @Valid @RequestBody request: CreateScheduleRequest,
     ): CaramelApiResponse<ContentSummaryResponse> {
-        val response = scheduleEventService.createSchedule(
-            request = request,
+        val contentSummaryVo = scheduleEventService.createSchedule(
+            scheduleVo = request.toVo(),
+            currentUserCoupleId = getCurrentUserCoupleId(),
+            currentUserId = getCurrentUserId(),
         )
-        return response.succeed()
+        return ContentSummaryResponse.from(contentSummaryVo).succeed()
     }
 
     @Operation(
@@ -121,7 +128,9 @@ class ScheduleController(
     ): CaramelApiResponse<Unit> {
         scheduleEventService.updateSchedule(
             scheduleId = scheduleId,
-            request = request,
+            currentUserId = getCurrentUserId(),
+            currentUserCoupleId = getCurrentUserCoupleId(),
+            scheduleVo = request.toVo(),
         )
         return CaramelApiResponse.succeed()
     }
@@ -136,7 +145,11 @@ class ScheduleController(
     )
     @DeleteMapping("/{schedule-id}")
     fun deleteSchedule(@PathVariable("schedule-id") scheduleId: Long): CaramelApiResponse<Unit> {
-        scheduleEventService.deleteSchedule(scheduleId)
+        scheduleEventService.deleteSchedule(
+            scheduleId = scheduleId,
+            currentUserId = getCurrentUserId(),
+            currentUserCoupleId = getCurrentUserCoupleId(),
+        )
         return CaramelApiResponse.succeed()
     }
 }

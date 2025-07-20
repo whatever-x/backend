@@ -1,6 +1,7 @@
 package com.whatever.domain.calendarevent.vo
 
 import com.whatever.domain.calendarevent.model.ScheduleEvent
+import com.whatever.domain.content.model.Content
 import java.time.LocalDateTime
 
 data class ScheduleDetailVo(
@@ -25,6 +26,22 @@ data class ScheduleDetailVo(
                 isCompleted = scheduleEvent.content.contentDetail.isCompleted,
                 title = scheduleEvent.content.contentDetail.title,
                 description = scheduleEvent.content.contentDetail.description,
+            )
+        }
+
+        /**
+         * N+1 방지를 위해 명시적으로 content 입력받았습니다.
+         */
+        fun from(scheduleEvent: ScheduleEvent, content: Content): ScheduleDetailVo {
+            return ScheduleDetailVo(
+                scheduleId = scheduleEvent.id,
+                startDateTime = scheduleEvent.startDateTime,
+                endDateTime = scheduleEvent.endDateTime,
+                startDateTimezone = scheduleEvent.startTimeZone.id,
+                endDateTimezone = scheduleEvent.endTimeZone.id,
+                isCompleted = content.contentDetail.isCompleted,
+                title = content.contentDetail.title,
+                description = content.contentDetail.description,
             )
         }
     }

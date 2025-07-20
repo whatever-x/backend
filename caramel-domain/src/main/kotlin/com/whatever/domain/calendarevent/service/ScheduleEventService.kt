@@ -17,7 +17,6 @@ import com.whatever.domain.calendarevent.exception.ScheduleIllegalStateException
 import com.whatever.domain.calendarevent.exception.ScheduleNotFoundException
 import com.whatever.domain.calendarevent.model.ScheduleEvent
 import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
-import com.whatever.domain.calendarevent.vo.ContentSummaryVo
 import com.whatever.domain.calendarevent.vo.CreateScheduleVo
 import com.whatever.domain.calendarevent.vo.DateTimeInfoVo
 import com.whatever.domain.calendarevent.vo.GetScheduleVo
@@ -30,6 +29,7 @@ import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
+import com.whatever.domain.content.vo.ContentSummaryVo
 import com.whatever.domain.couple.exception.CoupleException
 import com.whatever.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
 import com.whatever.domain.couple.exception.CoupleNotFoundException
@@ -147,8 +147,8 @@ class ScheduleEventService(
             )
         )
 
-        return ContentSummaryVo.from(
-            contentId = savedScheduleEvent.id,
+        return ContentSummaryVo(
+            id = savedScheduleEvent.id,
             contentType = savedScheduleEvent.content.type,
         )
     }

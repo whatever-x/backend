@@ -1,10 +1,8 @@
-package com.whatever.com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto
+package com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto
 
-import com.whatever.domain.calendarevent.controller.dto.response.ScheduleDetailDto
-import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
-import com.whatever.domain.content.controller.dto.response.TagDto
-import com.whatever.domain.content.model.Content
-import com.whatever.domain.content.tag.model.Tag
+import com.whatever.caramel.api.calendarevent.controller.dto.response.ScheduleDetailDto
+import com.whatever.caramel.api.content.controller.dto.response.TagDto
+import com.whatever.domain.calendarevent.vo.GetScheduleVo
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "일정 조회 응답 DTO")
@@ -15,22 +13,11 @@ data class GetScheduleResponse(
     val tags: List<TagDto> = emptyList(),
 ) {
     companion object {
-        fun of(
-            schedule: ScheduleEvent,
-            content: Content,
-            tags: List<Tag>,
-        ) = GetScheduleResponse(
-            scheduleDetail = ScheduleDetailDto(
-                scheduleId = schedule.id,
-                startDateTime = schedule.startDateTime,
-                endDateTime = schedule.endDateTime,
-                startDateTimezone = schedule.startTimeZone.id,
-                endDateTimezone = schedule.endTimeZone.id,
-                isCompleted = content.contentDetail.isCompleted,
-                title = content.contentDetail.title,
-                description = content.contentDetail.description,
-            ),
-            tags = tags.map { TagDto.from(it) }
-        )
+        fun from(getScheduleVo: GetScheduleVo): GetScheduleResponse {
+            return GetScheduleResponse(
+                scheduleDetail = ScheduleDetailDto.from(getScheduleVo.scheduleDetail),
+                tags = getScheduleVo.tags.map { TagDto.from(it) }
+            )
+        }
     }
 }

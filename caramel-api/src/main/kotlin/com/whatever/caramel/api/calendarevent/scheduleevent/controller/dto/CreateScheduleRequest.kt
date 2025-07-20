@@ -1,7 +1,6 @@
 package com.whatever.com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto
 
-import com.whatever.domain.content.controller.dto.request.DateTimeInfoDto
-import com.whatever.domain.content.model.ContentDetail
+import com.whatever.domain.calendarevent.vo.CreateScheduleVo
 import com.whatever.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
 import com.whatever.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
 import io.swagger.v3.oas.annotations.media.Schema
@@ -37,11 +36,16 @@ data class CreateScheduleRequest(
     @Schema(description = "태그 번호 리스트")
     val tagIds: Set<Long> = emptySet(),
 ) {
-    fun toContentDetail(): ContentDetail {
-        return ContentDetail(
-            title = title,
-            description = description,
-            isCompleted = isCompleted,
+    fun toVo(): CreateScheduleVo {
+        return CreateScheduleVo(
+            title = this.title,
+            description = this.description,
+            isCompleted = this.isCompleted,
+            startDateTime = this.startDateTime,
+            startTimeZone = this.startTimeZone,
+            endDateTime = this.endDateTime,
+            endTimeZone = this.endTimeZone,
+            tagIds = this.tagIds,
         )
     }
 }
