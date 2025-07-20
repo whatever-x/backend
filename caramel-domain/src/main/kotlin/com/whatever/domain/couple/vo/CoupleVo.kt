@@ -5,7 +5,7 @@ import com.whatever.domain.couple.model.CoupleStatus
 import java.time.LocalDate
 
 data class CoupleVo(
-    val coupleId: Long,
+    val id: Long,
     val startDate: LocalDate?,
     val sharedMessage: String?,
     val status: CoupleStatus,
@@ -13,7 +13,7 @@ data class CoupleVo(
     companion object {
         fun from(couple: Couple): CoupleVo {
             return CoupleVo(
-                coupleId = couple.id,
+                id = couple.id,
                 startDate = couple.startDate,
                 sharedMessage = couple.sharedMessage,
                 status = couple.status,

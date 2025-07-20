@@ -6,7 +6,7 @@ import com.whatever.domain.user.model.User
 import java.time.LocalDate
 
 data class CoupleDetailVo(
-    val coupleId: Long,
+    val id: Long,
     val startDate: LocalDate?,
     val sharedMessage: String?,
     val status: CoupleStatus,
@@ -20,7 +20,7 @@ data class CoupleDetailVo(
             partnerUser: User,
         ): CoupleDetailVo {
             return CoupleDetailVo(
-                coupleId = couple.id,
+                id = couple.id,
                 startDate = couple.startDate,
                 sharedMessage = couple.sharedMessage,
                 status = couple.status,

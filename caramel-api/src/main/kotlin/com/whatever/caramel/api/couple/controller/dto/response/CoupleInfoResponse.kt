@@ -1,8 +1,9 @@
 package com.whatever.caramel.api.couple.controller.dto.response
 
-import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.model.CoupleStatus
-import com.whatever.domain.user.model.User
+import com.whatever.domain.couple.vo.CoupleDetailVo
+import com.whatever.domain.couple.vo.CoupleUserInfoVo
+import com.whatever.domain.couple.vo.CoupleVo
 import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserStatus
 import io.swagger.v3.oas.annotations.media.Schema
@@ -29,14 +30,14 @@ data class CoupleDetailResponse(
     val partnerInfo: CoupleUserInfoDto,
 ) {
     companion object {
-        fun from(couple: Couple, myUser: User, partnerUser: User): CoupleDetailResponse {
+        fun from(coupleDetailVo: CoupleDetailVo): CoupleDetailResponse {
             return CoupleDetailResponse(
-                coupleId = couple.id,
-                startDate = couple.startDate,
-                sharedMessage = couple.sharedMessage,
-                status = couple.status,
-                myInfo = CoupleUserInfoDto.from(myUser),
-                partnerInfo = CoupleUserInfoDto.from(partnerUser),
+                coupleId = coupleDetailVo.id,
+                startDate = coupleDetailVo.startDate,
+                sharedMessage = coupleDetailVo.sharedMessage,
+                status = coupleDetailVo.status,
+                myInfo = CoupleUserInfoDto.from(coupleDetailVo.myInfo),
+                partnerInfo = CoupleUserInfoDto.from(coupleDetailVo.partnerInfo),
             )
         }
     }
@@ -57,12 +58,12 @@ data class CoupleBasicResponse(
     val status: CoupleStatus,
 ) {
     companion object {
-        fun from(couple: Couple): CoupleBasicResponse {
+        fun from(coupleVo: CoupleVo): CoupleBasicResponse {
             return CoupleBasicResponse(
-                coupleId = couple.id,
-                startDate = couple.startDate,
-                sharedMessage = couple.sharedMessage,
-                status = couple.status,
+                coupleId = coupleVo.id,
+                startDate = coupleVo.startDate,
+                sharedMessage = coupleVo.sharedMessage,
+                status = coupleVo.status,
             )
         }
     }
@@ -86,13 +87,13 @@ data class CoupleUserInfoDto(
     val gender: UserGender,
 ) {
     companion object {
-        fun from(user: User): CoupleUserInfoDto {
+        fun from(user: CoupleUserInfoVo): CoupleUserInfoDto {
             return CoupleUserInfoDto(
                 id = user.id,
                 userStatus = user.userStatus,
-                nickname = user.nickname!!,
-                birthDate = user.birthDate!!,
-                gender = user.gender!!,
+                nickname = user.nickname,
+                birthDate = user.birthDate,
+                gender = user.gender,
             )
         }
     }

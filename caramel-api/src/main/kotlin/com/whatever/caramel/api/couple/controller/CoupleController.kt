@@ -1,7 +1,8 @@
 package com.whatever.caramel.api.couple.controller
 
 import com.whatever.CaramelApiResponse
-import com.whatever.SecurityUtil
+import com.whatever.SecurityUtil.getCurrentUserCoupleId
+import com.whatever.SecurityUtil.getCurrentUserId
 import com.whatever.caramel.api.couple.controller.dto.request.CreateCoupleRequest
 import com.whatever.caramel.api.couple.controller.dto.request.UpdateCoupleSharedMessageRequest
 import com.whatever.caramel.api.couple.controller.dto.request.UpdateCoupleStartDateRequest
@@ -55,8 +56,8 @@ class CoupleController(
     )
     @GetMapping("/me")
     fun getMyCoupleInfo(): CaramelApiResponse<CoupleBasicResponse> {
-        val response = coupleService.getCoupleInfo()
-        return response.succeed()
+        val coupleVo = coupleService.getCoupleInfo(getCurrentUserCoupleId())
+        return CoupleBasicResponse.from(coupleVo).succeed()
     }
 
     @Operation(
@@ -73,8 +74,11 @@ class CoupleController(
     )
     @GetMapping("/{couple-id}")
     fun getCoupleInfo(@PathVariable("couple-id") coupleId: Long): CaramelApiResponse<CoupleDetailResponse> {
-        val response = coupleService.getCoupleAndMemberInfo(coupleId)
-        return response.succeed()
+        val coupleDetailVo = coupleService.getCoupleAndMemberInfo(
+            coupleId = getCurrentUserCoupleId(),
+            currentUserId = getCurrentUserId()
+        )
+        return CoupleDetailResponse.from(coupleDetailVo).succeed()
     }
 
     @Operation(
@@ -102,11 +106,13 @@ class CoupleController(
         @Parameter(description = "조회 종료일")
         @RequestParam("endDate") endDate: LocalDate,
     ): CaramelApiResponse<CoupleAnniversaryResponse> {
-        val response = coupleAnnivService.getCoupleAnniversary(
+        val coupleAnniversaryVo = coupleAnnivService.getCoupleAnniversary(
             startDate = startDate,
             endDate = endDate,
+            coupleId = getCurrentUserCoupleId(),
+            requestUserId = getCurrentUserId(),
         )
-        return response.succeed()
+        return CoupleAnniversaryResponse.from(coupleAnniversaryVo).succeed()
     }
 
     @Operation(
@@ -124,8 +130,8 @@ class CoupleController(
     )
     @PostMapping("/invitation-code")
     fun createInvitationCode(): CaramelApiResponse<CoupleInvitationCodeResponse> {
-        val response = coupleService.createInvitationCode(userId = SecurityUtil.getCurrentUserId())
-        return response.succeed()
+        val coupleInvitationCodeVo = coupleService.createInvitationCode(userId = getCurrentUserId())
+        return CoupleInvitationCodeResponse.from(coupleInvitationCodeVo).succeed()
     }
 
     @Operation(
@@ -142,8 +148,11 @@ class CoupleController(
     )
     @PostMapping("/connect")
     fun createCouple(@RequestBody request: CreateCoupleRequest): CaramelApiResponse<CoupleDetailResponse> {
-        val response = coupleService.createCouple(request)
-        return response.succeed()
+        val coupleDetailVo = coupleService.createCouple(
+            invitationCode = request.invitationCode,
+            joinerUserId = getCurrentUserId(),
+        )
+        return CoupleDetailResponse.from(coupleDetailVo).succeed()
     }
 
     @Operation(
@@ -164,8 +173,12 @@ class CoupleController(
         @RequestBody request: UpdateCoupleStartDateRequest,
         @RequestHeader(TIME_ZONE) timeZone: String,
     ): CaramelApiResponse<CoupleBasicResponse> {
-        val response = coupleService.updateStartDate(coupleId, request, timeZone)
-        return response.succeed()
+        val coupleVo = coupleService.updateStartDate(
+            coupleId = getCurrentUserCoupleId(),
+            newCoupleStartDate = request.startDate,
+            timeZone = timeZone,
+        )
+        return CoupleBasicResponse.from(coupleVo).succeed()
     }
 
     @Operation(
@@ -186,8 +199,11 @@ class CoupleController(
         @PathVariable("couple-id") coupleId: Long,
         @Valid @RequestBody request: UpdateCoupleSharedMessageRequest,
     ): CaramelApiResponse<CoupleBasicResponse> {
-        val response = coupleService.updateSharedMessage(coupleId, request)
-        return response.succeed()
+        val coupleVo = coupleService.updateSharedMessage(
+            coupleId = getCurrentUserCoupleId(),
+            newCoupleSharedMessage = request.sharedMessage,
+        )
+        return CoupleBasicResponse.from(coupleVo).succeed()
     }
 
     @Operation(
@@ -201,7 +217,10 @@ class CoupleController(
     )
     @DeleteMapping("/{couple-id}/members/me")
     fun leaveCouple(@PathVariable("couple-id") coupleId: Long): CaramelApiResponse<Unit> {
-        coupleService.leaveCouple(coupleId)
+        coupleService.leaveCouple(
+            coupleId = getCurrentUserCoupleId(),
+            userId = getCurrentUserId(),
+        )
         return CaramelApiResponse.succeed()
     }
 }

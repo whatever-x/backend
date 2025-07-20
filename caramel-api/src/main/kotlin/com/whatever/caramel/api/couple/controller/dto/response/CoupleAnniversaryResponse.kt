@@ -1,7 +1,8 @@
 package com.whatever.caramel.api.couple.controller.dto.response
 
-import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.model.CoupleAnniversaryType
+import com.whatever.domain.couple.vo.AnniversaryVo
+import com.whatever.domain.couple.vo.CoupleAnniversaryVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
@@ -24,22 +25,20 @@ data class CoupleAnniversaryResponse(
     val partnerBirthDates: List<CoupleAnniversaryDto>,
 ) {
     companion object {
-        fun of(
-            couple: Couple,
-            hundredDayAnniversaries: List<CoupleAnniversaryDto>,
-            yearlyAnniversaries: List<CoupleAnniversaryDto>,
-            myBirthDates: List<CoupleAnniversaryDto>,
-            partnerBirthDates: List<CoupleAnniversaryDto>,
+        fun from(
+            coupleAnniversaryVo: CoupleAnniversaryVo
         ): CoupleAnniversaryResponse {
-            return CoupleAnniversaryResponse(
-                coupleId = couple.id,
-                startDate = couple.startDate,
-                sharedMessage = couple.sharedMessage,
-                hundredDayAnniversaries = hundredDayAnniversaries,
-                yearlyAnniversaries = yearlyAnniversaries,
-                myBirthDates = myBirthDates,
-                partnerBirthDates = partnerBirthDates,
-            )
+            return with(coupleAnniversaryVo) {
+                CoupleAnniversaryResponse(
+                    coupleId = coupleId,
+                    startDate = startDate,
+                    sharedMessage = sharedMessage,
+                    hundredDayAnniversaries = hundredDayAnniversaries.map { CoupleAnniversaryDto.from(it) },
+                    yearlyAnniversaries = yearlyAnniversaries.map { CoupleAnniversaryDto.from(it) },
+                    myBirthDates = myBirthDates.map { CoupleAnniversaryDto.from(it) },
+                    partnerBirthDates = partnerBirthDates.map { CoupleAnniversaryDto.from(it) },
+                )
+            }
         }
     }
 }
@@ -57,4 +56,15 @@ data class CoupleAnniversaryDto(
             "기념일이 원래 2월 29일이었으나, 해당 연도가 윤년이 아니어서 날짜가 조정되었는지 여부 (예: 2월 28일로 조정될 때 ture)"
     )
     val isAdjustedForNonLeapYear: Boolean = false,
-)
+) {
+    companion object {
+        fun from(anniversaryVo: AnniversaryVo): CoupleAnniversaryDto {
+            return CoupleAnniversaryDto(
+                type = anniversaryVo.type,
+                date = anniversaryVo.date,
+                label = anniversaryVo.label,
+                isAdjustedForNonLeapYear = anniversaryVo.isAdjustedForNonLeapYear,
+            )
+        }
+    }
+}

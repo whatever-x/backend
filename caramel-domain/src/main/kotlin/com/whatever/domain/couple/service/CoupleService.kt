@@ -42,6 +42,7 @@ import org.springframework.retry.annotation.Recover
 import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 private val logger = KotlinLogging.logger { }
 
@@ -69,7 +70,7 @@ class CoupleService(
     @Transactional
     fun updateSharedMessage(
         coupleId: Long,
-        updateCoupleSharedMessageVo: UpdateCoupleSharedMessageVo,
+        newCoupleSharedMessage: String?,
     ): CoupleVo {
         val couple = coupleRepository.findCoupleById(coupleId)
         if (couple.id != coupleId) {
@@ -77,7 +78,7 @@ class CoupleService(
         }
 
         val updatedCouple = couple.apply {
-            updateSharedMessage(updateCoupleSharedMessageVo.sharedMessage)
+            updateSharedMessage(newCoupleSharedMessage)
         }
 
         return CoupleVo.from(updatedCouple)
@@ -102,14 +103,14 @@ class CoupleService(
     @Transactional
     fun updateStartDate(
         coupleId: Long,
-        updateCoupleStartDateVo: UpdateCoupleStartDateVo,
+        newCoupleStartDate: LocalDate,
         timeZone: String,
     ): CoupleVo {
         val couple = coupleRepository.findCoupleById(coupleId)
 
         val updatedCouple = couple.apply {
             updateStartDate(
-                newDate = updateCoupleStartDateVo.startDate,
+                newDate = newCoupleStartDate,
                 userZoneId = timeZone.toZoneId()
             )
         }
@@ -176,10 +177,9 @@ class CoupleService(
 
     @Transactional
     fun createCouple(
-        createCoupleVo: CreateCoupleVo,
+        invitationCode: String,
         joinerUserId: Long,
     ): CoupleDetailVo {
-        val invitationCode = createCoupleVo.invitationCode
         val creatorUserId = inviCodeRedisRepository.getInvitationUser(invitationCode)
             ?: throw CoupleException(
                 errorCode = INVITATION_CODE_EXPIRED,

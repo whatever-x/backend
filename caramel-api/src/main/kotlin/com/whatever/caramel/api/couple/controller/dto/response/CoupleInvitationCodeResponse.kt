@@ -1,5 +1,6 @@
 package com.whatever.caramel.api.couple.controller.dto.response
 
+import com.whatever.domain.couple.vo.CoupleInvitationCodeVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDateTime
 
@@ -10,4 +11,13 @@ data class CoupleInvitationCodeResponse(
 
     @Schema(description = "만료 시점", nullable = true)
     val expirationDateTime: LocalDateTime?,
-)
+) {
+    companion object {
+        fun from(coupleInvitationCodeVo: CoupleInvitationCodeVo): CoupleInvitationCodeResponse {
+            return CoupleInvitationCodeResponse(
+                invitationCode = coupleInvitationCodeVo.invitationCode,
+                expirationDateTime = coupleInvitationCodeVo.expirationDateTime,
+            )
+        }
+    }
+}
