@@ -106,7 +106,7 @@ class MemoToScheduleConvertTest @Autowired constructor(
         val result = contentService.updateContent(memo.id, request)
 
         // then
-        val scheduleEvent = scheduleEventRepository.findByIdAndNotDeleted(result.contentId)
+        val scheduleEvent = scheduleEventRepository.findByIdAndNotDeleted(result.id)
         val content = contentRepository.findByIdAndNotDeleted(memo.id)
         require(scheduleEvent != null)
         require(content != null)

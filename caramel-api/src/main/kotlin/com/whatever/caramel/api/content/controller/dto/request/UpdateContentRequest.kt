@@ -2,6 +2,7 @@ package com.whatever.com.whatever.caramel.api.content.controller.dto.request
 
 import com.whatever.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
 import com.whatever.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
+import com.whatever.domain.content.vo.UpdateContentRequestVo
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED
 import org.hibernate.validator.constraints.CodePointLength
@@ -20,8 +21,18 @@ data class UpdateContentRequest(
     val isCompleted: Boolean = false,
 
     @Schema(description = "태그 번호 리스트", requiredMode = NOT_REQUIRED)
-    val tagList: List<TagIdDto> = emptyList(),
+    val tagList: List<Long> = emptyList(),
 
     @Schema(description = "일정 정보 (캘린더 추가시에만 사용)", requiredMode = NOT_REQUIRED)
     val dateTimeInfo: DateTimeInfoDto? = null,
-)
+) {
+    fun toVo(): UpdateContentRequestVo {
+        return UpdateContentRequestVo(
+            title = this.title,
+            description = this.description,
+            isCompleted = this.isCompleted,
+            tagList = this.tagList,
+            dateTimeInfo = this.dateTimeInfo?.toVo()
+        )
+    }
+}

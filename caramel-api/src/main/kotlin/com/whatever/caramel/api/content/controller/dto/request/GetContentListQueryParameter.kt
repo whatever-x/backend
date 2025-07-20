@@ -1,9 +1,8 @@
 package com.whatever.com.whatever.caramel.api.content.controller.dto.request
 
-import com.whatever.global.cursor.CursorRequest
-import com.whatever.global.cursor.DescOrder
-import com.whatever.global.cursor.Sortable
-import com.whatever.global.cursor.Sortables
+import com.whatever.caramel.common.global.cursor.CursorRequest
+import com.whatever.domain.content.vo.ContentListSortType
+import com.whatever.domain.content.vo.ContentQueryVo
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.Schema
@@ -31,10 +30,14 @@ data class GetContentListQueryParameter(
     override val cursor: String?,
     override val sortType: ContentListSortType = ContentListSortType.ID_DESC,
     val tagId: Long? = null,
-) : CursorRequest
-
-enum class ContentListSortType : Sortables {
-    ID_DESC {
-        override val sortables: List<Sortable> = listOf(DescOrder("id"))
-    };
+) : CursorRequest {
+    fun toVo(): ContentQueryVo {
+        return ContentQueryVo(
+            size = this.size,
+            cursor = this.cursor,
+            sortType = this.sortType,
+            tagId = this.tagId
+        )
+    }
 }
+

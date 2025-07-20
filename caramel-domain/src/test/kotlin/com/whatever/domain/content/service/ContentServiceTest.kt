@@ -127,7 +127,7 @@ class ContentServiceTest @Autowired constructor(
         val result = contentService.createContent(request)
 
         // then
-        val savedContent = contentRepository.findByIdOrNull(result.contentId)
+        val savedContent = contentRepository.findByIdOrNull(result.id)
         requireNotNull(savedContent)
 
         with(savedContent.contentDetail) {
@@ -150,7 +150,7 @@ class ContentServiceTest @Autowired constructor(
         val result = contentService.createContent(request)
 
         // then
-        val savedContent = contentRepository.findByIdOrNull(result.contentId)
+        val savedContent = contentRepository.findByIdOrNull(result.id)
         requireNotNull(savedContent)
 
         with(savedContent.contentDetail) {
@@ -342,7 +342,7 @@ class ContentServiceTest @Autowired constructor(
 
         // then
         val updatedContent = contentRepository.findByIdOrNull(memo.id)!!
-        assertThat(response.contentId).isEqualTo(memo.id)
+        assertThat(response.id).isEqualTo(memo.id)
         assertThat(response.contentType).isEqualTo(ContentType.MEMO)
         assertThat(updatedContent.contentDetail.title).isEqualTo(newTitle)
         assertThat(updatedContent.contentDetail.description).isEqualTo(newDesc)
@@ -417,7 +417,7 @@ class ContentServiceTest @Autowired constructor(
 
         // then
         val scheduleEvent = scheduleEventRepository.findAll().single()
-        assertThat(response.contentId).isEqualTo(scheduleEvent.id)
+        assertThat(response.id).isEqualTo(scheduleEvent.id)
         assertThat(response.contentType).isEqualTo(ContentType.SCHEDULE)
 
         val updatedContent = contentRepository.findByIdOrNull(memo.id)!!

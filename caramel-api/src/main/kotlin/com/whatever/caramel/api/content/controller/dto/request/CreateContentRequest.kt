@@ -1,7 +1,9 @@
 package com.whatever.com.whatever.caramel.api.content.controller.dto.request
 
+import com.whatever.domain.calendarevent.vo.DateTimeInfoVo
 import com.whatever.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
 import com.whatever.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
+import com.whatever.domain.content.vo.CreateContentRequestVo
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED
 import org.hibernate.validator.constraints.CodePointLength
@@ -27,14 +29,17 @@ data class CreateContentRequest(
         description = "태그 번호 리스트",
         requiredMode = NOT_REQUIRED,
     )
-    val tags: List<TagIdDto> = emptyList(),
-)
-
-@Schema(description = "태그 정보 모델")
-data class TagIdDto(
-    @Schema(description = "태그 id", example = "1")
-    val tagId: Long,
-)
+    val tags: List<Long> = emptyList(),
+) {
+    fun toVo(): CreateContentRequestVo {
+        return CreateContentRequestVo(
+            title = this.title,
+            description = this.description,
+            isCompleted = this.isCompleted,
+            tags = this.tags
+        )
+    }
+}
 
 @Schema(description = "일정 정보 모델")
 data class DateTimeInfoDto(
@@ -57,4 +62,13 @@ data class DateTimeInfoDto(
         requiredMode = NOT_REQUIRED,
     )
     val endTimezone: String? = null,
-)
+) {
+    fun toVo(): DateTimeInfoVo {
+        return DateTimeInfoVo(
+            startDateTime = this.startDateTime,
+            startTimezone = this.startTimezone,
+            endDateTime = this.endDateTime,
+            endTimezone = this.endTimezone
+        )
+    }
+}

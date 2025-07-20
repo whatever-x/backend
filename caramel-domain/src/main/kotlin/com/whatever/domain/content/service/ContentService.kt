@@ -111,7 +111,7 @@ class ContentService(
             title = contentRequestVo.title,
             description = contentRequestVo.description,
             isCompleted = contentRequestVo.isCompleted,
-            tagIds = contentRequestVo.tags.map { it.tagId }.toSet(),
+            tagIds = contentRequestVo.tags.toSet(),
             currentUserId = userId
         )
 
@@ -159,10 +159,10 @@ class ContentService(
         )
         memo.updateContentDetail(newContentDetail)
 
-        updateTags(memo, requestVo.tagList.map { it.tagId }.toSet())
+        updateTags(memo, requestVo.tagList.toSet())
         if (requestVo.dateTimeInfo == null) {  // 날짜 정보가 없다면 메모 업데이트만 진행
             return ContentSummaryVo(
-                contentId = memo.id,
+                id = memo.id,
                 contentType = memo.type
             )
         }
@@ -189,7 +189,7 @@ class ContentService(
         )
 
         return ContentSummaryVo(
-            contentId = savedScheduleEvent.id,
+            id = savedScheduleEvent.id,
             contentType = ContentType.SCHEDULE,
         )
     }

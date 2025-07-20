@@ -1,9 +1,8 @@
 package com.whatever.com.whatever.caramel.api.content.controller.dto.response
 
-import com.whatever.domain.content.model.Content
-import com.whatever.domain.content.model.ContentType
-import com.whatever.domain.content.tag.model.Tag
 import com.whatever.caramel.common.util.DateTimeUtil.KST_ZONE_ID
+import com.whatever.domain.content.model.Content
+import com.whatever.domain.content.vo.ContentResponseVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
@@ -17,15 +16,15 @@ data class ContentResponse(
     val description: String,
     @Schema(description = "완료 여부")
     val isCompleted: Boolean,
-    @Schema(description = "연관 태그 리스트")
-    val tagList: List<TagDto>,
+    @Schema(description = "연관 태그 Id 리스트")
+    val tagList: List<Long>,
     @Schema(description = "생성일")
     val createdAt: LocalDate,
 ) {
     companion object {
         fun from(
             content: Content,
-            tagList: List<TagDto>,
+            tagList: List<Long>,
         ) = ContentResponse(
             id = content.id,
             title = content.contentDetail.title ?: "",
@@ -34,26 +33,16 @@ data class ContentResponse(
             tagList = tagList,
             createdAt = content.getCreatedAtInZone(KST_ZONE_ID).toLocalDate()
         )
+
+        fun from(contentResponseVo: ContentResponseVo): ContentResponse {
+            return ContentResponse(
+                id = contentResponseVo.id,
+                title = contentResponseVo.title,
+                description = contentResponseVo.description,
+                isCompleted = contentResponseVo.isCompleted,
+                tagList = contentResponseVo.tagList.map { it.id },
+                createdAt = contentResponseVo.createdAt
+            )
+        }
     }
 }
-
-data class TagDto(
-    val id: Long,
-    val label: String,
-) {
-    companion object {
-        fun from(tag: Tag) = TagDto(
-            id = tag.id,
-            label = tag.label,
-        )
-    }
-}
-
-@Schema(description = "콘텐츠 요약 응답 DTO")
-data class ContentSummaryResponse(
-    @Schema(description = "콘텐츠 id. contentType에 따라 메모 id, 일정 id")
-    val contentId: Long,
-
-    @Schema(description = "콘텐츠 타입 표시 (예: MEMO, SCHEDULE)")
-    val contentType: ContentType,
-)

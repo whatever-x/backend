@@ -2,28 +2,22 @@ package com.whatever.com.whatever.caramel.api.content.controller
 
 import com.whatever.CaramelApiResponse
 import com.whatever.CursoredResponse
+import com.whatever.SecurityUtil
+import com.whatever.caramel.api.content.controller.dto.response.ContentSummaryResponse
 import com.whatever.com.whatever.caramel.api.content.controller.dto.request.CreateContentRequest
 import com.whatever.com.whatever.caramel.api.content.controller.dto.request.GetContentListQueryParameter
 import com.whatever.com.whatever.caramel.api.content.controller.dto.request.UpdateContentRequest
 import com.whatever.com.whatever.caramel.api.content.controller.dto.response.ContentResponse
-import com.whatever.com.whatever.caramel.api.content.controller.dto.response.ContentSummaryResponse
 import com.whatever.domain.content.exception.ContentException
 import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.service.ContentService
-import com.whatever.global.exception.dto.succeed
+import com.whatever.succeed
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @Tag(
     name = "콘텐츠(메모) API",
@@ -51,7 +45,11 @@ class ContentController(
     fun getContents(
         @ParameterObject queryParameter: GetContentListQueryParameter,
     ): CaramelApiResponse<CursoredResponse<ContentResponse>> {
-        return contentService.getContentList(queryParameter).succeed()
+        val coupleId = SecurityUtil.getCurrentUserCoupleId()
+        val contentListVo = contentService.getContentList(queryParameter.toVo(), coupleId)
+        val responsePagedSlice = contentListVo.map { ContentResponse.from(it) }
+        val response = CursoredResponse.from(responsePagedSlice)
+        return response.succeed()
     }
 
     @Operation(
@@ -69,7 +67,9 @@ class ContentController(
     fun getMemo(
         @PathVariable("memo-id") memoId: Long,
     ): CaramelApiResponse<ContentResponse> {
-        val response = contentService.getMemo(memoId)
+        val coupleId = SecurityUtil.getCurrentUserCoupleId()
+        val contentResponseVo = contentService.getMemo(memoId, coupleId)
+        val response = ContentResponse.from(contentResponseVo)
         return response.succeed()
     }
 
@@ -95,7 +95,10 @@ class ContentController(
         if (request.title.isNullOrBlank() && request.description.isNullOrBlank()) {
             throw ContentException(errorCode = ContentExceptionCode.TITLE_OR_DESCRIPTION_REQUIRED)
         }
-        return contentService.createContent(request).succeed()
+        val userId = SecurityUtil.getCurrentUserId()
+        val contentSummaryVo = contentService.createContent(request.toVo(), userId)
+        val response = ContentSummaryResponse.from(contentSummaryVo)
+        return response.succeed()
     }
 
     @Operation(
@@ -121,7 +124,12 @@ class ContentController(
         @PathVariable("memo-id") contentId: Long,
         @Valid @RequestBody request: UpdateContentRequest,
     ): CaramelApiResponse<ContentSummaryResponse> {
-        return contentService.updateContent(contentId, request).succeed()
+        val userId = SecurityUtil.getCurrentUserId()
+        val coupleId = SecurityUtil.getCurrentUserCoupleId()
+        val contentSummaryVo = contentService.updateContent(contentId, request.toVo(), coupleId, userId)
+        val response =
+            ContentSummaryResponse.from(contentSummaryVo)
+        return response.succeed()
     }
 
     @Operation(
