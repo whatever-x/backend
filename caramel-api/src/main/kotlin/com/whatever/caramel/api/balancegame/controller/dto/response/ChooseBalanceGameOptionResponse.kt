@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.balancegame.controller.dto.response
+package com.whatever.caramel.api.balancegame.controller.dto.response
 
 import com.whatever.domain.balancegame.vo.BalanceGameVo
 import com.whatever.domain.balancegame.vo.UserChoiceOptionVo

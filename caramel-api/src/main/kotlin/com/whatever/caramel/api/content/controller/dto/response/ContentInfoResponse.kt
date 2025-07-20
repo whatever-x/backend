@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.content.controller.dto.response
+package com.whatever.caramel.api.content.controller.dto.response
 
 import com.whatever.caramel.common.util.DateTimeUtil.KST_ZONE_ID
 import com.whatever.domain.content.model.Content

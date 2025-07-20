@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.calendarevent.controller.dto.response
+package com.whatever.caramel.api.calendarevent.controller.dto.response
 
 import com.whatever.domain.specialday.model.SpecialDay
 import com.whatever.domain.specialday.model.SpecialDayType

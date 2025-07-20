@@ -1,13 +1,13 @@
-package com.whatever.com.whatever.caramel.api.calendarevent.controller
+package com.whatever.caramel.api.calendarevent.controller
 
 import com.whatever.CaramelApiResponse
-import com.whatever.com.whatever.caramel.api.calendarevent.controller.dto.request.GetCalendarQueryParameter
-import com.whatever.com.whatever.caramel.api.calendarevent.controller.dto.response.CalendarDetailResponse
-import com.whatever.com.whatever.caramel.api.calendarevent.controller.dto.response.CalendarEventsDto
-import com.whatever.com.whatever.caramel.api.calendarevent.controller.dto.response.HolidayDetailListResponse
-import com.whatever.domain.specialday.service.SpecialDayService
+import com.whatever.caramel.api.calendarevent.controller.dto.request.GetCalendarQueryParameter
+import com.whatever.caramel.api.calendarevent.controller.dto.response.CalendarDetailResponse
+import com.whatever.caramel.api.calendarevent.controller.dto.response.CalendarEventsDto
+import com.whatever.caramel.api.calendarevent.controller.dto.response.HolidayDetailListResponse
 import com.whatever.domain.calendarevent.service.ScheduleEventService
-import com.whatever.global.exception.dto.succeed
+import com.whatever.domain.specialday.service.SpecialDayService
+import com.whatever.succeed
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag

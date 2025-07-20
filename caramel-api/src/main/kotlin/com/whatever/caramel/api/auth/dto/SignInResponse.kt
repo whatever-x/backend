@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.auth.dto
+package com.whatever.caramel.api.auth.dto
 
 import com.whatever.domain.sample.vo.SignInVo
 import com.whatever.domain.user.model.UserStatus

@@ -1,13 +1,12 @@
-package com.whatever.com.whatever.caramel.api.auth.controller
+package com.whatever.caramel.api.auth.controller
 
 import com.whatever.CaramelApiResponse
+import com.whatever.caramel.api.auth.dto.ServiceTokenResponse
+import com.whatever.caramel.api.auth.dto.SignInRequest
+import com.whatever.caramel.api.auth.dto.SignInResponse
 import com.whatever.caramel.common.global.annotation.DisableSwaggerAuthButton
-import com.whatever.caramel.common.global.constants.CaramelHttpHeaders
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.DEVICE_ID
-import com.whatever.com.whatever.caramel.api.auth.dto.ServiceTokenResponse
-import com.whatever.com.whatever.caramel.api.auth.dto.SignInRequest
-import com.whatever.com.whatever.caramel.api.auth.dto.SignInResponse
 import com.whatever.domain.auth.service.AuthService
 import com.whatever.succeed
 import io.swagger.v3.oas.annotations.Operation
@@ -46,7 +45,7 @@ class AuthController(
     )
     @PostMapping("/sign-in")
     fun signIn(
-        @RequestHeader(name = CaramelHttpHeaders.DEVICE_ID, required = true) deviceId: String,
+        @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
         @RequestBody request: SignInRequest,
     ): CaramelApiResponse<SignInResponse> {
         val socialAuthResponse = authService.signUpOrSignIn(

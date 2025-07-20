@@ -3,12 +3,12 @@ package com.whatever.caramel.api.calendarevent.scheduleevent.controller
 import com.whatever.CaramelApiResponse
 import com.whatever.SecurityUtil.getCurrentUserCoupleId
 import com.whatever.SecurityUtil.getCurrentUserId
+import com.whatever.caramel.api.calendarevent.controller.dto.request.GetCalendarQueryParameter
 import com.whatever.caramel.api.calendarevent.controller.dto.response.ScheduleDetailDto
+import com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto.CreateScheduleRequest
 import com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto.GetScheduleResponse
+import com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
 import com.whatever.caramel.api.content.controller.dto.response.ContentSummaryResponse
-import com.whatever.com.whatever.caramel.api.calendarevent.controller.dto.request.GetCalendarQueryParameter
-import com.whatever.com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto.CreateScheduleRequest
-import com.whatever.com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
 import com.whatever.domain.calendarevent.service.ScheduleEventService
 import com.whatever.succeed
 import io.swagger.v3.oas.annotations.Operation

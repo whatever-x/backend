@@ -1,13 +1,13 @@
-package com.whatever.com.whatever.caramel.api.content.controller
+package com.whatever.caramel.api.content.controller
 
 import com.whatever.CaramelApiResponse
 import com.whatever.CursoredResponse
 import com.whatever.SecurityUtil
+import com.whatever.caramel.api.content.controller.dto.request.CreateContentRequest
+import com.whatever.caramel.api.content.controller.dto.request.GetContentListQueryParameter
+import com.whatever.caramel.api.content.controller.dto.request.UpdateContentRequest
+import com.whatever.caramel.api.content.controller.dto.response.ContentResponse
 import com.whatever.caramel.api.content.controller.dto.response.ContentSummaryResponse
-import com.whatever.com.whatever.caramel.api.content.controller.dto.request.CreateContentRequest
-import com.whatever.com.whatever.caramel.api.content.controller.dto.request.GetContentListQueryParameter
-import com.whatever.com.whatever.caramel.api.content.controller.dto.request.UpdateContentRequest
-import com.whatever.com.whatever.caramel.api.content.controller.dto.response.ContentResponse
 import com.whatever.domain.content.exception.ContentException
 import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.service.ContentService

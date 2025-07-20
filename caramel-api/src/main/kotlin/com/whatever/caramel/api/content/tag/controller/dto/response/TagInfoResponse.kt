@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.content.tag.controller.dto.response
+package com.whatever.caramel.api.content.tag.controller.dto.response
 
 import com.whatever.domain.content.tag.model.Tag
 import io.swagger.v3.oas.annotations.media.Schema

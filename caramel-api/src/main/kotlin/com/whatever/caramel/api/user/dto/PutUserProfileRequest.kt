@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.user.dto
+package com.whatever.caramel.api.user.dto
 
 import com.whatever.domain.user.model.User.Companion.MAX_NICKNAME_LENGTH
 import com.whatever.domain.user.model.User.Companion.MIN_NICKNAME_LENGTH

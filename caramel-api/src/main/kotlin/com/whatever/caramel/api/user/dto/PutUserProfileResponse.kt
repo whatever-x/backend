@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.user.dto
+package com.whatever.caramel.api.user.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate

@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.auth.dto
+package com.whatever.caramel.api.auth.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
 

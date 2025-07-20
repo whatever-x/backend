@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.couple.controller.dto.request
+package com.whatever.caramel.api.couple.controller.dto.request
 
 import io.swagger.v3.oas.annotations.media.Schema
 

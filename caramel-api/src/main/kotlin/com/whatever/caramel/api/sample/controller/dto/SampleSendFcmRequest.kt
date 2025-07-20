@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.sample.controller.dto
+package com.whatever.caramel.api.sample.controller.dto
 
 data class SampleSendFcmRequest(
     val targetUserIds: Set<Long>,

@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.content.controller.dto.request
+package com.whatever.caramel.api.content.controller.dto.request
 
 import com.whatever.domain.calendarevent.vo.DateTimeInfoVo
 import com.whatever.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH

@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.content.controller.dto.request
+package com.whatever.caramel.api.content.controller.dto.request
 
 import com.whatever.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
 import com.whatever.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH

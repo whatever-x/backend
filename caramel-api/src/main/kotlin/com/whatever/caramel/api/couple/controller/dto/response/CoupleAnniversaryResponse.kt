@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.couple.controller.dto.response
+package com.whatever.caramel.api.couple.controller.dto.response
 
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.model.CoupleAnniversaryType

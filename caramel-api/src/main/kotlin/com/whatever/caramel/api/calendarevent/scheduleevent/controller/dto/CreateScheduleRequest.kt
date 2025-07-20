@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto
+package com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto
 
 import com.whatever.domain.calendarevent.vo.CreateScheduleVo
 import com.whatever.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH

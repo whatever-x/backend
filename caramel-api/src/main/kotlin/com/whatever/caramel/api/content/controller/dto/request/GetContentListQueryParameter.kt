@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.content.controller.dto.request
+package com.whatever.caramel.api.content.controller.dto.request
 
 import com.whatever.caramel.common.global.cursor.CursorRequest
 import com.whatever.domain.content.vo.ContentListSortType

@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.user.dto
+package com.whatever.caramel.api.user.dto
 
 import com.whatever.domain.user.model.UserSetting
 import io.swagger.v3.oas.annotations.media.Schema

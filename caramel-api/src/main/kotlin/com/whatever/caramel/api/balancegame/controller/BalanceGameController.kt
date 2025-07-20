@@ -1,11 +1,11 @@
-package com.whatever.com.whatever.caramel.api.balancegame.controller
+package com.whatever.caramel.api.balancegame.controller
 
 import com.whatever.CaramelApiResponse
 import com.whatever.SecurityUtil.getCurrentUserCoupleId
 import com.whatever.SecurityUtil.getCurrentUserId
-import com.whatever.com.whatever.caramel.api.balancegame.controller.dto.request.ChooseBalanceGameOptionRequest
-import com.whatever.com.whatever.caramel.api.balancegame.controller.dto.response.ChooseBalanceGameOptionResponse
-import com.whatever.com.whatever.caramel.api.balancegame.controller.dto.response.GetBalanceGameResponse
+import com.whatever.caramel.api.balancegame.controller.dto.request.ChooseBalanceGameOptionRequest
+import com.whatever.caramel.api.balancegame.controller.dto.response.ChooseBalanceGameOptionResponse
+import com.whatever.caramel.api.balancegame.controller.dto.response.GetBalanceGameResponse
 import com.whatever.domain.balancegame.service.BalanceGameService
 import com.whatever.succeed
 import io.swagger.v3.oas.annotations.Operation
