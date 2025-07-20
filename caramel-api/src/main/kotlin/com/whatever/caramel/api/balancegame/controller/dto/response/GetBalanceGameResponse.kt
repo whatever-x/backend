@@ -1,7 +1,8 @@
 package com.whatever.com.whatever.caramel.api.balancegame.controller.dto.response
 
-import com.whatever.domain.balancegame.model.BalanceGame
-import com.whatever.domain.balancegame.model.BalanceGameOption
+import com.whatever.domain.balancegame.vo.BalanceGameOptionVo
+import com.whatever.domain.balancegame.vo.BalanceGameVo
+import com.whatever.domain.balancegame.vo.UserChoiceOptionVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
@@ -17,16 +18,19 @@ data class GetBalanceGameResponse(
     val partnerChoice: OptionInfo?,
 ) {
     companion object {
-        fun of(
-            game: BalanceGame,
-            options: List<BalanceGameOption>,
-            myChoice: BalanceGameOption?,
-            partnerChoice: BalanceGameOption?,
+        fun from(
+            gameVo: BalanceGameVo,
+            myChoice: UserChoiceOptionVo?,
+            partnerChoice: UserChoiceOptionVo?,
         ): GetBalanceGameResponse {
+            val myChoiceOptionVo =
+                myChoice?.let { gameVo.options.firstOrNull { it.id == myChoice.balanceGameOptionId } }
+            val partnerChoiceOptionVo =
+                partnerChoice?.let { gameVo.options.firstOrNull { it.id == partnerChoice.balanceGameOptionId } }
             return GetBalanceGameResponse(
-                gameInfo = BalanceGameInfo.of(game, options),
-                myChoice = myChoice?.let { OptionInfo.from(it) },
-                partnerChoice = partnerChoice?.let { OptionInfo.from(it) }
+                gameInfo = BalanceGameInfo.of(gameVo, gameVo.options),
+                myChoice = myChoiceOptionVo?.let { OptionInfo.from(it) },
+                partnerChoice = partnerChoiceOptionVo?.let { OptionInfo.from(it) }
             )
         }
     }
@@ -47,7 +51,10 @@ data class BalanceGameInfo(
     val options: List<OptionInfo>,
 ) {
     companion object {
-        fun of(game: BalanceGame, options: List<BalanceGameOption>): BalanceGameInfo {
+        fun of(
+            game: BalanceGameVo,
+            options: List<BalanceGameOptionVo>
+        ): BalanceGameInfo {
             return BalanceGameInfo(
                 id = game.id,
                 date = game.gameDate,
@@ -67,7 +74,7 @@ data class OptionInfo(
     val text: String,
 ) {
     companion object {
-        fun from(option: BalanceGameOption): OptionInfo {
+        fun from(option: BalanceGameOptionVo): OptionInfo {
             return OptionInfo(
                 id = option.id,
                 text = option.optionText

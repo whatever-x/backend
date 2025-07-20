@@ -1,13 +1,13 @@
 package com.whatever.com.whatever.caramel.api.balancegame.controller
 
 import com.whatever.CaramelApiResponse
+import com.whatever.SecurityUtil.getCurrentUserCoupleId
+import com.whatever.SecurityUtil.getCurrentUserId
 import com.whatever.com.whatever.caramel.api.balancegame.controller.dto.request.ChooseBalanceGameOptionRequest
 import com.whatever.com.whatever.caramel.api.balancegame.controller.dto.response.ChooseBalanceGameOptionResponse
 import com.whatever.com.whatever.caramel.api.balancegame.controller.dto.response.GetBalanceGameResponse
-import com.whatever.domain.balancegame.controller.dto.request.ChooseBalanceGameOptionRequest
-import com.whatever.domain.balancegame.controller.dto.response.ChooseBalanceGameOptionResponse
 import com.whatever.domain.balancegame.service.BalanceGameService
-import com.whatever.global.exception.dto.succeed
+import com.whatever.succeed
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -45,8 +45,18 @@ class BalanceGameController(
     )
     @GetMapping("/today")
     fun getTodayBalanceGame(): CaramelApiResponse<GetBalanceGameResponse> {
-        val response = balanceGameService.getTodayBalanceGameInfo()
-        return response.succeed()
+        val balanceGameVo = balanceGameService.getTodayBalanceGameInfo()
+
+        val userChoiceOptionVos = balanceGameService.getCoupleMemberChoices(
+            coupleId = getCurrentUserCoupleId(),
+            gameId = balanceGameVo.id,
+        )
+
+        return GetBalanceGameResponse.from(
+            gameVo = balanceGameVo,
+            myChoice = userChoiceOptionVos.firstOrNull { it.userId == getCurrentUserId() },
+            partnerChoice = userChoiceOptionVos.firstOrNull { it.userId != getCurrentUserId() },
+        ).succeed()
     }
 
     @Operation(
@@ -65,7 +75,17 @@ class BalanceGameController(
         @PathVariable @Positive(message = "The game ID must be positive.") gameId: Long,
         @RequestBody @Valid request: ChooseBalanceGameOptionRequest,
     ): CaramelApiResponse<ChooseBalanceGameOptionResponse> {
-        val response = balanceGameService.chooseBalanceGameOption(gameId, request)
-        return response.succeed()
+        val coupleChoiceOptionVo = balanceGameService.chooseBalanceGameOption(
+            gameId = gameId,
+            selectedOptionId = request.optionId,
+            coupleId = getCurrentUserCoupleId(),
+            requestUserId = getCurrentUserId(),
+        )
+        val balanceGameVo = balanceGameService.getTodayBalanceGameInfo()
+        return ChooseBalanceGameOptionResponse.from(
+            gameVo = balanceGameVo,
+            myChoice = coupleChoiceOptionVo.myChoice,
+            partnerChoice = coupleChoiceOptionVo.partnerChoice,
+        ).succeed()
     }
 }

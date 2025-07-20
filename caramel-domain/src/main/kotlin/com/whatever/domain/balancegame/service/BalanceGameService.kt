@@ -30,30 +30,9 @@ class BalanceGameService(
     private val userRepository: UserRepository,
 ) {
 
-    /**
-     * 기존은 game과 user choice option을 함께 반환.
-     * 수정 후 각각 응답을 분리하도록 변경
-     * 변경이 끝나면 해당 주석 삭제
-     */
     @Transactional(readOnly = true)
-    fun getTodayBalanceGameInfo(
-        coupleId: Long,
-        userId: Long,
-    ): BalanceGameVo {
+    fun getTodayBalanceGameInfo(): BalanceGameVo {
         val todayGame = getBalanceGame()
-//        val sortedOptions = getSortedActiveBalanceGameOptions(todayGame.options)
-
-//        val memberChoices = getCoupleMemberChoices(
-//            coupleId = coupleId,
-//            gameId = todayGame.id,
-//        )
-//
-//        return GetBalanceGameResponse.of(
-//            game = todayGame,
-//            options = sortedOptions,
-//            myChoice = memberChoices.find { it.user.id == userId }?.balanceGameOption,
-//            partnerChoice = memberChoices.find { it.user.id != userId }?.balanceGameOption,
-//        )
         return BalanceGameVo.from(todayGame, todayGame.options)
     }
 
@@ -75,16 +54,13 @@ class BalanceGameService(
             )
         }
 
-        /**
-         * controller에서 memberChoice 별도로 조회
-         */
         val memberChoices = getCoupleMemberChoices(
             coupleId = coupleId,
             gameId = balanceGame.id,
         )
 
-        val partnerChoice = memberChoices.find { it.user.id != requestUserId }
-        val myChoice = memberChoices.find { it.user.id == requestUserId }
+        val partnerChoice = memberChoices.find { it.userId != requestUserId }
+        val myChoice = memberChoices.find { it.userId == requestUserId }
             ?: run {
                 val selectedOption = balanceGame.options.find { it.id == selectedOptionId }
                     ?: throw BalanceGameOptionNotFoundException(errorCode = ILLEGAL_OPTION)
@@ -95,12 +71,15 @@ class BalanceGameService(
                     balanceGameOption = selectedOption,
                     user = requestUser,
                 )
-                userChoiceOptionRepository.save(newChoice)
+
+                userChoiceOptionRepository.save(newChoice).run {
+                    UserChoiceOptionVo.from(this)
+                }
             }
 
         return CoupleChoiceOptionVo.from(
-            UserChoiceOptionVo.from(myChoice),
-            partnerChoice?.let { UserChoiceOptionVo.from(partnerChoice) },
+            myChoice = myChoice,
+            partnerChoice = partnerChoice,
         )
     }
 
@@ -131,14 +110,14 @@ class BalanceGameService(
     fun getCoupleMemberChoices(
         coupleId: Long,
         gameId: Long,
-    ): List<UserChoiceOption> {
+    ): List<UserChoiceOptionVo> {
         val memberIds = coupleRepository.findByIdWithMembers(coupleId)?.members?.map { it.id }
             ?: return emptyList()
         val memberChoices = userChoiceOptionRepository.findAllWithOptionByBalanceGameIdAndUsers(
             gameId = gameId,
             userIds = memberIds,
         )
-        return memberChoices
+        return memberChoices.map { UserChoiceOptionVo.from(it) }
     }
 
     companion object {
