@@ -1,10 +1,13 @@
 package com.whatever.caramel.api.calendarevent.controller
 
 import com.whatever.CaramelApiResponse
+import com.whatever.SecurityUtil.getCurrentUserCoupleId
 import com.whatever.caramel.api.calendarevent.controller.dto.request.GetCalendarQueryParameter
 import com.whatever.caramel.api.calendarevent.controller.dto.response.CalendarDetailResponse
 import com.whatever.caramel.api.calendarevent.controller.dto.response.CalendarEventsDto
+import com.whatever.caramel.api.calendarevent.controller.dto.response.HolidayDetailDto
 import com.whatever.caramel.api.calendarevent.controller.dto.response.HolidayDetailListResponse
+import com.whatever.caramel.api.calendarevent.controller.dto.response.ScheduleDetailDto
 import com.whatever.domain.calendarevent.service.ScheduleEventService
 import com.whatever.domain.specialday.service.SpecialDayService
 import com.whatever.succeed
@@ -43,13 +46,17 @@ class CalendarController(
     )
     @GetMapping
     fun getCalendar(@ParameterObject queryParameter: GetCalendarQueryParameter): CaramelApiResponse<CalendarDetailResponse> {
-        val schedules = scheduleEventService.getSchedules(
+        val scheduleDetailsVo = scheduleEventService.getSchedules(
             startDate = queryParameter.startDate,
             endDate = queryParameter.endDate,
-            userTimeZone = queryParameter.userTimeZone
+            userTimeZone = queryParameter.userTimeZone,
+            currentUserCoupleId = getCurrentUserCoupleId(),
         )
 
-        val calendarResult = CalendarEventsDto(scheduleList = schedules)
+        val calendarResult = CalendarEventsDto(
+            scheduleList = scheduleDetailsVo.scheduleDetailVoList
+                .map { ScheduleDetailDto.from(it) }
+        )
         return CalendarDetailResponse(calendarResult = calendarResult).succeed()
     }
 
@@ -62,11 +69,13 @@ class CalendarController(
         @RequestParam("startYearMonth") startYearMonth: YearMonth,
         @RequestParam("endYearMonth") endYearMonth: YearMonth,
     ): CaramelApiResponse<HolidayDetailListResponse> {
-        val response = specialDayService.getHolidays(
+        val holidayDetailListVo = specialDayService.getHolidays(
             startYearMonth = startYearMonth,
             endYearMonth = endYearMonth,
         )
-        return response.succeed()
+        return HolidayDetailListResponse(
+            holidayList = holidayDetailListVo.holidayList.map { HolidayDetailDto.from(it) }
+        ).succeed()
     }
 
     @Operation(
@@ -77,7 +86,9 @@ class CalendarController(
     fun getHolidaysInYear(
         @RequestParam("year") year: Year,
     ): CaramelApiResponse<HolidayDetailListResponse> {
-        val response = specialDayService.getHolidaysInYear(year)
-        return response.succeed()
+        val holidayDetailListVo = specialDayService.getHolidaysInYear(year)
+        return HolidayDetailListResponse(
+            holidayList = holidayDetailListVo.holidayList.map { HolidayDetailDto.from(it) }
+        ).succeed()
     }
 }

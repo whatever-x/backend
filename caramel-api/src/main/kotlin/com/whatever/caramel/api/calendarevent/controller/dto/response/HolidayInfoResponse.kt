@@ -2,6 +2,7 @@ package com.whatever.caramel.api.calendarevent.controller.dto.response
 
 import com.whatever.domain.specialday.model.SpecialDay
 import com.whatever.domain.specialday.model.SpecialDayType
+import com.whatever.domain.specialday.vo.HolidayDetailVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
@@ -29,16 +30,13 @@ data class HolidayDetailDto(
     val isHoliday: Boolean,
 ) {
     companion object {
-        fun from(holiday: SpecialDay): HolidayDetailDto? {
-            if (holiday.type != SpecialDayType.HOLI) {
-                return null
-            }
+        fun from(holidayDetailVo: HolidayDetailVo): HolidayDetailDto {
             return HolidayDetailDto(
-                id = holiday.id,
-                type = holiday.type,
-                date = holiday.locDate,
-                name = holiday.dateName,
-                isHoliday = holiday.isHoliday,
+                id = holidayDetailVo.id,
+                type = holidayDetailVo.type,
+                date = holidayDetailVo.date,
+                name = holidayDetailVo.name,
+                isHoliday = holidayDetailVo.isHoliday,
             )
         }
     }
