@@ -7,7 +7,7 @@ import com.whatever.domain.balancegame.model.UserChoiceOption
 import com.whatever.domain.balancegame.repository.BalanceGameOptionRepository
 import com.whatever.domain.balancegame.repository.BalanceGameRepository
 import com.whatever.domain.balancegame.repository.UserChoiceOptionRepository
-import com.whatever.domain.calendarevent.scheduleevent.service.event.ScheduleEventListener
+import com.whatever.domain.calendarevent.service.event.ScheduleEventListener
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.service.makeCouple
 import com.whatever.domain.user.model.User
