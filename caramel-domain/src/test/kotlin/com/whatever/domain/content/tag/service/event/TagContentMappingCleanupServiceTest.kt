@@ -1,6 +1,7 @@
 package com.whatever.domain.content.tag.service.event
 
-import com.whatever.domain.calendarevent.scheduleevent.service.event.ScheduleEventListener
+import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.domain.calendarevent.service.event.ScheduleEventListener
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.service.event.createMemos
@@ -15,12 +16,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
 import kotlin.test.Test
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class TagContentMappingCleanupServiceTest @Autowired constructor(
     private val tagContentMappingCleanupService: TagContentMappingCleanupService,
     private val coupleRepository: CoupleRepository,
