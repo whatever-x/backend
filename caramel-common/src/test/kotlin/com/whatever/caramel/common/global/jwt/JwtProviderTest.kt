@@ -1,22 +1,30 @@
 package com.whatever.caramel.common.global.jwt
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.jsonwebtoken.Jwts
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
-import java.util.Base64
+import java.util.*
 
-@ActiveProfiles("test")
-@SpringBootTest
-class JwtProviderTest @Autowired constructor(
-    private val jwtProvider: JwtProvider,
-    private val objectMapper: ObjectMapper,
-) {
+class JwtProviderTest {
+
+    private lateinit var jwtProvider: JwtProvider
+    private val objectMapper = jacksonObjectMapper()
+
+    @BeforeEach
+    fun setUp() {
+        val testProperties = JwtProperties(
+            secretKeyStr = "a-very-long-and-secure-secret-key-for-testing-purpose-only-at-least-256-bits", // HS512는 512비트(64바이트) 이상을 권장
+            accessExpirationSec = 3600L,
+            refreshExpirationSec = 86400L,
+            issuer = "test-issuer"
+        )
+        // 생성한 객체들을 사용하여 JwtProvider 인스턴스를 직접 생성
+        jwtProvider = JwtProvider(testProperties, objectMapper)
+    }
 
     @DisplayName("jwt를 claims와 함께 HS512로 서명하여 생성한다.")
     @Test
