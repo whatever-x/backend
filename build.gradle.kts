@@ -72,6 +72,10 @@ subprojects {
             mavenBom("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:$opentelemetryVersion")
         }
     }
+
+    tasks.named<Test>("test") {
+        useJUnitPlatform()
+    }
 }
 
 dependencies {
