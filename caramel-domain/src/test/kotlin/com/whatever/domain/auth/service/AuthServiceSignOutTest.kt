@@ -33,9 +33,7 @@ import kotlin.test.Test
 class AuthServiceSignOutTest @Autowired constructor(
     private val redisTemplate: RedisTemplate<String, String>,
     private val authService: AuthService,
-//    private val jwtHelper: JwtHelper,
     private val jwtProperties: JwtProperties,
-//    private val authRedisRepository: AuthRedisRepository,
 ) {
 
     @MockitoSpyBean

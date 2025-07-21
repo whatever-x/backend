@@ -1,37 +1,34 @@
 package com.whatever.domain.auth.service
 
+import com.whatever.caramel.common.global.exception.GlobalException
+import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.global.jwt.JwtHelper
 import com.whatever.caramel.common.global.jwt.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.infrastructure.client.KakaoKapiClient
 import com.whatever.caramel.infrastructure.client.dto.KakaoIdTokenPayload
-import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
-import com.whatever.domain.auth.client.dto.KakaoUnlinkUserResponse
-import com.whatever.domain.auth.dto.ServiceToken
+import com.whatever.caramel.infrastructure.client.dto.KakaoUnlinkUserResponse
 import com.whatever.domain.auth.exception.AuthException
 import com.whatever.domain.auth.exception.AuthExceptionCode
 import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
 import com.whatever.domain.auth.repository.AuthRedisRepository
+import com.whatever.domain.auth.vo.ServiceTokenVo
 import com.whatever.domain.content.service.createCouple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.service.CoupleService
 import com.whatever.domain.couple.service.event.ExcludeAsyncConfigBean
+import com.whatever.domain.findByIdAndNotDeleted
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.exception.GlobalException
-import com.whatever.global.exception.GlobalExceptionCode.UNKNOWN
-import com.whatever.util.findByIdAndNotDeleted
-import org.apache.catalina.security.SecurityUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
@@ -78,19 +75,15 @@ class AuthServiceTest @Autowired constructor(
     @MockitoBean
     private lateinit var kakaoKapiClient: KakaoKapiClient
 
-    private lateinit var securityUtilMock: AutoCloseable
-
     @BeforeEach
     fun setUp() {
         val connectionFactory = redisTemplate.connectionFactory
         check(connectionFactory != null)
         connectionFactory.connection.serverCommands().flushAll()
-        securityUtilMock = mockStatic(SecurityUtil::class.java)
     }
 
     @AfterEach
     fun tearDown() {
-        securityUtilMock.close()
         userRepository.deleteAllInBatch()
         coupleRepository.deleteAllInBatch()
     }
@@ -99,7 +92,7 @@ class AuthServiceTest @Autowired constructor(
     @Test
     fun refresh_WithInvalidRefreshToken_ThrowsException() {
         // given
-        val serviceToken = ServiceToken(accessToken = "accessToken", refreshToken = "invalidRefreshToken")
+        val serviceToken = ServiceTokenVo(accessToken = "accessToken", refreshToken = "invalidRefreshToken")
         val deviceId = "test-device"
         val userId = 1L
         doReturn(userId)
@@ -108,15 +101,20 @@ class AuthServiceTest @Autowired constructor(
             .whenever(jwtHelper).isValidJwt(serviceToken.refreshToken)
 
         // when, then
-        assertThatThrownBy { authService.refresh(serviceToken, deviceId) }
-            .isInstanceOf(AuthException::class.java)
+        assertThatThrownBy {
+            authService.refresh(
+                accessToken = serviceToken.accessToken,
+                refreshToken = serviceToken.refreshToken,
+                deviceId = deviceId
+            )
+        }.isInstanceOf(AuthException::class.java)
     }
 
     @DisplayName("Redis에 저장된 리프레시 토큰과 다르면 예외가 발생한다.")
     @Test
     fun refresh_WithMismatchedRefreshToken_ThrowsException() {
         // given
-        val serviceToken = ServiceToken(accessToken = "accessToken", refreshToken = "refreshToken")
+        val serviceToken = ServiceTokenVo(accessToken = "accessToken", refreshToken = "refreshToken")
         val deviceId = "test-device"
         val userId = 1L
         val storedRefreshToken = "differentRefreshToken"
@@ -129,8 +127,13 @@ class AuthServiceTest @Autowired constructor(
         )
 
         // when, then
-        assertThatThrownBy { authService.refresh(serviceToken, deviceId) }
-            .isInstanceOf(AuthException::class.java)
+        assertThatThrownBy {
+            authService.refresh(
+                accessToken = serviceToken.accessToken,
+                refreshToken = serviceToken.refreshToken,
+                deviceId = deviceId
+            )
+        }.isInstanceOf(AuthException::class.java)
     }
 
     @DisplayName("캐시에 일치하는 oidc 공개키가 없다면 다시 로드 후 정상 흐름으로 동작한다.")
@@ -157,7 +160,7 @@ class AuthServiceTest @Autowired constructor(
             exp = 1000000L,
             authTime = 1000000L,
         )
-        val fakeServiceToken = ServiceToken(
+        val fakeServiceToken = ServiceTokenVo(
             accessToken = "test-access-token",
             refreshToken = "test-refresh-token",
         )
@@ -183,8 +186,8 @@ class AuthServiceTest @Autowired constructor(
         // then
         verify(oidcCacheManager.getCache(oidcPublicKeyCacheName))!!.evictIfPresent(user.platform.name)
         assertThat(result.nickname).isEqualTo(user.nickname)
-        assertThat(result.serviceToken.accessToken).isEqualTo(fakeServiceToken.accessToken)
-        assertThat(result.serviceToken.refreshToken).isEqualTo(fakeServiceToken.refreshToken)
+        assertThat(result.accessToken).isEqualTo(fakeServiceToken.accessToken)
+        assertThat(result.refreshToken).isEqualTo(fakeServiceToken.refreshToken)
     }
 
     @DisplayName("회원 탈퇴 시 유저 상태가 COUPLED라면 커플탈퇴와 유저삭제, 로그아웃을 진행한다.")
@@ -293,7 +296,7 @@ class AuthServiceTest @Autowired constructor(
         )
         val (accessToken, refreshToken, deviceId) = loginFixture(myUser)
 
-        doThrow(GlobalException(errorCode = UNKNOWN))
+        doThrow(GlobalException(errorCode = GlobalExceptionCode.UNKNOWN))
             .whenever(coupleService).leaveCouple(couple.id, myUser.id)
 
         // when

@@ -29,9 +29,6 @@ class JwtAuthenticationFilterTest @Autowired constructor(
     private val userRepository: UserRepository,
 ) {
 
-    @MockitoBean
-    private lateinit var authService: AuthService
-
     @DisplayName("로그아웃한 access token은 인증 필터를 통과하지 못한다.")
     @Test
     fun doFilterInternal_WithBlacklistedToken() {
