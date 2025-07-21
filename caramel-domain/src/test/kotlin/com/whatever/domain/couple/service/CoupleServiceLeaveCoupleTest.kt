@@ -1,5 +1,6 @@
 package com.whatever.domain.couple.service
 
+import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
 import com.whatever.domain.content.repository.ContentRepository
@@ -9,19 +10,14 @@ import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.model.CoupleStatus.INACTIVE
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.service.event.dto.CoupleMemberLeaveEvent
+import com.whatever.domain.findByIdAndNotDeleted
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus.COUPLED
 import com.whatever.domain.user.model.UserStatus.SINGLE
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.security.util.SecurityUtil
-import com.whatever.util.findByIdAndNotDeleted
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
-import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.event.ApplicationEvents
 import org.springframework.test.context.event.RecordApplicationEvents
@@ -44,12 +40,8 @@ class CoupleServiceLeaveCoupleTest @Autowired constructor(
     @Autowired
     private lateinit var events: ApplicationEvents
 
-    private lateinit var securityUtilMock: AutoCloseable
-
     @BeforeEach
     fun setUp() {
-        securityUtilMock = mockStatic(SecurityUtil::class.java)
-
         tagContentMappingRepository.deleteAllInBatch()
         scheduleEventRepository.deleteAllInBatch()
         contentRepository.deleteAllInBatch()
@@ -58,19 +50,12 @@ class CoupleServiceLeaveCoupleTest @Autowired constructor(
         tagRepository.deleteAllInBatch()
     }
 
-    @AfterEach
-    fun tearDown() {
-        securityUtilMock.close()
-    }
-
     @DisplayName("커플 멤버 중 한명이 나갈 경우 커플의 상태를 변경하고 나간 유저의 상태를 SINGLE로 변경한다.")
     @Test
     fun leaveCouple() {
         // given
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
-        }
+
         // when
         coupleService.leaveCouple(savedCouple.id, myUser.id)
 
@@ -102,10 +87,6 @@ class CoupleServiceLeaveCoupleTest @Autowired constructor(
         // given
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
         memberLeave(savedCouple, partnerUser)
-
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
-        }
 
         // when
         coupleService.leaveCouple(savedCouple.id, myUser.id)
