@@ -1,4 +1,4 @@
-package com.whatever.config
+package com.whatever.caramel.config
 
 import com.whatever.caramel.common.global.annotation.DisableSwaggerAuthButton
 import io.swagger.v3.oas.annotations.OpenAPIDefinition

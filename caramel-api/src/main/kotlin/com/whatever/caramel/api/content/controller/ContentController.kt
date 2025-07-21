@@ -1,8 +1,8 @@
 package com.whatever.caramel.api.content.controller
 
-import com.whatever.CaramelApiResponse
-import com.whatever.CursoredResponse
-import com.whatever.SecurityUtil
+import com.whatever.caramel.common.response.CaramelApiResponse
+import com.whatever.caramel.common.response.CursoredResponse
+import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.caramel.api.content.controller.dto.request.CreateContentRequest
 import com.whatever.caramel.api.content.controller.dto.request.GetContentListQueryParameter
 import com.whatever.caramel.api.content.controller.dto.request.UpdateContentRequest
@@ -11,7 +11,7 @@ import com.whatever.caramel.api.content.controller.dto.response.ContentSummaryRe
 import com.whatever.domain.content.exception.ContentException
 import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.service.ContentService
-import com.whatever.succeed
+import com.whatever.caramel.common.response.succeed
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag

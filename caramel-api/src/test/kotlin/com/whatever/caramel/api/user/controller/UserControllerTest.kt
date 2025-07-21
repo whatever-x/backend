@@ -1,6 +1,6 @@
 package com.whatever.caramel.api.user.controller
 
-import com.whatever.SecurityUtil
+import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.caramel.api.ControllerTestSupport
 import com.whatever.caramel.api.user.dto.PostUserProfileRequest
 import com.whatever.caramel.api.user.dto.PutUserProfileRequest
@@ -23,7 +23,6 @@ import org.mockito.kotlin.whenever
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
-import java.time.LocalDate
 
 class UserControllerTest : ControllerTestSupport() {
 

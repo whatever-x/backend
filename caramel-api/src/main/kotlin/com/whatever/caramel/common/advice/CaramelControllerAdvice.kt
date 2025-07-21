@@ -1,5 +1,6 @@
-package com.whatever
+package com.whatever.caramel.common.advice
 
+import com.whatever.caramel.common.response.CaramelApiResponse
 import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.common.global.exception.common.CaramelException
 import com.whatever.caramel.common.global.exception.common.CaramelExceptionCode

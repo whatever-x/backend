@@ -1,4 +1,4 @@
-package com.whatever
+package com.whatever.caramel.common.response
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
@@ -30,7 +30,7 @@ data class CaramelApiResponse<T>(
             return CaramelApiResponse(
                 success = false,
                 data = null,
-                error = ErrorResponse.Companion.of(
+                error = ErrorResponse.of(
                     errorCode = code,
                     errorUi = errorUi,
                 )

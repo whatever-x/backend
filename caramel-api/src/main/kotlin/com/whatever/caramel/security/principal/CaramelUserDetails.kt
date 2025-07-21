@@ -1,4 +1,4 @@
-package com.whatever
+package com.whatever.caramel.security.principal
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails

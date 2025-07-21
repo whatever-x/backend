@@ -1,4 +1,4 @@
-package com.whatever.security.exception
+package com.whatever.caramel.security.exception
 
 import com.whatever.caramel.common.global.exception.common.CaramelExceptionCode
 import org.springframework.http.HttpStatus

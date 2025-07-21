@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.calendarevent.eventrecurrence.model
+package com.whatever.caramel.api.calendarevent.eventrecurrence.model
 
 data class RecurrenceDay(
     val day: WeekDay,

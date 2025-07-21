@@ -1,7 +1,7 @@
-// package com.whatever.com.whatever.caramel.api.calendarevent.eventrecurrence.model.converter
+// package com.whatever.caramel.api.calendarevent.eventrecurrence.model.converter
 //
-// import com.whatever.com.whatever.caramel.api.calendarevent.eventrecurrence.model.RecurrenceDay
-// import com.whatever.com.whatever.caramel.api.calendarevent.eventrecurrence.model.WeekDay
+// import com.whatever.caramel.api.calendarevent.eventrecurrence.model.RecurrenceDay
+// import com.whatever.caramel.api.calendarevent.eventrecurrence.model.WeekDay
 // import jakarta.persistence.AttributeConverter
 // import jakarta.persistence.Converter
 //

@@ -1,4 +1,4 @@
-package com.whatever.config
+package com.whatever.caramel.config
 
 import com.whatever.caramel.common.global.exception.CaramelAsyncExceptionHandler
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler

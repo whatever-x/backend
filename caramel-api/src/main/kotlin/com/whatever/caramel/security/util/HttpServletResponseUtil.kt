@@ -1,9 +1,9 @@
-package com.whatever.security.util
+package com.whatever.caramel.security.util
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.whatever.CaramelApiResponse
 import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.common.global.exception.common.CaramelExceptionCode
+import com.whatever.caramel.common.response.CaramelApiResponse
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.MediaType
 

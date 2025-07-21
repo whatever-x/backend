@@ -1,11 +1,11 @@
-package com.whatever.security.filter
+package com.whatever.caramel.security.filter
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.global.jwt.exception.CaramelJwtException
-import com.whatever.security.exception.CaramelSecurityException
-import com.whatever.security.util.setExceptionResponse
+import com.whatever.caramel.security.exception.CaramelSecurityException
+import com.whatever.caramel.security.util.setExceptionResponse
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

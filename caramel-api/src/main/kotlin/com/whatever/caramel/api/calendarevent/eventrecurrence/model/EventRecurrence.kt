@@ -1,4 +1,4 @@
-// package com.whatever.com.whatever.caramel.api.calendarevent.eventrecurrence.model
+// package com.whatever.caramel.api.calendarevent.eventrecurrence.model
 //
 // import com.whatever.domain.calendarevent.eventrecurrence.model.converter.RecurrenceDaySetConverter
 // import jakarta.persistence.Convert

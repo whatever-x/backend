@@ -1,19 +1,16 @@
 package com.whatever.caramel.api.auth.controller
 
-import com.whatever.SecurityUtil
+import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.caramel.api.ControllerTestSupport
 import com.whatever.caramel.api.auth.dto.ServiceTokenResponse
 import com.whatever.caramel.api.auth.dto.SignInRequest
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.DEVICE_ID
 import com.whatever.caramel.common.util.DateTimeUtil
-import com.whatever.domain.auth.service.AuthService
 import com.whatever.domain.auth.vo.ServiceTokenVo
 import com.whatever.domain.auth.vo.SignInVo
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.UserStatus
-import io.mockk.every
-import io.mockk.mockk
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mockStatic

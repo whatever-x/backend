@@ -1,9 +1,9 @@
-package com.whatever
+package com.whatever.caramel.security.util
 
 import com.whatever.caramel.common.global.exception.ErrorUi
-import com.whatever.domain.user.model.UserStatus
-import com.whatever.security.exception.AuthenticationException
-import com.whatever.security.exception.SecurityExceptionCode
+import com.whatever.caramel.security.exception.AuthenticationException
+import com.whatever.caramel.security.exception.SecurityExceptionCode
+import com.whatever.caramel.security.principal.CaramelUserDetails
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder

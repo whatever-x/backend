@@ -1,4 +1,4 @@
-package com.whatever.com.whatever.caramel.api.calendarevent.eventrecurrence.model
+package com.whatever.caramel.api.calendarevent.eventrecurrence.model
 
 enum class RecurrenceFrequency {
     DAILY,  // 일간 반복

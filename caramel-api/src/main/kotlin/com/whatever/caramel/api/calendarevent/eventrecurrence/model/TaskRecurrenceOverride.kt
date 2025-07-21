@@ -1,4 +1,4 @@
-// package com.whatever.com.whatever.caramel.api.calendarevent.eventrecurrence.model
+// package com.whatever.caramel.api.calendarevent.eventrecurrence.model
 //
 // import com.whatever.domain.base.BaseEntity
 // import com.whatever.domain.calendarevent.taskevent.model.TaskEvent

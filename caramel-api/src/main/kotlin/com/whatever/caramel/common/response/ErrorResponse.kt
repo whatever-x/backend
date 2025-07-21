@@ -1,4 +1,4 @@
-package com.whatever
+package com.whatever.caramel.common.response
 
 import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.common.global.exception.common.CaramelExceptionCode
