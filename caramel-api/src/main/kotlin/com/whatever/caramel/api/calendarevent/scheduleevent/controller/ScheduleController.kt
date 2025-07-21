@@ -101,8 +101,8 @@ class ScheduleController(
     ): CaramelApiResponse<ContentSummaryResponse> {
         val contentSummaryVo = scheduleEventService.createSchedule(
             scheduleVo = request.toVo(),
-            currentUserCoupleId = getCurrentUserCoupleId(),
             currentUserId = getCurrentUserId(),
+            currentUserCoupleId = getCurrentUserCoupleId(),
         )
         return ContentSummaryResponse.from(contentSummaryVo).succeed()
     }

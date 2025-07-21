@@ -1,12 +1,11 @@
 package com.whatever.domain.calendarevent.scheduleevent.service
 
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.domain.calendarevent.exception.ScheduleExceptionCode
+import com.whatever.domain.calendarevent.exception.ScheduleIllegalArgumentException
 import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
-import com.whatever.domain.calendarevent.scheduleevent.controller.dto.CreateScheduleRequest
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalArgumentException
-import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
 import com.whatever.domain.calendarevent.service.ScheduleEventService
+import com.whatever.domain.calendarevent.vo.CreateScheduleVo
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
@@ -14,24 +13,20 @@ import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.service.event.ExcludeAsyncConfigBean
-import com.whatever.domain.firebase.service.FirebaseService
+import com.whatever.domain.findByIdAndNotDeleted
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.security.util.SecurityUtil
-import com.whatever.util.findByIdAndNotDeleted
+import com.whatever.firebase.service.FirebaseService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.only
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
@@ -56,19 +51,11 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         val NOW = DateTimeUtil.localNow()
     }
 
-    private lateinit var securityUtilMock: AutoCloseable
-
     @MockitoBean(reset = AFTER)
     private lateinit var firebaseService: FirebaseService
 
-    @BeforeEach
-    fun setUp() {
-        securityUtilMock = mockStatic(SecurityUtil::class.java)
-    }
-
     @AfterEach
     fun tearDown() {
-        securityUtilMock.close()
         tagContentMappingRepository.deleteAllInBatch()
         tagRepository.deleteAllInBatch()
         scheduleEventRepository.deleteAllInBatch()
@@ -87,10 +74,6 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
             myPlatformId,
             partnerPlatformId
         )
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-        }
         return Triple(myUser, partnerUser, couple)
     }
 
@@ -100,7 +83,7 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         // given
         val (myUser, partnerUser, _) = setUpCoupleAndSecurity()
 
-        val request = CreateScheduleRequest(
+        val createScheduleVo = CreateScheduleVo(
             title = "Schedule Title",
             description = "Description Content",
             isCompleted = false,
@@ -111,12 +94,16 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         )
 
         // when
-        val result = scheduleEventService.createSchedule(request)
+        val contentSummaryResult = scheduleEventService.createSchedule(
+            scheduleVo = createScheduleVo,
+            currentUserId = myUser.id,
+            currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다")
+        )
 
         // then
-        val scheduleEvent = scheduleEventRepository.findByIdAndNotDeleted(result.contentId)
+        val scheduleEvent = scheduleEventRepository.findByIdAndNotDeleted(contentSummaryResult.id)
         require(scheduleEvent != null)
-        assertThat(scheduleEvent.id).isEqualTo(result.contentId)
+        assertThat(scheduleEvent.id).isEqualTo(contentSummaryResult.id)
 
         val content = contentRepository.findByIdOrNull(scheduleEvent.content.id)
         require(content != null)
@@ -141,7 +128,7 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         // given
         val (myUser, _, _) = setUpCoupleAndSecurity()
         val memo = contentRepository.save(createContent(myUser, ContentType.MEMO))
-        val request = CreateScheduleRequest(
+        val createScheduleVo = CreateScheduleVo(
             title = title,
             description = description,
             isCompleted = false,
@@ -150,7 +137,11 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         )
         // when, then
         val exception = assertThrows<ScheduleIllegalArgumentException> {
-            scheduleEventService.createSchedule(request)
+            scheduleEventService.createSchedule(
+                scheduleVo = createScheduleVo,
+                currentUserId = myUser.id,
+                currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다")
+            )
         }
         assertThat(exception).hasMessage(ScheduleExceptionCode.ILLEGAL_CONTENT_DETAIL.message)
     }
@@ -161,7 +152,7 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         // given
         val (myUser, _, _) = setUpCoupleAndSecurity()
         val memo = contentRepository.save(createContent(myUser, ContentType.MEMO))
-        val request = CreateScheduleRequest(
+        val createScheduleVo = CreateScheduleVo(
             title = "title",
             description = "desc",
             isCompleted = false,
@@ -172,7 +163,11 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
         )
         // when, then
         val exception = assertThrows<ScheduleIllegalArgumentException> {
-            scheduleEventService.createSchedule(request)
+            scheduleEventService.createSchedule(
+                scheduleVo = createScheduleVo,
+                currentUserId = myUser.id,
+                currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다")
+            )
         }
         assertThat(exception).hasMessage(ScheduleExceptionCode.ILLEGAL_DURATION.message)
     }

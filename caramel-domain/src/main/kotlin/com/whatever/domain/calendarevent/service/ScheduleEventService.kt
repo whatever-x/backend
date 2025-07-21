@@ -113,8 +113,8 @@ class ScheduleEventService(
     @Transactional
     fun createSchedule(
         scheduleVo: CreateScheduleVo,
-        currentUserCoupleId: Long,
         currentUserId: Long,
+        currentUserCoupleId: Long,
     ): ContentSummaryVo {
         scheduleVo.apply {
             validateRequestContentDetail(title, description)

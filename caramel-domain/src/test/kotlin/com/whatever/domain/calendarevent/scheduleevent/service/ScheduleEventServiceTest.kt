@@ -1,18 +1,18 @@
 package com.whatever.domain.calendarevent.scheduleevent.service
 
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.common.util.endOfDay
+import com.whatever.caramel.common.util.toDateTime
+import com.whatever.caramel.common.util.toZoneId
 import com.whatever.caramel.common.util.withoutNano
-import com.whatever.domain.calendarevent.controller.dto.request.GetCalendarQueryParameter
-import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleAccessDeniedException
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.COUPLE_NOT_MATCHED
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode.SCHEDULE_NOT_FOUND
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalArgumentException
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleNotFoundException
-import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
-import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
-import com.whatever.domain.content.controller.dto.response.TagDto
+import com.whatever.domain.calendarevent.exception.ScheduleAccessDeniedException
+import com.whatever.domain.calendarevent.exception.ScheduleExceptionCode
+import com.whatever.domain.calendarevent.exception.ScheduleIllegalArgumentException
+import com.whatever.domain.calendarevent.exception.ScheduleNotFoundException
+import com.whatever.domain.calendarevent.model.ScheduleEvent
+import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
+import com.whatever.domain.calendarevent.service.ScheduleEventService
+import com.whatever.domain.calendarevent.vo.UpdateScheduleVo
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
 import com.whatever.domain.content.repository.ContentRepository
@@ -20,27 +20,21 @@ import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
+import com.whatever.domain.content.tag.vo.TagVo
 import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
+import com.whatever.domain.findByIdAndNotDeleted
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.security.util.SecurityUtil
-import com.whatever.util.endOfDay
-import com.whatever.util.findByIdAndNotDeleted
-import com.whatever.util.toDateTime
-import com.whatever.util.toZoneId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
@@ -66,16 +60,8 @@ class ScheduleEventServiceTest @Autowired constructor(
         val NOW = DateTimeUtil.localNow()
     }
 
-    private lateinit var securityUtilMock: AutoCloseable
-
-    @BeforeEach
-    fun setUp() {
-        securityUtilMock = mockStatic(SecurityUtil::class.java)
-    }
-
     @AfterEach
     fun tearDown() {
-        securityUtilMock.close()
         tagContentMappingRepository.deleteAllInBatch()
         tagRepository.deleteAllInBatch()
         scheduleEventRepository.deleteAllInBatch()
@@ -101,10 +87,6 @@ class ScheduleEventServiceTest @Autowired constructor(
             myPlatformId,
             partnerPlatformId
         )
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-        }
         return Triple(myUser, partnerUser, couple)
     }
 
@@ -123,7 +105,7 @@ class ScheduleEventServiceTest @Autowired constructor(
 
         // then
         assertThat(result.scheduleDetail.scheduleId).isEqualTo(schedule.id)
-        assertThat(result.tags).containsExactlyInAnyOrderElementsOf(tags.map { TagDto.from(it) })
+        assertThat(result.tags).containsExactlyInAnyOrderElementsOf(tags.map { TagVo.from(it) })
     }
 
     @DisplayName("일정 조회 시 파트너의 일정도 일정 정보와 본문, 연관 태그까지 정상 조회된다.")
@@ -141,7 +123,7 @@ class ScheduleEventServiceTest @Autowired constructor(
 
         // then
         assertThat(result.scheduleDetail.scheduleId).isEqualTo(schedule.id)
-        assertThat(result.tags).containsExactlyInAnyOrderElementsOf(tags.map { TagDto.from(it) })
+        assertThat(result.tags).containsExactlyInAnyOrderElementsOf(tags.map { TagVo.from(it) })
     }
 
     @DisplayName("일정 조회 시 다른 커플의 일정이라면 예외가 발생한다.")
@@ -161,7 +143,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         }
 
         // then
-        assertThat(result.errorCode).isEqualTo(COUPLE_NOT_MATCHED)
+        assertThat(result.errorCode).isEqualTo(ScheduleExceptionCode.COUPLE_NOT_MATCHED)
     }
 
     @DisplayName("일정 조회 시 존재하지 않는 일정이라면 예외가 발생한다.")
@@ -180,7 +162,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         }
 
         // then
-        assertThat(result.errorCode).isEqualTo(SCHEDULE_NOT_FOUND)
+        assertThat(result.errorCode).isEqualTo(ScheduleExceptionCode.SCHEDULE_NOT_FOUND)
     }
 
     @DisplayName("나의 Schedule 업데이트 시 request 값들이 정상적으로 반영된다.")
@@ -199,7 +181,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 content = oldContent,
             )
         )
-        val request = UpdateScheduleRequest(
+        val scheduleVo = UpdateScheduleVo(
             selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = "updated title",
             description = "updated description",
@@ -213,20 +195,22 @@ class ScheduleEventServiceTest @Autowired constructor(
         // when
         scheduleEventService.updateSchedule(
             scheduleId = oldSchedule.id,
-            request = request
+            scheduleVo = scheduleVo,
+            currentUserId = myUser.id,
+            currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
         )
 
         // then
         val updatedScheduleEvent = scheduleEventRepository.findByIdWithContent(oldSchedule.id)!!
         updatedScheduleEvent.run {
             assertThat(id).isEqualTo(oldSchedule.id)
-            assertThat(content.contentDetail.title).isEqualTo(request.title)
-            assertThat(content.contentDetail.description).isEqualTo(request.description)
+            assertThat(content.contentDetail.title).isEqualTo(scheduleVo.title)
+            assertThat(content.contentDetail.description).isEqualTo(scheduleVo.description)
             assertThat(content.contentDetail.isCompleted).isTrue()
-            assertThat(startTimeZone).isEqualTo(request.startTimeZone!!.toZoneId())
-            assertThat(startDateTime).isEqualTo(request.startDateTime!!.withoutNano)
-            assertThat(endTimeZone).isEqualTo(request.endTimeZone!!.toZoneId())
-            assertThat(endDateTime).isEqualTo(request.endDateTime!!.withoutNano)
+            assertThat(startTimeZone).isEqualTo(scheduleVo.startTimeZone!!.toZoneId())
+            assertThat(startDateTime).isEqualTo(scheduleVo.startDateTime!!.withoutNano)
+            assertThat(endTimeZone).isEqualTo(scheduleVo.endTimeZone!!.toZoneId())
+            assertThat(endDateTime).isEqualTo(scheduleVo.endDateTime!!.withoutNano)
         }
     }
 
@@ -246,7 +230,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 content = oldContent,
             )
         )
-        val request = UpdateScheduleRequest(
+        val scheduleVo = UpdateScheduleVo(
             selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = "updated title",
             description = "updated description",
@@ -260,20 +244,22 @@ class ScheduleEventServiceTest @Autowired constructor(
         // when
         scheduleEventService.updateSchedule(
             scheduleId = oldSchedule.id,
-            request = request
+            scheduleVo = scheduleVo,
+            currentUserId = myUser.id,
+            currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
         )
 
         // then
         val updatedScheduleEvent = scheduleEventRepository.findByIdWithContent(oldSchedule.id)!!
         updatedScheduleEvent.run {
             assertThat(id).isEqualTo(oldSchedule.id)
-            assertThat(content.contentDetail.title).isEqualTo(request.title)
-            assertThat(content.contentDetail.description).isEqualTo(request.description)
+            assertThat(content.contentDetail.title).isEqualTo(scheduleVo.title)
+            assertThat(content.contentDetail.description).isEqualTo(scheduleVo.description)
             assertThat(content.contentDetail.isCompleted).isTrue()
-            assertThat(startTimeZone).isEqualTo(request.startTimeZone!!.toZoneId())
-            assertThat(startDateTime).isEqualTo(request.startDateTime!!.withoutNano)
-            assertThat(endTimeZone).isEqualTo(request.endTimeZone!!.toZoneId())
-            assertThat(endDateTime).isEqualTo(request.endDateTime!!.withoutNano)
+            assertThat(startTimeZone).isEqualTo(scheduleVo.startTimeZone!!.toZoneId())
+            assertThat(startDateTime).isEqualTo(scheduleVo.startDateTime!!.withoutNano)
+            assertThat(endTimeZone).isEqualTo(scheduleVo.endTimeZone!!.toZoneId())
+            assertThat(endDateTime).isEqualTo(scheduleVo.endDateTime!!.withoutNano)
         }
     }
 
@@ -293,7 +279,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 content = oldContent,
             )
         )
-        val request = UpdateScheduleRequest(
+        val scheduleVo = UpdateScheduleVo(
             selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = "updated title",
             description = "updated description",
@@ -305,15 +291,17 @@ class ScheduleEventServiceTest @Autowired constructor(
         // when
         scheduleEventService.updateSchedule(
             scheduleId = oldSchedule.id,
-            request = request
+            scheduleVo = scheduleVo,
+            currentUserId = myUser.id,
+            currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
         )
 
         // then
         val updatedScheduleEvent = scheduleEventRepository.findByIdOrNull(oldSchedule.id)!!
         updatedScheduleEvent.run {
             assertThat(id).isEqualTo(oldSchedule.id)
-            assertThat(endDateTime).isEqualTo(request.startDateTime!!.endOfDay.withoutNano)
-            assertThat(endTimeZone).isEqualTo(request.startTimeZone!!.toZoneId())
+            assertThat(endDateTime).isEqualTo(scheduleVo.startDateTime!!.endOfDay.withoutNano)
+            assertThat(endTimeZone).isEqualTo(scheduleVo.startTimeZone!!.toZoneId())
         }
     }
 
@@ -333,7 +321,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 content = oldContent,
             )
         )
-        val request = UpdateScheduleRequest(
+        val scheduleVo = UpdateScheduleVo(
             selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = null,
             description = null,
@@ -346,7 +334,9 @@ class ScheduleEventServiceTest @Autowired constructor(
         val exception = assertThrows<ScheduleIllegalArgumentException> {
             scheduleEventService.updateSchedule(
                 scheduleId = oldSchedule.id,
-                request = request
+                scheduleVo = scheduleVo,
+                currentUserId = myUser.id,
+                currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
             )
         }
         assertThat(exception)
@@ -376,7 +366,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 content = oldContent,
             )
         )
-        val request = UpdateScheduleRequest(
+        val scheduleVo = UpdateScheduleVo(
             selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = title,
             description = description,
@@ -389,7 +379,9 @@ class ScheduleEventServiceTest @Autowired constructor(
         val exception = assertThrows<ScheduleIllegalArgumentException> {
             scheduleEventService.updateSchedule(
                 scheduleId = oldSchedule.id,
-                request = request
+                scheduleVo = scheduleVo,
+                currentUserId = myUser.id,
+                currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
             )
         }
         assertThat(exception)
@@ -412,7 +404,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 content = oldContent,
             )
         )
-        val request = UpdateScheduleRequest(
+        val scheduleVo = UpdateScheduleVo(
             selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = "valid title",
             description = "valid description",
@@ -427,7 +419,9 @@ class ScheduleEventServiceTest @Autowired constructor(
         val exception = assertThrows<ScheduleIllegalArgumentException> {
             scheduleEventService.updateSchedule(
                 scheduleId = oldSchedule.id,
-                request = request
+                scheduleVo = scheduleVo,
+                currentUserId = myUser.id,
+                currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
             )
         }
         assertThat(exception)
@@ -457,7 +451,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             myPlatformUserId = "other-user-platform-id",
             partnerPlatformUserId = "other-user-platform-id2",
         )
-        val request = UpdateScheduleRequest(
+        val scheduleVo = UpdateScheduleVo(
             selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = "valid title",
             description = "valid description",
@@ -466,16 +460,13 @@ class ScheduleEventServiceTest @Autowired constructor(
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
         )
 
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(otherUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(otherCouple.id)
-        }
-
         // when, then
         val exception = assertThrows<ScheduleAccessDeniedException> {
             scheduleEventService.updateSchedule(
                 scheduleId = oldSchedule.id,
-                request = request
+                scheduleVo = scheduleVo,
+                currentUserId = otherUser.id,
+                currentUserCoupleId = otherUser.couple?.id ?: error("couple id가 없습니다"),
             )
         }
         assertThat(exception)
@@ -502,7 +493,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         partnerUser.userStatus = UserStatus.SINGLE  // 작성자가 모종의 이유로 SINGLE 상태로 전환
         userRepository.save(partnerUser)
 
-        val request = UpdateScheduleRequest(
+        val scheduleVo = UpdateScheduleVo(
             selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = "valid title",
             description = "valid description",
@@ -515,7 +506,9 @@ class ScheduleEventServiceTest @Autowired constructor(
         val exception = assertThrows<ScheduleAccessDeniedException> {
             scheduleEventService.updateSchedule(
                 scheduleId = oldSchedule.id,
-                request = request
+                scheduleVo = scheduleVo,
+                currentUserId = myUser.id,
+                currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
             )
         }
         assertThat(exception)
@@ -549,7 +542,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         val newTags = tags.filter { it.id in 6..tagCount }.toSet()  // 6~15 태그로 변경
         val newTagIds = newTags.map { it.id }.toSet()
 
-        val request = UpdateScheduleRequest(
+        val scheduleVo = UpdateScheduleVo(
             selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = "valid title",
             description = "valid description",
@@ -562,7 +555,9 @@ class ScheduleEventServiceTest @Autowired constructor(
         // when
         scheduleEventService.updateSchedule(
             scheduleId = oldSchedule.id,
-            request = request
+            scheduleVo = scheduleVo,
+            currentUserId = myUser.id,
+            currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
         )
 
         // then
@@ -590,7 +585,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 content = oldContent,
             )
         )
-        val request = UpdateScheduleRequest(
+        val scheduleVo = UpdateScheduleVo(
             selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = "updated title",
             description = "updated description",
@@ -604,7 +599,9 @@ class ScheduleEventServiceTest @Autowired constructor(
         // when
         scheduleEventService.updateSchedule(
             scheduleId = oldSchedule.id,
-            request = request
+            scheduleVo = scheduleVo,
+            currentUserId = myUser.id,
+            currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
         )
 
         // then
@@ -613,8 +610,8 @@ class ScheduleEventServiceTest @Autowired constructor(
         val content = contentRepository.findByIdAndNotDeleted(oldContent.id)
         assertNotNull(content)
         assertThat(content.type).isEqualTo(ContentType.MEMO)
-        assertThat(content.contentDetail.title).isEqualTo(request.title)
-        assertThat(content.contentDetail.description).isEqualTo(request.description)
+        assertThat(content.contentDetail.title).isEqualTo(scheduleVo.title)
+        assertThat(content.contentDetail.description).isEqualTo(scheduleVo.description)
     }
 
     @DisplayName("내가 업로드한 스케줄을 삭제하면 연관된 데이터들이 모두 삭제된다.")
@@ -639,7 +636,11 @@ class ScheduleEventServiceTest @Autowired constructor(
         )
 
         // when
-        scheduleEventService.deleteSchedule(schedule.id)
+        scheduleEventService.deleteSchedule(
+            scheduleId = schedule.id,
+            currentUserId = myUser.id,
+            currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+        )
 
         // then
         val deletedSchedule = scheduleEventRepository.findByIdAndNotDeleted(schedule.id)
@@ -703,7 +704,13 @@ class ScheduleEventServiceTest @Autowired constructor(
             ownerSelector = { idx -> if (idx % 2 == 0) myUser else partnerUser },
             startDate = startDate,
             timeZone = userTimeZone
-        ).forEach { scheduleEventService.deleteSchedule(it.id) }
+        ).forEach {
+            scheduleEventService.deleteSchedule(
+                scheduleId = it.id,
+                currentUserId = myUser.id,
+                currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+            )
+        }
 
         // 조회 대상이 아닌, 다른 커플 데이터 생성
         val (otherUser, otherPartner, otherCouple) = setUpCouple(
@@ -718,23 +725,18 @@ class ScheduleEventServiceTest @Autowired constructor(
             timeZone = userTimeZone
         )
 
-        val request = GetCalendarQueryParameter(
+        // when
+        val scheduleDetailVoList = scheduleEventService.getSchedules(
             startDate = startDate,
             endDate = endDate,
-            userTimeZone = userTimeZone.id
-        )
-
-        // when
-        val result = scheduleEventService.getSchedules(
-            startDate = request.startDate,
-            endDate = request.endDate,
-            userTimeZone = request.userTimeZone
-        )
+            userTimeZone = userTimeZone.id,
+            currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+        ).scheduleDetailVoList
 
         // then
-        assertThat(result).hasSize(numberOfEvents)
+        assertThat(scheduleDetailVoList).hasSize(numberOfEvents)
 
-        val resultScheduleIds = result.map { it.scheduleId }
+        val resultScheduleIds = scheduleDetailVoList.map { it.scheduleId }
         val savedScheduleIds = scheduleEvents.map { it.id }
         assertThat(resultScheduleIds).containsExactlyInAnyOrderElementsOf(savedScheduleIds)
     }
@@ -767,28 +769,19 @@ class ScheduleEventServiceTest @Autowired constructor(
             scheduleEvents.add(event)
         }
 
-        val requestDaily = GetCalendarQueryParameter(
-            startDate = startDate,
-            endDate = startDate,
-            userTimeZone = userTimeZone.id
-        )
-        val requestWeekly = GetCalendarQueryParameter(
-            startDate = startDate,
-            endDate = startDate.plusDays(6),
-            userTimeZone = userTimeZone.id
-        )
-
         // when
         val resultDaily = scheduleEventService.getSchedules(
-            startDate = requestDaily.startDate,
-            endDate = requestDaily.endDate,
-            userTimeZone = requestDaily.userTimeZone
-        )
+            startDate = startDate,
+            endDate = startDate,
+            userTimeZone = userTimeZone.id,
+            currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+        ).scheduleDetailVoList
         val resultWeekly = scheduleEventService.getSchedules(
-            startDate = requestWeekly.startDate,
-            endDate = requestWeekly.endDate,
-            userTimeZone = requestWeekly.userTimeZone
-        )
+            startDate = startDate,
+            endDate = startDate.plusDays(6),
+            userTimeZone = userTimeZone.id,
+            currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+        ).scheduleDetailVoList
 
         // then
         assertThat(resultDaily).hasSize(1)
@@ -815,18 +808,13 @@ class ScheduleEventServiceTest @Autowired constructor(
             )
         )
 
-        val request = GetCalendarQueryParameter(
+        // when
+        val result = scheduleEventService.getSchedules(
             startDate = startDate.minusDays(1),
             endDate = startDate.minusDays(1),
             userTimeZone = userTimeZone.id,
-        )
-
-        // when
-        val result = scheduleEventService.getSchedules(
-            startDate = request.startDate,
-            endDate = request.endDate,
-            userTimeZone = request.userTimeZone
-        )
+            currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+        ).scheduleDetailVoList
 
         // then
         assertThat(result).hasSize(0)
@@ -860,18 +848,13 @@ class ScheduleEventServiceTest @Autowired constructor(
             scheduleEvents.add(event)
         }
 
-        val request = GetCalendarQueryParameter(
-            startDate = startDate,
-            endDate = startDate.plusDays(1),
-            userTimeZone = userTimeZone.id
-        )
-
         // when
         val result = scheduleEventService.getSchedules(
-            startDate = request.startDate,
-            endDate = request.endDate,
-            userTimeZone = request.userTimeZone
-        )
+            startDate = startDate,
+            endDate = startDate.plusDays(1),
+            userTimeZone = userTimeZone.id,
+            currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+        ).scheduleDetailVoList
 
         // then
         assertThat(result).hasSize(10)

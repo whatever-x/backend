@@ -1,8 +1,9 @@
 package com.whatever.domain.calendarevent.specialday.service
 
-import com.whatever.domain.calendarevent.specialday.model.SpecialDay
-import com.whatever.domain.calendarevent.specialday.model.SpecialDayType
-import com.whatever.domain.calendarevent.specialday.repository.SpecialDayRepository
+import com.whatever.domain.specialday.model.SpecialDay
+import com.whatever.domain.specialday.model.SpecialDayType
+import com.whatever.domain.specialday.repository.SpecialDayRepository
+import com.whatever.domain.specialday.service.SpecialDayService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired

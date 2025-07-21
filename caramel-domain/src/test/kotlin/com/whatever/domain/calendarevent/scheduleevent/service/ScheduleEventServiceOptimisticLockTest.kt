@@ -1,29 +1,27 @@
 package com.whatever.domain.calendarevent.scheduleevent.service
 
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.common.util.toZoneId
 import com.whatever.caramel.common.util.withoutNano
-import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalStateException
-import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
-import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
+import com.whatever.domain.calendarevent.exception.ScheduleExceptionCode
+import com.whatever.domain.calendarevent.exception.ScheduleIllegalStateException
+import com.whatever.domain.calendarevent.model.ScheduleEvent
+import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
+import com.whatever.domain.calendarevent.service.ScheduleEventService
+import com.whatever.domain.calendarevent.vo.UpdateScheduleVo
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
 import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
+import com.whatever.domain.findByIdAndNotDeleted
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.security.util.SecurityUtil
-import com.whatever.util.findByIdAndNotDeleted
-import com.whatever.util.toZoneId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.reset
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
@@ -56,18 +54,10 @@ class ScheduleEventServiceOptimisticLockTest @Autowired constructor(
     @MockitoSpyBean
     private lateinit var scheduleEventRepository: ScheduleEventRepository
 
-    private lateinit var securityUtilMock: AutoCloseable
-
-    @BeforeEach
-    fun setUp() {
-        securityUtilMock = mockStatic(SecurityUtil::class.java)
-    }
-
     @AfterEach
     fun tearDown() {
         reset(scheduleEventRepository)
 
-        securityUtilMock.close()
         tagContentMappingRepository.deleteAllInBatch()
         tagRepository.deleteAllInBatch()
         scheduleEventRepository.deleteAllInBatch()
@@ -93,10 +83,6 @@ class ScheduleEventServiceOptimisticLockTest @Autowired constructor(
             myPlatformId,
             partnerPlatformId
         )
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-        }
         return Triple(myUser, partnerUser, couple)
     }
 
@@ -116,7 +102,7 @@ class ScheduleEventServiceOptimisticLockTest @Autowired constructor(
                 content = oldContent,
             )
         )
-        val request = UpdateScheduleRequest(
+        val updateScheduleVo = UpdateScheduleVo(
             selectedDate = DateTimeUtil.localNow().toLocalDate(),
             title = "updated title",
             description = "updated description",
@@ -133,16 +119,12 @@ class ScheduleEventServiceOptimisticLockTest @Autowired constructor(
         val futures = mutableListOf<CompletableFuture<Unit>>()
         for (i in 1..threadCount) {
             val future = CompletableFuture.supplyAsync({
-                mockStatic(SecurityUtil::class.java).use {
-                    it.apply {
-                        whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-                        whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-                    }
-                    scheduleEventService.updateSchedule(
-                        scheduleId = oldSchedule.id,
-                        request = request
-                    )
-                }
+                scheduleEventService.updateSchedule(
+                    scheduleId = oldSchedule.id,
+                    currentUserId = myUser.id,
+                    currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+                    scheduleVo = updateScheduleVo,
+                )
             }, executor)
             futures.add(future)
         }
@@ -165,13 +147,13 @@ class ScheduleEventServiceOptimisticLockTest @Autowired constructor(
         val updatedScheduleEvent = scheduleEventRepository.findByIdWithContent(oldSchedule.id)!!
         updatedScheduleEvent.run {
             assertThat(id).isEqualTo(oldSchedule.id)
-            assertThat(content.contentDetail.title).isEqualTo(request.title)
-            assertThat(content.contentDetail.description).isEqualTo(request.description)
+            assertThat(content.contentDetail.title).isEqualTo(updateScheduleVo.title)
+            assertThat(content.contentDetail.description).isEqualTo(updateScheduleVo.description)
             assertThat(content.contentDetail.isCompleted).isTrue()
-            assertThat(startTimeZone).isEqualTo(request.startTimeZone!!.toZoneId())
-            assertThat(startDateTime).isEqualTo(request.startDateTime!!.withoutNano)
-            assertThat(endTimeZone).isEqualTo(request.endTimeZone!!.toZoneId())
-            assertThat(endDateTime).isEqualTo(request.endDateTime!!.withoutNano)
+            assertThat(startTimeZone).isEqualTo(updateScheduleVo.startTimeZone!!.toZoneId())
+            assertThat(startDateTime).isEqualTo(updateScheduleVo.startDateTime!!.withoutNano)
+            assertThat(endTimeZone).isEqualTo(updateScheduleVo.endTimeZone!!.toZoneId())
+            assertThat(endDateTime).isEqualTo(updateScheduleVo.endDateTime!!.withoutNano)
         }
     }
 
@@ -261,16 +243,16 @@ class ScheduleEventServiceOptimisticLockTest @Autowired constructor(
                 content = oldContent,
             )
         )
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-        }
         whenever(scheduleEventRepository.findByIdWithContentAndUser(any()))
             .thenThrow(ObjectOptimisticLockingFailureException::class.java)
 
         // when
         val resultException = assertThrows<ScheduleIllegalStateException> {
-            scheduleEventService.deleteSchedule(oldSchedule.id)
+            scheduleEventService.deleteSchedule(
+                scheduleId = oldSchedule.id,
+                currentUserId = myUser.id,
+                currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+            )
         }
 
         // then
