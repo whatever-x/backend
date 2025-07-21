@@ -1,5 +1,6 @@
 package com.whatever.domain.couple.service
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
 import com.whatever.domain.content.repository.ContentRepository
@@ -43,17 +44,14 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.redis.core.RedisTemplate
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class CoupleServiceTest @Autowired constructor(
     private val redisTemplate: RedisTemplate<String, String>,
     private val coupleService: CoupleService,

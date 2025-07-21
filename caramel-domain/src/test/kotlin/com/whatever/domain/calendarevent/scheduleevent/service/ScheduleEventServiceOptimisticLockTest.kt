@@ -1,5 +1,6 @@
 package com.whatever.domain.calendarevent.scheduleevent.service
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.common.util.toZoneId
 import com.whatever.caramel.common.util.withoutNano
@@ -26,9 +27,7 @@ import org.mockito.Mockito.reset
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.orm.ObjectOptimisticLockingFailureException
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import java.time.ZoneId
 import java.util.concurrent.CompletableFuture
@@ -36,8 +35,7 @@ import java.util.concurrent.CompletionException
 import java.util.concurrent.Executors
 import kotlin.test.Test
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class ScheduleEventServiceOptimisticLockTest @Autowired constructor(
     private val coupleRepository: CoupleRepository,
     private val userRepository: UserRepository,

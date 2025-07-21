@@ -1,5 +1,6 @@
 package com.whatever.domain.base
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.global.exception.common.CaramelException
 import com.whatever.caramel.common.global.exception.common.CaramelExceptionCode
@@ -11,16 +12,13 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Profile
 import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Component
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import kotlin.test.Test
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class AbstractEntityCleanupServiceTest {
 
     @MockitoSpyBean

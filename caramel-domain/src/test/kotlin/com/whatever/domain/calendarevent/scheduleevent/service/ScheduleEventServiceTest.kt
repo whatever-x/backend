@@ -1,5 +1,6 @@
 package com.whatever.domain.calendarevent.scheduleevent.service
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.common.util.endOfDay
 import com.whatever.caramel.common.util.toDateTime
@@ -36,16 +37,13 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
 import java.time.ZoneId
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class ScheduleEventServiceTest @Autowired constructor(
     private val coupleRepository: CoupleRepository,
     private val userRepository: UserRepository,

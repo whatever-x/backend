@@ -1,17 +1,15 @@
 package com.whatever.domain.auth
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.domain.auth.repository.AuthRedisRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.redis.core.RedisTemplate
-import org.springframework.test.context.ActiveProfiles
 import java.time.Duration
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class AuthRedisRepositoryTest @Autowired constructor(
     private val redisTemplate: RedisTemplate<String, String>,
     private val authRedisRepository: AuthRedisRepository,

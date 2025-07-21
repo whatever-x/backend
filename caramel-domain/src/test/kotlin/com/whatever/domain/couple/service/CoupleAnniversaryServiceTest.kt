@@ -1,5 +1,6 @@
 package com.whatever.domain.couple.service
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.domain.couple.exception.CoupleNotFoundException
 import com.whatever.domain.couple.model.CoupleAnniversaryType.BIRTHDAY
 import com.whatever.domain.couple.model.CoupleAnniversaryType.N_TH_DAY
@@ -11,14 +12,11 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
 import java.time.MonthDay
 import kotlin.test.Test
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class CoupleAnniversaryServiceTest @Autowired constructor(
     private val coupleAnniversaryService: CoupleAnniversaryService,
     private val coupleRepository: CoupleRepository,

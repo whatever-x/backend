@@ -1,5 +1,6 @@
 package com.whatever.domain.couple.repository
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.TemporalUnitWithinOffset
@@ -13,8 +14,7 @@ import org.springframework.test.context.ActiveProfiles
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class InvitationCodeRedisRepositoryTest @Autowired constructor(
     private val redisTemplate: RedisTemplate<String, String>,
     private val inviCodeRedisRepository: InvitationCodeRedisRepository,

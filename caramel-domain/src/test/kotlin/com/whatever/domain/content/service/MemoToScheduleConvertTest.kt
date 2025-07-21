@@ -1,5 +1,6 @@
 package com.whatever.domain.content.service
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode
 import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalArgumentException
@@ -32,11 +33,8 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class MemoToScheduleConvertTest @Autowired constructor(
     private val contentService: ContentService,
     private val userRepository: UserRepository,

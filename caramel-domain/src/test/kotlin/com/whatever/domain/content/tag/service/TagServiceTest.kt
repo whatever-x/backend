@@ -1,5 +1,6 @@
 package com.whatever.domain.content.tag.service
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.repository.TagRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -10,8 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import kotlin.test.Test
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class TagServiceTest @Autowired constructor(
     private val tagService: TagService,
     private val tagRepository: TagRepository,

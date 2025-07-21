@@ -1,6 +1,7 @@
 package com.whatever.domain.content.service.event
 
-import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
+import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.domain.calendarevent.scheduleevent.service.event.createSchedules
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
@@ -13,12 +14,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
 import kotlin.test.Test
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class ContentCleanupServiceTest @Autowired constructor(
     private val contentCleanupService: ContentCleanupService,
     private val coupleRepository: CoupleRepository,

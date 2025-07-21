@@ -1,5 +1,6 @@
 package com.whatever.domain.calendarevent.scheduleevent.service
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.calendarevent.exception.ScheduleExceptionCode
 import com.whatever.domain.calendarevent.exception.ScheduleIllegalArgumentException
@@ -28,15 +29,12 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.only
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockReset.AFTER
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import kotlin.test.Test
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class ScheduleEventServiceCreateTest @Autowired constructor(
     private val coupleRepository: CoupleRepository,
     private val userRepository: UserRepository,

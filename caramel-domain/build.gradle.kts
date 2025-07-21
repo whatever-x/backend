@@ -40,6 +40,7 @@ dependencies {
     implementation("io.viascom.nanoid:nanoid:1.0.1")
 
     // test
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
     runtimeOnly("com.h2database:h2")
 }
 

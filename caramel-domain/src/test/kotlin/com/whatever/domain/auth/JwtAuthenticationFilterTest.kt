@@ -1,26 +1,22 @@
 package com.whatever.domain.auth
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.DEVICE_ID
 import com.whatever.caramel.common.global.jwt.JwtHelper
 import com.whatever.domain.auth.repository.AuthRedisRepository
-import com.whatever.domain.auth.service.AuthService
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.service.createUser
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.post
 import java.time.Duration
 import kotlin.test.Test
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 @AutoConfigureMockMvc
 class JwtAuthenticationFilterTest @Autowired constructor(
     private val jwtHelper: JwtHelper,

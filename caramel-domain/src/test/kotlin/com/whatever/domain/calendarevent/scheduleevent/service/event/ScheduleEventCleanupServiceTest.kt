@@ -1,5 +1,6 @@
 package com.whatever.domain.calendarevent.scheduleevent.service.event
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.calendarevent.model.ScheduleEvent
 import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
@@ -17,13 +18,10 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
 import java.util.UUID
 import kotlin.test.Test
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class ScheduleEventCleanupServiceTest @Autowired constructor(
     private val scheduleEventCleanupService: ScheduleEventCleanupService,
     private val coupleRepository: CoupleRepository,

@@ -1,5 +1,6 @@
 package com.whatever.domain.balancegame.service
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.balancegame.controller.dto.request.ChooseBalanceGameOptionRequest
 import com.whatever.domain.balancegame.exception.BalanceGameExceptionCode
@@ -27,14 +28,11 @@ import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.test.Test
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class BalanceGameServiceTest @Autowired constructor(
     private val userRepository: UserRepository,
     private val coupleRepository: CoupleRepository,

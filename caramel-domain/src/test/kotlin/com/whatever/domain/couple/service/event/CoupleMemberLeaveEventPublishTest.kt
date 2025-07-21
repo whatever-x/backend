@@ -1,5 +1,6 @@
 package com.whatever.domain.couple.service.event
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.config.AsyncConfig
 import com.whatever.domain.balancegame.service.event.UserChoiceOptionCleanupService
 import com.whatever.domain.balancegame.service.event.UserChoiceOptionEventListener
@@ -29,8 +30,7 @@ import org.springframework.test.context.transaction.TestTransaction
 import org.springframework.transaction.annotation.Transactional
 import kotlin.test.Test
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class CoupleMemberLeaveEventPublishTest @Autowired constructor(
     private val applicationEventPublisher: ApplicationEventPublisher,
 ) : ExcludeAsyncConfigBean() {

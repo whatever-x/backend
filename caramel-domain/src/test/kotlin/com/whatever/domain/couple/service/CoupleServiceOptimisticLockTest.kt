@@ -1,5 +1,6 @@
 package com.whatever.domain.couple.service
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.domain.couple.controller.dto.request.UpdateCoupleSharedMessageRequest
 import com.whatever.domain.couple.controller.dto.request.UpdateCoupleStartDateRequest
 import com.whatever.domain.couple.exception.CoupleExceptionCode
@@ -34,8 +35,7 @@ import java.util.concurrent.Executors
 
 private val logger = KotlinLogging.logger { }
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class CoupleServiceOptimisticLockTest @Autowired constructor(
     private val redisTemplate: RedisTemplate<String, String>,
     private val coupleService: CoupleService,

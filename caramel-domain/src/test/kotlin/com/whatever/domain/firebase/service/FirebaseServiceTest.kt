@@ -1,5 +1,6 @@
 package com.whatever.domain.firebase.service
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.infrastructure.firebase.FcmSender
 import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import com.whatever.domain.auth.service.createSingleUser
@@ -20,14 +21,11 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.only
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
-import java.util.*
+import java.util.UUID
 import kotlin.test.Test
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class FirebaseServiceTest @Autowired constructor(
     private val firebaseService: FirebaseService,
     private val fcmTokenRepository: FcmTokenRepository,

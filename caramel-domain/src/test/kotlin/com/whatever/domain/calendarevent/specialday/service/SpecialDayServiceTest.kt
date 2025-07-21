@@ -1,5 +1,6 @@
 package com.whatever.domain.calendarevent.specialday.service
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.domain.specialday.model.SpecialDay
 import com.whatever.domain.specialday.model.SpecialDayType
 import com.whatever.domain.specialday.repository.SpecialDayRepository
@@ -7,15 +8,12 @@ import com.whatever.domain.specialday.service.SpecialDayService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import java.time.YearMonth
 import kotlin.test.Test
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 @Transactional
 class SpecialDayServiceTest @Autowired constructor(
     private val specialDayService: SpecialDayService,
