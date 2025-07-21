@@ -2,13 +2,11 @@ package com.whatever.domain.couple.service
 
 import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
-import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
+import com.whatever.caramel.common.util.toZoneId
+import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
-import com.whatever.domain.couple.controller.dto.request.CreateCoupleRequest
-import com.whatever.domain.couple.controller.dto.request.UpdateCoupleSharedMessageRequest
-import com.whatever.domain.couple.controller.dto.request.UpdateCoupleStartDateRequest
 import com.whatever.domain.couple.exception.CoupleAccessDeniedException
 import com.whatever.domain.couple.exception.CoupleException
 import com.whatever.domain.couple.exception.CoupleExceptionCode
@@ -18,15 +16,13 @@ import com.whatever.domain.couple.model.CoupleStatus
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.repository.InvitationCodeRedisRepository
 import com.whatever.domain.couple.service.event.ExcludeAsyncConfigBean
-import com.whatever.domain.firebase.service.FirebaseService
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserStatus.COUPLED
 import com.whatever.domain.user.model.UserStatus.SINGLE
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.security.util.SecurityUtil
-import com.whatever.util.toZoneId
+import com.whatever.firebase.service.FirebaseService
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.data.TemporalUnitWithinOffset
@@ -34,9 +30,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.reset
-import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -69,19 +63,15 @@ class CoupleServiceTest @Autowired constructor(
     @MockitoBean
     private lateinit var firebaseService: FirebaseService
 
-    private lateinit var securityUtilMock: AutoCloseable
-
     @BeforeEach
     fun setUp() {
         val connectionFactory = redisTemplate.connectionFactory
         check(connectionFactory != null)
         connectionFactory.connection.serverCommands().flushAll()
-        securityUtilMock = mockStatic(SecurityUtil::class.java)
     }
 
     @AfterEach
     fun tearDown() {
-        securityUtilMock.close()  // static mock 초기화
         reset(inviCodeRedisRepository)  // redisUtil mock 초기화
 
         tagContentMappingRepository.deleteAllInBatch()
@@ -103,13 +93,9 @@ class CoupleServiceTest @Autowired constructor(
                 userStatus = COUPLED
             )
         )
-        securityUtilMock.apply {
-            `when`(SecurityUtil.getCurrentUserStatus()).thenReturn(user.userStatus)
-            `when`(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
-        }
 
         // when, then
-        assertThatThrownBy { coupleService.createInvitationCode() }
+        assertThatThrownBy { coupleService.createInvitationCode(user.id) }
             .isInstanceOf(CoupleException::class.java)
             .hasMessage("기능을 이용할 수 없는 유저 상태입니다.")
     }
@@ -125,14 +111,10 @@ class CoupleServiceTest @Autowired constructor(
                 userStatus = SINGLE
             )
         )
-        securityUtilMock.apply {
-            `when`(SecurityUtil.getCurrentUserStatus()).thenReturn(user.userStatus)
-            `when`(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
-        }
         val expectExpirationDateTime = DateTimeUtil.localNow().plusDays(1)
 
         // when
-        val result = coupleService.createInvitationCode()
+        val result = coupleService.createInvitationCode(user.id)
 
         // then
         assertThat(result.invitationCode).isNotBlank()
@@ -153,15 +135,11 @@ class CoupleServiceTest @Autowired constructor(
                 userStatus = SINGLE
             )
         )
-        securityUtilMock.apply {
-            `when`(SecurityUtil.getCurrentUserStatus()).thenReturn(user.userStatus.name)
-            `when`(SecurityUtil.getCurrentUserId()).thenReturn(user.id)
-        }
         val expectExpirationDateTime = DateTimeUtil.localNow().plusDays(1)
 
         // when
-        val first = coupleService.createInvitationCode()
-        val second = coupleService.createInvitationCode()
+        val first = coupleService.createInvitationCode(user.id)
+        val second = coupleService.createInvitationCode(user.id)
 
         // then
         assertThat(first.invitationCode).isNotBlank()
@@ -183,13 +161,11 @@ class CoupleServiceTest @Autowired constructor(
         // given
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
 
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
-        }
-
         // when
-        val result = coupleService.getCoupleAndMemberInfo(savedCouple.id)
+        val result = coupleService.getCoupleAndMemberInfo(
+            coupleId = savedCouple.id,
+            currentUserId = myUser.id,
+        )
 
         // then
         assertThat(result.id).isEqualTo(savedCouple.id)
@@ -215,13 +191,8 @@ class CoupleServiceTest @Autowired constructor(
             )
         )
 
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(otherUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(otherUser.id)
-        }
-
         // when, then
-        assertThatThrownBy { coupleService.getCoupleAndMemberInfo(savedCouple.id) }
+        assertThatThrownBy { coupleService.getCoupleAndMemberInfo(savedCouple.id, otherUser.id) }
             .isInstanceOf(CoupleAccessDeniedException::class.java)
             .hasMessage("커플에 속한 유저가 아닙니다.")
     }
@@ -250,16 +221,15 @@ class CoupleServiceTest @Autowired constructor(
                 gender = UserGender.FEMALE,
             )
         )
-        val request = CreateCoupleRequest("test-invitation-code")
+        val testInvitationCode = "test-invitation-code"
 
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
-        }
-        whenever(inviCodeRedisRepository.getInvitationUser(request.invitationCode)).doReturn(hostUser.id)
+        whenever(inviCodeRedisRepository.getInvitationUser(testInvitationCode)).doReturn(hostUser.id)
 
         // when
-        val result = coupleService.createCouple(request)
+        val result = coupleService.createCouple(
+            invitationCode = testInvitationCode,
+            joinerUserId = myUser.id,
+        )
 
         // then
         assertThat(result.status).isEqualTo(CoupleStatus.ACTIVE)
@@ -286,16 +256,15 @@ class CoupleServiceTest @Autowired constructor(
                 userStatus = SINGLE
             )
         )
-        val request = CreateCoupleRequest("test-invitation-code")
+        val testInvitationCode = "test-invitation-code"
 
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(hostUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(hostUser.id)
-        }
-        whenever(inviCodeRedisRepository.getInvitationUser(request.invitationCode)).doReturn(hostUser.id)
+        whenever(inviCodeRedisRepository.getInvitationUser(testInvitationCode)).doReturn(hostUser.id)
 
         // when, then
-        assertThatThrownBy { coupleService.createCouple(request) }
+        assertThatThrownBy { coupleService.createCouple(
+            invitationCode = testInvitationCode,
+            joinerUserId = hostUser.id,
+        ) }
             .isInstanceOf(CoupleException::class.java)
             .hasMessage(CoupleExceptionCode.INVITATION_CODE_SELF_GENERATED.message)
     }
@@ -305,18 +274,15 @@ class CoupleServiceTest @Autowired constructor(
     fun updateStartDate() {
         // given
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id)
-        }
-        val request = UpdateCoupleStartDateRequest(DateTimeUtil.localNow().toLocalDate())
+
+        val request = DateTimeUtil.localNow().toLocalDate()
         val timeZone = "Asia/Seoul"
         // when
         val result = coupleService.updateStartDate(savedCouple.id, request, timeZone)
 
         // then
         assertThat(result.id).isEqualTo(savedCouple.id)
-        assertThat(result.startDate).isEqualTo(request.startDate)
+        assertThat(result.startDate).isEqualTo(request)
     }
 
     @DisplayName("커플 시작일을 업데이트시 미래가 주어진다면 예외가 반환된다.")
@@ -324,22 +290,16 @@ class CoupleServiceTest @Autowired constructor(
     fun updateStartDate_WithFutureDate() {
         // given
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id)
-        }
 
         // 미래 시간으로 설정
         val zonedStartDateTime = DateTimeUtil.zonedNow("Asia/Seoul".toZoneId()).plusDays(1)
-        val request = UpdateCoupleStartDateRequest(
-            startDate = zonedStartDateTime.toLocalDate()
-        )
+        val request = zonedStartDateTime.toLocalDate()
 
         // when, then
         val exception = assertThrows<CoupleIllegalArgumentException> {
             coupleService.updateStartDate(
                 coupleId = savedCouple.id,
-                request = request,
+                newCoupleStartDate = request,
                 timeZone = zonedStartDateTime.zone.id
             )
         }
@@ -353,18 +313,14 @@ class CoupleServiceTest @Autowired constructor(
     fun updateSharedMessage() {
         // given
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id)
-        }
-        val request = UpdateCoupleSharedMessageRequest("new message")
+        val request = "new message"
 
         // when
         val result = coupleService.updateSharedMessage(savedCouple.id, request)
 
         // then
         assertThat(result.id).isEqualTo(savedCouple.id)
-        assertThat(result.sharedMessage).isEqualTo(request.sharedMessage)
+        assertThat(result.sharedMessage).isEqualTo(request)
     }
 
     @DisplayName("Blank인 커플 공유메시지를 업데이트시 null인 공유 메시지가 반환된다.")
@@ -372,14 +328,10 @@ class CoupleServiceTest @Autowired constructor(
     fun updateSharedMessage_WithBlankMessage() {
         // given
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id)
-        }
-        val request = UpdateCoupleSharedMessageRequest("           ")
+        val blankSharedMessage = "           "
 
         // when
-        val result = coupleService.updateSharedMessage(savedCouple.id, request)
+        val result = coupleService.updateSharedMessage(savedCouple.id, blankSharedMessage)
 
         // then
         assertThat(result.id).isEqualTo(savedCouple.id)
@@ -391,14 +343,10 @@ class CoupleServiceTest @Autowired constructor(
     fun updateSharedMessage_WithNullMessage() {
         // given
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserStatus()).doReturn(myUser.userStatus)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id)
-        }
-        val request = UpdateCoupleSharedMessageRequest(null)
+        val nullSharedMessage = null
 
         // when
-        val result = coupleService.updateSharedMessage(savedCouple.id, request)
+        val result = coupleService.updateSharedMessage(savedCouple.id, nullSharedMessage)
 
         // then
         assertThat(result.id).isEqualTo(savedCouple.id)
