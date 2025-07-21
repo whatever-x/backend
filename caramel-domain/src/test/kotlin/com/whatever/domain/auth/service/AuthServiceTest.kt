@@ -3,7 +3,8 @@ package com.whatever.domain.auth.service
 import com.whatever.caramel.common.global.jwt.JwtHelper
 import com.whatever.caramel.common.global.jwt.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.caramel.common.util.DateTimeUtil
-import com.whatever.domain.auth.client.KakaoKapiClient
+import com.whatever.caramel.infrastructure.client.KakaoKapiClient
+import com.whatever.caramel.infrastructure.client.dto.KakaoIdTokenPayload
 import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
 import com.whatever.domain.auth.client.dto.KakaoUnlinkUserResponse
 import com.whatever.domain.auth.dto.ServiceToken
@@ -22,8 +23,8 @@ import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.global.exception.GlobalException
 import com.whatever.global.exception.GlobalExceptionCode.UNKNOWN
-import com.whatever.global.security.util.SecurityUtil
 import com.whatever.util.findByIdAndNotDeleted
+import org.apache.catalina.security.SecurityUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
