@@ -3,31 +3,22 @@ package com.whatever.domain.user.service
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.content.service.createCouple
 import com.whatever.domain.couple.repository.CoupleRepository
-import com.whatever.domain.user.dto.GetUserInfoResponse
-import com.whatever.domain.user.dto.PatchUserSettingRequest
-import com.whatever.domain.user.dto.UserSettingResponse
-import com.whatever.domain.user.model.LoginPlatform
-import com.whatever.domain.user.model.User
-import com.whatever.domain.user.model.UserGender
-import com.whatever.domain.user.model.UserSetting
-import com.whatever.domain.user.model.UserStatus
+import com.whatever.domain.user.model.*
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.repository.UserSettingRepository
-import com.whatever.global.security.util.SecurityUtil
+import com.whatever.domain.user.vo.UpdateUserSettingVo
+import com.whatever.domain.user.vo.UserInfoVo
+import com.whatever.domain.user.vo.UserSettingVo
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 import kotlin.test.Test
 
 @ActiveProfiles("test")
@@ -46,24 +37,20 @@ class UserServiceTest {
     @Autowired
     private lateinit var userSettingRepository: UserSettingRepository
 
-    private lateinit var mockSecurityUtil: AutoCloseable
-
-    @BeforeEach
-    fun setUp() {
-        mockSecurityUtil = mockStatic(SecurityUtil::class.java)
-    }
-
-    @AfterEach
-    fun tearDown() {
-        mockSecurityUtil.close()
-    }
-
     @DisplayName("상태가 NEW인 유저 정보를 확인한다.")
     @Test
     fun getUserInfo_WithNewUser() {
         // given
         val newUser = createNewUser(userRepository)
-        val expectedResult = GetUserInfoResponse.from(newUser)
+        val expectedResult = UserInfoVo(
+            id = newUser.id,
+            email = null,
+            birthDate = null,
+            signInPlatform = LoginPlatform.TEST,
+            nickname = null,
+            gender = null,
+            userStatus = UserStatus.NEW
+        )
 
         // when
         val result = userService.getUserInfo(newUser.id)
@@ -82,7 +69,15 @@ class UserServiceTest {
             nickname = "testuser",
             gender = UserGender.MALE,
         )
-        val expectedResult = GetUserInfoResponse.from(singleUser)
+        val expectedResult = UserInfoVo(
+            id = singleUser.id,
+            email = null,
+            birthDate = DateTimeUtil.localNow().toLocalDate(),
+            signInPlatform = LoginPlatform.TEST,
+            nickname = "testuser",
+            gender = UserGender.MALE,
+            userStatus = UserStatus.SINGLE
+        )
 
         // when
         val result = userService.getUserInfo(singleUser.id)
@@ -96,7 +91,15 @@ class UserServiceTest {
     fun getUserInfo_WithCoupledUser() {
         // given
         val (coupleUser, _, _) = createCouple(userRepository, coupleRepository)
-        val expectedResult = GetUserInfoResponse.from(coupleUser)
+        val expectedResult = UserInfoVo(
+            id = coupleUser.id,
+            email = null,
+            birthDate = coupleUser.birthDate,
+            signInPlatform = LoginPlatform.TEST,
+            nickname = coupleUser.nickname,
+            gender = coupleUser.gender,
+            userStatus = UserStatus.COUPLED
+        )
 
         // when
         val result = userService.getUserInfo(coupleUser.id)
@@ -116,17 +119,14 @@ class UserServiceTest {
             nickname = "testuser",
             gender = UserGender.MALE,
         )
-        mockSecurityUtil.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(singleUser.id)
-        }
         val userSetting = UserSetting(singleUser, notificationEnabled)
         userSettingRepository.save(userSetting)
 
-        val request = PatchUserSettingRequest(notificationEnabled)
-        val expected = UserSettingResponse.from(userSetting)
+        val request = UpdateUserSettingVo(notificationEnabled)
+        val expected = UserSettingVo(notificationEnabled)
 
         // when
-        val result = userService.updateUserSetting(request = request)
+        val result = userService.updateUserSetting(request = request, userId = singleUser.id)
 
         // then
         assertThat(result).isEqualTo(expected)
@@ -143,17 +143,15 @@ class UserServiceTest {
             nickname = "testuser",
             gender = UserGender.MALE,
         )
-        mockSecurityUtil.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(singleUser.id)
-        }
+
         val userSetting = UserSetting(singleUser, notificationEnabled)
         userSettingRepository.save(userSetting)
 
-        val request = PatchUserSettingRequest(null)
-        val expected = UserSettingResponse.from(userSetting)
+        val request = UpdateUserSettingVo(null)
+        val expected = UserSettingVo(notificationEnabled)
 
         // when
-        val result = userService.updateUserSetting(request = request)
+        val result = userService.updateUserSetting(request = request, userId = singleUser.id)
 
         // then
         assertThat(result.notificationEnabled).isEqualTo(expected.notificationEnabled)
