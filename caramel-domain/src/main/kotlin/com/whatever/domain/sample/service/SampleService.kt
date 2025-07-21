@@ -6,7 +6,7 @@ import com.whatever.caramel.common.global.jwt.JwtProvider
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import com.whatever.domain.auth.repository.AuthRedisRepository
-import com.whatever.domain.auth.service.JwtHelper
+import com.whatever.caramel.common.global.jwt.JwtHelper
 import com.whatever.domain.auth.vo.ServiceTokenVo
 import com.whatever.domain.auth.vo.SignInVo
 import com.whatever.domain.sample.exception.SampleExceptionCode

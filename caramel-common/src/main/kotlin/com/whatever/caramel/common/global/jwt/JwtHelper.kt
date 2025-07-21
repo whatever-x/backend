@@ -1,7 +1,5 @@
-package com.whatever.domain.auth.service
+package com.whatever.caramel.common.global.jwt
 
-import com.whatever.caramel.common.global.jwt.JwtProperties
-import com.whatever.caramel.common.global.jwt.JwtProvider
 import com.whatever.caramel.common.global.jwt.exception.CaramelJwtException
 import com.whatever.caramel.common.global.jwt.exception.JwtExceptionCode
 import com.whatever.caramel.common.global.jwt.exception.JwtMissingClaimException

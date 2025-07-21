@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 val springCloudVersion = "2024.0.0"
@@ -24,24 +23,24 @@ dependencies {
     implementation("com.linecorp.kotlin-jdsl:jpql-render:3.5.3")
     implementation("com.linecorp.kotlin-jdsl:spring-data-jpa-support:3.5.3")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-aop")  // dddd
+    implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.retry:spring-retry")
-    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.security:spring-security-crypto")
 
     // Cache
     implementation("org.springframework.boot:spring-boot-starter-cache")
-    implementation("com.github.ben-manes.caffeine:caffeine")
 
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
 
     // DB
     runtimeOnly("org.postgresql:postgresql")
+
     // Util
     implementation("io.viascom.nanoid:nanoid:1.0.1")
+
     // test
     runtimeOnly("com.h2database:h2")
-//    testImplementation(kotlin("test"))  // ????????
 }
 
 tasks.getByName<BootJar>("bootJar") {
@@ -82,10 +81,3 @@ jacoco {
     toolVersion = "0.8.11"
     reportsDirectory.set(layout.buildDirectory.dir("jacocoXml"))
 }
-
-//
-//configurations.configureEach {
-//    // 기본 로깅 스타터 제외
-//    exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
-//}
-//

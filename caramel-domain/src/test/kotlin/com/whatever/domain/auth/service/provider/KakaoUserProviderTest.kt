@@ -3,7 +3,6 @@ package com.whatever.domain.auth.service.provider
 import com.whatever.domain.auth.client.KakaoOIDCClient
 import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
 import com.whatever.domain.auth.client.dto.OIDCPublicKeysResponse
-import com.whatever.domain.auth.service.OIDCHelper
 import com.whatever.domain.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach

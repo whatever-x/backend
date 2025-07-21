@@ -1,5 +1,6 @@
 package com.whatever.domain.auth.service
 
+import com.whatever.caramel.common.global.jwt.JwtHelper
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.auth.client.KakaoKapiClient
 import com.whatever.domain.auth.client.dto.KakaoIdTokenPayload
@@ -9,7 +10,7 @@ import com.whatever.domain.auth.exception.AuthException
 import com.whatever.domain.auth.exception.AuthExceptionCode
 import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
 import com.whatever.domain.auth.repository.AuthRedisRepository
-import com.whatever.domain.auth.service.JwtHelper.Companion.BEARER_TYPE
+import com.whatever.caramel.common.global.jwt.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.domain.content.service.createCouple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.service.CoupleService

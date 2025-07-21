@@ -1,5 +1,6 @@
 package com.whatever.domain.auth.service
 
+import com.whatever.caramel.common.global.jwt.JwtHelper
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.common.util.withoutNano
 import com.whatever.config.properties.JwtProperties
