@@ -4,9 +4,10 @@ spring:
       on-profile: test
     import: optional:file:.env[.properties]
   datasource:
+    driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/caramel
     username: caramel
-    password: ''
+    password: 'abcdefghijklnmopqrstuvwxyz'
     hikari:
       maximum-pool-size: 12
   jpa:
@@ -20,6 +21,7 @@ spring:
         format_sql: true
         globally_quoted_identifiers: true
         order_updates: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           batch_size: 20
   cloud:
@@ -34,3 +36,9 @@ spring:
   test:
     database:
       replace: none
+
+jwt:
+  secret-key-str: "a-very-long-and-secure-secret-key-for-testing-purpose-only-at-least-256-bits"
+  access-expiration-sec: 3600
+  refresh-expiration-sec: 604800
+  issuer: Caramel
