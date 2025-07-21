@@ -41,7 +41,7 @@ dependencies {
 
     // test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    runtimeOnly("com.h2database:h2")
+    testImplementation("org.postgresql:postgresql")
 }
 
 tasks.getByName<BootJar>("bootJar") {
