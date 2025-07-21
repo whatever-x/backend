@@ -1,17 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
-plugins {
-    id("org.springframework.boot") version "3.4.1"
-    id("io.spring.dependency-management") version "1.1.7"
-
-    // Kotlin 플러그인
-    kotlin("jvm") version "2.1.20"
-    kotlin("plugin.spring") version "2.1.20"
-    kotlin("plugin.jpa") version "2.1.20"
-    id("jacoco")
-}
-
 val springCloudVersion = "2024.0.0"
 val opentelemetryVersion = "2.14.0"
 
@@ -22,10 +11,6 @@ allOpen {
     annotation("jakarta.persistence.Entity")
     annotation("jakarta.persistence.MappedSuperclass")
     annotation("jakarta.persistence.Embeddable")
-}
-
-repositories {
-    mavenCentral()
 }
 
 dependencies {
@@ -50,23 +35,13 @@ dependencies {
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
 
-    // Jackson과 Kotlin의 호환성을 위한 모듈
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    // 리플렉션을 지원하는 Kotlin 라이브러리
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
     // DB
     runtimeOnly("org.postgresql:postgresql")
     // Util
     implementation("io.viascom.nanoid:nanoid:1.0.1")
     // test
     runtimeOnly("com.h2database:h2")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
-    testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
-    testImplementation("io.mockk:mockk:1.14.4")
-    testImplementation(kotlin("test"))
+    testImplementation(kotlin("test"))  // ????????
 }
 
 tasks.test {

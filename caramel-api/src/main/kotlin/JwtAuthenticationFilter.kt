@@ -5,7 +5,7 @@ import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.service.JwtHelper
 import com.whatever.domain.auth.service.JwtHelper.Companion.BEARER_TYPE
-import com.whatever.domain.user.repository.UserRepository
+import com.whatever.domain.user.service.UserService
 import com.whatever.security.exception.AccessDeniedException
 import com.whatever.security.exception.SecurityExceptionCode
 import jakarta.servlet.FilterChain
@@ -19,8 +19,8 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Component
 class JwtAuthenticationFilter(
     private val jwtHelper: JwtHelper,
-    private val userRepository: UserRepository,
     private val authRedisRepository: AuthRedisRepository,
+    private val userService: UserService,
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -52,12 +52,12 @@ class JwtAuthenticationFilter(
 
     private fun getAuthentication(accessToken: String): UsernamePasswordAuthenticationToken? {
         val userId = jwtHelper.extractUserId(accessToken)
-        val user = userRepository.findByIdWithCouple(userId) ?: return null
+        val userVo = userService.getUserWithCouple(userId) ?: return null
 
         val userDetails = CaramelUserDetails(
-            userId = user.id,
-            status = user.userStatus.name,
-            coupleId = user.couple?.id ?: 0L
+            userId = userVo.id,
+            status = userVo.userStatus.name,
+            coupleId = userVo.coupleId,
         )
 
         return UsernamePasswordAuthenticationToken(

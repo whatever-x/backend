@@ -1,21 +1,7 @@
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
-plugins {
-    id("org.springframework.boot") version "3.4.1"
-    id("io.spring.dependency-management") version "1.1.7"
-
-    // Kotlin 플러그인
-    kotlin("jvm") version "2.1.20"
-    kotlin("plugin.spring") version "2.1.20"
-    kotlin("plugin.jpa") version "2.1.20"
-}
-
 group = "com.whatever.caramel-infrastructure"
 version = "0.0.1-SNAPSHOT"
-
-repositories {
-    mavenCentral()
-}
 
 val springCloudVersion = "2024.0.0"
 val opentelemetryVersion = "2.14.0"
@@ -43,8 +29,8 @@ dependencies {
     // Firebase Admin SDK
     implementation("com.google.firebase:firebase-admin:9.4.3")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+//    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+//    testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
 dependencyManagement {

@@ -16,6 +16,7 @@ import com.whatever.domain.user.vo.UpdateUserSettingVo
 import com.whatever.domain.user.vo.UpdatedUserProfileVo
 import com.whatever.domain.user.vo.UserInfoVo
 import com.whatever.domain.user.vo.UserSettingVo
+import com.whatever.domain.user.vo.UserVo
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneId
@@ -69,6 +70,12 @@ class UserService(
     ): UserInfoVo {
         val user = userRepository.findByIdAndNotDeleted(userId) ?: throw UserNotFoundException(errorCode = NOT_FOUND)
         return UserInfoVo.from(user)
+    }
+
+    fun getUserWithCouple(
+        userId: Long,
+    ): UserVo? {
+        return userRepository.findByIdWithCouple(userId)?.let { UserVo.from(it) }
     }
 
     @Transactional
