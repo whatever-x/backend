@@ -2,7 +2,6 @@ package com.whatever.domain.balancegame.service
 
 import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
-import com.whatever.domain.balancegame.controller.dto.request.ChooseBalanceGameOptionRequest
 import com.whatever.domain.balancegame.exception.BalanceGameExceptionCode
 import com.whatever.domain.balancegame.exception.BalanceGameIllegalArgumentException
 import com.whatever.domain.balancegame.exception.BalanceGameIllegalStateException
@@ -18,10 +17,8 @@ import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.security.util.SecurityUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mockStatic
@@ -42,16 +39,8 @@ class BalanceGameServiceTest @Autowired constructor(
     private val userChoiceOptionRepository: UserChoiceOptionRepository,
 ) {
 
-    private lateinit var securityUtilMock: AutoCloseable
-
-    @BeforeEach
-    fun setUp() {
-        securityUtilMock = mockStatic(SecurityUtil::class.java)
-    }
-
     @AfterEach
     fun tearDown() {
-        securityUtilMock.close()
         userChoiceOptionRepository.deleteAllInBatch()
         balanceGameOptionRepository.deleteAllInBatch()
         balanceGameRepository.deleteAllInBatch()
@@ -59,11 +48,11 @@ class BalanceGameServiceTest @Autowired constructor(
         coupleRepository.deleteAllInBatch()
     }
 
-    @DisplayName("밸러스 게임을 조회 시 커플 멤버중 아무도 선택하지 않았을 경우 게임의 정보만 반환된다.")
+    @DisplayName("밸러스 게임을 조회 시 게임의 정보가 반환된다.")
     @Test
     fun getTodayBalanceGameInfo_WithNoMemberChoices() {
         // given
-        setUpCoupleAndSecurity()
+        setUpCouple()
         val now = LocalDateTime.of(2025, 5, 5, 9, 0)
         mockStatic(DateTimeUtil::class.java).use {
             whenever(DateTimeUtil.localNow(any())).thenReturn(now)
@@ -73,18 +62,16 @@ class BalanceGameServiceTest @Autowired constructor(
             val result = balanceGameService.getTodayBalanceGameInfo()
 
             // then
-            assertThat(result.gameInfo.id).isEqualTo(expectedGame.first.id)
-            assertThat(result.gameInfo.options.map { it.id }).containsExactlyInAnyOrderElementsOf(expectedGame.second.map { it.id })
-            assertThat(result.myChoice).isNull()
-            assertThat(result.partnerChoice).isNull()
+            assertThat(result.id).isEqualTo(expectedGame.first.id)
+            assertThat(result.options.map { it.id }).containsExactlyInAnyOrderElementsOf(expectedGame.second.map { it.id })
         }
     }
 
-    @DisplayName("밸러스 게임을 조회 시 커플 멤버중 나만 선택했을 경우 내 선택 정보도 함께 반환된다.")
+    @DisplayName("밸러스 게임 커플 선택 조회 시, 커플 멤버중 나만 선택했을 경우 내 선택 정보가 반환된다.")
     @Test
-    fun getTodayBalanceGameInfo_WhenIHaveChosen() {
+    fun getCoupleMemberChoices_WhenIHaveChosen() {
         // given
-        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val (myUser, _, couple) = setUpCouple()
         val now = LocalDateTime.of(2025, 5, 5, 9, 0)
         mockStatic(DateTimeUtil::class.java).use {
             whenever(DateTimeUtil.localNow(any())).thenReturn(now)
@@ -98,20 +85,21 @@ class BalanceGameServiceTest @Autowired constructor(
             )
 
             // when
-            val result = balanceGameService.getTodayBalanceGameInfo()
+            val result = balanceGameService.getCoupleMemberChoices(couple.id, expectedGame.first.id)
 
             // then
-            assertThat(result.myChoice?.id).isEqualTo(myChoice.balanceGameOption.id)
-            assertThat(result.myChoice?.text).isEqualTo(myChoice.balanceGameOption.optionText)
-            assertThat(result.partnerChoice).isNull()
+            val myChoiceOption = result.first { it.userId == myUser.id }
+            val partnerChoiceOption = result.first { it.userId != myUser.id }
+            assertThat(myChoiceOption.balanceGameOptionId).isEqualTo(myChoice.balanceGameOption.id)
+            assertThat(partnerChoiceOption).isNull()
         }
     }
 
-    @DisplayName("밸러스 게임을 조회 시 커플 멤버중 파트너만 선택했을 경우 파트너 선택 정보도 함께 반환된다.")
+    @DisplayName("밸러스 게임 커플 선택 조회 시, 커플 멤버중 파트너만 선택했을 경우 파트너 선택 정보가 반환된다.")
     @Test
     fun getTodayBalanceGameInfo_WhenPartnerChosen() {
         // given
-        val (_, partnerUser, _) = setUpCoupleAndSecurity()
+        val (myUser, partnerUser, couple) = setUpCouple()
         val now = LocalDateTime.of(2025, 5, 5, 9, 0)
         mockStatic(DateTimeUtil::class.java).use {
             whenever(DateTimeUtil.localNow(any())).thenReturn(now)
@@ -125,12 +113,13 @@ class BalanceGameServiceTest @Autowired constructor(
             )
 
             // when
-            val result = balanceGameService.getTodayBalanceGameInfo()
+            val result = balanceGameService.getCoupleMemberChoices(couple.id, expectedGame.first.id)
 
             // then
-            assertThat(result.myChoice).isNull()
-            assertThat(result.partnerChoice?.id).isEqualTo(partnerChoice.balanceGameOption.id)
-            assertThat(result.partnerChoice?.text).isEqualTo(partnerChoice.balanceGameOption.optionText)
+            val myChoiceOption = result.first { it.userId == myUser.id }
+            val partnerChoiceOption = result.first { it.userId == partnerUser.id }
+            assertThat(myChoiceOption).isNull()
+            assertThat(partnerChoiceOption.balanceGameOptionId).isEqualTo(partnerChoice.balanceGameOption.id)
         }
     }
 
@@ -138,7 +127,7 @@ class BalanceGameServiceTest @Autowired constructor(
     @Test
     fun getTodayBalanceGameInfo_WhenBothMembersChosen() {
         // given
-        val (myUser, partnerUser, _) = setUpCoupleAndSecurity()
+        val (myUser, partnerUser, couple) = setUpCouple()
         val now = LocalDateTime.of(2025, 5, 5, 9, 0)
         mockStatic(DateTimeUtil::class.java).use {
             whenever(DateTimeUtil.localNow(any())).thenReturn(now)
@@ -159,11 +148,13 @@ class BalanceGameServiceTest @Autowired constructor(
             )
 
             // when
-            val result = balanceGameService.getTodayBalanceGameInfo()
+            val result = balanceGameService.getCoupleMemberChoices(couple.id, expectedGame.first.id)
 
             // then
-            assertThat(result.myChoice?.id).isEqualTo(myChoice.balanceGameOption.id)
-            assertThat(result.partnerChoice?.id).isEqualTo(partnerChoice.balanceGameOption.id)
+            val myChoiceOption = result.first { it.userId == myUser.id }
+            val partnerChoiceOption = result.first { it.userId == partnerUser.id }
+            assertThat(myChoiceOption.balanceGameOptionId).isEqualTo(myChoice.balanceGameOption.id)
+            assertThat(partnerChoiceOption.balanceGameOptionId).isEqualTo(partnerChoice.balanceGameOption.id)
         }
     }
 
@@ -171,7 +162,7 @@ class BalanceGameServiceTest @Autowired constructor(
     @Test
     fun getTodayBalanceGameInfo_WithIllegalOptionCount() {
         // given
-        val (_, _, _) = setUpCoupleAndSecurity()
+        val (_, _, _) = setUpCouple()
         val now = LocalDateTime.of(2025, 5, 5, 9, 0)
         mockStatic(DateTimeUtil::class.java).use {
             whenever(DateTimeUtil.localNow(any())).thenReturn(now)
@@ -192,20 +183,26 @@ class BalanceGameServiceTest @Autowired constructor(
     @Test
     fun chooseBalanceGameOption_WithNoMemberChoices() {
         // given
-        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val (myUser, _, couple) = setUpCouple()
         val now = LocalDateTime.of(2025, 5, 5, 9, 0)
         mockStatic(DateTimeUtil::class.java).use {
             whenever(DateTimeUtil.localNow(any())).thenReturn(now)
             val gameInfo = makeBalanceGame(1, now.toLocalDate()).first()
             val gameId = gameInfo.first.id
-            val request = ChooseBalanceGameOptionRequest(optionId = gameInfo.second.first().id)
+            val selectedOptionId = gameInfo.second.first().id
 
             // when
-            val result = balanceGameService.chooseBalanceGameOption(gameId, request)
+            val result = balanceGameService.chooseBalanceGameOption(
+                gameId = gameId,
+                selectedOptionId = selectedOptionId,
+                coupleId = couple.id,
+                requestUserId = myUser.id,
+            )
 
             // then
-            assertThat(result.gameInfo.id).isEqualTo(gameId)
-            assertThat(result.myChoice?.id).isEqualTo(request.optionId)
+            require(result.myChoice != null)
+            assertThat(result.myChoice.balanceGameId).isEqualTo(gameId)
+            assertThat(result.myChoice.balanceGameOptionId).isEqualTo(selectedOptionId)
             assertThat(result.partnerChoice).isNull()
         }
     }
@@ -214,7 +211,7 @@ class BalanceGameServiceTest @Autowired constructor(
     @Test
     fun chooseBalanceGameOption_WhenIHaveChosen() {
         // given
-        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val (myUser, _, couple) = setUpCouple()
         val now = LocalDateTime.of(2025, 5, 5, 9, 0)
         mockStatic(DateTimeUtil::class.java).use {
             whenever(DateTimeUtil.localNow(any())).thenReturn(now)
@@ -230,14 +227,20 @@ class BalanceGameServiceTest @Autowired constructor(
 
             val secondChoiceOption = gameInfo.second.last()
             val gameId = gameInfo.first.id
-            val request = ChooseBalanceGameOptionRequest(optionId = secondChoiceOption.id)
+            val selectedOptionId = secondChoiceOption.id
 
             // when
-            val result = balanceGameService.chooseBalanceGameOption(gameId, request)
+            val result = balanceGameService.chooseBalanceGameOption(
+                gameId = gameId,
+                selectedOptionId = selectedOptionId,
+                coupleId = couple.id,
+                requestUserId = myUser.id,
+            )
 
             // then
-            assertThat(result.gameInfo.id).isEqualTo(gameId)
-            assertThat(result.myChoice?.id).isEqualTo(firstChoiceOption.id)
+            require(result.myChoice != null)
+            assertThat(result.myChoice.balanceGameId).isEqualTo(gameId)
+            assertThat(result.myChoice.balanceGameOptionId).isEqualTo(selectedOptionId)
             assertThat(result.partnerChoice).isNull()
         }
     }
@@ -246,7 +249,7 @@ class BalanceGameServiceTest @Autowired constructor(
     @Test
     fun chooseBalanceGameOption_WhenPartnerChosen() {
         // given
-        val (myUser, partnerUser, _) = setUpCoupleAndSecurity()
+        val (myUser, partnerUser, couple) = setUpCouple()
         val now = LocalDateTime.of(2025, 5, 5, 9, 0)
         mockStatic(DateTimeUtil::class.java).use {
             whenever(DateTimeUtil.localNow(any())).thenReturn(now)
@@ -262,15 +265,24 @@ class BalanceGameServiceTest @Autowired constructor(
 
             val myChoiceOption = gameInfo.second.last()
             val gameId = gameInfo.first.id
-            val request = ChooseBalanceGameOptionRequest(optionId = myChoiceOption.id)
+            val selectedOptionId = myChoiceOption.id
 
             // when
-            val result = balanceGameService.chooseBalanceGameOption(gameId, request)
+            val result = balanceGameService.chooseBalanceGameOption(
+                gameId = gameId,
+                selectedOptionId = selectedOptionId,
+                coupleId = couple.id,
+                requestUserId = myUser.id,
+            )
 
             // then
-            assertThat(result.gameInfo.id).isEqualTo(gameId)
-            assertThat(result.myChoice?.id).isEqualTo(myChoiceOption.id)
-            assertThat(result.partnerChoice?.id).isEqualTo(partnerChoiceOption.id)
+            require(result.myChoice != null)
+            assertThat(result.myChoice.balanceGameId).isEqualTo(gameId)
+            assertThat(result.myChoice.balanceGameOptionId).isEqualTo(selectedOptionId)
+
+            require(result.partnerChoice != null)
+            assertThat(result.partnerChoice.balanceGameId).isEqualTo(gameId)
+            assertThat(result.partnerChoice.balanceGameOptionId).isEqualTo(selectedOptionId)
         }
     }
 
@@ -278,7 +290,7 @@ class BalanceGameServiceTest @Autowired constructor(
     @Test
     fun chooseBalanceGameOption_WhenOverMidnight() {
         // given
-        val (_, _, _) = setUpCoupleAndSecurity()
+        val (myUser, _, couple) = setUpCouple()
         val before = LocalDateTime.of(2025, 5, 4, 23, 59, 59)
         val now = LocalDateTime.of(2025, 5, 5, 0, 0)
         mockStatic(DateTimeUtil::class.java).use {
@@ -288,12 +300,17 @@ class BalanceGameServiceTest @Autowired constructor(
             makeBalanceGame(2, before.toLocalDate())
             val beforeGame = balanceGameService.getTodayBalanceGameInfo()
 
-            val beforeGameId = beforeGame.gameInfo.id
-            val request = ChooseBalanceGameOptionRequest(optionId = beforeGame.gameInfo.options.first().id)
+            val beforeGameId = beforeGame.id
+            val selectedOptionId = beforeGame.options.first().id
 
             // when
             val result = assertThrows<BalanceGameIllegalArgumentException> {
-                balanceGameService.chooseBalanceGameOption(beforeGameId, request)
+                balanceGameService.chooseBalanceGameOption(
+                    gameId = beforeGame.id,
+                    selectedOptionId = selectedOptionId,
+                    coupleId = couple.id,
+                    requestUserId = myUser.id,
+                )
             }
 
             // then
@@ -305,18 +322,23 @@ class BalanceGameServiceTest @Autowired constructor(
     @Test
     fun chooseBalanceGameOption_WithIllegalOptionId() {
         // given
-        val (_, _, _) = setUpCoupleAndSecurity()
+        val (myUser, _, couple) = setUpCouple()
         val now = LocalDateTime.of(2025, 5, 5, 0, 0)
         mockStatic(DateTimeUtil::class.java).use {
             whenever(DateTimeUtil.localNow(any())).thenReturn(now)
             makeBalanceGame(1, now.toLocalDate())
             val beforeGame = balanceGameService.getTodayBalanceGameInfo()
-            val gameId = beforeGame.gameInfo.id
-            val request = ChooseBalanceGameOptionRequest(optionId = 0L)
+            val gameId = beforeGame.id
+            val illegalOptionId = 0L
 
             // when
             val result = assertThrows<BalanceGameOptionNotFoundException> {
-                balanceGameService.chooseBalanceGameOption(gameId, request)
+                balanceGameService.chooseBalanceGameOption(
+                    gameId = gameId,
+                    selectedOptionId = illegalOptionId,
+                    coupleId = couple.id,
+                    requestUserId = myUser.id,
+                )
             }
 
             // then
@@ -324,7 +346,7 @@ class BalanceGameServiceTest @Autowired constructor(
         }
     }
 
-    private fun setUpCoupleAndSecurity(
+    private fun setUpCouple(
         myPlatformId: String = "my-user-id",
         partnerPlatformId: String = "partner-user-id",
     ): Triple<User, User, Couple> {
@@ -334,10 +356,6 @@ class BalanceGameServiceTest @Autowired constructor(
             myPlatformId,
             partnerPlatformId
         )
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-        }
         return Triple(myUser, partnerUser, couple)
     }
 
