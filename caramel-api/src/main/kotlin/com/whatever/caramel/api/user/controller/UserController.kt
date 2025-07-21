@@ -116,7 +116,7 @@ class UserController(
         @RequestBody request: PatchUserSettingRequest,
     ): CaramelApiResponse<UserSettingResponse> {
         val userSettingVo = userService.updateUserSetting(
-            request = request.toVo(),
+            updateUserSettingVo = request.toVo(),
             userId = getCurrentUserId(),
         )
         return UserSettingResponse.from(userSettingVo).succeed()

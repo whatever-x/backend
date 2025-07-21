@@ -1,31 +1,17 @@
 package com.whatever.domain.user.service
 
 import com.whatever.caramel.common.util.DateTimeUtil
-import com.whatever.domain.user.dto.GetUserInfoResponse
-import com.whatever.domain.user.dto.PatchUserSettingRequest
-import com.whatever.domain.user.dto.PostUserProfileRequest
-import com.whatever.domain.user.dto.PutUserProfileRequest
-import com.whatever.domain.user.dto.UserSettingResponse
+import com.whatever.domain.findByIdAndNotDeleted
 import com.whatever.domain.user.exception.UserExceptionCode
 import com.whatever.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.domain.user.exception.UserIllegalStateException
 import com.whatever.domain.user.exception.UserNotFoundException
-import com.whatever.domain.user.model.LoginPlatform
-import com.whatever.domain.user.model.User
-import com.whatever.domain.user.model.UserGender
-import com.whatever.domain.user.model.UserSetting
-import com.whatever.domain.user.model.UserStatus
+import com.whatever.domain.user.model.*
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.repository.UserSettingRepository
-import com.whatever.global.security.util.SecurityUtil
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.slot
-import io.mockk.spyk
-import io.mockk.verify
+import com.whatever.domain.user.vo.*
+import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
@@ -33,13 +19,11 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito
-import org.mockito.Mockito.mockStatic
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.whenever
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
-import java.util.Optional
-import java.util.UUID
+import java.util.*
 import kotlin.test.Test
 
 @ActiveProfiles("test")
@@ -54,30 +38,12 @@ class UserServiceUnitTest {
 
     @InjectMocks
     private lateinit var userService: UserService
-
-    private lateinit var mockSecurityUtil: AutoCloseable
-
     private val mockkUserRepository = mockk<UserRepository>()
     private val mockkUserSettingRepository = mockk<UserSettingRepository>()
     private val spykUserService = spyk(UserService(mockkUserRepository, mockkUserSettingRepository))
 
     private lateinit var user: User
     private var userId: Long = Long.MIN_VALUE
-
-    @BeforeEach
-    fun setUp() {
-        mockSecurityUtil = mockStatic(SecurityUtil::class.java)
-        user = spyk(createUser())
-        userId = user.id
-        mockSecurityUtil.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(userId)
-        }
-    }
-
-    @AfterEach
-    fun tearDown() {
-        mockSecurityUtil.close()
-    }
 
     @ParameterizedTest
     @CsvSource(
@@ -95,28 +61,28 @@ class UserServiceUnitTest {
         agreementServiceTerms: Boolean,
         agreementPrivatePolicy: Boolean,
     ) {
-        val request = PostUserProfileRequest(
+        val vo = CreateUserProfileVo(
             nickname = "pita",
             birthday = LocalDate.now(),
             gender = gender,
             agreementServiceTerms = agreementServiceTerms,
             agreementPrivatePolicy = agreementPrivatePolicy,
         )
-        every { mockkUserRepository.findById(any()) } returns Optional.of(user)
+        every { mockkUserRepository.findByIdAndNotDeleted(any()) } returns user
         every { mockkUserSettingRepository.existsByUserAndIsDeleted(any()) } returns true
 
-        val result = spykUserService.createProfile(request, DateTimeUtil.KST_ZONE_ID)
+        val result = spykUserService.createProfile(vo, DateTimeUtil.KST_ZONE_ID, userId)
 
         with(result) {
             assertThat(id).isEqualTo(user.id)
-            assertThat(nickname).isEqualTo(request.nickname)
+            assertThat(nickname).isEqualTo(vo.nickname)
             assertThat(userStatus).isEqualTo(UserStatus.SINGLE)
-            assertThat(user.birthDate).isEqualTo(request.birthday)
-            assertThat(user.gender).isEqualTo(request.gender)
+            assertThat(user.birthDate).isEqualTo(vo.birthday)
+            assertThat(user.gender).isEqualTo(vo.gender)
         }
         verify(exactly = 1) {
             mockkUserSettingRepository.existsByUserAndIsDeleted(eq(user))
-            user.register(eq(request.nickname), eq(request.birthday), eq(request.gender), eq(DateTimeUtil.KST_ZONE_ID))
+            user.register(eq(vo.nickname), eq(vo.birthday), eq(vo.gender), eq(DateTimeUtil.KST_ZONE_ID))
         }
         verify(exactly = 0) {
             mockkUserSettingRepository.save(any())
@@ -139,7 +105,7 @@ class UserServiceUnitTest {
         agreementServiceTerms: Boolean,
         agreementPrivatePolicy: Boolean,
     ) {
-        val request = PostUserProfileRequest(
+        val vo = CreateUserProfileVo(
             nickname = "pita",
             birthday = LocalDate.now(),
             gender = gender,
@@ -148,23 +114,23 @@ class UserServiceUnitTest {
         )
         val slot = slot<UserSetting>()
         val userSetting = UserSetting(user)
-        every { mockkUserRepository.findById(any()) } returns Optional.of(user)
+        every { mockkUserRepository.findByIdAndNotDeleted(any()) } returns user
         every { mockkUserSettingRepository.existsByUserAndIsDeleted(any()) } returns false
         every { mockkUserSettingRepository.save(any()) } returns userSetting
 
-        val result = spykUserService.createProfile(request, DateTimeUtil.KST_ZONE_ID)
+        val result = spykUserService.createProfile(vo, DateTimeUtil.KST_ZONE_ID, userId)
 
         with(result) {
             assertThat(id).isEqualTo(user.id)
-            assertThat(nickname).isEqualTo(request.nickname)
+            assertThat(nickname).isEqualTo(vo.nickname)
             assertThat(userStatus).isEqualTo(UserStatus.SINGLE)
-            assertThat(user.birthDate).isEqualTo(request.birthday)
-            assertThat(user.gender).isEqualTo(request.gender)
+            assertThat(user.birthDate).isEqualTo(vo.birthday)
+            assertThat(user.gender).isEqualTo(vo.gender)
         }
         verify(exactly = 1) {
             mockkUserSettingRepository.existsByUserAndIsDeleted(eq(user))
             mockkUserSettingRepository.save(capture(slot))
-            user.register(eq(request.nickname), eq(request.birthday), eq(request.gender), eq(DateTimeUtil.KST_ZONE_ID))
+            user.register(eq(vo.nickname), eq(vo.birthday), eq(vo.gender), eq(DateTimeUtil.KST_ZONE_ID))
         }
         assertThat(slot.captured.user).isEqualTo(userSetting.user)
     }
@@ -185,22 +151,22 @@ class UserServiceUnitTest {
         agreementServiceTerms: Boolean,
         agreementPrivatePolicy: Boolean,
     ) {
-        val request = PostUserProfileRequest(
+        val vo = CreateUserProfileVo(
             nickname = "pita",
             birthday = LocalDate.now(),
             gender = gender,
             agreementServiceTerms = agreementServiceTerms,
             agreementPrivatePolicy = agreementPrivatePolicy,
         )
-        every { mockkUserRepository.findById(any()) } returns Optional.empty()
+        every { mockkUserRepository.findByIdAndNotDeleted(any()) } returns null
 
         val result = assertThrows<UserNotFoundException> {
-            spykUserService.createProfile(request, DateTimeUtil.KST_ZONE_ID)
+            spykUserService.createProfile(vo, DateTimeUtil.KST_ZONE_ID, userId)
         }
         assertThat(result.errorCode).isEqualTo(NOT_FOUND)
 
         verify(exactly = 1) {
-            mockkUserRepository.findById(eq(userId))
+            mockkUserRepository.findByIdAndNotDeleted(eq(userId))
         }
         verify(exactly = 0) {
             user.register(any(), any(), any(), eq(DateTimeUtil.KST_ZONE_ID))
@@ -209,56 +175,56 @@ class UserServiceUnitTest {
 
     @Test
     fun `user 의 프로필을 업데이트- nickname, birthdate 존재`() {
-        val request = PutUserProfileRequest(nickname = "pita", birthday = LocalDate.now())
-        every { mockkUserRepository.findById(any()) } returns Optional.of(user)
+        val vo = UpdateUserProfileVo(nickname = "pita", birthday = LocalDate.now())
+        every { mockkUserRepository.findByIdAndNotDeleted(any()) } returns user
 
-        val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
+        val result = spykUserService.updateProfile(vo, DateTimeUtil.KST_ZONE_ID, userId)
 
         with(result) {
             assertThat(id).isEqualTo(userId)
-            assertThat(nickname).isEqualTo(request.nickname)
-            assertThat(birthday).isEqualTo(request.birthday)
+            assertThat(nickname).isEqualTo(vo.nickname)
+            assertThat(birthday).isEqualTo(vo.birthday)
         }
         verify(exactly = 1) {
-            mockkUserRepository.findById(eq(userId))
+            mockkUserRepository.findByIdAndNotDeleted(eq(userId))
             user.updateBirthDate(eq(result.birthday), eq(DateTimeUtil.KST_ZONE_ID))
         }
     }
 
     @Test
     fun `user 의 프로필을 업데이트 - nickname null`() {
-        val request = PutUserProfileRequest(nickname = null, birthday = LocalDate.now())
-        every { mockkUserRepository.findById(any()) } returns Optional.of(user)
+        val vo = UpdateUserProfileVo(nickname = null, birthday = LocalDate.now())
+        every { mockkUserRepository.findByIdAndNotDeleted(any()) } returns user
 
-        val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
+        val result = spykUserService.updateProfile(vo, DateTimeUtil.KST_ZONE_ID, userId)
 
         with(result) {
             assertThat(id).isEqualTo(userId)
             assertThat(nickname).isEqualTo(user.nickname)
             assertThat(nickname).isNotNull()
-            assertThat(birthday).isEqualTo(request.birthday)
+            assertThat(birthday).isEqualTo(vo.birthday)
         }
         verify(exactly = 1) {
-            mockkUserRepository.findById(eq(userId))
+            mockkUserRepository.findByIdAndNotDeleted(eq(userId))
             user.updateBirthDate(eq(result.birthday), eq(DateTimeUtil.KST_ZONE_ID))
         }
     }
 
     @Test
     fun `user 의 프로필을 업데이트 - nickname 이 "" 로 빈값`() {
-        val request = PutUserProfileRequest(nickname = "", birthday = LocalDate.now())
-        every { mockkUserRepository.findById(any()) } returns Optional.of(user)
+        val vo = UpdateUserProfileVo(nickname = "", birthday = LocalDate.now())
+        every { mockkUserRepository.findByIdAndNotDeleted(any()) } returns user
 
-        val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
+        val result = spykUserService.updateProfile(vo, DateTimeUtil.KST_ZONE_ID, userId)
 
         with(result) {
             assertThat(id).isEqualTo(userId)
             assertThat(nickname).isEqualTo(user.nickname)
             assertThat(nickname).isNotNull()
-            assertThat(birthday).isEqualTo(request.birthday)
+            assertThat(birthday).isEqualTo(vo.birthday)
         }
         verify(exactly = 1) {
-            mockkUserRepository.findById(eq(userId))
+            mockkUserRepository.findByIdAndNotDeleted(eq(userId))
             user.updateBirthDate(eq(result.birthday), eq(DateTimeUtil.KST_ZONE_ID))
         }
     }
@@ -268,20 +234,20 @@ class UserServiceUnitTest {
      */
     @Test
     fun `user 의 프로필을 업데이트 - birthday 가 null`() {
-        val request = PutUserProfileRequest(nickname = "pita", birthday = null)
-        every { mockkUserRepository.findById(any()) } returns Optional.of(user)
+        val vo = UpdateUserProfileVo(nickname = "pita", birthday = null)
+        every { mockkUserRepository.findByIdAndNotDeleted(any()) } returns user
 
-        val result = spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
+        val result = spykUserService.updateProfile(vo, DateTimeUtil.KST_ZONE_ID, userId)
 
         with(result) {
             assertThat(id).isEqualTo(userId)
-            assertThat(nickname).isEqualTo(request.nickname)
+            assertThat(nickname).isEqualTo(vo.nickname)
             assertThat(birthday).isNotNull()
-            assertThat(birthday).isNotEqualTo(request.birthday)
+            assertThat(birthday).isNotEqualTo(vo.birthday)
             assertThat(birthday).isEqualTo(user.birthDate)
         }
         verify(exactly = 1) {
-            mockkUserRepository.findById(eq(userId))
+            mockkUserRepository.findByIdAndNotDeleted(eq(userId))
         }
         verify(exactly = 0) {
             user.updateBirthDate(result.birthday, DateTimeUtil.KST_ZONE_ID)
@@ -290,17 +256,17 @@ class UserServiceUnitTest {
 
     @Test
     fun `user 의 프로필을 업데이트 - findByIdAndNotDeleted가 null 반환`() {
-        val request = PutUserProfileRequest(nickname = "", birthday = LocalDate.now())
-        every { mockkUserRepository.findById(any()) } returns Optional.empty()
+        val vo = UpdateUserProfileVo(nickname = "", birthday = LocalDate.now())
+        every { mockkUserRepository.findByIdAndNotDeleted(any()) } returns null
 
         val result = assertThrows<UserNotFoundException> {
-            spykUserService.updateProfile(request, DateTimeUtil.KST_ZONE_ID)
+            spykUserService.updateProfile(vo, DateTimeUtil.KST_ZONE_ID, userId)
         }
 
         assertThat(result.errorCode).isEqualTo(NOT_FOUND)
 
         verify(exactly = 1) {
-            mockkUserRepository.findById(eq(userId))
+            mockkUserRepository.findByIdAndNotDeleted(eq(userId))
         }
         verify(exactly = 0) {
             user.updateBirthDate(any(), any())
@@ -328,8 +294,8 @@ class UserServiceUnitTest {
          * 요청에서 setting을 반대로 주면?
          */
         // when
-        val request = PatchUserSettingRequest(notificationEnabled = setting.not())
-        val result = userService.updateUserSetting(request = request, userId = userId)
+        val vo = UpdateUserSettingVo(notificationEnabled = setting.not())
+        val result = userService.updateUserSetting(updateUserSettingVo = vo, userId = userId)
 
         // then
         assertThat(result.notificationEnabled).isEqualTo(setting.not())
@@ -339,7 +305,7 @@ class UserServiceUnitTest {
     @CsvSource(
         "true", "false"
     )
-    fun `유저의 세팅을 업데이트 - Request null 이면 기존 그대로 응답`(setting: Boolean) {
+    fun `유저의 세팅을 업데이트 - vo null 이면 기존 그대로 응답`(setting: Boolean) {
         // given
         val userSetting = UserSetting(user = user, notificationEnabled = setting)
         whenever(
@@ -353,8 +319,8 @@ class UserServiceUnitTest {
             .thenReturn(user)
 
         // when
-        val request = PatchUserSettingRequest(notificationEnabled = null)
-        val result = userService.updateUserSetting(request = request, userId = userId)
+        val vo = UpdateUserSettingVo(notificationEnabled = null)
+        val result = userService.updateUserSetting(updateUserSettingVo = vo, userId = userId)
 
         // then
         assertThat(result.notificationEnabled).isEqualTo(setting)
@@ -367,9 +333,9 @@ class UserServiceUnitTest {
             .thenReturn(user)
 
         // when
-        val request = PatchUserSettingRequest(notificationEnabled = true)
+        val vo = UpdateUserSettingVo(notificationEnabled = true)
         val result = assertThrows<UserIllegalStateException> {
-            userService.updateUserSetting(request = request, userId = userId)
+            userService.updateUserSetting(updateUserSettingVo = vo, userId = userId)
         }
         // then
         assertThat(result.errorCode).isEqualTo(UserExceptionCode.SETTING_DATA_NOT_FOUND)
@@ -382,9 +348,9 @@ class UserServiceUnitTest {
             .thenReturn(user)
 
         // when
-        val request = PatchUserSettingRequest(notificationEnabled = true)
+        val vo = UpdateUserSettingVo(notificationEnabled = true)
         val result = assertThrows<UserIllegalStateException> {
-            userService.updateUserSetting(request = request)
+            userService.updateUserSetting(updateUserSettingVo = vo, userId = userId)
         }
 
         // then
@@ -395,7 +361,7 @@ class UserServiceUnitTest {
     fun `유저의 세팅을 가져옵니다`() {
         // given
         val response = UserSetting(user = user, notificationEnabled = false)
-        val expected = UserSettingResponse.from(response)
+        val expected = UserSettingVo(notificationEnabled = false)
         every { mockkUserRepository.getReferenceById(any()) } returns user
         every { mockkUserSettingRepository.findByUserAndIsDeleted(user = any(), isDeleted = any()) } returns response
 
@@ -413,17 +379,17 @@ class UserServiceUnitTest {
     fun `유저의 세팅을 가져옵니다 - 기본값 userId 기본 세팅`() {
         // given
         val response = UserSetting(user = user, notificationEnabled = false)
-        val expected = UserSettingResponse.from(response)
+        val expected = UserSettingVo(notificationEnabled = false)
         every { mockkUserRepository.getReferenceById(any()) } returns user
         every { mockkUserSettingRepository.findByUserAndIsDeleted(user = user, isDeleted = any()) } returns response
 
         // when
-        val result = spykUserService.getUserSetting()
+        val result = spykUserService.getUserSetting(userId = userId)
 
         // then
         assertThat(result).isEqualTo(expected)
         verify(exactly = 1) {
-            spykUserService.getUserSetting()
+            spykUserService.getUserSetting(userId = eq(userId))
         }
     }
 
@@ -449,22 +415,30 @@ class UserServiceUnitTest {
     @Test
     fun `내 정보를 가져오는데 성공`() {
         // given
-        val expected = GetUserInfoResponse.from(user)
-        every { mockkUserRepository.findById(any()) } returns Optional.of(user)
+        val expected = UserInfoVo(
+            id = user.id,
+            email = user.email,
+            birthDate = user.birthDate,
+            signInPlatform = user.platform,
+            nickname = user.nickname,
+            gender = user.gender,
+            userStatus = user.userStatus
+        )
+        every { mockkUserRepository.findByIdAndNotDeleted(any()) } returns user
 
         // when
         val result = spykUserService.getUserInfo(userId = userId)
 
         assertThat(result).isEqualTo(expected)
         verify(exactly = 1) {
-            mockkUserRepository.findById(eq(userId))
+            mockkUserRepository.findByIdAndNotDeleted(eq(userId))
         }
     }
 
     @Test
     fun `내 정보를 가져오는데, null을 반환하는 경우`() {
         // given
-        every { mockkUserRepository.findById(any()) } returns Optional.empty()
+        every { mockkUserRepository.findByIdAndNotDeleted(any()) } returns null
 
         // when
         val result = assertThrows<UserNotFoundException> { spykUserService.getUserInfo(userId = userId) }
@@ -472,22 +446,30 @@ class UserServiceUnitTest {
         assertThat(result.errorCode).isEqualTo(NOT_FOUND)
 
         verify(exactly = 1) {
-            mockkUserRepository.findById(eq(userId))
+            mockkUserRepository.findByIdAndNotDeleted(eq(userId))
         }
     }
 
     @Test
     fun `내 정보를 가져오는데, default value 로 userId 를 세팅`() {
         // given
-        val expected = GetUserInfoResponse.from(user)
-        every { mockkUserRepository.findById(any()) } returns Optional.of(user)
+        val expected = UserInfoVo(
+            id = user.id,
+            email = user.email,
+            birthDate = user.birthDate,
+            signInPlatform = user.platform,
+            nickname = user.nickname,
+            gender = user.gender,
+            userStatus = user.userStatus
+        )
+        every { mockkUserRepository.findByIdAndNotDeleted(any()) } returns user
 
         // when
-        val result = spykUserService.getUserInfo()
+        val result = spykUserService.getUserInfo(userId = userId)
         assertThat(result).isEqualTo(expected)
 
         verify(exactly = 1) {
-            mockkUserRepository.findById(eq(userId))
+            mockkUserRepository.findByIdAndNotDeleted(eq(userId))
         }
     }
 

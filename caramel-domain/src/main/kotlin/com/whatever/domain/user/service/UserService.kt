@@ -80,7 +80,7 @@ class UserService(
 
     @Transactional
     fun updateUserSetting(
-        request: UpdateUserSettingVo,
+        updateUserSettingVo: UpdateUserSettingVo,
         userId: Long,
     ): UserSettingVo {
         val userRef = userRepository.getReferenceById(userId)
@@ -90,7 +90,7 @@ class UserService(
                 errorUi = ErrorUi.Toast("유저 설정 정보를 찾을 수 없어요."),
             )
 
-        with(request) {
+        with(updateUserSettingVo) {
             notificationEnabled?.let { userSetting.notificationEnabled = it }
         }
 

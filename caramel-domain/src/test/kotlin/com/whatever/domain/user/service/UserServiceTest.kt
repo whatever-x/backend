@@ -124,11 +124,11 @@ class UserServiceTest {
         val userSetting = UserSetting(singleUser, notificationEnabled)
         userSettingRepository.save(userSetting)
 
-        val request = UpdateUserSettingVo(notificationEnabled)
+        val vo = UpdateUserSettingVo(notificationEnabled)
         val expected = UserSettingVo(notificationEnabled)
 
         // when
-        val result = userService.updateUserSetting(request = request, userId = singleUser.id)
+        val result = userService.updateUserSetting(vo = vo, userId = singleUser.id)
 
         // then
         assertThat(result).isEqualTo(expected)
@@ -149,11 +149,11 @@ class UserServiceTest {
         val userSetting = UserSetting(singleUser, notificationEnabled)
         userSettingRepository.save(userSetting)
 
-        val request = UpdateUserSettingVo(null)
+        val vo = UpdateUserSettingVo(null)
         val expected = UserSettingVo(notificationEnabled)
 
         // when
-        val result = userService.updateUserSetting(request = request, userId = singleUser.id)
+        val result = userService.updateUserSetting(vo = vo, userId = singleUser.id)
 
         // then
         assertThat(result.notificationEnabled).isEqualTo(expected.notificationEnabled)
