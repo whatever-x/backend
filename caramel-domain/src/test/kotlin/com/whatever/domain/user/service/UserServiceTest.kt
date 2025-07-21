@@ -4,11 +4,7 @@ import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.content.service.createCouple
 import com.whatever.domain.couple.repository.CoupleRepository
-import com.whatever.domain.user.model.LoginPlatform
-import com.whatever.domain.user.model.User
-import com.whatever.domain.user.model.UserGender
-import com.whatever.domain.user.model.UserSetting
-import com.whatever.domain.user.model.UserStatus
+import com.whatever.domain.user.model.*
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.repository.UserSettingRepository
 import com.whatever.domain.user.vo.UpdateUserSettingVo
@@ -21,7 +17,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 import kotlin.test.Test
 
 @CaramelDomainSpringBootTest
@@ -128,7 +124,7 @@ class UserServiceTest {
         val expected = UserSettingVo(notificationEnabled)
 
         // when
-        val result = userService.updateUserSetting(vo = vo, userId = singleUser.id)
+        val result = userService.updateUserSetting(updateUserSettingVo = vo, userId = singleUser.id)
 
         // then
         assertThat(result).isEqualTo(expected)
@@ -153,7 +149,7 @@ class UserServiceTest {
         val expected = UserSettingVo(notificationEnabled)
 
         // when
-        val result = userService.updateUserSetting(vo = vo, userId = singleUser.id)
+        val result = userService.updateUserSetting(updateUserSettingVo = vo, userId = singleUser.id)
 
         // then
         assertThat(result.notificationEnabled).isEqualTo(expected.notificationEnabled)
