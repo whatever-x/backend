@@ -1,5 +1,6 @@
 package com.whatever.domain.balancegame.service.event
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.balancegame.model.BalanceGame
 import com.whatever.domain.balancegame.model.BalanceGameOption
@@ -16,12 +17,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
 import kotlin.test.Test
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class UserChoiceOptionCleanupServiceTest @Autowired constructor(
     private val balanceGameRepository: BalanceGameRepository,
     private val balanceGameOptionRepository: BalanceGameOptionRepository,

@@ -1,5 +1,6 @@
 package com.whatever.domain.auth.service
 
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.global.jwt.JwtHelper
 import com.whatever.caramel.common.global.jwt.JwtProperties
 import com.whatever.caramel.common.global.jwt.exception.JwtExceptionCode
@@ -20,16 +21,13 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.redis.core.RedisTemplate
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import kotlin.test.Test
 
-@ActiveProfiles("test")
-@SpringBootTest
+@CaramelDomainSpringBootTest
 class AuthServiceSignOutTest @Autowired constructor(
     private val redisTemplate: RedisTemplate<String, String>,
     private val authService: AuthService,
