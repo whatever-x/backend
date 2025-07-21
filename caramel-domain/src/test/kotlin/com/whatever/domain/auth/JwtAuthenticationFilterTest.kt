@@ -2,9 +2,9 @@ package com.whatever.domain.auth
 
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.DEVICE_ID
+import com.whatever.caramel.common.global.jwt.JwtHelper
 import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.service.AuthService
-import com.whatever.caramel.common.global.jwt.JwtHelper
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.service.createUser

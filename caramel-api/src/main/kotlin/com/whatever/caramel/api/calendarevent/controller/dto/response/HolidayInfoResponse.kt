@@ -1,6 +1,5 @@
 package com.whatever.caramel.api.calendarevent.controller.dto.response
 
-import com.whatever.domain.specialday.model.SpecialDay
 import com.whatever.domain.specialday.model.SpecialDayType
 import com.whatever.domain.specialday.vo.HolidayDetailVo
 import io.swagger.v3.oas.annotations.media.Schema

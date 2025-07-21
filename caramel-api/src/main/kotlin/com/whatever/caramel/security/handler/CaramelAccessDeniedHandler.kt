@@ -1,12 +1,12 @@
 package com.whatever.caramel.security.handler
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.whatever.caramel.common.global.exception.ErrorUi
+import com.whatever.caramel.security.exception.SecurityExceptionCode
 import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserAuthorities
 import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserId
-import com.whatever.caramel.common.global.exception.ErrorUi
-import com.whatever.domain.user.model.UserStatus
-import com.whatever.caramel.security.exception.SecurityExceptionCode
 import com.whatever.caramel.security.util.setExceptionResponse
+import com.whatever.domain.user.model.UserStatus
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

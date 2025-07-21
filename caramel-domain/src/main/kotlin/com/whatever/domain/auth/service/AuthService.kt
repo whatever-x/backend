@@ -2,6 +2,7 @@ package com.whatever.domain.auth.service
 
 import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.common.global.jwt.JwtHelper
+import com.whatever.caramel.common.global.jwt.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.caramel.common.global.jwt.JwtProperties
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.auth.exception.AuthException
@@ -11,7 +12,6 @@ import com.whatever.domain.auth.exception.AuthFailedException
 import com.whatever.domain.auth.exception.IllegalOidcTokenException
 import com.whatever.domain.auth.exception.OidcPublicKeyMismatchException
 import com.whatever.domain.auth.repository.AuthRedisRepository
-import com.whatever.caramel.common.global.jwt.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.domain.auth.service.provider.SocialUserProvider
 import com.whatever.domain.auth.vo.ServiceTokenVo
 import com.whatever.domain.auth.vo.SignInVo

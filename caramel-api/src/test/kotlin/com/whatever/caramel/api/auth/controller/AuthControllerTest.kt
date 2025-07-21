@@ -1,12 +1,12 @@
 package com.whatever.caramel.api.auth.controller
 
-import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.caramel.api.ControllerTestSupport
 import com.whatever.caramel.api.auth.dto.ServiceTokenResponse
 import com.whatever.caramel.api.auth.dto.SignInRequest
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.DEVICE_ID
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.domain.auth.vo.ServiceTokenVo
 import com.whatever.domain.auth.vo.SignInVo
 import com.whatever.domain.user.model.LoginPlatform
@@ -31,11 +31,13 @@ class AuthControllerTest : ControllerTestSupport() {
             idToken = "token123"
         )
 
-        whenever(authService.signUpOrSignIn(
-            loginPlatform = any(),
-            idToken = any(),
-            deviceId = any(),
-        )).thenReturn(
+        whenever(
+            authService.signUpOrSignIn(
+                loginPlatform = any(),
+                idToken = any(),
+                deviceId = any(),
+            )
+        ).thenReturn(
             SignInVo(
                 accessToken = "",
                 refreshToken = "",
@@ -97,11 +99,13 @@ class AuthControllerTest : ControllerTestSupport() {
             refreshToken = newRefreshToken
         )
 
-        whenever(authService.refresh(
-            accessToken = requestDto.accessToken,
-            refreshToken = requestDto.refreshToken,
-            deviceId = deviceId
-        )).thenReturn(newServiceTokenVo)
+        whenever(
+            authService.refresh(
+                accessToken = requestDto.accessToken,
+                refreshToken = requestDto.refreshToken,
+                deviceId = deviceId
+            )
+        ).thenReturn(newServiceTokenVo)
 
         // when // then
         mockMvc.post("/v1/auth/refresh") {

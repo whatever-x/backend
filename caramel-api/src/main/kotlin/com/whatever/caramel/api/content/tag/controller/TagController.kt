@@ -1,11 +1,11 @@
 package com.whatever.caramel.api.content.tag.controller
 
-import com.whatever.caramel.common.response.CaramelApiResponse
 import com.whatever.caramel.api.content.tag.controller.dto.response.TagDetailDto
 import com.whatever.caramel.api.content.tag.controller.dto.response.TagDetailListResponse
 import com.whatever.caramel.common.global.annotation.DisableSwaggerAuthButton
-import com.whatever.domain.content.tag.service.TagService
+import com.whatever.caramel.common.response.CaramelApiResponse
 import com.whatever.caramel.common.response.succeed
+import com.whatever.domain.content.tag.service.TagService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag

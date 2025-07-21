@@ -15,7 +15,7 @@ data class UserVo(
     val nickname: String?,
     val gender: UserGender?,
     val userStatus: UserStatus,
-    val coupleId: Long
+    val coupleId: Long,
 ) {
     companion object {
         fun from(user: User): UserVo {

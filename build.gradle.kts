@@ -63,7 +63,7 @@ subprojects {
 
     // starter-logging의 기본 logback 제외
     configurations.configureEach {
-            exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
     }
 
     dependencyManagement {

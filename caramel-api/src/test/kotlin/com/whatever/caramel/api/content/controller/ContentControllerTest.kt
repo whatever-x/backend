@@ -1,9 +1,9 @@
 package com.whatever.caramel.api.content.controller
 
-import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.caramel.api.ControllerTestSupport
 import com.whatever.caramel.api.content.controller.dto.request.CreateContentRequest
 import com.whatever.caramel.api.content.controller.dto.request.UpdateContentRequest
+import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.vo.ContentSummaryVo
 import com.whatever.domain.content.vo.ContentType

@@ -2,7 +2,7 @@ package com.whatever.caramel.common.global.cursor
 
 data class PagedSlice<T>(
     val list: List<T>,
-    val cursor: Cursor
+    val cursor: Cursor,
 ) {
     fun <R> map(transform: (T) -> R): PagedSlice<R> {
         return PagedSlice(
@@ -22,7 +22,7 @@ data class PagedSlice<T>(
         fun <T> from(
             list: List<T>,
             size: Int,
-            generateCursor: ((T) -> String)
+            generateCursor: ((T) -> String),
         ): PagedSlice<T> {
             return when {
                 size <= 0 -> empty()

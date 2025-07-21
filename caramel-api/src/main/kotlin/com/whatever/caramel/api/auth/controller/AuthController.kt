@@ -1,15 +1,15 @@
 package com.whatever.caramel.api.auth.controller
 
-import com.whatever.caramel.common.response.CaramelApiResponse
-import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.caramel.api.auth.dto.ServiceTokenResponse
 import com.whatever.caramel.api.auth.dto.SignInRequest
 import com.whatever.caramel.api.auth.dto.SignInResponse
 import com.whatever.caramel.common.global.annotation.DisableSwaggerAuthButton
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.DEVICE_ID
-import com.whatever.domain.auth.service.AuthService
+import com.whatever.caramel.common.response.CaramelApiResponse
 import com.whatever.caramel.common.response.succeed
+import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserId
+import com.whatever.domain.auth.service.AuthService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse

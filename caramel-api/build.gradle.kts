@@ -1,4 +1,3 @@
-import org.gradle.kotlin.dsl.getByName
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 group = "com.whatever.caramel-api"

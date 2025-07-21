@@ -1,23 +1,30 @@
 package com.whatever.caramel.api.content.controller
 
-import com.whatever.caramel.common.response.CaramelApiResponse
-import com.whatever.caramel.common.response.CursoredResponse
-import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.caramel.api.content.controller.dto.request.CreateContentRequest
 import com.whatever.caramel.api.content.controller.dto.request.GetContentListQueryParameter
 import com.whatever.caramel.api.content.controller.dto.request.UpdateContentRequest
 import com.whatever.caramel.api.content.controller.dto.response.ContentResponse
 import com.whatever.caramel.api.content.controller.dto.response.ContentSummaryResponse
+import com.whatever.caramel.common.response.CaramelApiResponse
+import com.whatever.caramel.common.response.CursoredResponse
+import com.whatever.caramel.common.response.succeed
+import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.domain.content.exception.ContentException
 import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.service.ContentService
-import com.whatever.caramel.common.response.succeed
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springdoc.core.annotations.ParameterObject
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @Tag(
     name = "콘텐츠(메모) API",

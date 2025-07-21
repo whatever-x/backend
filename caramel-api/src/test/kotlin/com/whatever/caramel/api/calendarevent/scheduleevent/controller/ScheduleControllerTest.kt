@@ -1,10 +1,10 @@
 package com.whatever.caramel.api.calendarevent.scheduleevent.controller
 
-import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.caramel.api.ControllerTestSupport
 import com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
 import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.security.util.SecurityUtil
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic

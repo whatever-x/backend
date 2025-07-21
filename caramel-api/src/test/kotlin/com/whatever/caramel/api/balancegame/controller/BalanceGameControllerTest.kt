@@ -1,9 +1,9 @@
 package com.whatever.caramel.api.balancegame.controller
 
-import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.caramel.api.ControllerTestSupport
 import com.whatever.caramel.api.balancegame.controller.dto.request.ChooseBalanceGameOptionRequest
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.domain.balancegame.vo.BalanceGameOptionVo
 import com.whatever.domain.balancegame.vo.BalanceGameVo
 import com.whatever.domain.balancegame.vo.CoupleChoiceOptionVo
@@ -37,12 +37,14 @@ class BalanceGameControllerTest : ControllerTestSupport() {
     @Test
     fun getTodayBalanceGame() {
         whenever(balanceGameService.getTodayBalanceGameInfo())
-            .thenReturn(BalanceGameVo(
-                id = 0L,
-                gameDate = DateTimeUtil.localNow().toLocalDate(),
-                question = "test-question",
-                options = listOf(BalanceGameOptionVo(0L, "test-option"))
-            ))
+            .thenReturn(
+                BalanceGameVo(
+                    id = 0L,
+                    gameDate = DateTimeUtil.localNow().toLocalDate(),
+                    question = "test-question",
+                    options = listOf(BalanceGameOptionVo(0L, "test-option"))
+                )
+            )
         whenever(balanceGameService.getCoupleMemberChoices(any(), any()))
             .thenReturn(listOf(UserChoiceOptionVo(0L, 0L, 0L, 0L)))
         every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
@@ -65,18 +67,22 @@ class BalanceGameControllerTest : ControllerTestSupport() {
             optionId = 1L,
         )
         whenever(balanceGameService.getTodayBalanceGameInfo())
-            .thenReturn(BalanceGameVo(
-                id = gameId,
-                gameDate = DateTimeUtil.localNow().toLocalDate(),
-                question = "test-question",
-                options = listOf(BalanceGameOptionVo(0L, "test-option"))
-            ))
-        whenever(balanceGameService.chooseBalanceGameOption(
-            gameId = any(),
-            selectedOptionId = any(),
-            coupleId = any(),
-            requestUserId = any(),
-        )).thenReturn(CoupleChoiceOptionVo(null, null))
+            .thenReturn(
+                BalanceGameVo(
+                    id = gameId,
+                    gameDate = DateTimeUtil.localNow().toLocalDate(),
+                    question = "test-question",
+                    options = listOf(BalanceGameOptionVo(0L, "test-option"))
+                )
+            )
+        whenever(
+            balanceGameService.chooseBalanceGameOption(
+                gameId = any(),
+                selectedOptionId = any(),
+                coupleId = any(),
+                requestUserId = any(),
+            )
+        ).thenReturn(CoupleChoiceOptionVo(null, null))
         every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
         every { SecurityUtil.getCurrentUserId() } returns 0L
 

@@ -53,7 +53,7 @@ data class BalanceGameInfo(
     companion object {
         fun of(
             game: BalanceGameVo,
-            options: List<BalanceGameOptionVo>
+            options: List<BalanceGameOptionVo>,
         ): BalanceGameInfo {
             return BalanceGameInfo(
                 id = game.id,

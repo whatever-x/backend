@@ -1,12 +1,12 @@
 package com.whatever.caramel.api.user.controller
 
-import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.caramel.api.ControllerTestSupport
 import com.whatever.caramel.api.user.dto.PostUserProfileRequest
 import com.whatever.caramel.api.user.dto.PutUserProfileRequest
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders
 import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.vo.CreatedUserProfileVo
@@ -145,11 +145,13 @@ class UserControllerTest : ControllerTestSupport() {
             birthday = DateTimeUtil.localNow().toLocalDate(),
         )
         whenever(userService.updateProfile(any(), any(), any()))
-            .thenReturn(UpdatedUserProfileVo(
-                id = 0L,
-                nickname = "test-nick",
-                birthday = DateTimeUtil.localNow().toLocalDate()
-            ))
+            .thenReturn(
+                UpdatedUserProfileVo(
+                    id = 0L,
+                    nickname = "test-nick",
+                    birthday = DateTimeUtil.localNow().toLocalDate()
+                )
+            )
         every { SecurityUtil.getCurrentUserId() } returns 0L
 
         // when // then
@@ -237,11 +239,13 @@ class UserControllerTest : ControllerTestSupport() {
             birthday = DateTimeUtil.localNow().toLocalDate().plusDays(2),
         )
         whenever(userService.updateProfile(any(), any(), any()))
-            .thenReturn(UpdatedUserProfileVo(
-                id = 0L,
-                nickname = "test-nick",
-                birthday = request.birthday!!
-            ))
+            .thenReturn(
+                UpdatedUserProfileVo(
+                    id = 0L,
+                    nickname = "test-nick",
+                    birthday = request.birthday!!
+                )
+            )
         every { SecurityUtil.getCurrentUserId() } returns 0L
 
         // when // then
@@ -264,11 +268,13 @@ class UserControllerTest : ControllerTestSupport() {
             birthday = null,
         )
         whenever(userService.updateProfile(any(), any(), any()))
-            .thenReturn(UpdatedUserProfileVo(
-                id = 0L,
-                nickname = request.nickname!!,
-                birthday = DateTimeUtil.localNow().toLocalDate()
-            ))
+            .thenReturn(
+                UpdatedUserProfileVo(
+                    id = 0L,
+                    nickname = request.nickname!!,
+                    birthday = DateTimeUtil.localNow().toLocalDate()
+                )
+            )
         every { SecurityUtil.getCurrentUserId() } returns 0L
 
         // when // then
@@ -282,5 +288,4 @@ class UserControllerTest : ControllerTestSupport() {
                 status { isOk() }
             }
     }
-
 }

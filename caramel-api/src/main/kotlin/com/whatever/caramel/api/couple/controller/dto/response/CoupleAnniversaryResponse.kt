@@ -26,7 +26,7 @@ data class CoupleAnniversaryResponse(
 ) {
     companion object {
         fun from(
-            coupleAnniversaryVo: CoupleAnniversaryVo
+            coupleAnniversaryVo: CoupleAnniversaryVo,
         ): CoupleAnniversaryResponse {
             return with(coupleAnniversaryVo) {
                 CoupleAnniversaryResponse(

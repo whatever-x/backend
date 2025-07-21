@@ -1,9 +1,9 @@
 package com.whatever.caramel.common.advice
 
-import com.whatever.caramel.common.response.CaramelApiResponse
 import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.global.exception.common.CaramelException
+import com.whatever.caramel.common.response.CaramelApiResponse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.ServletException
 import jakarta.validation.ConstraintViolationException

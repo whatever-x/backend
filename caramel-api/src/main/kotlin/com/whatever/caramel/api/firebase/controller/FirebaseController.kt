@@ -1,9 +1,9 @@
 package com.whatever.caramel.api.firebase.controller
 
-import com.whatever.caramel.common.response.CaramelApiResponse
-import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.caramel.api.firebase.controller.dto.request.SetFcmTokenRequest
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.DEVICE_ID
+import com.whatever.caramel.common.response.CaramelApiResponse
+import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.firebase.service.FirebaseService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
