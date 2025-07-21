@@ -1,5 +1,6 @@
 package com.whatever.caramel.api.user.dto
 
+import com.whatever.domain.user.vo.UpdatedUserProfileVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
@@ -11,4 +12,14 @@ data class PutUserProfileResponse(
     val nickname: String,
     @Schema(description = "현재 생일")
     val birthday: LocalDate,
-)
+) {
+    companion object {
+        fun from(updatedUserProfileVo: UpdatedUserProfileVo): PutUserProfileResponse {
+            return PutUserProfileResponse(
+                id = updatedUserProfileVo.id,
+                nickname = updatedUserProfileVo.nickname,
+                birthday = updatedUserProfileVo.birthday,
+            )
+        }
+    }
+}

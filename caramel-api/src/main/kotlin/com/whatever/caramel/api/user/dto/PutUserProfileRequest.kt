@@ -2,6 +2,7 @@ package com.whatever.caramel.api.user.dto
 
 import com.whatever.domain.user.model.User.Companion.MAX_NICKNAME_LENGTH
 import com.whatever.domain.user.model.User.Companion.MIN_NICKNAME_LENGTH
+import com.whatever.domain.user.vo.UpdateUserProfileVo
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
@@ -24,4 +25,11 @@ data class PutUserProfileRequest(
 
     @Schema(description = "생일", nullable = true)
     val birthday: LocalDate?,
-)
+) {
+    fun toVo(): UpdateUserProfileVo {
+        return UpdateUserProfileVo(
+            nickname = nickname,
+            birthday = birthday,
+        )
+    }
+}

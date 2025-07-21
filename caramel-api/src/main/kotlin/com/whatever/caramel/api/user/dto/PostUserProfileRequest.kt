@@ -3,6 +3,7 @@ package com.whatever.caramel.api.user.dto
 import com.whatever.domain.user.model.User.Companion.MAX_NICKNAME_LENGTH
 import com.whatever.domain.user.model.User.Companion.MIN_NICKNAME_LENGTH
 import com.whatever.domain.user.model.UserGender
+import com.whatever.domain.user.vo.CreateUserProfileVo
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.Pattern
@@ -32,4 +33,14 @@ data class PostUserProfileRequest(
     @Schema(description = "개인정보 수집/이용 동의")
     @field:AssertTrue(message = "개인정보 수집 및 이용에 동의해야 합니다.")
     val agreementPrivatePolicy: Boolean,
-)
+) {
+    fun toVo(): CreateUserProfileVo {
+        return CreateUserProfileVo(
+            nickname = nickname,
+            birthday = birthday,
+            gender = gender,
+            agreementServiceTerms = agreementServiceTerms,
+            agreementPrivatePolicy = agreementPrivatePolicy,
+        )
+    }
+}

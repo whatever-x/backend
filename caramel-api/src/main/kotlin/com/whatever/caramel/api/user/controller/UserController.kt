@@ -1,6 +1,7 @@
 package com.whatever.caramel.api.user.controller
 
 import com.whatever.CaramelApiResponse
+import com.whatever.SecurityUtil.getCurrentUserId
 import com.whatever.caramel.api.user.dto.GetUserInfoResponse
 import com.whatever.caramel.api.user.dto.PatchUserSettingRequest
 import com.whatever.caramel.api.user.dto.PostUserProfileRequest
@@ -51,8 +52,12 @@ class UserController(
         @Valid @RequestBody putUserProfileRequest: PutUserProfileRequest,
         @RequestHeader(TIME_ZONE) timeZone: String,
     ): CaramelApiResponse<PutUserProfileResponse> {
-        val userProfileResponse = userService.updateProfile(putUserProfileRequest, timeZone.toZoneId())
-        return userProfileResponse.succeed()
+        val updatedUserProfileVo = userService.updateProfile(
+            updateUserProfileVo = putUserProfileRequest.toVo(),
+            userTimeZone = timeZone.toZoneId(),
+            userId = getCurrentUserId(),
+        )
+        return PutUserProfileResponse.from(updatedUserProfileVo).succeed()
     }
 
     @Operation(
@@ -73,8 +78,12 @@ class UserController(
         @Valid @RequestBody postUserProfileRequest: PostUserProfileRequest,
         @RequestHeader(TIME_ZONE) timeZone: String,
     ): CaramelApiResponse<PostUserProfileResponse> {
-        val userProfileResponse = userService.createProfile(postUserProfileRequest, timeZone.toZoneId())
-        return userProfileResponse.succeed()
+        val createdUserProfileVo = userService.createProfile(
+            createUserProfileVo = postUserProfileRequest.toVo(),
+            userTimeZone = timeZone.toZoneId(),
+            userId = getCurrentUserId(),
+        )
+        return PostUserProfileResponse.from(createdUserProfileVo).succeed()
     }
 
     @Operation(
@@ -86,8 +95,8 @@ class UserController(
     )
     @GetMapping("/me")
     fun getUserInfo(): CaramelApiResponse<GetUserInfoResponse> {
-        val response = userService.getUserInfo()
-        return response.succeed()
+        val userInfoVo = userService.getUserInfo(getCurrentUserId())
+        return GetUserInfoResponse.from(userInfoVo).succeed()
     }
 
     @Operation(
@@ -106,8 +115,11 @@ class UserController(
     fun updateUserSetting(
         @RequestBody request: PatchUserSettingRequest,
     ): CaramelApiResponse<UserSettingResponse> {
-        val response = userService.updateUserSetting(request)
-        return response.succeed()
+        val userSettingVo = userService.updateUserSetting(
+            request = request.toVo(),
+            userId = getCurrentUserId(),
+        )
+        return UserSettingResponse.from(userSettingVo).succeed()
     }
 
     @Operation(
@@ -119,7 +131,9 @@ class UserController(
     )
     @GetMapping("/settings")
     fun getUserSetting(): CaramelApiResponse<UserSettingResponse> {
-        val response = userService.getUserSetting()
-        return response.succeed()
+        val userSettingVo = userService.getUserSetting(
+            userId = getCurrentUserId(),
+        )
+        return UserSettingResponse.from(userSettingVo).succeed()
     }
 }

@@ -1,9 +1,9 @@
 package com.whatever.caramel.api.user.dto
 
 import com.whatever.domain.user.model.LoginPlatform
-import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserStatus
+import com.whatever.domain.user.vo.UserInfoVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
@@ -43,15 +43,15 @@ data class GetUserInfoResponse(
     val userStatus: UserStatus,
 ) {
     companion object {
-        fun from(user: User): GetUserInfoResponse {
+        fun from(userInfoVo: UserInfoVo): GetUserInfoResponse {
             return GetUserInfoResponse(
-                id = user.id,
-                email = user.email,
-                birthDate = user.birthDate,
-                signInPlatform = user.platform,
-                nickname = user.nickname,
-                gender = user.gender,
-                userStatus = user.userStatus,
+                id = userInfoVo.id,
+                email = userInfoVo.email,
+                birthDate = userInfoVo.birthDate,
+                signInPlatform = userInfoVo.signInPlatform,
+                nickname = userInfoVo.nickname,
+                gender = userInfoVo.gender,
+                userStatus = userInfoVo.userStatus,
             )
         }
     }

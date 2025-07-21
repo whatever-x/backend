@@ -1,6 +1,6 @@
 package com.whatever.caramel.api.user.dto
 
-import com.whatever.domain.user.model.UserSetting
+import com.whatever.domain.user.vo.UserSettingVo
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "설정 정보 DTO")
@@ -9,9 +9,9 @@ data class UserSettingResponse(
     val notificationEnabled: Boolean,
 ) {
     companion object {
-        fun from(userSetting: UserSetting): UserSettingResponse {
+        fun from(userSettingVo: UserSettingVo): UserSettingResponse {
             return UserSettingResponse(
-                notificationEnabled = userSetting.notificationEnabled,
+                notificationEnabled = userSettingVo.notificationEnabled,
             )
         }
     }
