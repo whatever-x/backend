@@ -1,12 +1,12 @@
 package com.whatever.domain.couple.service.event
 
-import com.whatever.CaramelDomainSpringBootTest
-import com.whatever.config.AsyncConfig
 import com.whatever.domain.balancegame.service.event.UserChoiceOptionCleanupService
+import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.domain.balancegame.service.event.UserChoiceOptionEventListener
-import com.whatever.domain.calendarevent.scheduleevent.service.event.ScheduleEventCleanupService
-import com.whatever.domain.calendarevent.scheduleevent.service.event.ScheduleEventListener
 import com.whatever.domain.content.service.event.ContentCleanupService
+import com.whatever.domain.calendarevent.service.event.ScheduleEventCleanupService
+import com.whatever.domain.calendarevent.service.event.ScheduleEventListener
+import com.whatever.domain.config.AsyncConfig
 import com.whatever.domain.content.service.event.ContentEventListener
 import com.whatever.domain.content.tag.service.event.TagContentMappingCleanupService
 import com.whatever.domain.content.tag.service.event.TagContentMappingEventListener
@@ -16,7 +16,6 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
@@ -24,7 +23,6 @@ import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Profile
 import org.springframework.core.task.SyncTaskExecutor
 import org.springframework.core.task.TaskExecutor
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.transaction.TestTransaction
 import org.springframework.transaction.annotation.Transactional
