@@ -1,9 +1,9 @@
 package com.whatever.domain.content.service
 
 import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.caramel.common.global.cursor.Cursor
+import com.whatever.caramel.common.util.CursorUtil
 import com.whatever.caramel.common.util.DateTimeUtil
-import com.whatever.domain.content.controller.dto.request.GetContentListQueryParameter
-import com.whatever.domain.content.controller.dto.response.ContentResponse
 import com.whatever.domain.content.model.Content
 import com.whatever.domain.content.model.ContentDetail
 import com.whatever.domain.content.repository.ContentRepository
@@ -11,6 +11,9 @@ import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
+import com.whatever.domain.content.vo.ContentListSortType
+import com.whatever.domain.content.vo.ContentQueryVo
+import com.whatever.domain.content.vo.ContentResponseVo
 import com.whatever.domain.content.vo.ContentType
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
@@ -18,16 +21,10 @@ import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.cursor.Cursor
-import com.whatever.global.security.util.SecurityUtil
-import com.whatever.util.CursorUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 
 @CaramelDomainSpringBootTest
@@ -39,17 +36,8 @@ class ContentServicePaginationTest @Autowired constructor(
     private val tagRepository: TagRepository,
     private val tagContentMappingRepository: TagContentMappingRepository,
 ) {
-
-    private lateinit var securityUtilMock: AutoCloseable
-
-    @BeforeEach
-    fun setUp() {
-        securityUtilMock = mockStatic(SecurityUtil::class.java)
-    }
-
     @AfterEach
     fun tearDown() {
-        securityUtilMock.close()
         tagContentMappingRepository.deleteAllInBatch()
         tagRepository.deleteAllInBatch()
         contentRepository.deleteAllInBatch()
@@ -61,7 +49,7 @@ class ContentServicePaginationTest @Autowired constructor(
     @Test
     fun getContentList_Pagination_FetchAllPagesSequentially() {
         // given
-        val (myUser, partnerUser, _) = setUpCoupleAndSecurity()
+        val (myUser, partnerUser, couple) = setUpCouple()
         val totalItems = 11
         val pageSize = 4
 
@@ -70,7 +58,7 @@ class ContentServicePaginationTest @Autowired constructor(
             contentRepository.save(createContent(owner, ContentType.MEMO, "Memo $it"))
         }.sortedByDescending { it.id }
 
-        val allFetchedContents = mutableListOf<ContentResponse>() // 조회된 모든 컨텐츠를 저장할 리스트
+        val allFetchedContents = mutableListOf<ContentResponseVo>() // 조회된 모든 컨텐츠를 저장할 리스트
         var currentCursor: String? = null
         var pagesFetched = 0
         val maxPages = (totalItems + pageSize - 1) / pageSize // 예상되는 최대 페이지 수 (올림 계산)
@@ -82,8 +70,13 @@ class ContentServicePaginationTest @Autowired constructor(
                 throw IllegalStateException("예상보다 많은 페이지($pagesFetched)를 조회했습니다. 커서 로직 확인 필요.")
             }
 
-            val queryParameter = GetContentListQueryParameter(size = pageSize, cursor = currentCursor)
-            val response = contentService.getContentList(queryParameter)
+            val queryParameter = ContentQueryVo(
+                size = pageSize,
+                cursor = currentCursor,
+                sortType = ContentListSortType.ID_DESC,
+                tagId = null
+            )
+            val response = contentService.getContentList(queryParameter, couple.id)
 
             allFetchedContents.addAll(response.list)
             currentCursor = response.cursor.next
@@ -110,14 +103,19 @@ class ContentServicePaginationTest @Autowired constructor(
     @Test
     fun getContentList_EmptyResult() {
         // given
-        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val (myUser, _, couple) = setUpCouple()
 
         contentRepository.save(createContent(myUser, ContentType.SCHEDULE, "Schedule Title 1"))
 
-        val queryParameter = GetContentListQueryParameter(size = 10, cursor = null)
+        val queryParameter = ContentQueryVo(
+            size = 10,
+            cursor = null,
+            sortType = ContentListSortType.ID_DESC,
+            tagId = null,
+        )
 
         // when
-        val result = contentService.getContentList(queryParameter)
+        val result = contentService.getContentList(queryParameter, couple.id)
 
         // then
         assertThat(result.list).isEmpty()
@@ -128,7 +126,7 @@ class ContentServicePaginationTest @Autowired constructor(
     @Test
     fun getContentList_ExcludesDeletedContent() {
         // given
-        val (myUser, partnerUser, _) = setUpCoupleAndSecurity()
+        val (myUser, partnerUser, couple) = setUpCouple()
 
         val memo1 = contentRepository.save(createContent(myUser, ContentType.MEMO, "Memo 1"))
         val memo2 = contentRepository.save(createContent(partnerUser, ContentType.MEMO, "Memo 2"))
@@ -139,10 +137,15 @@ class ContentServicePaginationTest @Autowired constructor(
 
         val expectedContents = listOf(memo3, memo1).sortedByDescending { it.id }
 
-        val queryParameter = GetContentListQueryParameter(size = 10, cursor = null)
+        val queryParameter = ContentQueryVo(
+            size = 10,
+            cursor = null,
+            sortType = ContentListSortType.ID_DESC,
+            tagId = null,
+        )
 
         // when
-        val result = contentService.getContentList(queryParameter)
+        val result = contentService.getContentList(queryParameter, couple.id)
 
         // then
         assertThat(result.list).hasSize(expectedContents.size)
@@ -151,7 +154,7 @@ class ContentServicePaginationTest @Autowired constructor(
         assertThat(result.cursor).isEqualTo(Cursor(null))
     }
 
-    private fun setUpCoupleAndSecurity(
+    private fun setUpCouple(
         myPlatformId: String = "me",
         partnerPlatformId: String = "partner",
     ): Triple<User, User, Couple> {
@@ -161,8 +164,6 @@ class ContentServicePaginationTest @Autowired constructor(
             myPlatformId,
             partnerPlatformId
         )
-        whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-        whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
         return Triple(myUser, partnerUser, couple)
     }
 
@@ -170,7 +171,7 @@ class ContentServicePaginationTest @Autowired constructor(
     @Test
     fun getContentList_WithTagId_FiltersByTag() {
         // given
-        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val (myUser, _, couple) = setUpCouple()
         val contentA = contentRepository.save(createContent(myUser, ContentType.MEMO, "A"))
         val contentB = contentRepository.save(createContent(myUser, ContentType.MEMO, "B"))
 
@@ -180,10 +181,15 @@ class ContentServicePaginationTest @Autowired constructor(
         tagContentMappingRepository.save(TagContentMapping(tag = tag1, content = contentA))
         tagContentMappingRepository.save(TagContentMapping(tag = tag2, content = contentB))
 
-        val queryParameter = GetContentListQueryParameter(size = 10, cursor = null, tagId = tag1.id)
+        val queryParameter = ContentQueryVo(
+            size = 10,
+            cursor = null,
+            sortType = ContentListSortType.ID_DESC,
+            tagId = tag1.id,
+        )
 
         // when
-        val result = contentService.getContentList(queryParameter)
+        val result = contentService.getContentList(queryParameter, couple.id)
 
         // then
         assertThat(result.list).hasSize(1)
@@ -194,7 +200,7 @@ class ContentServicePaginationTest @Autowired constructor(
     @Test
     fun getContentList_IncludesTags() {
         // given
-        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val (myUser, _, couple) = setUpCouple()
         val content = contentRepository.save(createContent(myUser, ContentType.MEMO, "C"))
 
         val tag1 = tagRepository.save(Tag(label = "Tag1"))
@@ -203,10 +209,15 @@ class ContentServicePaginationTest @Autowired constructor(
         tagContentMappingRepository.save(TagContentMapping(tag = tag1, content = content))
         tagContentMappingRepository.save(TagContentMapping(tag = tag2, content = content))
 
-        val queryParameter = GetContentListQueryParameter(size = 10, cursor = null)
+        val queryParameter = ContentQueryVo(
+            size = 10,
+            cursor = null,
+            sortType = ContentListSortType.ID_DESC,
+            tagId = tag1.id,
+        )
 
         // when
-        val result = contentService.getContentList(queryParameter)
+        val result = contentService.getContentList(queryParameter, couple.id)
 
         // then
         val response = result.list.find { it.id == content.id }!!

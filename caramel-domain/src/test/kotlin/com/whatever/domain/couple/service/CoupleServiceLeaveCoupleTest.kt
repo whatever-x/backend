@@ -1,8 +1,7 @@
 package com.whatever.domain.couple.service
 
-import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.CaramelDomainSpringBootTest
-import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
+import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
