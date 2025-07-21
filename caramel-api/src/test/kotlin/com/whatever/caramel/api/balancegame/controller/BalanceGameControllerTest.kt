@@ -1,7 +1,7 @@
-package com.whatever.caramel.api.balancegame.controller.dto
+package com.whatever.caramel.api.balancegame.controller
 
 import com.whatever.caramel.api.ControllerTestSupport
-import com.whatever.domain.balancegame.controller.dto.request.ChooseBalanceGameOptionRequest
+import com.whatever.caramel.api.balancegame.controller.dto.request.ChooseBalanceGameOptionRequest
 import org.junit.jupiter.api.DisplayName
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.get

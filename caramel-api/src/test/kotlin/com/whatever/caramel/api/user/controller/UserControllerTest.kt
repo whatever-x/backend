@@ -1,17 +1,17 @@
 package com.whatever.caramel.api.user.controller
 
 import com.whatever.caramel.api.ControllerTestSupport
-import com.whatever.domain.user.dto.PostUserProfileRequest
-import com.whatever.domain.user.dto.PutUserProfileRequest
-import com.whatever.domain.user.dto.PutUserProfileResponse
-import com.whatever.domain.user.model.UserGender
-import com.whatever.global.constants.CaramelHttpHeaders
-import com.whatever.global.exception.GlobalExceptionCode
+import com.whatever.caramel.api.user.dto.PostUserProfileRequest
+import com.whatever.caramel.api.user.dto.PutUserProfileRequest
+import com.whatever.caramel.common.global.constants.CaramelHttpHeaders
+import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.domain.user.model.UserGender
+import com.whatever.domain.user.vo.UpdatedUserProfileVo
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.given
+import org.mockito.kotlin.whenever
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
@@ -249,9 +249,9 @@ class UserControllerTest : ControllerTestSupport() {
         fun updateProfile_WithBlankNickname_NoChange() {
             val originalNickname = "변경전닉네임"
             val originalBirthday = LocalDate.of(2025, 4, 20)
-            given(userService.updateProfile(any(), any()))
-                .willReturn(
-                    PutUserProfileResponse(
+            whenever(userService.updateProfile(any(), any(), any()))
+                .thenReturn(
+                    UpdatedUserProfileVo(
                         id = 1,
                         nickname = originalNickname,
                         birthday = originalBirthday

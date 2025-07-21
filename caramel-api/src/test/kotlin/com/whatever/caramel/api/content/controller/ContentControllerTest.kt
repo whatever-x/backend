@@ -1,9 +1,8 @@
 package com.whatever.caramel.api.content.controller
 
 import com.whatever.caramel.api.ControllerTestSupport
-import com.whatever.domain.content.controller.dto.request.CreateContentRequest
-import com.whatever.domain.content.controller.dto.request.TagIdDto
-import com.whatever.domain.content.controller.dto.request.UpdateContentRequest
+import com.whatever.caramel.api.content.controller.dto.request.CreateContentRequest
+import com.whatever.caramel.api.content.controller.dto.request.UpdateContentRequest
 import com.whatever.domain.content.exception.ContentExceptionCode
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -21,8 +20,7 @@ class ContentControllerTest : ControllerTestSupport() {
         val request = CreateContentRequest(
             title = "메모 제목",
             description = "메모 설명",
-            tags = listOf(TagIdDto(tagId = 1L)),
-//            dateTimeInfo = null
+            tags = listOf(1L),
         )
 
         // when // then
@@ -98,7 +96,7 @@ class ContentControllerTest : ControllerTestSupport() {
             title = "수정된 제목",
             description = "수정된 설명",
             isCompleted = true,
-            tagList = listOf(TagIdDto(tagId = 1L))
+            tagList = listOf(1L)
         )
 
         // when // then

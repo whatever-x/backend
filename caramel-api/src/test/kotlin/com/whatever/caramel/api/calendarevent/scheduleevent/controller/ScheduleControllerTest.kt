@@ -1,8 +1,8 @@
 package com.whatever.caramel.api.calendarevent.scheduleevent.controller
 
 import com.whatever.caramel.api.ControllerTestSupport
-import com.whatever.domain.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
-import com.whatever.global.exception.GlobalExceptionCode
+import com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
+import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.util.DateTimeUtil
 import org.junit.jupiter.api.DisplayName
 import org.springframework.http.MediaType

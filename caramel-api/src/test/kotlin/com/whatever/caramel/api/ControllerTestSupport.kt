@@ -1,15 +1,15 @@
 package com.whatever.caramel.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.whatever.domain.auth.controller.AuthController
+import com.whatever.caramel.api.auth.controller.AuthController
+import com.whatever.caramel.api.balancegame.controller.BalanceGameController
+import com.whatever.caramel.api.calendarevent.scheduleevent.controller.ScheduleController
+import com.whatever.caramel.api.content.controller.ContentController
+import com.whatever.caramel.api.user.controller.UserController
 import com.whatever.domain.auth.service.AuthService
-import com.whatever.domain.balancegame.controller.BalanceGameController
 import com.whatever.domain.balancegame.service.BalanceGameService
-import com.whatever.domain.calendarevent.scheduleevent.controller.ScheduleController
-import com.whatever.domain.calendarevent.scheduleevent.service.ScheduleEventService
-import com.whatever.domain.content.controller.ContentController
+import com.whatever.domain.calendarevent.service.ScheduleEventService
 import com.whatever.domain.content.service.ContentService
-import com.whatever.domain.user.controller.UserController
 import com.whatever.domain.user.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
@@ -59,5 +59,5 @@ abstract class ControllerTestSupport {
     protected lateinit var balanceGameService: BalanceGameService
 
     @MockitoBean
-    private lateinit var authService: AuthService
+    protected lateinit var authService: AuthService
 }
