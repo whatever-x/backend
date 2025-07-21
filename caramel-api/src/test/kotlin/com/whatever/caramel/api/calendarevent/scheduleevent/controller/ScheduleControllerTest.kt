@@ -1,15 +1,31 @@
 package com.whatever.caramel.api.calendarevent.scheduleevent.controller
 
+import com.whatever.SecurityUtil
 import com.whatever.caramel.api.ControllerTestSupport
 import com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto.UpdateScheduleRequest
 import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.util.DateTimeUtil
+import io.mockk.every
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.put
 import kotlin.test.Test
 
 class ScheduleControllerTest : ControllerTestSupport() {
+
+    @BeforeEach
+    fun setUp() {
+        mockkStatic(SecurityUtil::class)
+    }
+
+    @AfterEach
+    fun tearDown() {
+        unmockkStatic(SecurityUtil::class)
+    }
 
     companion object {
         val SCHEDULE_ID = 1L
@@ -27,6 +43,8 @@ class ScheduleControllerTest : ControllerTestSupport() {
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
         )
+        every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
+        every { SecurityUtil.getCurrentUserId() } returns 0L
 
         // when, then
         mockMvc.put("/v1/calendar/schedules/$SCHEDULE_ID") {
@@ -52,6 +70,8 @@ class ScheduleControllerTest : ControllerTestSupport() {
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
         )
+        every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
+        every { SecurityUtil.getCurrentUserId() } returns 0L
 
         // when, then
         mockMvc.put("/v1/calendar/schedules/$SCHEDULE_ID") {
@@ -103,6 +123,8 @@ class ScheduleControllerTest : ControllerTestSupport() {
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
         )
+        every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
+        every { SecurityUtil.getCurrentUserId() } returns 0L
 
         // when, then
         mockMvc.put("/v1/calendar/schedules/$SCHEDULE_ID") {

@@ -1,5 +1,6 @@
 package com.whatever.caramel.api.user.controller
 
+import com.whatever.SecurityUtil
 import com.whatever.caramel.api.ControllerTestSupport
 import com.whatever.caramel.api.user.dto.PostUserProfileRequest
 import com.whatever.caramel.api.user.dto.PutUserProfileRequest
@@ -7,7 +8,14 @@ import com.whatever.caramel.common.global.constants.CaramelHttpHeaders
 import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.domain.user.model.UserGender
+import com.whatever.domain.user.model.UserStatus
+import com.whatever.domain.user.vo.CreatedUserProfileVo
 import com.whatever.domain.user.vo.UpdatedUserProfileVo
+import io.mockk.every
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -18,6 +26,16 @@ import org.springframework.test.web.servlet.put
 import java.time.LocalDate
 
 class UserControllerTest : ControllerTestSupport() {
+
+    @BeforeEach
+    fun setUp() {
+        mockkStatic(SecurityUtil::class)
+    }
+
+    @AfterEach
+    fun tearDown() {
+        unmockkStatic(SecurityUtil::class)
+    }
 
     @DisplayName("유저의 프로필을 등록한다.")
     @Test
@@ -30,6 +48,9 @@ class UserControllerTest : ControllerTestSupport() {
             agreementPrivatePolicy = true,
             gender = UserGender.MALE
         )
+        whenever(userService.createProfile(any(), any(), any()))
+            .thenReturn(CreatedUserProfileVo(0L, "test-nick", UserStatus.SINGLE))
+        every { SecurityUtil.getCurrentUserId() } returns 0L
 
         // when // then
         mockMvc.post("/v1/user/profile") {
@@ -124,6 +145,13 @@ class UserControllerTest : ControllerTestSupport() {
             nickname = "테스트닉네임",
             birthday = DateTimeUtil.localNow().toLocalDate(),
         )
+        whenever(userService.updateProfile(any(), any(), any()))
+            .thenReturn(UpdatedUserProfileVo(
+                id = 0L,
+                nickname = "test-nick",
+                birthday = DateTimeUtil.localNow().toLocalDate()
+            ))
+        every { SecurityUtil.getCurrentUserId() } returns 0L
 
         // when // then
         mockMvc.put("/v1/user/profile") {
@@ -209,6 +237,13 @@ class UserControllerTest : ControllerTestSupport() {
             nickname = null,
             birthday = DateTimeUtil.localNow().toLocalDate().plusDays(2),
         )
+        whenever(userService.updateProfile(any(), any(), any()))
+            .thenReturn(UpdatedUserProfileVo(
+                id = 0L,
+                nickname = "test-nick",
+                birthday = request.birthday!!
+            ))
+        every { SecurityUtil.getCurrentUserId() } returns 0L
 
         // when // then
         mockMvc.put("/v1/user/profile") {
@@ -229,6 +264,13 @@ class UserControllerTest : ControllerTestSupport() {
             nickname = "새닉네임",
             birthday = null,
         )
+        whenever(userService.updateProfile(any(), any(), any()))
+            .thenReturn(UpdatedUserProfileVo(
+                id = 0L,
+                nickname = request.nickname!!,
+                birthday = DateTimeUtil.localNow().toLocalDate()
+            ))
+        every { SecurityUtil.getCurrentUserId() } returns 0L
 
         // when // then
         mockMvc.put("/v1/user/profile") {
@@ -242,38 +284,4 @@ class UserControllerTest : ControllerTestSupport() {
             }
     }
 
-    @DisplayName("프로필 수정 시 nickname이 비어있을 경우 변경되지 않는다.")
-    @Test
-    fun updateProfile_WithBlankNickname_NoChange() {
-        @Test
-        fun updateProfile_WithBlankNickname_NoChange() {
-            val originalNickname = "변경전닉네임"
-            val originalBirthday = LocalDate.of(2025, 4, 20)
-            whenever(userService.updateProfile(any(), any(), any()))
-                .thenReturn(
-                    UpdatedUserProfileVo(
-                        id = 1,
-                        nickname = originalNickname,
-                        birthday = originalBirthday
-                    )
-                )
-
-            val updateRequest = PutUserProfileRequest(
-                nickname = "",
-                birthday = null
-            )
-
-            // when // then
-            mockMvc.put("/v1/user/profile") {
-                content = objectMapper.writeValueAsString(updateRequest)
-                contentType = MediaType.APPLICATION_JSON
-                header(CaramelHttpHeaders.TIME_ZONE, DateTimeUtil.KST_ZONE_ID.toString())
-            }
-                .andDo { print() }
-                .andExpect {
-                    status { isOk() }
-                    jsonPath("$.data.nickname") { value(originalNickname) }
-                }
-        }
-    }
 }

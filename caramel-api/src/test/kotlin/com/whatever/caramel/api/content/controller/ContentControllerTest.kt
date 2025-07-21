@@ -1,17 +1,37 @@
 package com.whatever.caramel.api.content.controller
 
+import com.whatever.SecurityUtil
 import com.whatever.caramel.api.ControllerTestSupport
 import com.whatever.caramel.api.content.controller.dto.request.CreateContentRequest
 import com.whatever.caramel.api.content.controller.dto.request.UpdateContentRequest
 import com.whatever.domain.content.exception.ContentExceptionCode
+import com.whatever.domain.content.vo.ContentSummaryVo
+import com.whatever.domain.content.vo.ContentType
+import io.mockk.every
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.whenever
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
 
 class ContentControllerTest : ControllerTestSupport() {
+
+    @BeforeEach
+    fun setUp() {
+        mockkStatic(SecurityUtil::class)
+    }
+
+    @AfterEach
+    fun tearDown() {
+        unmockkStatic(SecurityUtil::class)
+    }
 
     @DisplayName("콘텐츠를 생성한다. (Memo 타입)")
     @Test
@@ -22,6 +42,9 @@ class ContentControllerTest : ControllerTestSupport() {
             description = "메모 설명",
             tags = listOf(1L),
         )
+        whenever(contentService.createContent(any(), any()))
+            .thenReturn(ContentSummaryVo(0L, ContentType.MEMO))
+        every { SecurityUtil.getCurrentUserId() } returns 0L
 
         // when // then
         mockMvc.post("/v1/content/memo") {
@@ -98,6 +121,11 @@ class ContentControllerTest : ControllerTestSupport() {
             isCompleted = true,
             tagList = listOf(1L)
         )
+
+        whenever(contentService.updateContent(any(), any(), any(), any()))
+            .thenReturn(ContentSummaryVo(0L, ContentType.MEMO))
+        every { SecurityUtil.getCurrentUserId() } returns 0L
+        every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
 
         // when // then
         mockMvc.put("/v1/content/memo/{memoId}", 1L) {
