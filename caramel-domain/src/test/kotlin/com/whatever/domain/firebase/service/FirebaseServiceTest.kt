@@ -7,7 +7,6 @@ import com.whatever.domain.content.service.createCouple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.firebase.model.FcmToken
 import com.whatever.domain.firebase.repository.FcmTokenRepository
-import com.whatever.domain.firebase.service.event.FcmNotification
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserSetting
 import com.whatever.domain.user.repository.UserRepository
@@ -24,7 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
-import java.util.UUID
+import java.util.*
 import kotlin.test.Test
 
 @ActiveProfiles("test")
