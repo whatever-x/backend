@@ -12,6 +12,7 @@ import com.whatever.domain.user.repository.UserSettingRepository
 import com.whatever.domain.user.vo.*
 import io.mockk.*
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
@@ -44,6 +45,12 @@ class UserServiceUnitTest {
 
     private lateinit var user: User
     private var userId: Long = Long.MIN_VALUE
+
+    @BeforeEach
+    fun setUp() {
+        user = spyk(createUser())
+        userId = user.id
+    }
 
     @ParameterizedTest
     @CsvSource(
