@@ -33,20 +33,6 @@ dependencies {
 //    testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
-dependencyManagement {
-    imports {
-        mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
-        mavenBom("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:$opentelemetryVersion")
-    }
-}
-
-tasks.test {
-    useJUnitPlatform()
-}
-kotlin {
-    jvmToolchain(21)
-}
-
 tasks.getByName<BootJar>("bootJar") {
     enabled = false
 }

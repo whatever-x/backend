@@ -41,65 +41,48 @@ dependencies {
     implementation("io.viascom.nanoid:nanoid:1.0.1")
     // test
     runtimeOnly("com.h2database:h2")
-    testImplementation(kotlin("test"))  // ????????
+//    testImplementation(kotlin("test"))  // ????????
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
-kotlin {
-    jvmToolchain(21)
-    compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict")
-        jvmTarget.set(JvmTarget.JVM_21)
-    }
-}
-
-dependencyManagement {
-    imports {
-        mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
-        mavenBom("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:$opentelemetryVersion")
-    }
-}
 tasks.getByName<BootJar>("bootJar") {
     enabled = false
 }
 tasks.getByName<Jar>("jar") {
     enabled = true
 }
-
-configurations.configureEach {
-    // 기본 로깅 스타터 제외
-    exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
-}
-
-tasks.named<Test>("test") {
-    useJUnitPlatform()
-    finalizedBy(tasks.named("jacocoTestReport")) // 테스트 실행 후 jacoco 리포트 생성
-}
-jacoco {
-    toolVersion = "0.8.11"
-    reportsDirectory.set(layout.buildDirectory.dir("jacocoXml"))
-}
-tasks.named<JacocoReport>("jacocoTestReport") {
-    dependsOn(tasks.named<Test>("test")) // test 태스크에 의존
-    reports {
-        xml.required.set(true)
-        csv.required.set(false)
-        html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
-    }
-    // 분석할 클래스 파일 필터링 (Kotlin DSL에 더 적합한 방식으로 수정)
-    classDirectories.setFrom(
-        files(
-            classDirectories.asFileTree.matching {
-                include("**/domain/**/service/*Service.class")
-                exclude(
-                    "**/dto/**",
-                    "**/controller/**",
-                    "**/config/**",
-                    "**/global/**"
-                )
-            }
-        )
-    )
-}
+//
+//configurations.configureEach {
+//    // 기본 로깅 스타터 제외
+//    exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+//}
+//
+//tasks.named<Test>("test") {
+//    useJUnitPlatform()
+//    finalizedBy(tasks.named("jacocoTestReport")) // 테스트 실행 후 jacoco 리포트 생성
+//}
+//jacoco {
+//    toolVersion = "0.8.11"
+//    reportsDirectory.set(layout.buildDirectory.dir("jacocoXml"))
+//}
+//tasks.named<JacocoReport>("jacocoTestReport") {
+//    dependsOn(tasks.named<Test>("test")) // test 태스크에 의존
+//    reports {
+//        xml.required.set(true)
+//        csv.required.set(false)
+//        html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
+//    }
+//    // 분석할 클래스 파일 필터링 (Kotlin DSL에 더 적합한 방식으로 수정)
+//    classDirectories.setFrom(
+//        files(
+//            classDirectories.asFileTree.matching {
+//                include("**/domain/**/service/*Service.class")
+//                exclude(
+//                    "**/dto/**",
+//                    "**/controller/**",
+//                    "**/config/**",
+//                    "**/global/**"
+//                )
+//            }
+//        )
+//    )
+//}
