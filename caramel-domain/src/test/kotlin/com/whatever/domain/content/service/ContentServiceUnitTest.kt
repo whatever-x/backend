@@ -1,6 +1,6 @@
 package com.whatever.domain.content.service
 
-import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
+import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.domain.content.exception.ContentAccessDeniedException
 import com.whatever.domain.content.exception.ContentExceptionCode.COUPLE_NOT_MATCHED
 import com.whatever.domain.content.exception.ContentExceptionCode.MEMO_NOT_FOUND
@@ -19,13 +19,16 @@ import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserStatus
-import com.whatever.global.security.util.SecurityUtil
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 
 @ActiveProfiles("test")
@@ -49,16 +52,6 @@ class ContentServiceUnitTest {
         applicationEventPublisher = applicationEventPublisher
     )
 
-    @BeforeEach
-    fun setUp() {
-        mockkStatic(SecurityUtil::class)
-    }
-
-    @AfterEach
-    fun tearDown() {
-        unmockkStatic(SecurityUtil::class)
-    }
-
     @Test
     @DisplayName("메모 ID로 메모를 정상적으로 조회할 수 있다")
     fun getMemo_success() {
@@ -75,13 +68,15 @@ class ContentServiceUnitTest {
         val tag = createTestTag(id = 1L, label = "테스트태그")
         val tagContentMapping = createTestTagContentMapping(id = 1L, tag = tag, content = memo)
 
-        every { SecurityUtil.getCurrentUserCoupleId() } returns coupleId
         every { contentRepository.findContentByIdAndType(memoId, ContentType.MEMO) } returns memo
         every { coupleRepository.findByIdWithMembers(coupleId) } returns couple
         every { tagContentMappingRepository.findAllWithTagByContentId(memoId) } returns listOf(tagContentMapping)
 
         // when
-        val result = contentService.getMemo(memoId)
+        val result = contentService.getMemo(
+            memoId = memoId,
+            ownerCoupleId = coupleId,
+        )
 
         // then
         assertThat(result.id).isEqualTo(memoId)
@@ -100,12 +95,14 @@ class ContentServiceUnitTest {
         val memoId = -1L
         val coupleId = 1L
 
-        every { SecurityUtil.getCurrentUserCoupleId() } returns coupleId
         every { contentRepository.findContentByIdAndType(memoId, ContentType.MEMO) } returns null
 
         // when
         val exception = assertThrows<ContentNotFoundException> {
-            contentService.getMemo(memoId)
+            contentService.getMemo(
+                memoId = memoId,
+                ownerCoupleId = coupleId,
+            )
         }
 
         // then
@@ -123,13 +120,15 @@ class ContentServiceUnitTest {
         val user = createTestUser(id = userId)
         val memo = createTestContent(id = memoId, user = user)
 
-        every { SecurityUtil.getCurrentUserCoupleId() } returns coupleId
         every { contentRepository.findContentByIdAndType(memoId, ContentType.MEMO) } returns memo
         every { coupleRepository.findByIdWithMembers(coupleId) } returns null
 
         // when
         val exception = assertThrows<ContentAccessDeniedException> {
-            contentService.getMemo(memoId)
+            contentService.getMemo(
+                memoId = memoId,
+                ownerCoupleId = coupleId,
+            )
         }
 
         // then
@@ -158,13 +157,15 @@ class ContentServiceUnitTest {
             description = "다른 사용자가 작성한 메모"
         )
 
-        every { SecurityUtil.getCurrentUserCoupleId() } returns coupleId
         every { contentRepository.findContentByIdAndType(memoId, ContentType.MEMO) } returns memo
         every { coupleRepository.findByIdWithMembers(coupleId) } returns couple
 
         // when
         val exception = assertThrows<ContentAccessDeniedException> {
-            contentService.getMemo(memoId)
+            contentService.getMemo(
+                memoId = memoId,
+                ownerCoupleId = coupleId,
+            )
         }
 
         // then
@@ -219,13 +220,15 @@ class ContentServiceUnitTest {
             description = "파트너가 작성한 메모"
         )
 
-        every { SecurityUtil.getCurrentUserCoupleId() } returns coupleId
         every { contentRepository.findContentByIdAndType(memoId, ContentType.MEMO) } returns memo
         every { coupleRepository.findByIdWithMembers(coupleId) } returns couple
         every { tagContentMappingRepository.findAllWithTagByContentId(memoId) } returns emptyList()
 
         // when
-        val result = contentService.getMemo(memoId)
+        val result = contentService.getMemo(
+            memoId = memoId,
+            ownerCoupleId = coupleId,
+        )
 
         // then
         assertThat(result.id).isEqualTo(memoId)
@@ -257,7 +260,6 @@ class ContentServiceUnitTest {
         val tagMapping2 = createTestTagContentMapping(id = 2L, tag = tag2, content = memo)
         val tagMapping3 = createTestTagContentMapping(id = 3L, tag = tag3, content = memo)
 
-        every { SecurityUtil.getCurrentUserCoupleId() } returns coupleId
         every { contentRepository.findContentByIdAndType(memoId, ContentType.MEMO) } returns memo
         every { coupleRepository.findByIdWithMembers(coupleId) } returns couple
         every { tagContentMappingRepository.findAllWithTagByContentId(memoId) } returns listOf(
@@ -267,7 +269,10 @@ class ContentServiceUnitTest {
         )
 
         // when
-        val result = contentService.getMemo(memoId)
+        val result = contentService.getMemo(
+            memoId = memoId,
+            ownerCoupleId = coupleId,
+        )
 
         // then
         assertThat(result.id).isEqualTo(memoId)
@@ -295,13 +300,15 @@ class ContentServiceUnitTest {
             description = null
         )
 
-        every { SecurityUtil.getCurrentUserCoupleId() } returns coupleId
         every { contentRepository.findContentByIdAndType(memoId, ContentType.MEMO) } returns memo
         every { coupleRepository.findByIdWithMembers(coupleId) } returns couple
         every { tagContentMappingRepository.findAllWithTagByContentId(memoId) } returns emptyList()
 
         // when
-        val result = contentService.getMemo(memoId)
+        val result = contentService.getMemo(
+            memoId = memoId,
+            ownerCoupleId = coupleId,
+        )
 
         // then
         assertThat(result.id).isEqualTo(memoId)
@@ -330,13 +337,15 @@ class ContentServiceUnitTest {
             description = "내용만 있는 메모"
         )
 
-        every { SecurityUtil.getCurrentUserCoupleId() } returns coupleId
         every { contentRepository.findContentByIdAndType(memoId, ContentType.MEMO) } returns memo
         every { coupleRepository.findByIdWithMembers(coupleId) } returns couple
         every { tagContentMappingRepository.findAllWithTagByContentId(memoId) } returns emptyList()
 
         // when
-        val result = contentService.getMemo(memoId)
+        val result = contentService.getMemo(
+            memoId = memoId,
+            ownerCoupleId = coupleId,
+        )
 
         // then
         assertThat(result.id).isEqualTo(memoId)
@@ -366,13 +375,15 @@ class ContentServiceUnitTest {
             isCompleted = true
         )
 
-        every { SecurityUtil.getCurrentUserCoupleId() } returns coupleId
         every { contentRepository.findContentByIdAndType(memoId, ContentType.MEMO) } returns memo
         every { coupleRepository.findByIdWithMembers(coupleId) } returns couple
         every { tagContentMappingRepository.findAllWithTagByContentId(memoId) } returns emptyList()
 
         // when
-        val result = contentService.getMemo(memoId)
+        val result = contentService.getMemo(
+            memoId = memoId,
+            ownerCoupleId = coupleId,
+        )
 
         // then
         assertThat(result.id).isEqualTo(memoId)
@@ -435,7 +446,7 @@ class ContentServiceUnitTest {
             val baseTimeEntityClass = Class.forName("com.whatever.domain.base.BaseTimeEntity")
             val createdAtField = baseTimeEntityClass.getDeclaredField("createdAt")
             createdAtField.isAccessible = true
-            createdAtField.set(content, java.time.LocalDateTime.now())
+            createdAtField.set(content, LocalDateTime.now())
         } catch (e: Exception) {
             // Reflection 실패 시 무시 (테스트 환경에서만 사용)
             println("Reflection failed: ${e.message}")
