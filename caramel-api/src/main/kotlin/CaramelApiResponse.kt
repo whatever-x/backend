@@ -4,14 +4,14 @@ import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
-com.whatever.caramel.common.global.exception.ErrorUi
-import global.exception.common.CaramelExceptionCode
+import com.whatever.caramel.common.global.exception.ErrorUi
+import com.whatever.caramel.common.global.exception.common.CaramelExceptionCode
 
 data class CaramelApiResponse<T>(
     val success: Boolean,
     @JsonSerialize(nullsUsing = NullToEmptyObjectSerializer::class)
     val data: T?,
-    val error: global.exception.dto.ErrorResponse?,
+    val error: ErrorResponse?,
 ) {
 
     companion object {
@@ -30,7 +30,7 @@ data class CaramelApiResponse<T>(
             return CaramelApiResponse(
                 success = false,
                 data = null,
-                error = global.exception.dto.ErrorResponse.Companion.of(
+                error = ErrorResponse.Companion.of(
                     errorCode = code,
                     errorUi = errorUi,
                 )

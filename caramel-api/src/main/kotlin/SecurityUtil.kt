@@ -1,6 +1,9 @@
 package com.whatever
 
+import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.domain.user.model.UserStatus
+import com.whatever.security.exception.AuthenticationException
+import com.whatever.security.exception.SecurityExceptionCode
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
@@ -13,7 +16,7 @@ object SecurityUtil {
     }
 
     @JvmStatic
-    fun getCurrentUserStatus(): UserStatus {
+    fun getCurrentUserStatus(): String {
         return getUserDetails().status
     }
 

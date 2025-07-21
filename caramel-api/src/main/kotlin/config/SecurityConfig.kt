@@ -1,11 +1,11 @@
 package com.whatever.config
 
+import com.whatever.JwtAuthenticationFilter
 import com.whatever.domain.user.model.UserStatus.COUPLED
 import com.whatever.domain.user.model.UserStatus.NEW
 import com.whatever.domain.user.model.UserStatus.SINGLE
-import com.whatever.global.security.filter.JwtAuthenticationFilter
-import com.whatever.global.security.filter.JwtExceptionFilter
-import com.whatever.global.security.filter.RequestResponseLoggingFilter
+import com.whatever.security.filter.JwtExceptionFilter
+import com.whatever.security.filter.RequestResponseLoggingFilter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean

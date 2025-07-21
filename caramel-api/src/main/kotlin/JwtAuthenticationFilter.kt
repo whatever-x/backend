@@ -1,13 +1,13 @@
 package com.whatever
 
+import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
+import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.service.JwtHelper
 import com.whatever.domain.auth.service.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
-import com.whatever.global.exception.ErrorUi
-import com.whatever.global.security.exception.SecurityExceptionCode
-import com.whatever.global.security.principal.CaramelUserDetails
+import com.whatever.security.exception.AccessDeniedException
+import com.whatever.security.exception.SecurityExceptionCode
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

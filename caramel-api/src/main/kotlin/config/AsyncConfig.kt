@@ -1,6 +1,6 @@
 package com.whatever.config
 
-import com.whatever.global.exception.CaramelAsyncExceptionHandler
+import com.whatever.caramel.common.global.exception.CaramelAsyncExceptionHandler
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.AsyncConfigurer

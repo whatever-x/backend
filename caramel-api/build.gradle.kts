@@ -1,3 +1,6 @@
+import org.gradle.kotlin.dsl.getByName
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     id("org.springframework.boot") version "3.4.1"
     id("io.spring.dependency-management") version "1.1.7"
@@ -29,18 +32,18 @@ repositories {
 dependencies {
     implementation(project(":caramel-domain"))
     implementation(project(":caramel-common"))
+
     // Spring
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.retry:spring-retry")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
     // Logging
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
-    implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
-    implementation("org.springframework.boot:spring-boot-starter-log4j2")
-    implementation("io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.17:$opentelemetryVersion-alpha")
+
     // Swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3")
     // Metric
@@ -79,4 +82,10 @@ dependencyManagement {
         mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
         mavenBom("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:$opentelemetryVersion")
     }
+}
+tasks.getByName<BootJar>("bootJar") {
+    enabled = true
+}
+tasks.getByName<Jar>("jar") {
+    enabled = true
 }

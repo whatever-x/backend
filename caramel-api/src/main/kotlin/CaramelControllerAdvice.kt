@@ -1,6 +1,8 @@
 package com.whatever
 
 import com.whatever.caramel.common.global.exception.ErrorUi
+import com.whatever.caramel.common.global.exception.common.CaramelException
+import com.whatever.caramel.common.global.exception.common.CaramelExceptionCode
 import org.springframework.http.ResponseEntity
 
 abstract class CaramelControllerAdvice {

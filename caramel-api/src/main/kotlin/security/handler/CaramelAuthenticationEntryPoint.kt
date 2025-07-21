@@ -1,9 +1,9 @@
 package com.whatever.security.handler
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.whatever.global.exception.ErrorUi
-import com.whatever.global.security.exception.SecurityExceptionCode
-import com.whatever.global.security.util.setExceptionResponse
+import com.whatever.caramel.common.global.exception.ErrorUi
+import com.whatever.security.exception.SecurityExceptionCode
+import com.whatever.security.util.setExceptionResponse
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

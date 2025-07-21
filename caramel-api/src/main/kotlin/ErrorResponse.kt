@@ -1,7 +1,7 @@
 package com.whatever
 
 import com.whatever.caramel.common.global.exception.ErrorUi
-import global.exception.common.CaramelExceptionCode
+import com.whatever.caramel.common.global.exception.common.CaramelExceptionCode
 
 /**
  * 클라이언트가 수신할 예외 정보 객체

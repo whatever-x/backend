@@ -1,8 +1,8 @@
 package com.whatever.security.filter
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import global.constants.CaramelHttpHeaders
-import com.whatever.security.util.SecurityUtil
+import com.whatever.SecurityUtil
+import com.whatever.caramel.common.global.constants.CaramelHttpHeaders
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest

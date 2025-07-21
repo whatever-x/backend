@@ -1,4 +1,4 @@
-package com.whatever.config
+package com.whatever.caramel.infrastructure.config
 
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.instrumentation.log4j.appender.v2_17.OpenTelemetryAppender

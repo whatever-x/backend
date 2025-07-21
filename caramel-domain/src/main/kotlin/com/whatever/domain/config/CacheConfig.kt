@@ -1,4 +1,4 @@
-package com.whatever.config
+package com.whatever.domain.config
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.whatever.domain.user.model.LoginPlatform

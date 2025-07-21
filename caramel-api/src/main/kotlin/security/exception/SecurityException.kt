@@ -1,7 +1,7 @@
 package com.whatever.security.exception
 
 import com.whatever.caramel.common.global.exception.ErrorUi
-import global.exception.common.CaramelException
+import com.whatever.caramel.common.global.exception.common.CaramelException
 
 open class CaramelSecurityException(
     errorCode: SecurityExceptionCode,

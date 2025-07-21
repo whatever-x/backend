@@ -1,6 +1,5 @@
-package com.whatever.config
+package com.whatever.domain.config
 
-import com.whatever.config.properties.RedisProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile

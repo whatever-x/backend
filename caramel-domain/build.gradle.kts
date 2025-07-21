@@ -43,10 +43,6 @@ dependencies {
     implementation("org.springframework.retry:spring-retry")
     implementation("org.springframework.boot:spring-boot-starter-security")
 
-    // Logging
-    implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
-    implementation("org.springframework.boot:spring-boot-starter-log4j2")
-
     // Cache
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("com.github.ben-manes.caffeine:caffeine")

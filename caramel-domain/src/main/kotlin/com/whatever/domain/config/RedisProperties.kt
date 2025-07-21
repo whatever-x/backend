@@ -1,4 +1,4 @@
-package com.whatever.caramel.infrastructure.properties
+package com.whatever.domain.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 
