@@ -2,12 +2,8 @@ package com.whatever.domain.content.service
 
 import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
-import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
-import com.whatever.domain.content.controller.dto.request.CreateContentRequest
-import com.whatever.domain.content.controller.dto.request.DateTimeInfoDto
-import com.whatever.domain.content.controller.dto.request.TagIdDto
-import com.whatever.domain.content.controller.dto.request.UpdateContentRequest
-import com.whatever.domain.content.controller.dto.response.TagDto
+import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
+import com.whatever.domain.calendarevent.vo.DateTimeInfoVo
 import com.whatever.domain.content.exception.ContentAccessDeniedException
 import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.exception.ContentExceptionCode.COUPLE_NOT_MATCHED
@@ -21,14 +17,16 @@ import com.whatever.domain.content.tag.model.Tag
 import com.whatever.domain.content.tag.model.TagContentMapping
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
+import com.whatever.domain.content.tag.vo.TagVo
 import com.whatever.domain.content.vo.ContentType
+import com.whatever.domain.content.vo.CreateContentRequestVo
+import com.whatever.domain.content.vo.UpdateContentRequestVo
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.couple.service.event.ExcludeAsyncConfigBean
-import com.whatever.domain.firebase.service.FirebaseService
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.security.util.SecurityUtil
+import com.whatever.firebase.service.FirebaseService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -36,12 +34,10 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -58,7 +54,6 @@ class ContentServiceTest @Autowired constructor(
     private val coupleRepository: CoupleRepository,
 ) : ExcludeAsyncConfigBean() {
 
-    private lateinit var securityUtilMock: AutoCloseable
     private lateinit var testUser: User
     private lateinit var testPartnerUser: User
     private lateinit var testCouple: Couple
@@ -72,15 +67,10 @@ class ContentServiceTest @Autowired constructor(
         testUser = myUser
         testPartnerUser = partnerUser
         testCouple = couple
-        securityUtilMock = mockStatic(SecurityUtil::class.java)
-        whenever(SecurityUtil.getCurrentUserId()).thenReturn(testUser.id)
-        whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
     }
 
     @AfterEach
     fun tearDown() {
-        securityUtilMock.close()
-
         scheduleEventRepository.deleteAllInBatch()
         tagContentMappingRepository.deleteAllInBatch()
         contentRepository.deleteAllInBatch()
@@ -115,14 +105,18 @@ class ContentServiceTest @Autowired constructor(
     @Test
     fun createContent_WithNullTitle() {
         // given
-        val request = CreateContentRequest(
+        val requestVo = CreateContentRequestVo(
             title = null,
             description = "test-desc",
             isCompleted = false,
+            tags = emptyList(),
         )
 
         // when
-        val result = contentService.createContent(request)
+        val result = contentService.createContent(
+            contentRequestVo = requestVo,
+            userId = testUser.id,
+        )
 
         // then
         val savedContent = contentRepository.findByIdOrNull(result.id)
@@ -130,7 +124,7 @@ class ContentServiceTest @Autowired constructor(
 
         with(savedContent.contentDetail) {
             assertThat(title).isNull()
-            assertThat(description).isEqualTo(request.description)
+            assertThat(description).isEqualTo(requestVo.description)
         }
     }
 
@@ -138,21 +132,25 @@ class ContentServiceTest @Autowired constructor(
     @Test
     fun createContent_WithNullDescription() {
         // given
-        val request = CreateContentRequest(
+        val requestVo = CreateContentRequestVo(
             title = "test-title",
             description = null,
             isCompleted = false,
+            tags = emptyList(),
         )
 
         // when
-        val result = contentService.createContent(request)
+        val result = contentService.createContent(
+            contentRequestVo = requestVo,
+            userId = testUser.id,
+        )
 
         // then
         val savedContent = contentRepository.findByIdOrNull(result.id)
         requireNotNull(savedContent)
 
         with(savedContent.contentDetail) {
-            assertThat(title).isEqualTo(request.title)
+            assertThat(title).isEqualTo(requestVo.title)
             assertThat(description).isNull()
         }
     }
@@ -161,15 +159,19 @@ class ContentServiceTest @Autowired constructor(
     @Test
     fun createContent_WithNullTitleAndDescription() {
         // given
-        val request = CreateContentRequest(
+        val requestVo = CreateContentRequestVo(
             title = null,
             description = null,
             isCompleted = false,
+            tags = emptyList(),
         )
 
         // when
         val result = assertThrows<ContentIllegalArgumentException> {
-            contentService.createContent(request)
+            contentService.createContent(
+                contentRequestVo = requestVo,
+                userId = testUser.id,
+            )
         }
 
         // then
@@ -188,15 +190,19 @@ class ContentServiceTest @Autowired constructor(
     )
     fun createContent_WithNullTitleAndDescription(title: String, description: String) {
         // given
-        val request = CreateContentRequest(
+        val requestVo = CreateContentRequestVo(
             title = title,
             description = description,
             isCompleted = false,
+            tags = emptyList(),
         )
 
         // when
         val result = assertThrows<ContentIllegalArgumentException> {
-            contentService.createContent(request)
+            contentService.createContent(
+                contentRequestVo = requestVo,
+                userId = testUser.id,
+            )
         }
 
         // then
@@ -208,14 +214,18 @@ class ContentServiceTest @Autowired constructor(
     @Test
     fun createContent_WithSendNotification() {
         // given
-        val request = CreateContentRequest(
+        val requestVo = CreateContentRequestVo(
             title = "test-title",
             description = "test-desc",
             isCompleted = false,
+            tags = emptyList(),
         )
 
         // when
-        val result = contentService.createContent(request)
+        val result = contentService.createContent(
+            contentRequestVo = requestVo,
+            userId = testUser.id,
+        )
 
         // then
         assertThat(result.contentType).isEqualTo(ContentType.MEMO)
@@ -249,7 +259,7 @@ class ContentServiceTest @Autowired constructor(
         assertThat(result.id).isEqualTo(testMemo.id)
         assertThat(result.title).isEqualTo(testMemo.contentDetail.title)
         assertThat(result.description).isEqualTo(testMemo.contentDetail.description)
-        assertThat(result.tagList).containsExactlyInAnyOrderElementsOf(tags.map { TagDto.from(it) })
+        assertThat(result.tagList).containsExactlyInAnyOrderElementsOf(tags.map { TagVo.from(it) })
     }
 
     @DisplayName("메모를 조회할 때 파트너의 메모도 본문과 태그까지 정상적으로 조회된다.")
@@ -275,7 +285,7 @@ class ContentServiceTest @Autowired constructor(
         assertThat(result.id).isEqualTo(testMemo.id)
         assertThat(result.title).isEqualTo(testMemo.contentDetail.title)
         assertThat(result.description).isEqualTo(testMemo.contentDetail.description)
-        assertThat(result.tagList).containsExactlyInAnyOrderElementsOf(tags.map { TagDto.from(it) })
+        assertThat(result.tagList).containsExactlyInAnyOrderElementsOf(tags.map { TagVo.from(it) })
     }
 
     @DisplayName("메모를 조회할 때 다른 커플의 메모일 경우 얘외가 발생한다.")
@@ -327,7 +337,7 @@ class ContentServiceTest @Autowired constructor(
         val newTitle = "Updated Title"
         val newDesc = "Updated Desc"
         val newCompleted = true
-        val request = UpdateContentRequest(
+        val requestVo = UpdateContentRequestVo(
             title = newTitle,
             description = newDesc,
             isCompleted = newCompleted,
@@ -336,7 +346,12 @@ class ContentServiceTest @Autowired constructor(
         )
 
         // when
-        val response = contentService.updateContent(memo.id, request)
+        val response = contentService.updateContent(
+            contentId = memo.id,
+            requestVo = requestVo,
+            userCoupleId = testCouple.id,
+            userId = testUser.id,
+        )
 
         // then
         val updatedContent = contentRepository.findByIdOrNull(memo.id)!!
@@ -357,16 +372,21 @@ class ContentServiceTest @Autowired constructor(
         val tag3 = createTestTag("Tag3")
         val memo = createTestMemo(tags = listOf(tag1, tag2))
 
-        val request = UpdateContentRequest(
+        val requestVo = UpdateContentRequestVo(
             title = memo.contentDetail.title ?: "",
             description = memo.contentDetail.description ?: "",
             isCompleted = memo.contentDetail.isCompleted,
-            tagList = listOf(TagIdDto(tag2.id), TagIdDto(tag3.id)),
+            tagList = listOf(tag2.id, tag3.id),
             dateTimeInfo = null
         )
 
         // when
-        contentService.updateContent(memo.id, request)
+        contentService.updateContent(
+            contentId = memo.id,
+            requestVo = requestVo,
+            userCoupleId = testCouple.id,
+            userId = testUser.id,
+        )
 
         // then
         val updatedMappings = tagContentMappingRepository.findAllByContent_IdAndIsDeleted(memo.id)
@@ -385,11 +405,22 @@ class ContentServiceTest @Autowired constructor(
     fun updateContent_NotFound() {
         // given
         val nonExistentId = 9999L
-        val request = UpdateContentRequest(title = "Any", description = "Any", isCompleted = false)
+        val requestVo = UpdateContentRequestVo(
+            title = "Any",
+            description = "Any",
+            isCompleted = false,
+            tagList = emptyList(),
+            dateTimeInfo = null,
+        )
 
         // when & then
         assertThrows<ContentNotFoundException> {
-            contentService.updateContent(nonExistentId, request)
+            contentService.updateContent(
+                contentId = nonExistentId,
+                requestVo = requestVo,
+                userCoupleId = testCouple.id,
+                userId = testUser.id,
+            )
         }
     }
 
@@ -400,18 +431,24 @@ class ContentServiceTest @Autowired constructor(
         val memo = createTestMemo(title = "Original Title", description = "Original Desc", isCompleted = false)
         val newTitle = "Updated Title"
         val newDesc = "Updated Desc"
-        val request = UpdateContentRequest(
+        val requestVo = UpdateContentRequestVo(
             title = newTitle,
             description = newDesc,
             isCompleted = memo.contentDetail.isCompleted,
-            dateTimeInfo = DateTimeInfoDto(
+            dateTimeInfo = DateTimeInfoVo(
                 startDateTime = DateTimeUtil.localNow(),
                 startTimezone = DateTimeUtil.KST_ZONE_ID.toString(),
-            )
+            ),
+            tagList = emptyList(),
         )
 
         // when
-        val response = contentService.updateContent(memo.id, request)
+        val response = contentService.updateContent(
+            contentId = memo.id,
+            requestVo = requestVo,
+            userCoupleId = testCouple.id,
+            userId = testUser.id,
+        )
 
         // then
         val scheduleEvent = scheduleEventRepository.findAll().single()
