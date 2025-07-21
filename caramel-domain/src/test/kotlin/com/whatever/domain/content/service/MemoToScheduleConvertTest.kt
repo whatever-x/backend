@@ -2,12 +2,11 @@ package com.whatever.domain.content.service
 
 import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleExceptionCode
-import com.whatever.domain.calendarevent.scheduleevent.exception.ScheduleIllegalArgumentException
-import com.whatever.domain.calendarevent.scheduleevent.repository.ScheduleEventRepository
+import com.whatever.domain.calendarevent.exception.ScheduleExceptionCode
+import com.whatever.domain.calendarevent.exception.ScheduleIllegalArgumentException
+import com.whatever.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.domain.calendarevent.scheduleevent.service.createCouple
-import com.whatever.domain.content.controller.dto.request.DateTimeInfoDto
-import com.whatever.domain.content.controller.dto.request.UpdateContentRequest
+import com.whatever.domain.calendarevent.vo.DateTimeInfoVo
 import com.whatever.domain.content.exception.ContentAccessDeniedException
 import com.whatever.domain.content.exception.ContentExceptionCode
 import com.whatever.domain.content.exception.ContentIllegalArgumentException
@@ -16,22 +15,19 @@ import com.whatever.domain.content.repository.ContentRepository
 import com.whatever.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.domain.content.tag.repository.TagRepository
 import com.whatever.domain.content.vo.ContentType
+import com.whatever.domain.content.vo.UpdateContentRequestVo
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
+import com.whatever.domain.findByIdAndNotDeleted
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.security.util.SecurityUtil
-import com.whatever.util.findByIdAndNotDeleted
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.mockito.Mockito.mockStatic
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 
 @CaramelDomainSpringBootTest
@@ -45,18 +41,10 @@ class MemoToScheduleConvertTest @Autowired constructor(
     private val coupleRepository: CoupleRepository,
 ) {
 
-    private lateinit var securityUtilMock: AutoCloseable
     private lateinit var testUser: User
-
-    @BeforeEach
-    fun setUp() {
-        securityUtilMock = mockStatic(SecurityUtil::class.java)
-    }
 
     @AfterEach
     fun tearDown() {
-        securityUtilMock.close()
-
         scheduleEventRepository.deleteAllInBatch()
         tagContentMappingRepository.deleteAllInBatch()
         contentRepository.deleteAllInBatch()
@@ -74,10 +62,6 @@ class MemoToScheduleConvertTest @Autowired constructor(
             myPlatformId,
             partnerPlatformId
         )
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(myUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(couple.id)
-        }
         return Triple(myUser, partnerUser, couple)
     }
 
@@ -85,23 +69,29 @@ class MemoToScheduleConvertTest @Autowired constructor(
     @Test
     fun updateContent() {
         // given
-        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val (myUser, _, couple) = setUpCoupleAndSecurity()
         val memo = contentRepository.save(createContent(myUser, ContentType.MEMO))
 
-        val request = UpdateContentRequest(
+        val requestVo = UpdateContentRequestVo(
             title = "Schedule Title",
             description = "Description Content",
             isCompleted = false,
-            dateTimeInfo = DateTimeInfoDto(
+            dateTimeInfo = DateTimeInfoVo(
                 startDateTime = NOW,
                 startTimezone = DateTimeUtil.UTC_ZONE_ID.id,
                 endDateTime = NOW.plusDays(2),
                 endTimezone = DateTimeUtil.UTC_ZONE_ID.id,
             ),
+            tagList = emptyList(),
         )
 
         // when
-        val result = contentService.updateContent(memo.id, request)
+        val result = contentService.updateContent(
+            contentId = memo.id,
+            requestVo = requestVo,
+            userCoupleId = couple.id,
+            userId = myUser.id,
+        )
 
         // then
         val scheduleEvent = scheduleEventRepository.findByIdAndNotDeleted(result.id)
@@ -110,29 +100,35 @@ class MemoToScheduleConvertTest @Autowired constructor(
         require(content != null)
         assertThat(scheduleEvent.content.id).isEqualTo(memo.id)
         assertThat(content.type).isEqualTo(ContentType.SCHEDULE)
-        assertThat(content.contentDetail.title).isEqualTo(request.title)
-        assertThat(content.contentDetail.description).isEqualTo(request.description)
+        assertThat(content.contentDetail.title).isEqualTo(requestVo.title)
+        assertThat(content.contentDetail.description).isEqualTo(requestVo.description)
     }
 
     @DisplayName("메모 업데이트 시 존재하지 않거나 삭제된 memeId가 입력되면 예외가 발생한다.")
     @Test
     fun updateContent_WithIllegalContentId() {
         // given
-        setUpCoupleAndSecurity()
-        val request = UpdateContentRequest(
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
+        val requestVo = UpdateContentRequestVo(
             title = "title",
             description = "desc",
             isCompleted = false,
-            dateTimeInfo = DateTimeInfoDto(
+            dateTimeInfo = DateTimeInfoVo(
                 startDateTime = NOW,
                 startTimezone = DateTimeUtil.UTC_ZONE_ID.id,
-            )
+            ),
+            tagList = emptyList(),
         )
         val invalidMemoId = 0L // 존재하지 않는 ID
 
         // when, then
         val exception = assertThrows<ContentNotFoundException> {
-            contentService.updateContent(invalidMemoId, request)
+            contentService.updateContent(
+                contentId = invalidMemoId,
+                requestVo = requestVo,
+                userCoupleId = couple.id,
+                userId = myUser.id,
+            )
         }
         assertThat(exception).hasMessage(ContentExceptionCode.MEMO_NOT_FOUND.message)
     }
@@ -141,20 +137,26 @@ class MemoToScheduleConvertTest @Autowired constructor(
     @Test
     fun updateContent_WithNonMemoContent() {
         // given
-        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val (myUser, _, couple) = setUpCoupleAndSecurity()
         val nonMemo = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
-        val request = UpdateContentRequest(
+        val requestVo = UpdateContentRequestVo(
             title = "title",
             description = "desc",
             isCompleted = false,
-            dateTimeInfo = DateTimeInfoDto(
+            dateTimeInfo = DateTimeInfoVo(
                 startDateTime = NOW,
                 startTimezone = DateTimeUtil.UTC_ZONE_ID.id,
-            )
+            ),
+            tagList = emptyList(),
         )
         // when, then
         val exception = assertThrows<ContentNotFoundException> {
-            contentService.updateContent(nonMemo.id, request)
+            contentService.updateContent(
+                contentId = nonMemo.id,
+                requestVo = requestVo,
+                userCoupleId = couple.id,
+                userId = myUser.id
+            )
         }
         assertThat(exception).hasMessage(ContentExceptionCode.MEMO_NOT_FOUND.message)
     }
@@ -166,22 +168,25 @@ class MemoToScheduleConvertTest @Autowired constructor(
         val (ownerUser, _, _) = createCouple(userRepository, coupleRepository, "owner", "partner-owner")
         val memo = contentRepository.save(createContent(ownerUser, ContentType.MEMO))
         val (otherUser, _, otherCouple) = createCouple(userRepository, coupleRepository, "other", "other2")
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).thenReturn(otherUser.id)
-            whenever(SecurityUtil.getCurrentUserCoupleId()).thenReturn(otherCouple.id)
-        }
-        val request = UpdateContentRequest(
+
+        val requestVo = UpdateContentRequestVo(
             title = "title",
             description = "desc",
             isCompleted = false,
-            dateTimeInfo = DateTimeInfoDto(
+            dateTimeInfo = DateTimeInfoVo(
                 startDateTime = NOW,
                 startTimezone = DateTimeUtil.UTC_ZONE_ID.id,
-            )
+            ),
+            tagList = emptyList(),
         )
         // when, then
         val exception = assertThrows<ContentAccessDeniedException> {
-            contentService.updateContent(memo.id, request)
+            contentService.updateContent(
+                contentId = memo.id,
+                requestVo = requestVo,
+                userCoupleId = otherCouple.id,
+                userId = otherUser.id,
+            )
         }
         assertThat(exception).hasMessage(ContentExceptionCode.COUPLE_NOT_MATCHED.message)
     }
@@ -197,21 +202,27 @@ class MemoToScheduleConvertTest @Autowired constructor(
     )
     fun updateContent_WithBlankOrNullTitleDescription(title: String?, description: String?) {
         // given
-        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val (myUser, _, couple) = setUpCoupleAndSecurity()
         val memo = contentRepository.save(createContent(myUser, ContentType.MEMO))
-        val request = UpdateContentRequest(
+        val requestVo = UpdateContentRequestVo(
             title = title,
             description = description,
             isCompleted = false,
-            dateTimeInfo = DateTimeInfoDto(
+            dateTimeInfo = DateTimeInfoVo(
                 startDateTime = NOW,
                 startTimezone = DateTimeUtil.UTC_ZONE_ID.id,
-            )
+            ),
+            tagList = emptyList(),
         )
 
         // when, then
         val exception = assertThrows<ContentIllegalArgumentException> {
-            contentService.updateContent(memo.id, request)
+            contentService.updateContent(
+                contentId = memo.id,
+                requestVo = requestVo,
+                userCoupleId = couple.id,
+                userId = myUser.id,
+            )
         }
         assertThat(exception).hasMessage(ContentExceptionCode.ILLEGAL_CONTENT_DETAIL.message)
     }
@@ -220,22 +231,28 @@ class MemoToScheduleConvertTest @Autowired constructor(
     @Test
     fun updateContent_WithInvalidDuration() {
         // given
-        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val (myUser, _, couple) = setUpCoupleAndSecurity()
         val memo = contentRepository.save(createContent(myUser, ContentType.MEMO))
-        val request = UpdateContentRequest(
+        val requestVo = UpdateContentRequestVo(
             title = "title",
             description = "desc",
             isCompleted = false,
-            dateTimeInfo = DateTimeInfoDto(
+            dateTimeInfo = DateTimeInfoVo(
                 startDateTime = NOW,
                 startTimezone = DateTimeUtil.UTC_ZONE_ID.id,
                 endDateTime = NOW.minusDays(1),
                 endTimezone = DateTimeUtil.UTC_ZONE_ID.id
-            )
+            ),
+            tagList = emptyList(),
         )
         // when, then
         val exception = assertThrows<ScheduleIllegalArgumentException> {
-            contentService.updateContent(memo.id, request)
+            contentService.updateContent(
+                contentId = memo.id,
+                requestVo = requestVo,
+                userCoupleId = couple.id,
+                userId = myUser.id,
+            )
         }
         assertThat(exception).hasMessage(ScheduleExceptionCode.ILLEGAL_DURATION.message)
     }
