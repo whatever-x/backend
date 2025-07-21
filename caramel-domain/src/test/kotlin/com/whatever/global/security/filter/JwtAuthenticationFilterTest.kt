@@ -1,13 +1,13 @@
 package com.whatever.global.security.filter
 
+import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
+import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.DEVICE_ID
 import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.service.AuthService
 import com.whatever.domain.auth.service.JwtHelper
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.service.createUser
-import com.whatever.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
-import com.whatever.global.constants.CaramelHttpHeaders.DEVICE_ID
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc

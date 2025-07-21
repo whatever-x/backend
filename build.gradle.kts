@@ -66,38 +66,6 @@ subprojects {
             exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
     }
 
-
-    tasks.named<Test>("test") {
-        useJUnitPlatform()
-        finalizedBy(tasks.named("jacocoTestReport"))
-    }
-
-    tasks.named<JacocoReport>("jacocoTestReport") {
-        dependsOn(tasks.named<Test>("test"))
-    }
-
-    tasks.named<JacocoReport>("jacocoTestReport") {
-        reports {
-            xml.required.set(true)
-            csv.required.set(false)
-            html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
-        }
-
-        classDirectories.setFrom(
-            files(
-                classDirectories.asFileTree.matching {
-                    include("**/domain/**/service/*Service.class")
-                    exclude(
-                        "**/dto/**",
-                        "**/controller/**",
-                        "**/config/**",
-                        "**/global/**"
-                    )
-                }
-            )
-        )
-    }
-
     dependencyManagement {
         imports {
             mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
@@ -159,11 +127,6 @@ dependencies {
 //    testImplementation("org.springframework.security:spring-security-test")
 
 //    testImplementation("org.awaitility:awaitility-kotlin:4.3.0")
-}
-
-jacoco {
-    toolVersion = "0.8.11"
-    reportsDirectory.set(layout.buildDirectory.dir("jacocoXml"))
 }
 
 tasks.getByName<BootJar>("bootJar") {

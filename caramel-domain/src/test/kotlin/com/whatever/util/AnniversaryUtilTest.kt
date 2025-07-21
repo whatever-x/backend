@@ -1,6 +1,7 @@
 package com.whatever.util
 
-import com.whatever.util.AnniversaryUtil.findNThDayAnniversary
+import com.whatever.caramel.common.util.AnniversaryUtil.findNThDayAnniversary
+import com.whatever.caramel.common.util.AnniversaryUtil.findYearlyAnniversary
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.params.ParameterizedTest
@@ -145,7 +146,7 @@ class AnniversaryUtilTest {
 
     @DisplayName("일반 날짜에 대해 기본 주년 기념일이 반환된다.")
     @Test
-    fun findYearlyAnniversary() {
+    fun findYearlyAnniversary_with_success() {
         // given
         val targetDate = LocalDate.of(2025, 1, 1)
         val searchStart = targetDate
