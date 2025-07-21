@@ -1,18 +1,19 @@
-package com.whatever.domain.firebase.service
+package com.whatever.caramel.infrastructure.openfeign
 
-import com.google.firebase.messaging.BatchResponse
 import com.google.firebase.messaging.FirebaseMessaging
-import com.google.firebase.messaging.Notification
-import com.whatever.domain.firebase.exception.FcmIllegalArgumentException
-import com.whatever.domain.firebase.exception.FirebaseExceptionCode.FCM_EMPTY_TOKEN
+import com.whatever.caramel.infrastructure.firebase.FcmSender
+import com.whatever.caramel.infrastructure.firebase.exception.FcmIllegalArgumentException
+import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode
+import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
+import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
-import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import kotlin.test.Test
 
@@ -24,7 +25,7 @@ class FcmSenderTest {
 
     @BeforeEach
     fun setup() {
-        firebaseAppMock = mockStatic(FirebaseMessaging::class.java)
+        firebaseAppMock = Mockito.mockStatic(FirebaseMessaging::class.java)
     }
 
     @AfterEach
@@ -41,67 +42,60 @@ class FcmSenderTest {
 
         val messageId = "message-id"
         whenever(fakeMessaging.send(any())).thenReturn(messageId)
-
-        val notif = Notification.builder().setTitle("title").setBody("body").build()
+        val notification = FcmNotification(title = "title", body = "body")
 
         // when
-        val result = fcmSender.sendNotification("test-token", notif)
+        val result = fcmSender.sendNotification("test-token", notification)
 
         // then
-        assertThat(result).isEqualTo(messageId)
+        Assertions.assertThat(result).isEqualTo(messageId)
     }
 
-    @DisplayName("다수에게 FCM Notification 전달 시 BatchResponse가 반환된다.")
+    @DisplayName("다수에게 FCM Notification을 전달시 sendEachForMulticast 실행") // 테스트의 목적을 더 명확하게 변경
     @Test
     fun sendNotificationAll() {
         // given
         val fakeMessaging = Mockito.mock(FirebaseMessaging::class.java)
         whenever(FirebaseMessaging.getInstance()).thenReturn(fakeMessaging)
 
-        val fakeResponse = Mockito.mock(BatchResponse::class.java)
-        whenever(fakeMessaging.sendEachForMulticast(any())).thenReturn(fakeResponse)
-
-        val notif = Notification.builder().setTitle("title").setBody("body").build()
+        val notification = FcmNotification(title = "title", body = "body")
         val tokens = listOf("token-1", "token-2", "token-3")
 
         // when
-        val result = fcmSender.sendNotificationAll(tokens, notif)
+        fcmSender.sendNotificationAll(tokens, notification)
 
         // then
-        assertThat(result).isSameAs(fakeResponse)
+        verify(fakeMessaging).sendEachForMulticast(any())
     }
 
     @DisplayName("다수에게 FCM Notification 전달 시 토큰이 없다면 예외를 반환한다.")
     @Test
     fun sendNotificationAll_WithEmptyToken() {
         // given
-        val notif = Notification.builder().setTitle("title").setBody("body").build()
+        val notification = FcmNotification(title = "title", body = "body")
 
         // when, then
         val exception = assertThrows<FcmIllegalArgumentException> {
-            fcmSender.sendNotificationAll(emptyList(), notif)
+            fcmSender.sendNotificationAll(emptyList(), notification)
         }
-        assertThat(exception.errorCode).isEqualTo(FCM_EMPTY_TOKEN)
+        assertThat(exception.errorCode).isEqualTo(FirebaseExceptionCode.FCM_EMPTY_TOKEN)
     }
 
-    @DisplayName("FCM Data 전달 시 Message ID가 반환된다.")
+    @DisplayName("FCM Data 전달 시 sendEachForMulticast 실행")
     @Test
     fun sendDataAll() {
         // given
         val fakeMessaging = Mockito.mock(FirebaseMessaging::class.java)
         whenever(FirebaseMessaging.getInstance()).thenReturn(fakeMessaging)
 
-        val fakeResponse = Mockito.mock(BatchResponse::class.java)
-        whenever(fakeMessaging.sendEachForMulticast(any())).thenReturn(fakeResponse)
-
         val data = mapOf("key" to "value")
         val tokens = listOf("token-1", "token-2", "token-3")
 
         // when
-        val result = fcmSender.sendDataAll(tokens, data)
+        fcmSender.sendDataAll(tokens, data)
 
         // then
-        assertThat(result).isSameAs(fakeResponse)
+        verify(fakeMessaging).sendEachForMulticast(any())
     }
 
     @DisplayName("다수에게 FCM Data 전달 시 BatchResponse가 반환된다.")
@@ -114,6 +108,6 @@ class FcmSenderTest {
         val exception = assertThrows<FcmIllegalArgumentException> {
             fcmSender.sendDataAll(emptyList(), data)
         }
-        assertThat(exception.errorCode).isEqualTo(FCM_EMPTY_TOKEN)
+        assertThat(exception.errorCode).isEqualTo(FirebaseExceptionCode.FCM_EMPTY_TOKEN)
     }
 }

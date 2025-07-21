@@ -1,5 +1,7 @@
 package com.whatever.domain.firebase.service
 
+import com.whatever.caramel.infrastructure.firebase.FcmSender
+import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import com.whatever.domain.auth.service.createSingleUser
 import com.whatever.domain.content.service.createCouple
 import com.whatever.domain.couple.repository.CoupleRepository
@@ -10,6 +12,7 @@ import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserSetting
 import com.whatever.domain.user.repository.UserRepository
 import com.whatever.domain.user.repository.UserSettingRepository
+import com.whatever.firebase.service.FirebaseService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
