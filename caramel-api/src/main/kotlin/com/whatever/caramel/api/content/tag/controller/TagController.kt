@@ -1,6 +1,7 @@
 package com.whatever.caramel.api.content.tag.controller
 
 import com.whatever.CaramelApiResponse
+import com.whatever.caramel.api.content.tag.controller.dto.response.TagDetailDto
 import com.whatever.caramel.api.content.tag.controller.dto.response.TagDetailListResponse
 import com.whatever.caramel.common.global.annotation.DisableSwaggerAuthButton
 import com.whatever.domain.content.tag.service.TagService
@@ -32,7 +33,9 @@ class TagController(
     )
     @GetMapping
     fun getTags(): CaramelApiResponse<TagDetailListResponse> {
-        val tags = tagService.getTags()
-        return tags.succeed()
+        return tagService.getTags().tagList
+            .map { TagDetailDto.from(it) }
+            .let { TagDetailListResponse(it) }
+            .succeed()
     }
 }
