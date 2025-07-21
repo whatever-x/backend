@@ -1,6 +1,7 @@
 package com.whatever.caramel.api.auth.controller
 
 import com.whatever.CaramelApiResponse
+import com.whatever.SecurityUtil.getCurrentUserId
 import com.whatever.caramel.api.auth.dto.ServiceTokenResponse
 import com.whatever.caramel.api.auth.dto.SignInRequest
 import com.whatever.caramel.api.auth.dto.SignInResponse
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import kotlin.math.sign
 
 @Tag(
     name = "인증 API",
@@ -48,12 +50,12 @@ class AuthController(
         @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
         @RequestBody request: SignInRequest,
     ): CaramelApiResponse<SignInResponse> {
-        val socialAuthResponse = authService.signUpOrSignIn(
+        val signInVo = authService.signUpOrSignIn(
             loginPlatform = request.loginPlatform,
             idToken = request.idToken,
             deviceId = deviceId
         )
-        return socialAuthResponse.succeed()
+        return SignInResponse.from(signInVo).succeed()
     }
 
     @Operation(
@@ -73,7 +75,8 @@ class AuthController(
     ): CaramelApiResponse<Unit> {
         authService.signOut(
             bearerAccessToken = bearerAccessToken,
-            deviceId = deviceId
+            deviceId = deviceId,
+            userId = getCurrentUserId(),
         )
         return CaramelApiResponse.succeed()
     }
@@ -98,8 +101,12 @@ class AuthController(
         @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
         @RequestBody request: ServiceTokenResponse,
     ): CaramelApiResponse<ServiceTokenResponse> {
-        val serviceToken = authService.refresh(request, deviceId)
-        return serviceToken.succeed()
+        val serviceTokenVo = authService.refresh(
+            accessToken = request.accessToken,
+            refreshToken = request.refreshToken,
+            deviceId = deviceId,
+        )
+        return ServiceTokenResponse.from(serviceTokenVo).succeed()
     }
 
     @Operation(
@@ -119,7 +126,11 @@ class AuthController(
         @Parameter(hidden = true) @RequestHeader(name = AUTH_JWT_HEADER, required = true) bearerAccessToken: String,
         @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
     ): CaramelApiResponse<Unit> {
-        authService.deleteUser(bearerAccessToken, deviceId)
+        authService.deleteUser(
+            bearerAccessToken,
+            deviceId,
+            userId = getCurrentUserId(),
+        )
         return CaramelApiResponse.succeed()
     }
 }

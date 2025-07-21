@@ -8,11 +8,11 @@ import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import com.whatever.domain.auth.repository.AuthRedisRepository
 import com.whatever.domain.auth.service.JwtHelper
 import com.whatever.domain.auth.vo.ServiceTokenVo
+import com.whatever.domain.auth.vo.SignInVo
 import com.whatever.domain.sample.exception.SampleExceptionCode
 import com.whatever.domain.sample.exception.SampleNotFoundException
 import com.whatever.domain.sample.repository.SampleUserRepository
 import com.whatever.domain.sample.repository.SampleUserSettingRepository
-import com.whatever.domain.sample.vo.SignInVo
 import com.whatever.domain.user.model.LoginPlatform
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.model.UserGender
@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 
 @Profile("dev", "local-mem")
 @Service
@@ -68,9 +68,8 @@ class SampleService(
         val serviceToken = createTokenAndSave(userId = testUser.id, expSec)
         UserInfoVo.from(testUser)
         return SignInVo.from(
-            testUser,
-            serviceToken.accessToken,
-            serviceToken.refreshToken,
+            serviceToken = serviceToken,
+            user = testUser,
         )
     }
 

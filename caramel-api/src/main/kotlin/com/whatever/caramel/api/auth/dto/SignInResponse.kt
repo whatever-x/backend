@@ -1,6 +1,6 @@
 package com.whatever.caramel.api.auth.dto
 
-import com.whatever.domain.sample.vo.SignInVo
+import com.whatever.domain.auth.vo.SignInVo
 import com.whatever.domain.user.model.UserStatus
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
@@ -26,13 +26,13 @@ data class SignInResponse(
         fun from(signInVo: SignInVo): SignInResponse {
             return SignInResponse(
                 serviceTokenResponse = ServiceTokenResponse(
-                    accessToken = signInVo.serviceToken.accessToken,
-                    refreshToken = signInVo.serviceToken.refreshToken,
+                    accessToken = signInVo.accessToken,
+                    refreshToken = signInVo.refreshToken
                 ),
-                userStatus = signInVo.userInfo.userStatus,
-                nickname = signInVo.userInfo.nickname,
-                birthDay = signInVo.userInfo.birthDate,
-                coupleId = null,
+                userStatus = UserStatus.valueOf(signInVo.userStatus),
+                nickname = signInVo.nickname,
+                birthDay = signInVo.birthDay,
+                coupleId = signInVo.coupleId,
             )
         }
     }
