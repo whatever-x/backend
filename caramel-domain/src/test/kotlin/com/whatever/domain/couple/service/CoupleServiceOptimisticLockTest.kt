@@ -1,13 +1,10 @@
 package com.whatever.domain.couple.service
 
 import com.whatever.CaramelDomainSpringBootTest
-import com.whatever.domain.couple.controller.dto.request.UpdateCoupleSharedMessageRequest
-import com.whatever.domain.couple.controller.dto.request.UpdateCoupleStartDateRequest
 import com.whatever.domain.couple.exception.CoupleExceptionCode
 import com.whatever.domain.couple.exception.CoupleIllegalStateException
 import com.whatever.domain.couple.repository.CoupleRepository
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.global.security.util.SecurityUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -16,18 +13,14 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.reset
 import org.mockito.kotlin.any
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.orm.ObjectOptimisticLockingFailureException
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import java.time.LocalDate
 import java.util.concurrent.CompletableFuture
@@ -45,21 +38,16 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
     @MockitoSpyBean
     private lateinit var coupleRepository: CoupleRepository
 
-    private lateinit var securityUtilMock: AutoCloseable
-
     @BeforeEach
     fun setUp() {
         val connectionFactory = redisTemplate.connectionFactory
         check(connectionFactory != null)
         connectionFactory.connection.serverCommands().flushAll()
-        securityUtilMock = mockStatic(SecurityUtil::class.java)
-
         userRepository.deleteAllInBatch()
     }
 
     @AfterEach
     fun tearDown() {
-        securityUtilMock.close()  // static mock 초기화
         reset(coupleRepository)
     }
 
@@ -75,15 +63,15 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
         val startDates = List(threadCount) { idx ->
             LocalDate.EPOCH.plusDays(idx.toLong())
         }
-        val requests = startDates.map { UpdateCoupleStartDateRequest(it) }
+        val requests = startDates
         val timeZone = "Asia/Seoul"
 
         val futures = requests.mapIndexed { idx, request ->
             CompletableFuture.supplyAsync({
-                mockStatic(SecurityUtil::class.java).use {
-                    it.apply { whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id) }
-                    coupleService.updateStartDate(savedCouple.id, request, timeZone)
-                }
+                coupleService.updateStartDate(savedCouple.id, request, timeZone)
+//                mockStatic(SecurityUtil::class.java).use {
+//                    it.apply { whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id) }
+//                }
             }, executor)
         }
 
@@ -92,8 +80,8 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
 
         // then
         results.forEachIndexed { idx, response ->
-            assertThat(response.coupleId).isEqualTo(savedCouple.id)
-            assertThat(response.startDate).isEqualTo(requests[idx].startDate)
+            assertThat(response.id).isEqualTo(savedCouple.id)
+            assertThat(response.startDate).isEqualTo(requests[idx])
         }
     }
 
@@ -104,12 +92,9 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
         // given
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
 
-        securityUtilMock.apply {
-            whenever(SecurityUtil.getCurrentUserId()).doReturn(myUser.id)
-        }
         whenever(coupleRepository.findByIdOrNull(any())).doThrow(ObjectOptimisticLockingFailureException::class)
 
-        val request = UpdateCoupleStartDateRequest(LocalDate.EPOCH)
+        val request = LocalDate.EPOCH
         val timeZone = "Asia/Seoul"
 
         // when
@@ -135,14 +120,11 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
         val sharedMessages = List(threadCount) { idx ->
             "updated sharedMessage: $idx"
         }
-        val requests = sharedMessages.map { UpdateCoupleSharedMessageRequest(it) }
+        val requests = sharedMessages
 
         val futures = requests.mapIndexed { idx, request ->
             CompletableFuture.supplyAsync({
-                mockStatic(SecurityUtil::class.java).use {
-                    it.apply { whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id) }
-                    coupleService.updateSharedMessage(savedCouple.id, request)
-                }
+                coupleService.updateSharedMessage(savedCouple.id, request)
             }, executor)
         }
 
@@ -151,8 +133,8 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
 
         // then
         results.forEachIndexed { idx, response ->
-            assertThat(response.coupleId).isEqualTo(savedCouple.id)
-            assertThat(response.sharedMessage).isEqualTo(requests[idx].sharedMessage)
+            assertThat(response.id).isEqualTo(savedCouple.id)
+            assertThat(response.sharedMessage).isEqualTo(requests[idx])
         }
     }
 
@@ -165,22 +147,16 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
         val threadCount = 2
         val executor = Executors.newFixedThreadPool(threadCount)
 
-        val updateStartDateRequest = UpdateCoupleStartDateRequest(LocalDate.EPOCH)
-        val updateSharedMessageRequest = UpdateCoupleSharedMessageRequest("updated sharedMessage")
+        val updateStartDateRequest = LocalDate.EPOCH
+        val updateSharedMessageRequest = "updated sharedMessage"
         val timeZone = "Asia/Seoul"
 
         val futures = listOf(
             CompletableFuture.supplyAsync({
-                mockStatic(SecurityUtil::class.java).use {
-                    it.apply { whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id) }
-                    coupleService.updateStartDate(savedCouple.id, updateStartDateRequest, timeZone)
-                }
+                coupleService.updateStartDate(savedCouple.id, updateStartDateRequest, timeZone)
             }, executor),
             CompletableFuture.supplyAsync({
-                mockStatic(SecurityUtil::class.java).use {
-                    it.apply { whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id) }
-                    coupleService.updateSharedMessage(savedCouple.id, updateSharedMessageRequest)
-                }
+                coupleService.updateSharedMessage(savedCouple.id, updateSharedMessageRequest)
             }, executor)
         )
 
@@ -188,14 +164,14 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
         val results = futures.map { it.join() }
 
         // then
-        assertThat(results[0].coupleId).isEqualTo(savedCouple.id)
-        assertThat(results[0].startDate).isEqualTo(updateStartDateRequest.startDate)
+        assertThat(results[0].id).isEqualTo(savedCouple.id)
+        assertThat(results[0].startDate).isEqualTo(updateStartDateRequest)
 
-        assertThat(results[1].coupleId).isEqualTo(savedCouple.id)
-        assertThat(results[1].sharedMessage).isEqualTo(updateSharedMessageRequest.sharedMessage)
+        assertThat(results[1].id).isEqualTo(savedCouple.id)
+        assertThat(results[1].sharedMessage).isEqualTo(updateSharedMessageRequest)
 
         val updatedCouple = coupleRepository.findByIdOrNull(savedCouple.id)!!
-        assertThat(updatedCouple.startDate).isEqualTo(updateStartDateRequest.startDate)
-        assertThat(updatedCouple.sharedMessage).isEqualTo(updateSharedMessageRequest.sharedMessage)
+        assertThat(updatedCouple.startDate).isEqualTo(updateStartDateRequest)
+        assertThat(updatedCouple.sharedMessage).isEqualTo(updateSharedMessageRequest)
     }
 }
