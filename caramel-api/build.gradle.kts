@@ -39,3 +39,6 @@ tasks.getByName<BootJar>("bootJar") {
 tasks.getByName<Jar>("jar") {
     enabled = true
 }
+tasks.withType<Test> {
+    workingDir = rootDir
+}
