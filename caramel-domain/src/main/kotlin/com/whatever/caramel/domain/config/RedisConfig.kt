@@ -2,12 +2,13 @@ package com.whatever.caramel.domain.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
 import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
+import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer
+import org.springframework.data.redis.serializer.StringRedisSerializer
 
-@Profile("!test")
 @Configuration
 class RedisConfig(
     private val redisProperties: RedisProperties,
@@ -25,5 +26,14 @@ class RedisConfig(
         }
 
         return LettuceConnectionFactory(config)
+    }
+
+    @Bean
+    fun redisTemplate(redisConnectionFactory: RedisConnectionFactory): RedisTemplate<String, String> {
+        return RedisTemplate<String, String>().apply {
+            connectionFactory = redisConnectionFactory
+            keySerializer = StringRedisSerializer()
+            valueSerializer = GenericJackson2JsonRedisSerializer()
+        }
     }
 }
