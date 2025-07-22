@@ -24,7 +24,6 @@ spring:
         order_updates: true
         jdbc:
           batch_size: 20
-        dialect: org.hibernate.dialect.PostgreSQLDialect
 
   cloud:
     openfeign:
