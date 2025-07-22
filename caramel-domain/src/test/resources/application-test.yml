@@ -1,5 +1,8 @@
 spring:
-
+  config:
+    activate:
+      on-profile: test
+    import: optional:file:.env[.properties]
   datasource:
     driver-class-name: org.h2.Driver
     url: 'jdbc:h2:mem:whatever;MODE=PostgreSQL;DB_CLOSE_DELAY=-1' # 인메모리 DB 설정을 유지
@@ -57,14 +60,14 @@ jwt:
   refresh-expiration-sec: 86400 # 24시간
   issuer: Caramel-Test
 
+firebase:
+  credential-file-path: ${GOOGLE_APPLICATION_CREDENTIALS}
+  fcm-enabled: ${FCM_ENABLED}
+
 kor:
   openapi:
     specialday:
       key: "test-special-day-api-key"
-
-firebase:
-  credential-file-path: "test-firebase-credentials.json"
-  fcm-enabled: false
 
 crypto:
   password: "test-crypto-password-1234"
