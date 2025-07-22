@@ -1,6 +1,6 @@
 package com.whatever.caramel.domain.calendarevent.specialday.service
 
-import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.specialday.model.SpecialDay
 import com.whatever.caramel.domain.specialday.model.SpecialDayType
 import com.whatever.caramel.domain.specialday.repository.SpecialDayRepository

@@ -1,6 +1,6 @@
 package com.whatever.caramel.domain.content.tag.service.event
 
-import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.calendarevent.service.event.ScheduleEventListener
 import com.whatever.caramel.domain.content.model.Content
 import com.whatever.caramel.domain.content.repository.ContentRepository

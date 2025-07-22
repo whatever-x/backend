@@ -1,6 +1,6 @@
 package com.whatever.caramel.domain.couple.service
 
-import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.common.util.toZoneId
 import com.whatever.caramel.domain.calendarevent.repository.ScheduleEventRepository

@@ -1,6 +1,6 @@
 package com.whatever.caramel.domain.auth
 
-import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.DEVICE_ID
 import com.whatever.caramel.common.global.jwt.JwtHelper

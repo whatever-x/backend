@@ -1,6 +1,6 @@
 package com.whatever.caramel.domain.couple.service
 
-import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.couple.exception.CoupleNotFoundException
 import com.whatever.caramel.domain.couple.model.CoupleAnniversaryType.BIRTHDAY
 import com.whatever.caramel.domain.couple.model.CoupleAnniversaryType.N_TH_DAY

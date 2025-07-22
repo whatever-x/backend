@@ -1,6 +1,6 @@
 package com.whatever.caramel.domain.couple.service
 
-import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.couple.exception.CoupleExceptionCode
 import com.whatever.caramel.domain.couple.exception.CoupleIllegalStateException
 import com.whatever.caramel.domain.couple.repository.CoupleRepository

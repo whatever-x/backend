@@ -1,6 +1,6 @@
 package com.whatever.caramel.domain.balancegame.service.event
 
-import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.balancegame.model.BalanceGame
 import com.whatever.caramel.domain.balancegame.model.BalanceGameOption

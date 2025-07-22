@@ -1,6 +1,6 @@
 package com.whatever.caramel.domain.content.tag.service
 
-import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.content.tag.model.Tag
 import com.whatever.caramel.domain.content.tag.repository.TagRepository
 import org.assertj.core.api.Assertions.assertThat

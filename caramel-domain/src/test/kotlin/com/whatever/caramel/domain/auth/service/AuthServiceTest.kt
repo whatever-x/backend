@@ -1,6 +1,6 @@
 package com.whatever.caramel.domain.auth.service
 
-import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.global.exception.GlobalException
 import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.global.jwt.JwtHelper

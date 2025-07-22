@@ -1,6 +1,6 @@
 package com.whatever.caramel.domain.firebase.service
 
-import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.auth.service.createSingleUser
 import com.whatever.caramel.domain.content.service.createCouple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository

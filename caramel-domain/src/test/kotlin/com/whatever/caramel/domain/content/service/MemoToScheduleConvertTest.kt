@@ -1,6 +1,6 @@
 package com.whatever.caramel.domain.content.service
 
-import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleIllegalArgumentException

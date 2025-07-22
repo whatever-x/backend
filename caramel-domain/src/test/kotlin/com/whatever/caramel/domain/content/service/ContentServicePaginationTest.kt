@@ -1,6 +1,6 @@
 package com.whatever.caramel.domain.content.service
 
-import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.global.cursor.Cursor
 import com.whatever.caramel.common.util.CursorUtil
 import com.whatever.caramel.common.util.DateTimeUtil

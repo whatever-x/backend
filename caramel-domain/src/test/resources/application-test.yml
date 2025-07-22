@@ -4,12 +4,10 @@ spring:
       on-profile: test
     import: optional:file:.env[.properties]
   datasource:
-    driver-class-name: org.h2.Driver
-    url: 'jdbc:h2:mem:whatever;MODE=PostgreSQL;DB_CLOSE_DELAY=-1' # 인메모리 DB 설정을 유지
-    username: 'sa'
-    password: ''
-    hikari:
-      maximum-pool-size: 10
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
 
   jpa:
     open-in-view: false
@@ -17,7 +15,6 @@ spring:
       ddl-auto: create
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
         show_sql: true
         use_sql_comments: true
         format_sql: true
@@ -33,8 +30,8 @@ spring:
 
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
       password: ""
 
   cache:
@@ -42,33 +39,35 @@ spring:
 
 oauth:
   kakao:
-    base-url: "https://test.kakao.com"
-    client-id: "test-kakao-client-id"
-    client-secret: "test-kakao-client-secret"
-    redirect-url: "http://localhost/redirect"
-    app-id: "12345"
-    admin-key: "test-kakao-admin-key"
+    base-url: ${OAUTH_BASE_URL}
+    client-id: ${OAUTH_CLIENT_ID}
+    client-secret: ${OAUTH_CLIENT_SECRET}
+    redirect-url: ${OAUTH_REDIRECT_URL}
+    app-id: ${OAUTH_APP_ID}
+    admin-key: ${OAUTH_ADMIN_KEY}
   apple:
-    client-id: "test.apple.client.id"
-    key-id: "test-apple-key-id"
-    team-id: "test-apple-team-id"
-    private-key: "-----BEGIN PRIVATE KEY-----\nTEST_PRIVATE_KEY\n-----END PRIVATE KEY-----\n"
+    base-url: ${APPLE_BASE_URL}
+    team-id: ${APPLE_TEAM_ID}
+    service-id: ${APPLE_SERVICE_ID}
+    key-id: ${APPLE_KEY_ID}
+    key-path: ${APPLE_KEY_PATH}
+    redirect-url: ${APPLE_REDIRECT_URI}
 
 jwt:
-  secret-key-str: "V2hhdGV2ZXJDb21lcyBUbyBZb3VyIE1pbmQsIEp1c3QgRHJpdmUgT24gV2l0aCBZb3VyIE93biBTdHJlbmd0aA=="
-  access-expiration-sec: 3600   # 1시간
-  refresh-expiration-sec: 86400 # 24시간
-  issuer: Caramel-Test
+  secret-key-str: ${SECRET_KEY_STR}
+  access-expiration-sec: ${ACCESS_EXPIRATION_SEC}
+  refresh-expiration-sec: ${REFRESH_EXPIRATION_SEC}
+  issuer: Caramel
+
+kor:
+  openapi:
+    specialday:
+      key: ${OPENAPI_SPECIALDAY_KEY}
 
 firebase:
   credential-file-path: ${GOOGLE_APPLICATION_CREDENTIALS}
   fcm-enabled: ${FCM_ENABLED}
 
-kor:
-  openapi:
-    specialday:
-      key: "test-special-day-api-key"
-
 crypto:
-  password: "test-crypto-password-1234"
-  salt: "test-crypto-salt-5678"
+  password: ${CRYPTO_PASSWORD}
+  salt: ${CRYPTO_SALT}

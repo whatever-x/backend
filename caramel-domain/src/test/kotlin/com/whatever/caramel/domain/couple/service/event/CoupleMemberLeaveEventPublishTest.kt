@@ -1,6 +1,6 @@
 package com.whatever.caramel.domain.couple.service.event
 
-import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.balancegame.service.event.UserChoiceOptionCleanupService
 import com.whatever.caramel.domain.balancegame.service.event.UserChoiceOptionEventListener
 import com.whatever.caramel.domain.calendarevent.service.event.ScheduleEventCleanupService

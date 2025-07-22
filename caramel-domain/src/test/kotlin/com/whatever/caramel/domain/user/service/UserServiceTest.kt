@@ -1,6 +1,6 @@
 package com.whatever.caramel.domain.user.service
 
-import com.whatever.CaramelDomainSpringBootTest
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.content.service.createCouple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository

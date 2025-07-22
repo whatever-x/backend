@@ -1,4 +1,4 @@
-package com.whatever.caramel.domain
+package com.whatever.caramel
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
