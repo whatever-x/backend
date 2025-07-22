@@ -110,15 +110,17 @@ jobs:
 
       - name: Upload Jacoco Report
         uses: actions/upload-artifact@v4
+        run: |
+          echo "@@@@@@@@@@@@@@@@@@2${{ github.workspace }}@@@@@@@@@@@@@@@@@@2"
         with:
           name: jacoco-report.xml
-          path: ${{ github.workspace }}/build/jacocoXml/test
+          path: ${{ github.workspace }}/caramel-domain/build/jacocoXml/test
 
       - name: Jacoco Report
         id: jacoco
         uses: Madrapps/jacoco-report@v1.7.2
         with:
-          paths: ${{ github.workspace }}/build/jacocoXml/test/jacocoTestReport.xml
+          paths: ${{ github.workspace }}/caramel-domain/build/jacocoXml/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 0 # default 값이 80. 커버리지를 충분히 올린 뒤 수정
           min-coverage-changed-files: 0
