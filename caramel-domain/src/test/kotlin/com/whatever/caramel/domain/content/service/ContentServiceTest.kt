@@ -25,6 +25,7 @@ import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.couple.service.event.ExcludeAsyncConfigBean
 import com.whatever.caramel.domain.firebase.service.FirebaseService
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -40,6 +41,7 @@ import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.transaction.annotation.Transactional
 import kotlin.test.Test
 
 @CaramelDomainSpringBootTest
@@ -53,11 +55,11 @@ class ContentServiceTest @Autowired constructor(
     private val coupleRepository: CoupleRepository,
 ) : ExcludeAsyncConfigBean() {
 
-    private lateinit var testUser: com.whatever.caramel.domain.user.model.User
-    private lateinit var testPartnerUser: com.whatever.caramel.domain.user.model.User
+    private lateinit var testUser: User
+    private lateinit var testPartnerUser: User
     private lateinit var testCouple: Couple
 
-    @MockitoBean//(reset = MockReset.AFTER)
+    @MockitoBean
     private lateinit var firebaseService: FirebaseService
 
     @BeforeEach
@@ -83,7 +85,7 @@ class ContentServiceTest @Autowired constructor(
     }
 
     private fun createTestMemo(
-        user: com.whatever.caramel.domain.user.model.User = testUser,
+        user: User = testUser,
         title: String = "Test Memo",
         description: String? = "Memo Description",
         isCompleted: Boolean = false,
@@ -115,6 +117,7 @@ class ContentServiceTest @Autowired constructor(
         val result = contentService.createContent(
             contentRequestVo = requestVo,
             userId = testUser.id,
+            coupleId = testCouple.id,
         )
 
         // then
@@ -142,6 +145,7 @@ class ContentServiceTest @Autowired constructor(
         val result = contentService.createContent(
             contentRequestVo = requestVo,
             userId = testUser.id,
+            coupleId = testCouple.id,
         )
 
         // then
@@ -152,30 +156,6 @@ class ContentServiceTest @Autowired constructor(
             assertThat(title).isEqualTo(requestVo.title)
             assertThat(description).isNull()
         }
-    }
-
-    @DisplayName("메모 생성 시 제목과 본문 모두 null이라면 저장에 실패한다.")
-    @Test
-    fun createContent_WithNullTitleAndDescription() {
-        // given
-        val requestVo = CreateContentRequestVo(
-            title = null,
-            description = null,
-            isCompleted = false,
-            tags = emptyList(),
-        )
-
-        // when
-        val result = assertThrows<ContentIllegalArgumentException> {
-            contentService.createContent(
-                contentRequestVo = requestVo,
-                userId = testUser.id,
-            )
-        }
-
-        // then
-        assertThat(result.errorCode).isEqualTo(ContentExceptionCode.ILLEGAL_CONTENT_DETAIL)
-        assertThat(contentRepository.findAll()).isEmpty()
     }
 
     @DisplayName("메모 생성 시 제목과 본문 하나라도 Blank라면 저장에 실패한다.")
@@ -201,6 +181,32 @@ class ContentServiceTest @Autowired constructor(
             contentService.createContent(
                 contentRequestVo = requestVo,
                 userId = testUser.id,
+                coupleId = testCouple.id,
+            )
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(ContentExceptionCode.ILLEGAL_CONTENT_DETAIL)
+        assertThat(contentRepository.findAll()).isEmpty()
+    }
+
+    @DisplayName("메모 생성 시 제목과 본문 모두 null이라면 저장에 실패한다.")
+    @Test
+    fun createContent_WithNullTitleAndDescription() {
+        // given
+        val requestVo = CreateContentRequestVo(
+            title = null,
+            description = null,
+            isCompleted = false,
+            tags = emptyList(),
+        )
+
+        // when
+        val result = assertThrows<ContentIllegalArgumentException> {
+            contentService.createContent(
+                contentRequestVo = requestVo,
+                userId = testUser.id,
+                coupleId = testCouple.id,
             )
         }
 
@@ -224,6 +230,7 @@ class ContentServiceTest @Autowired constructor(
         val result = contentService.createContent(
             contentRequestVo = requestVo,
             userId = testUser.id,
+            coupleId = testCouple.id,
         )
 
         // then

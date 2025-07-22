@@ -111,8 +111,9 @@ class ContentService(
     fun createContent(
         contentRequestVo: CreateContentRequestVo,
         userId: Long,
+        coupleId: Long,
     ): ContentSummaryVo {
-        val couple = coupleRepository.findByIdWithMembers(userId)
+        val couple = coupleRepository.findByIdWithMembers(coupleId = coupleId)
             ?: throw CoupleNotFoundException(COUPLE_NOT_FOUND)
 
         val memo = memoCreator.createMemo(

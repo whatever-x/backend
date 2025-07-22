@@ -12,6 +12,8 @@ import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.caramel.domain.content.exception.ContentException
 import com.whatever.caramel.domain.content.exception.ContentExceptionCode
 import com.whatever.caramel.domain.content.service.ContentService
+import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserCoupleId
+import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -52,7 +54,7 @@ class ContentController(
     fun getContents(
         @ParameterObject queryParameter: GetContentListQueryParameter,
     ): CaramelApiResponse<CursoredResponse<ContentResponse>> {
-        val coupleId = SecurityUtil.getCurrentUserCoupleId()
+        val coupleId = getCurrentUserCoupleId()
         val contentListVo = contentService.getContentList(queryParameter.toVo(), coupleId)
         val responsePagedSlice = contentListVo.map { ContentResponse.from(it) }
         val response = CursoredResponse.from(responsePagedSlice)
@@ -74,7 +76,7 @@ class ContentController(
     fun getMemo(
         @PathVariable("memo-id") memoId: Long,
     ): CaramelApiResponse<ContentResponse> {
-        val coupleId = SecurityUtil.getCurrentUserCoupleId()
+        val coupleId = getCurrentUserCoupleId()
         val contentResponseVo = contentService.getMemo(memoId, coupleId)
         val response = ContentResponse.from(contentResponseVo)
         return response.succeed()
@@ -102,8 +104,11 @@ class ContentController(
         if (request.title.isNullOrBlank() && request.description.isNullOrBlank()) {
             throw ContentException(errorCode = ContentExceptionCode.TITLE_OR_DESCRIPTION_REQUIRED)
         }
-        val userId = SecurityUtil.getCurrentUserId()
-        val contentSummaryVo = contentService.createContent(request.toVo(), userId)
+        val contentSummaryVo = contentService.createContent(
+            contentRequestVo = request.toVo(),
+            userId = getCurrentUserId(),
+            coupleId = getCurrentUserCoupleId(),
+        )
         val response = ContentSummaryResponse.from(contentSummaryVo)
         return response.succeed()
     }
@@ -131,8 +136,8 @@ class ContentController(
         @PathVariable("memo-id") contentId: Long,
         @Valid @RequestBody request: UpdateContentRequest,
     ): CaramelApiResponse<ContentSummaryResponse> {
-        val userId = SecurityUtil.getCurrentUserId()
-        val coupleId = SecurityUtil.getCurrentUserCoupleId()
+        val userId = getCurrentUserId()
+        val coupleId = getCurrentUserCoupleId()
         val contentSummaryVo = contentService.updateContent(contentId, request.toVo(), coupleId, userId)
         val response =
             ContentSummaryResponse.from(contentSummaryVo)
