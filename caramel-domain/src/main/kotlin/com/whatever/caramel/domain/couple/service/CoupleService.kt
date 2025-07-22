@@ -82,7 +82,11 @@ class CoupleService(
     }
 
     @Recover
-    fun updateSharedMessageRecover(e: OptimisticLockingFailureException, coupleId: Long): CoupleVo {
+    fun updateSharedMessageRecover(
+        e: OptimisticLockingFailureException,
+        coupleId: Long,
+        newCoupleSharedMessage: String?,
+    ): CoupleVo {
         logger.error { "couple shared message update fail. couple id: ${coupleId}" }
         throw CoupleIllegalStateException(
             errorCode = UPDATE_FAIL,
@@ -119,7 +123,8 @@ class CoupleService(
     fun updateStartDateRecover(
         e: OptimisticLockingFailureException,
         coupleId: Long,
-        updateCoupleStartDateVo: UpdateCoupleStartDateVo,
+        newCoupleStartDate: LocalDate,
+        timeZone: String,
     ): CoupleVo {
         logger.error { "couple start date update fail. couple id: ${coupleId}" }
         throw CoupleIllegalStateException(

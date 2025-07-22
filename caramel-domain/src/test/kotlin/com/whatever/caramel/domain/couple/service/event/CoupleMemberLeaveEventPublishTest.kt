@@ -5,7 +5,7 @@ import com.whatever.caramel.domain.balancegame.service.event.UserChoiceOptionCle
 import com.whatever.caramel.domain.balancegame.service.event.UserChoiceOptionEventListener
 import com.whatever.caramel.domain.calendarevent.service.event.ScheduleEventCleanupService
 import com.whatever.caramel.domain.calendarevent.service.event.ScheduleEventListener
-import com.whatever.caramel.domain.config.AsyncConfig
+import com.whatever.caramel.config.AsyncConfig
 import com.whatever.caramel.domain.content.service.event.ContentCleanupService
 import com.whatever.caramel.domain.content.service.event.ContentEventListener
 import com.whatever.caramel.domain.content.tag.service.event.TagContentMappingCleanupService

@@ -69,9 +69,6 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
         val futures = requests.mapIndexed { idx, request ->
             CompletableFuture.supplyAsync({
                 coupleService.updateStartDate(savedCouple.id, request, timeZone)
-//                mockStatic(SecurityUtil::class.java).use {
-//                    it.apply { whenever(SecurityUtil.getCurrentUserCoupleId()).doReturn(savedCouple.id) }
-//                }
             }, executor)
         }
 

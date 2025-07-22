@@ -1,4 +1,4 @@
-package com.whatever.caramel.domain.config
+package com.whatever.caramel.config
 
 import com.whatever.caramel.domain.user.model.LoginPlatform
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
