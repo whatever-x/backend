@@ -69,6 +69,7 @@ jobs:
           POSTGRESQL_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRESQL_DATABASE: ${{ secrets.POSTGRESQL_DATABASE }}
           POSTGRESQL_TIMEZONE: UTC
+          ALLOW_EMPTY_PASSWORD: yes
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
