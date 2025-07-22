@@ -42,7 +42,7 @@ class ContentControllerTest : ControllerTestSupport() {
             description = "메모 설명",
             tags = listOf(1L),
         )
-        whenever(contentService.createContent(any(), any()))
+        whenever(contentService.createContent(any(), any(), any()))
             .thenReturn(ContentSummaryVo(0L, ContentType.MEMO))
         every { SecurityUtil.getCurrentUserId() } returns 0L
 
