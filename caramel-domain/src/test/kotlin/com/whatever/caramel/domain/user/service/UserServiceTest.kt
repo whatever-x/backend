@@ -97,7 +97,7 @@ class UserServiceTest {
             id = coupleUser.id,
             email = null,
             birthDate = coupleUser.birthDate,
-            signInPlatform = LoginPlatform.TEST,
+            signInPlatform = coupleUser.platform,
             nickname = coupleUser.nickname,
             gender = coupleUser.gender,
             userStatus = UserStatus.COUPLED
