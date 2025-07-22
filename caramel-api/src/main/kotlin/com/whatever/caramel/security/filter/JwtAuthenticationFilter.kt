@@ -7,8 +7,8 @@ import com.whatever.caramel.common.global.jwt.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.caramel.security.exception.AccessDeniedException
 import com.whatever.caramel.security.exception.SecurityExceptionCode
 import com.whatever.caramel.security.principal.CaramelUserDetails
-import com.whatever.domain.auth.repository.AuthRedisRepository
-import com.whatever.domain.user.service.UserService
+import com.whatever.caramel.domain.auth.repository.AuthRedisRepository
+import com.whatever.caramel.domain.user.service.UserService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

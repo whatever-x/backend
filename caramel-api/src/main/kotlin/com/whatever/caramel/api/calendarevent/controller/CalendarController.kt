@@ -9,8 +9,8 @@ import com.whatever.caramel.api.calendarevent.controller.dto.response.ScheduleDe
 import com.whatever.caramel.common.response.CaramelApiResponse
 import com.whatever.caramel.common.response.succeed
 import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserCoupleId
-import com.whatever.domain.calendarevent.service.ScheduleEventService
-import com.whatever.domain.specialday.service.SpecialDayService
+import com.whatever.caramel.domain.calendarevent.service.ScheduleEventService
+import com.whatever.caramel.domain.specialday.service.SpecialDayService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag

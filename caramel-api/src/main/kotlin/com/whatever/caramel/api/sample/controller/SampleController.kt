@@ -5,8 +5,8 @@ import com.whatever.caramel.api.sample.controller.dto.SampleSendFcmRequest
 import com.whatever.caramel.common.global.annotation.DisableSwaggerAuthButton
 import com.whatever.caramel.common.response.CaramelApiResponse
 import com.whatever.caramel.common.response.succeed
-import com.whatever.domain.sample.service.SampleService
-import com.whatever.domain.user.model.UserGender
+import com.whatever.caramel.domain.sample.service.SampleService
+import com.whatever.caramel.domain.user.model.UserGender
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse

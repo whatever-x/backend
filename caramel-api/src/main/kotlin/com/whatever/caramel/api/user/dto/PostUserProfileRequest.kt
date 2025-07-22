@@ -1,9 +1,9 @@
 package com.whatever.caramel.api.user.dto
 
-import com.whatever.domain.user.model.User.Companion.MAX_NICKNAME_LENGTH
-import com.whatever.domain.user.model.User.Companion.MIN_NICKNAME_LENGTH
-import com.whatever.domain.user.model.UserGender
-import com.whatever.domain.user.vo.CreateUserProfileVo
+import com.whatever.caramel.domain.user.model.User.Companion.MAX_NICKNAME_LENGTH
+import com.whatever.caramel.domain.user.model.User.Companion.MIN_NICKNAME_LENGTH
+import com.whatever.caramel.domain.user.model.UserGender
+import com.whatever.caramel.domain.user.vo.CreateUserProfileVo
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.AssertTrue
 import jakarta.validation.constraints.Pattern

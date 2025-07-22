@@ -1,6 +1,6 @@
 package com.whatever.caramel.api.user.dto
 
-import com.whatever.domain.user.vo.UpdateUserSettingVo
+import com.whatever.caramel.domain.user.vo.UpdateUserSettingVo
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "유저 설정 수정 요청 DTO")

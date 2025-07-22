@@ -1,6 +1,6 @@
 package com.whatever.caramel.api.couple.controller.dto.response
 
-import com.whatever.domain.couple.vo.CoupleInvitationCodeVo
+import com.whatever.caramel.domain.couple.vo.CoupleInvitationCodeVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDateTime
 

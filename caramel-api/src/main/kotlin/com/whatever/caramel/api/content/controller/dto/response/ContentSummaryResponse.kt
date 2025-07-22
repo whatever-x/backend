@@ -1,7 +1,7 @@
 package com.whatever.caramel.api.content.controller.dto.response
 
-import com.whatever.domain.content.vo.ContentSummaryVo
-import com.whatever.domain.content.vo.ContentType
+import com.whatever.caramel.domain.content.vo.ContentSummaryVo
+import com.whatever.caramel.domain.content.vo.ContentType
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "콘텐츠 요약 응답 DTO")

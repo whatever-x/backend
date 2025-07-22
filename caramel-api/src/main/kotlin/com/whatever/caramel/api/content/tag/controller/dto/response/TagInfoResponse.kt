@@ -1,6 +1,6 @@
 package com.whatever.caramel.api.content.tag.controller.dto.response
 
-import com.whatever.domain.content.tag.vo.TagDetailVo
+import com.whatever.caramel.domain.content.tag.vo.TagDetailVo
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "태그 상세정보 리스트 응답 DTO")

@@ -1,6 +1,6 @@
 package com.whatever.caramel.api.user.dto
 
-import com.whatever.domain.user.vo.UpdatedUserProfileVo
+import com.whatever.caramel.domain.user.vo.UpdatedUserProfileVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 

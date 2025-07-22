@@ -1,9 +1,9 @@
 package com.whatever.caramel.api.user.dto
 
-import com.whatever.domain.user.model.LoginPlatform
-import com.whatever.domain.user.model.UserGender
-import com.whatever.domain.user.model.UserStatus
-import com.whatever.domain.user.vo.UserInfoVo
+import com.whatever.caramel.domain.user.model.LoginPlatform
+import com.whatever.caramel.domain.user.model.UserGender
+import com.whatever.caramel.domain.user.model.UserStatus
+import com.whatever.caramel.domain.user.vo.UserInfoVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 

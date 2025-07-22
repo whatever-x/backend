@@ -1,8 +1,8 @@
 package com.whatever.caramel.api.content.controller.dto.request
 
 import com.whatever.caramel.common.global.cursor.CursorRequest
-import com.whatever.domain.content.vo.ContentListSortType
-import com.whatever.domain.content.vo.ContentQueryVo
+import com.whatever.caramel.domain.content.vo.ContentListSortType
+import com.whatever.caramel.domain.content.vo.ContentQueryVo
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.Schema

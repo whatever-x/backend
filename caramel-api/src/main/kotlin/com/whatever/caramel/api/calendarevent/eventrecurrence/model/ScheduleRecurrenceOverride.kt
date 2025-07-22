@@ -1,9 +1,9 @@
 // package com.whatever.caramel.api.calendarevent.eventrecurrence.model
 //
-// import com.whatever.domain.base.BaseEntity
-// import com.whatever.domain.calendarevent.scheduleevent.model.ScheduleEvent
-// import com.whatever.domain.calendarevent.scheduleevent.model.converter.ZonedIdConverter
-// import com.whatever.domain.content.model.ContentDetail
+// import com.whatever.caramel.domain.base.BaseEntity
+// import com.whatever.caramel.domain.calendarevent.scheduleevent.model.ScheduleEvent
+// import com.whatever.caramel.domain.calendarevent.scheduleevent.model.converter.ZonedIdConverter
+// import com.whatever.caramel.domain.content.model.ContentDetail
 // import jakarta.persistence.Column
 // import jakarta.persistence.Convert
 // import jakarta.persistence.Embedded

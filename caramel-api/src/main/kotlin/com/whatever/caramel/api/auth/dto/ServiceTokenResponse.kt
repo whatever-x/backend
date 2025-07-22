@@ -1,6 +1,6 @@
 package com.whatever.caramel.api.auth.dto
 
-import com.whatever.domain.auth.vo.ServiceTokenVo
+import com.whatever.caramel.domain.auth.vo.ServiceTokenVo
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "api 요청에 사용되는 JWT DTO")

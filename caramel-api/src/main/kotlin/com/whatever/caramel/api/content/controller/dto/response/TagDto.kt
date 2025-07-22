@@ -1,6 +1,6 @@
 package com.whatever.caramel.api.content.controller.dto.response
 
-import com.whatever.domain.content.tag.vo.TagVo
+import com.whatever.caramel.domain.content.tag.vo.TagVo
 
 data class TagDto(
     val id: Long,

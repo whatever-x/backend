@@ -1,7 +1,7 @@
 package com.whatever.caramel.api.auth.dto
 
-import com.whatever.domain.auth.vo.SignInVo
-import com.whatever.domain.user.model.UserStatus
+import com.whatever.caramel.domain.auth.vo.SignInVo
+import com.whatever.caramel.domain.user.model.UserStatus
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 

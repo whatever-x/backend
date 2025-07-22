@@ -1,6 +1,6 @@
 package com.whatever
 
-import com.whatever.domain.TestApplication
+import com.whatever.caramel.domain.TestApplication
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 

@@ -1,6 +1,6 @@
 package com.whatever.caramel.api.calendarevent.controller.dto.response
 
-import com.whatever.domain.calendarevent.vo.ScheduleDetailVo
+import com.whatever.caramel.domain.calendarevent.vo.ScheduleDetailVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDateTime
 

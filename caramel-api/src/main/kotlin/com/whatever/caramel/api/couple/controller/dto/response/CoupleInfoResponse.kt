@@ -1,11 +1,11 @@
 package com.whatever.caramel.api.couple.controller.dto.response
 
-import com.whatever.domain.couple.model.CoupleStatus
-import com.whatever.domain.couple.vo.CoupleDetailVo
-import com.whatever.domain.couple.vo.CoupleUserInfoVo
-import com.whatever.domain.couple.vo.CoupleVo
-import com.whatever.domain.user.model.UserGender
-import com.whatever.domain.user.model.UserStatus
+import com.whatever.caramel.domain.couple.model.CoupleStatus
+import com.whatever.caramel.domain.couple.vo.CoupleDetailVo
+import com.whatever.caramel.domain.couple.vo.CoupleUserInfoVo
+import com.whatever.caramel.domain.couple.vo.CoupleVo
+import com.whatever.caramel.domain.user.model.UserGender
+import com.whatever.caramel.domain.user.model.UserStatus
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 

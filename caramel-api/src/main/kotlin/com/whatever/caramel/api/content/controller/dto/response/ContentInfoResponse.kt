@@ -1,8 +1,8 @@
 package com.whatever.caramel.api.content.controller.dto.response
 
 import com.whatever.caramel.common.util.DateTimeUtil.KST_ZONE_ID
-import com.whatever.domain.content.model.Content
-import com.whatever.domain.content.vo.ContentResponseVo
+import com.whatever.caramel.domain.content.model.Content
+import com.whatever.caramel.domain.content.vo.ContentResponseVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 

@@ -1,8 +1,8 @@
 // package com.whatever.caramel.api.calendarevent.eventrecurrence.model
 //
-// import com.whatever.domain.base.BaseEntity
-// import com.whatever.domain.calendarevent.taskevent.model.TaskEvent
-// import com.whatever.domain.content.model.ContentDetail
+// import com.whatever.caramel.domain.base.BaseEntity
+// import com.whatever.caramel.domain.calendarevent.taskevent.model.TaskEvent
+// import com.whatever.caramel.domain.content.model.ContentDetail
 // import jakarta.persistence.Column
 // import jakarta.persistence.Embedded
 // import jakarta.persistence.Entity

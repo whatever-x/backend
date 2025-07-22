@@ -9,9 +9,9 @@ import com.whatever.caramel.common.response.CaramelApiResponse
 import com.whatever.caramel.common.response.CursoredResponse
 import com.whatever.caramel.common.response.succeed
 import com.whatever.caramel.security.util.SecurityUtil
-import com.whatever.domain.content.exception.ContentException
-import com.whatever.domain.content.exception.ContentExceptionCode
-import com.whatever.domain.content.service.ContentService
+import com.whatever.caramel.domain.content.exception.ContentException
+import com.whatever.caramel.domain.content.exception.ContentExceptionCode
+import com.whatever.caramel.domain.content.service.ContentService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag

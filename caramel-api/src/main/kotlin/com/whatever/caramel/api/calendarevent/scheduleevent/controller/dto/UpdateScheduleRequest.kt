@@ -1,8 +1,8 @@
 package com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto
 
-import com.whatever.domain.calendarevent.vo.UpdateScheduleVo
-import com.whatever.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
-import com.whatever.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
+import com.whatever.caramel.domain.calendarevent.vo.UpdateScheduleVo
+import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
+import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
 import io.swagger.v3.oas.annotations.media.Schema
 import org.hibernate.validator.constraints.CodePointLength
 import java.time.LocalDate

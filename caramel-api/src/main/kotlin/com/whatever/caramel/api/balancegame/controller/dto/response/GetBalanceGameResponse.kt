@@ -1,8 +1,8 @@
 package com.whatever.caramel.api.balancegame.controller.dto.response
 
-import com.whatever.domain.balancegame.vo.BalanceGameOptionVo
-import com.whatever.domain.balancegame.vo.BalanceGameVo
-import com.whatever.domain.balancegame.vo.UserChoiceOptionVo
+import com.whatever.caramel.domain.balancegame.vo.BalanceGameOptionVo
+import com.whatever.caramel.domain.balancegame.vo.BalanceGameVo
+import com.whatever.caramel.domain.balancegame.vo.UserChoiceOptionVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 

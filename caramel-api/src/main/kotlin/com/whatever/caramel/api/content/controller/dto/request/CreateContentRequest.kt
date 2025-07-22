@@ -1,9 +1,9 @@
 package com.whatever.caramel.api.content.controller.dto.request
 
-import com.whatever.domain.calendarevent.vo.DateTimeInfoVo
-import com.whatever.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
-import com.whatever.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
-import com.whatever.domain.content.vo.CreateContentRequestVo
+import com.whatever.caramel.domain.calendarevent.vo.DateTimeInfoVo
+import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
+import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
+import com.whatever.caramel.domain.content.vo.CreateContentRequestVo
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED
 import org.hibernate.validator.constraints.CodePointLength

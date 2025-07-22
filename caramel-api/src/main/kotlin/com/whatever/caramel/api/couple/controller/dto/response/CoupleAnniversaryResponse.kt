@@ -1,8 +1,8 @@
 package com.whatever.caramel.api.couple.controller.dto.response
 
-import com.whatever.domain.couple.model.CoupleAnniversaryType
-import com.whatever.domain.couple.vo.AnniversaryVo
-import com.whatever.domain.couple.vo.CoupleAnniversaryVo
+import com.whatever.caramel.domain.couple.model.CoupleAnniversaryType
+import com.whatever.caramel.domain.couple.vo.AnniversaryVo
+import com.whatever.caramel.domain.couple.vo.CoupleAnniversaryVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 

@@ -7,7 +7,7 @@ import com.whatever.caramel.common.response.CaramelApiResponse
 import com.whatever.caramel.common.response.succeed
 import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserCoupleId
 import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserId
-import com.whatever.domain.balancegame.service.BalanceGameService
+import com.whatever.caramel.domain.balancegame.service.BalanceGameService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag

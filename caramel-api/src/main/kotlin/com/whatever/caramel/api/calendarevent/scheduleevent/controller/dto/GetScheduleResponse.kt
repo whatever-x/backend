@@ -2,7 +2,7 @@ package com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto
 
 import com.whatever.caramel.api.calendarevent.controller.dto.response.ScheduleDetailDto
 import com.whatever.caramel.api.content.controller.dto.response.TagDto
-import com.whatever.domain.calendarevent.vo.GetScheduleVo
+import com.whatever.caramel.domain.calendarevent.vo.GetScheduleVo
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "일정 조회 응답 DTO")

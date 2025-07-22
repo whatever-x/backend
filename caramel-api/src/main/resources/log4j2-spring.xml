@@ -38,7 +38,7 @@
             <Logger name="com.whatever" level="DEBUG" additivity="false">
                 <AppenderRef ref="CONSOLE_APPENDER"/>
             </Logger>
-            <Logger name="com.whatever.domain.auth.client" level="DEBUG" additivity="false">
+            <Logger name="com.whatever.caramel.domain.auth.client" level="DEBUG" additivity="false">
                 <AppenderRef ref="CONSOLE_APPENDER"/>
             </Logger>
             <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
@@ -57,7 +57,7 @@
             <Logger name="com.whatever" level="DEBUG" additivity="false">
                 <AppenderRef ref="OTEL_APPENDER"/>
             </Logger>
-            <Logger name="com.whatever.domain.auth.client" level="DEBUG" additivity="false">
+            <Logger name="com.whatever.caramel.domain.auth.client" level="DEBUG" additivity="false">
                 <AppenderRef ref="OTEL_APPENDER"/>
             </Logger>
             <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
