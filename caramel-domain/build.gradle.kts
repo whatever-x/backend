@@ -67,9 +67,10 @@ tasks.named<JacocoReport>("jacocoTestReport") {
         html.outputLocation.set(layout.buildDirectory.dir("jacocoHtml"))
     }
 
+    val mainClasses = sourceSets.main.get().output.classesDirs
     classDirectories.setFrom(
         files(
-            classDirectories.asFileTree.matching {
+            mainClasses.asFileTree.matching {
                 include("**/domain/**/service/*Service.class")
                 exclude(
                     "**/dto/**",
