@@ -6,6 +6,10 @@ val opentelemetryVersion = "2.14.0"
 group = "com.whatever.carmel-domain"
 version = "0.0.1-SNAPSHOT"
 
+plugins {
+    id("jacoco")
+}
+
 allOpen {
     annotation("jakarta.persistence.Entity")
     annotation("jakarta.persistence.MappedSuperclass")
