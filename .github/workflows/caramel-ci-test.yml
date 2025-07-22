@@ -63,7 +63,7 @@ jobs:
       postgresql:
         image: docker.io/bitnami/postgresql:17
         ports:
-          - ${{ secrets.POSTGRES_PORT }}:${{ secrets.POSTGRES_PORT }}
+          - '5432:5432'
         env:
           POSTGRESQL_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
           POSTGRESQL_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
