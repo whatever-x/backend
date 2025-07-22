@@ -49,9 +49,9 @@ jobs:
       CRYPTO_SALT: ${{ secrets.CRYPTO_SALT }}
       POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
       POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
-      POSTGRESQL_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+      POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      POSTGRESQL_DATABASE: ${{ secrets.POSTGRESQL_DATABASE }}
+      POSTGRES_DATABASE: ${{ secrets.POSTGRESQL_DATABASE }}
       REDIS_HOST: ${{ secrets.REDIS_HOST }}
       REDIS_PORT: ${{ secrets.REDIS_PORT }}
       REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
