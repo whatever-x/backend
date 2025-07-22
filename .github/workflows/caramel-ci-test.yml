@@ -107,11 +107,13 @@ jobs:
         env:
           REDIS_HOST: localhost
           REDIS_PORT: 6379
-
-      - name: Upload Jacoco Report
-        uses: actions/upload-artifact@v4
+          
+      - name: git workspace check
         run: |
           echo "@@@@@@@@@@@@@@@@@@2${{ github.workspace }}@@@@@@@@@@@@@@@@@@2"
+          
+      - name: Upload Jacoco Report
+        uses: actions/upload-artifact@v4
         with:
           name: jacoco-report.xml
           path: ${{ github.workspace }}/caramel-domain/build/jacocoXml/test
