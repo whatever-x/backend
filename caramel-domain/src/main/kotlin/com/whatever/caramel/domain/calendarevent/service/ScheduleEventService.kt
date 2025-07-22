@@ -236,6 +236,9 @@ class ScheduleEventService(
     fun updateRecover(
         e: OptimisticLockingFailureException,
         scheduleId: Long,
+        currentUserId: Long,
+        currentUserCoupleId: Long,
+        scheduleVo: UpdateScheduleVo,
     ) {
         logger.error { "update schedule fail. schedule id: ${scheduleId}" }
         throw ScheduleIllegalStateException(
@@ -248,6 +251,8 @@ class ScheduleEventService(
     fun deleteRecover(
         e: OptimisticLockingFailureException,
         scheduleId: Long,
+        currentUserId: Long,
+        currentUserCoupleId: Long
     ) {
         logger.error { "delete schedule fail. schedule id: ${scheduleId}" }
         throw ScheduleIllegalStateException(
