@@ -16,7 +16,7 @@ data class UserChoiceOptionVo(
         fun from(userChoiceOption: UserChoiceOption): UserChoiceOptionVo {
             return UserChoiceOptionVo(
                 id = userChoiceOption.id,
-                balanceGameId = userChoiceOption.id,
+                balanceGameId = userChoiceOption.balanceGame.id,
                 balanceGameOptionId = userChoiceOption.balanceGameOption.id,
                 userId = userChoiceOption.user.id,
             )

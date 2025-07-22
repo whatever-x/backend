@@ -88,7 +88,8 @@ class BalanceGameServiceTest @Autowired constructor(
 
             // then
             val myChoiceOption = result.first { it.userId == myUser.id }
-            val partnerChoiceOption = result.first { it.userId != myUser.id }
+            val partnerChoiceOption = result.firstOrNull { it.userId != myUser.id }
+
             assertThat(myChoiceOption.balanceGameOptionId).isEqualTo(myChoice.balanceGameOption.id)
             assertThat(partnerChoiceOption).isNull()
         }
@@ -115,7 +116,7 @@ class BalanceGameServiceTest @Autowired constructor(
             val result = balanceGameService.getCoupleMemberChoices(couple.id, expectedGame.first.id)
 
             // then
-            val myChoiceOption = result.first { it.userId == myUser.id }
+            val myChoiceOption = result.firstOrNull() { it.userId == myUser.id }
             val partnerChoiceOption = result.first { it.userId == partnerUser.id }
             assertThat(myChoiceOption).isNull()
             assertThat(partnerChoiceOption.balanceGameOptionId).isEqualTo(partnerChoice.balanceGameOption.id)
@@ -216,7 +217,7 @@ class BalanceGameServiceTest @Autowired constructor(
             whenever(DateTimeUtil.localNow(any())).thenReturn(now)
             val gameInfo = makeBalanceGame(1, now.toLocalDate()).first()
             val firstChoiceOption = gameInfo.second.first()
-            userChoiceOptionRepository.save(
+            val myChoiceOption = userChoiceOptionRepository.save(
                 UserChoiceOption(
                     balanceGame = gameInfo.first,
                     balanceGameOption = firstChoiceOption,
@@ -224,9 +225,8 @@ class BalanceGameServiceTest @Autowired constructor(
                 )
             )
 
-            val secondChoiceOption = gameInfo.second.last()
             val gameId = gameInfo.first.id
-            val selectedOptionId = secondChoiceOption.id
+            val selectedOptionId = gameInfo.second.last().id  // select a different option-id
 
             // when
             val result = balanceGameService.chooseBalanceGameOption(
@@ -238,8 +238,8 @@ class BalanceGameServiceTest @Autowired constructor(
 
             // then
             require(result.myChoice != null)
-            assertThat(result.myChoice.balanceGameId).isEqualTo(gameId)
-            assertThat(result.myChoice.balanceGameOptionId).isEqualTo(selectedOptionId)
+            assertThat(result.myChoice.balanceGameId).isEqualTo(myChoiceOption.balanceGame.id)
+            assertThat(result.myChoice.balanceGameOptionId).isEqualTo(myChoiceOption.balanceGameOption.id)
             assertThat(result.partnerChoice).isNull()
         }
     }
@@ -253,11 +253,11 @@ class BalanceGameServiceTest @Autowired constructor(
         mockStatic(DateTimeUtil::class.java).use {
             whenever(DateTimeUtil.localNow(any())).thenReturn(now)
             val gameInfo = makeBalanceGame(1, now.toLocalDate()).first()
-            val partnerChoiceOption = gameInfo.second.first()
-            userChoiceOptionRepository.save(
+            val firstChoiceOption = gameInfo.second.first()
+            val partnerChoiceOption = userChoiceOptionRepository.save(
                 UserChoiceOption(
                     balanceGame = gameInfo.first,
-                    balanceGameOption = partnerChoiceOption,
+                    balanceGameOption = firstChoiceOption,
                     user = partnerUser,
                 )
             )
@@ -280,8 +280,10 @@ class BalanceGameServiceTest @Autowired constructor(
             assertThat(result.myChoice.balanceGameOptionId).isEqualTo(selectedOptionId)
 
             require(result.partnerChoice != null)
-            assertThat(result.partnerChoice.balanceGameId).isEqualTo(gameId)
-            assertThat(result.partnerChoice.balanceGameOptionId).isEqualTo(selectedOptionId)
+            with(partnerChoiceOption) {
+                assertThat(result.partnerChoice.balanceGameId).isEqualTo(balanceGame.id)
+                assertThat(result.partnerChoice.balanceGameOptionId).isEqualTo(balanceGameOption.id)
+            }
         }
     }
 
