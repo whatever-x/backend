@@ -45,6 +45,7 @@ class ContentControllerTest : ControllerTestSupport() {
         whenever(contentService.createContent(any(), any(), any()))
             .thenReturn(ContentSummaryVo(0L, ContentType.MEMO))
         every { SecurityUtil.getCurrentUserId() } returns 0L
+        every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
 
         // when // then
         mockMvc.post("/v1/content/memo") {
