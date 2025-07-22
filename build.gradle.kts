@@ -17,11 +17,14 @@ plugins {
 val springCloudVersion = "2024.0.0"
 val opentelemetryVersion = "2.14.0"
 
-subprojects {
-    group = "com.whatever"
+allprojects {
     repositories {
         mavenCentral()
     }
+}
+
+subprojects {
+    group = "com.whatever"
 
     // 하위 모듈에 공통 플러그인 적용
     apply(plugin = "org.springframework.boot")
