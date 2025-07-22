@@ -2,6 +2,12 @@ package com.whatever.domain.balancegame.service
 
 import com.whatever.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.infrastructure.client.AppleOIDCClient
+import com.whatever.caramel.infrastructure.client.KakaoKapiClient
+import com.whatever.caramel.infrastructure.client.KakaoOIDCClient
+import com.whatever.caramel.infrastructure.client.SpecialDayApiFeignClient
+import com.whatever.caramel.infrastructure.firebase.FcmSender
+import com.whatever.caramel.infrastructure.firebase.FirebaseInitializer
 import com.whatever.domain.balancegame.exception.BalanceGameExceptionCode
 import com.whatever.domain.balancegame.exception.BalanceGameIllegalArgumentException
 import com.whatever.domain.balancegame.exception.BalanceGameIllegalStateException
@@ -15,6 +21,8 @@ import com.whatever.domain.balancegame.repository.UserChoiceOptionRepository
 import com.whatever.domain.calendarevent.scheduleevent.service.createCouple
 import com.whatever.domain.couple.model.Couple
 import com.whatever.domain.couple.repository.CoupleRepository
+import com.whatever.domain.firebase.service.FirebaseService
+import com.whatever.domain.specialday.service.SpecialDayService
 import com.whatever.domain.user.model.User
 import com.whatever.domain.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -25,6 +33,7 @@ import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.test.Test
@@ -38,6 +47,21 @@ class BalanceGameServiceTest @Autowired constructor(
     private val balanceGameOptionRepository: BalanceGameOptionRepository,
     private val userChoiceOptionRepository: UserChoiceOptionRepository,
 ) {
+
+    /**
+     * infra 모듈에서 Feign Client와 Firebase Initializer를 bean화 하지 못해
+     * 임시로 모킹처리
+     */
+    @MockitoBean
+    private lateinit var appliOIDCClient: AppleOIDCClient
+    @MockitoBean
+    private lateinit var kakaoOIDCClient: KakaoOIDCClient
+    @MockitoBean
+    private lateinit var kakaoKapiClient: KakaoKapiClient
+    @MockitoBean
+    private lateinit var firebaseInitializer: FirebaseInitializer
+    @MockitoBean
+    private lateinit var specialDayFeignClient: SpecialDayApiFeignClient
 
     @AfterEach
     fun tearDown() {

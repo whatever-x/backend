@@ -22,7 +22,7 @@ import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserStatus.COUPLED
 import com.whatever.domain.user.model.UserStatus.SINGLE
 import com.whatever.domain.user.repository.UserRepository
-import com.whatever.firebase.service.FirebaseService
+import com.whatever.domain.firebase.service.FirebaseService
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.data.TemporalUnitWithinOffset

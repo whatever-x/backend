@@ -4,10 +4,10 @@ spring:
       on-profile: test
     import: optional:file:.env[.properties]
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/caramel
-    username: caramel
-    password: 'abcdefghijklnmopqrstuvwxyz'
+    driver-class-name: org.h2.Driver
+    url: 'jdbc:h2:mem:whatever'
+    username: 'user'
+    password: ''
     hikari:
       maximum-pool-size: 12
   jpa:
@@ -21,7 +21,6 @@ spring:
         format_sql: true
         globally_quoted_identifiers: true
         order_updates: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           batch_size: 20
   cloud:

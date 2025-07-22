@@ -4,7 +4,7 @@ import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import com.whatever.domain.firebase.service.event.dto.CoupleConnectedEvent
 import com.whatever.domain.firebase.service.event.dto.MemoCreateEvent
 import com.whatever.domain.firebase.service.event.dto.ScheduleCreateEvent
-import com.whatever.firebase.service.FirebaseService
+import com.whatever.domain.firebase.service.FirebaseService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component

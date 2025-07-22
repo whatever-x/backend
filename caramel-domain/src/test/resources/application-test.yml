@@ -1,0 +1,71 @@
+spring:
+
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: 'jdbc:h2:mem:whatever;MODE=PostgreSQL;DB_CLOSE_DELAY=-1' # 인메모리 DB 설정을 유지
+    username: 'sa'
+    password: ''
+    hikari:
+      maximum-pool-size: 10
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        show_sql: true
+        use_sql_comments: true
+        format_sql: true
+        globally_quoted_identifiers: true
+        order_updates: true
+        jdbc:
+          batch_size: 20
+
+  cloud:
+    openfeign:
+      okhttp:
+        enabled: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ""
+
+  cache:
+    type: redis
+
+oauth:
+  kakao:
+    base-url: "https://test.kakao.com"
+    client-id: "test-kakao-client-id"
+    client-secret: "test-kakao-client-secret"
+    redirect-url: "http://localhost/redirect"
+    app-id: "12345"
+    admin-key: "test-kakao-admin-key"
+  apple:
+    client-id: "test.apple.client.id"
+    key-id: "test-apple-key-id"
+    team-id: "test-apple-team-id"
+    private-key: "-----BEGIN PRIVATE KEY-----\nTEST_PRIVATE_KEY\n-----END PRIVATE KEY-----\n"
+
+jwt:
+  secret-key-str: "V2hhdGV2ZXJDb21lcyBUbyBZb3VyIE1pbmQsIEp1c3QgRHJpdmUgT24gV2l0aCBZb3VyIE93biBTdHJlbmd0aA=="
+  access-expiration-sec: 3600   # 1시간
+  refresh-expiration-sec: 86400 # 24시간
+  issuer: Caramel-Test
+
+kor:
+  openapi:
+    specialday:
+      key: "test-special-day-api-key"
+
+firebase:
+  credential-file-path: "test-firebase-credentials.json"
+  fcm-enabled: false
+
+crypto:
+  password: "test-crypto-password-1234"
+  salt: "test-crypto-salt-5678"

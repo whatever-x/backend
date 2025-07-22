@@ -4,7 +4,7 @@ import com.whatever.caramel.api.firebase.controller.dto.request.SetFcmTokenReque
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.DEVICE_ID
 import com.whatever.caramel.common.response.CaramelApiResponse
 import com.whatever.caramel.security.util.SecurityUtil
-import com.whatever.firebase.service.FirebaseService
+import com.whatever.domain.firebase.service.FirebaseService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag

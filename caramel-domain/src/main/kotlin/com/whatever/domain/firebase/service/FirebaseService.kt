@@ -1,4 +1,4 @@
-package com.whatever.firebase.service
+package com.whatever.domain.firebase.service
 
 import com.whatever.caramel.infrastructure.firebase.FcmSender
 import com.whatever.caramel.infrastructure.firebase.model.FcmNotification

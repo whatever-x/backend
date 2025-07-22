@@ -19,7 +19,7 @@ import com.whatever.domain.user.model.UserGender
 import com.whatever.domain.user.model.UserSetting
 import com.whatever.domain.user.model.UserStatus
 import com.whatever.domain.user.vo.UserInfoVo
-import com.whatever.firebase.service.FirebaseService
+import com.whatever.domain.firebase.service.FirebaseService
 import io.viascom.nanoid.NanoId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
