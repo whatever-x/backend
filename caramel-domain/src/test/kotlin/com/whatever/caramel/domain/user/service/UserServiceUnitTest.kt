@@ -394,24 +394,6 @@ class UserServiceUnitTest {
     }
 
     @Test
-    fun `유저의 세팅을 가져옵니다 - 기본값 userId 기본 세팅`() {
-        // given
-        val response = UserSetting(user = user, notificationEnabled = false)
-        val expected = UserSettingVo(notificationEnabled = false)
-        every { mockkUserRepository.getReferenceById(any()) } returns user
-        every { mockkUserSettingRepository.findByUserAndIsDeleted(user = user, isDeleted = any()) } returns response
-
-        // when
-        val result = spykUserService.getUserSetting(userId = userId)
-
-        // then
-        assertThat(result).isEqualTo(expected)
-        verify(exactly = 1) {
-            spykUserService.getUserSetting(userId = eq(userId))
-        }
-    }
-
-    @Test
     fun `유저의 세팅을 가져오는데, null이 나온 경우 UserIllegalStateException 을 받는다`() {
         // given
         every { mockkUserRepository.getReferenceById(any()) } returns user
@@ -467,30 +449,7 @@ class UserServiceUnitTest {
             mockkUserRepository.findById(eq(userId))
         }
     }
-
-    @Test
-    fun `내 정보를 가져오는데, default value 로 userId 를 세팅`() {
-        // given
-        val expected = UserInfoVo(
-            id = user.id,
-            email = user.email,
-            birthDate = user.birthDate,
-            signInPlatform = user.platform,
-            nickname = user.nickname,
-            gender = user.gender,
-            userStatus = user.userStatus
-        )
-        every { mockkUserRepository.findById(any()) } returns Optional.of(user)
-
-        // when
-        val result = spykUserService.getUserInfo(userId = userId)
-        assertThat(result).isEqualTo(expected)
-
-        verify(exactly = 1) {
-            mockkUserRepository.findById(eq(userId))
-        }
-    }
-
+    
     private fun createUser() = com.whatever.caramel.domain.user.model.User(
         id = 1L,
         platform = LoginPlatform.TEST,
