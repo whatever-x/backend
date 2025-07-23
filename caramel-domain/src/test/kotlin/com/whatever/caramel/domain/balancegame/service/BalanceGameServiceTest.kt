@@ -200,9 +200,9 @@ class BalanceGameServiceTest @Autowired constructor(
             )
 
             // then
-            require(result.myChoice != null)
-            assertThat(result.myChoice.balanceGameId).isEqualTo(gameId)
-            assertThat(result.myChoice.balanceGameOptionId).isEqualTo(selectedOptionId)
+            assertThat(result.myChoice).isNotNull
+            assertThat(result.myChoice!!.balanceGameId).isEqualTo(gameId)
+            assertThat(result.myChoice!!.balanceGameOptionId).isEqualTo(selectedOptionId)
             assertThat(result.partnerChoice).isNull()
         }
     }
@@ -237,9 +237,9 @@ class BalanceGameServiceTest @Autowired constructor(
             )
 
             // then
-            require(result.myChoice != null)
-            assertThat(result.myChoice.balanceGameId).isEqualTo(myChoiceOption.balanceGame.id)
-            assertThat(result.myChoice.balanceGameOptionId).isEqualTo(myChoiceOption.balanceGameOption.id)
+            assertThat(result.myChoice).isNotNull
+            assertThat(result.myChoice!!.balanceGameId).isEqualTo(myChoiceOption.balanceGame.id)
+            assertThat(result.myChoice!!.balanceGameOptionId).isEqualTo(myChoiceOption.balanceGameOption.id)
             assertThat(result.partnerChoice).isNull()
         }
     }
@@ -275,14 +275,14 @@ class BalanceGameServiceTest @Autowired constructor(
             )
 
             // then
-            require(result.myChoice != null)
-            assertThat(result.myChoice.balanceGameId).isEqualTo(gameId)
-            assertThat(result.myChoice.balanceGameOptionId).isEqualTo(selectedOptionId)
+            assertThat(result.myChoice).isNotNull
+            assertThat(result.myChoice!!.balanceGameId).isEqualTo(gameId)
+            assertThat(result.myChoice!!.balanceGameOptionId).isEqualTo(selectedOptionId)
 
-            require(result.partnerChoice != null)
+            assertThat(result.partnerChoice).isNotNull
             with(partnerChoiceOption) {
-                assertThat(result.partnerChoice.balanceGameId).isEqualTo(balanceGame.id)
-                assertThat(result.partnerChoice.balanceGameOptionId).isEqualTo(balanceGameOption.id)
+                assertThat(result.partnerChoice!!.balanceGameId).isEqualTo(balanceGame.id)
+                assertThat(result.partnerChoice!!.balanceGameOptionId).isEqualTo(balanceGameOption.id)
             }
         }
     }
