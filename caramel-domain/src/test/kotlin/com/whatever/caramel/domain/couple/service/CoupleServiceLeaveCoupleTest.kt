@@ -10,6 +10,7 @@ import com.whatever.caramel.domain.couple.model.CoupleStatus.INACTIVE
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.couple.service.event.dto.CoupleMemberLeaveEvent
 import com.whatever.caramel.domain.findByIdAndNotDeleted
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserStatus.COUPLED
 import com.whatever.caramel.domain.user.model.UserStatus.SINGLE
 import com.whatever.caramel.domain.user.repository.UserRepository
@@ -77,7 +78,7 @@ class CoupleServiceLeaveCoupleTest @Autowired constructor(
     @DisplayName("마지막 남은 커플 멤버가 나갈경우 커플을 삭제하고 나간 유저의 상태를 SINGLE로 변경한다.")
     @Test
     fun leaveCouple_WithAllMemberLeave() {
-        fun memberLeave(couple: Couple, member: com.whatever.caramel.domain.user.model.User) {
+        fun memberLeave(couple: Couple, member: User) {
             couple.removeMember(member)
             coupleRepository.save(couple)
             userRepository.save(member)

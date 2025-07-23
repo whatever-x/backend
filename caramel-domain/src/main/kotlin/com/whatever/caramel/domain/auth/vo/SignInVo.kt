@@ -1,5 +1,6 @@
 package com.whatever.caramel.domain.auth.vo
 
+import com.whatever.caramel.domain.user.model.User
 import java.time.LocalDate
 
 data class SignInVo(
@@ -11,7 +12,7 @@ data class SignInVo(
     val coupleId: Long?,
 ) {
     companion object {
-        fun from(serviceToken: ServiceTokenVo, user: com.whatever.caramel.domain.user.model.User): SignInVo {
+        fun from(serviceToken: ServiceTokenVo, user: User): SignInVo {
             return SignInVo(
                 accessToken = serviceToken.accessToken,
                 refreshToken = serviceToken.refreshToken,

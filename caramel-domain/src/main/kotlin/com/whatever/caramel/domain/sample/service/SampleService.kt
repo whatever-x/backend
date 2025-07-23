@@ -13,6 +13,7 @@ import com.whatever.caramel.domain.sample.exception.SampleNotFoundException
 import com.whatever.caramel.domain.sample.repository.SampleUserRepository
 import com.whatever.caramel.domain.sample.repository.SampleUserSettingRepository
 import com.whatever.caramel.domain.user.model.LoginPlatform
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserGender
 import com.whatever.caramel.domain.user.model.UserSetting
 import com.whatever.caramel.domain.user.model.UserStatus
@@ -73,7 +74,7 @@ class SampleService(
 
     @Transactional
     fun createNewDummyAccount(testEmail: String?): String {
-        val dummyUser = com.whatever.caramel.domain.user.model.User(
+        val dummyUser = User(
             platform = LoginPlatform.TEST,
             platformUserId = UUID.randomUUID().toString(),
             email = testEmail ?: "${NanoId.generate(randomEmailLength)}@test.test",
@@ -89,7 +90,7 @@ class SampleService(
         testBirthDate: LocalDate?,
         testGender: UserGender?,
     ): String {
-        val dummyUser = com.whatever.caramel.domain.user.model.User(
+        val dummyUser = User(
             platform = LoginPlatform.TEST,
             platformUserId = UUID.randomUUID().toString(),
             email = testEmail ?: "${NanoId.generate(randomEmailLength)}@test.test",

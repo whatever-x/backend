@@ -10,11 +10,11 @@ import com.whatever.caramel.api.couple.controller.dto.response.CoupleInvitationC
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.TIME_ZONE
 import com.whatever.caramel.common.response.CaramelApiResponse
 import com.whatever.caramel.common.response.succeed
-import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserCoupleId
-import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.caramel.domain.couple.model.Couple.Companion.MAX_SHARED_MESSAGE_LENGTH
 import com.whatever.caramel.domain.couple.service.CoupleAnniversaryService
 import com.whatever.caramel.domain.couple.service.CoupleService
+import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserCoupleId
+import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse

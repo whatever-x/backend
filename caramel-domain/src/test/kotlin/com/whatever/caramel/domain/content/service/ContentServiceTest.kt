@@ -1,7 +1,7 @@
 package com.whatever.caramel.domain.content.service
 
-import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.caramel.domain.calendarevent.vo.DateTimeInfoVo
 import com.whatever.caramel.domain.content.exception.ContentAccessDeniedException
@@ -41,7 +41,6 @@ import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.bean.override.mockito.MockitoBean
-import org.springframework.transaction.annotation.Transactional
 import kotlin.test.Test
 
 @CaramelDomainSpringBootTest

@@ -4,6 +4,7 @@ import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.common.util.DateTimeUtil.SYS_ZONE_ID
 import com.whatever.caramel.domain.base.BaseEntity
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.infrastructure.firebase.exception.FcmIllegalArgumentException
 import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_BLANK_TOKEN
 import jakarta.persistence.Column
@@ -38,7 +39,7 @@ class FcmToken(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    val user: com.whatever.caramel.domain.user.model.User,
+    val user: User,
 ) : BaseEntity() {
 
     @Id

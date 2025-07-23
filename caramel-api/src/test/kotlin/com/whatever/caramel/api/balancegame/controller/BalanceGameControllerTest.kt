@@ -3,11 +3,11 @@ package com.whatever.caramel.api.balancegame.controller
 import com.whatever.caramel.api.ControllerTestSupport
 import com.whatever.caramel.api.balancegame.controller.dto.request.ChooseBalanceGameOptionRequest
 import com.whatever.caramel.common.util.DateTimeUtil
-import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.caramel.domain.balancegame.vo.BalanceGameOptionVo
 import com.whatever.caramel.domain.balancegame.vo.BalanceGameVo
 import com.whatever.caramel.domain.balancegame.vo.CoupleChoiceOptionVo
 import com.whatever.caramel.domain.balancegame.vo.UserChoiceOptionVo
+import com.whatever.caramel.security.util.SecurityUtil
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic

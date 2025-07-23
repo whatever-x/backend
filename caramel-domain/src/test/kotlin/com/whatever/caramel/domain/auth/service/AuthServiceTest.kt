@@ -1,11 +1,11 @@
 package com.whatever.caramel.domain.auth.service
 
-import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.global.exception.GlobalException
 import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.global.jwt.JwtHelper
 import com.whatever.caramel.common.global.jwt.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.auth.exception.AuthException
 import com.whatever.caramel.domain.auth.exception.AuthExceptionCode
 import com.whatever.caramel.domain.auth.exception.OidcPublicKeyMismatchException
@@ -17,6 +17,7 @@ import com.whatever.caramel.domain.couple.service.CoupleService
 import com.whatever.caramel.domain.couple.service.event.ExcludeAsyncConfigBean
 import com.whatever.caramel.domain.findByIdAndNotDeleted
 import com.whatever.caramel.domain.user.model.LoginPlatform
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserGender
 import com.whatever.caramel.domain.user.model.UserStatus
 import com.whatever.caramel.domain.user.repository.UserRepository
@@ -142,7 +143,7 @@ class AuthServiceTest @Autowired constructor(
         val deviceId = "test-device"
         val exception = OidcPublicKeyMismatchException(AuthExceptionCode.ILLEGAL_KID)
         val user = userRepository.save(
-            com.whatever.caramel.domain.user.model.User(
+            User(
                 nickname = "testuser",
                 platform = LoginPlatform.KAKAO,
                 platformUserId = "test-kakao-user-id",
@@ -318,7 +319,7 @@ class AuthServiceTest @Autowired constructor(
         assertThat(authRedisRepository.getRefreshToken(myUser.id, deviceId)).isEqualTo(refreshToken)
     }
 
-    private fun loginFixture(myUser: com.whatever.caramel.domain.user.model.User): Triple<String, String, String> {
+    private fun loginFixture(myUser: User): Triple<String, String, String> {
         val accessToken = jwtHelper.createAccessToken(myUser.id)
         val refreshToken = jwtHelper.createRefreshToken()
         val deviceId = "test-device"
@@ -340,9 +341,9 @@ fun createSingleUser(
     gender: UserGender = UserGender.FEMALE,
     platform: LoginPlatform = LoginPlatform.TEST,
     platformUserId: Long = 1L,
-): com.whatever.caramel.domain.user.model.User {
+): User {
     return userRepository.save(
-        com.whatever.caramel.domain.user.model.User(
+        User(
             email = email,
             birthDate = birthDate,
             platform = platform,

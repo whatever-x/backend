@@ -1,7 +1,7 @@
 package com.whatever.caramel.domain.balancegame.service.event
 
-import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.balancegame.model.BalanceGame
 import com.whatever.caramel.domain.balancegame.model.BalanceGameOption
 import com.whatever.caramel.domain.balancegame.model.UserChoiceOption
@@ -11,6 +11,7 @@ import com.whatever.caramel.domain.balancegame.repository.UserChoiceOptionReposi
 import com.whatever.caramel.domain.calendarevent.service.event.ScheduleEventListener
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.couple.service.makeCouple
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -81,7 +82,7 @@ class UserChoiceOptionCleanupServiceTest @Autowired constructor(
 fun createUserChoiceOption(
     userChoiceOptionRepository: UserChoiceOptionRepository,
     gameWithOptionsList: List<BalanceGame>,
-    user: com.whatever.caramel.domain.user.model.User,
+    user: User,
 ): List<UserChoiceOption> {
     val userChoiceOptions = gameWithOptionsList.map {
         UserChoiceOption(

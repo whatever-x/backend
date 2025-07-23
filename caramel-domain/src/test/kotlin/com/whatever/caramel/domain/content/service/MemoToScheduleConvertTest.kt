@@ -1,7 +1,7 @@
 package com.whatever.caramel.domain.content.service
 
-import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleIllegalArgumentException
 import com.whatever.caramel.domain.calendarevent.repository.ScheduleEventRepository
@@ -19,6 +19,7 @@ import com.whatever.caramel.domain.content.vo.UpdateContentRequestVo
 import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.findByIdAndNotDeleted
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -40,7 +41,7 @@ class MemoToScheduleConvertTest @Autowired constructor(
     private val coupleRepository: CoupleRepository,
 ) {
 
-    private lateinit var testUser: com.whatever.caramel.domain.user.model.User
+    private lateinit var testUser: User
 
     @AfterEach
     fun tearDown() {
@@ -54,7 +55,7 @@ class MemoToScheduleConvertTest @Autowired constructor(
     private fun setUpCoupleAndSecurity(
         myPlatformId: String = "my-user-id",
         partnerPlatformId: String = "partner-user-id",
-    ): Triple<com.whatever.caramel.domain.user.model.User, com.whatever.caramel.domain.user.model.User, Couple> {
+    ): Triple<User, User, Couple> {
         val (myUser, partnerUser, couple) = createCouple(
             userRepository,
             coupleRepository,

@@ -6,6 +6,7 @@ import com.whatever.caramel.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.caramel.domain.user.exception.UserIllegalStateException
 import com.whatever.caramel.domain.user.exception.UserNotFoundException
 import com.whatever.caramel.domain.user.model.LoginPlatform
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserGender
 import com.whatever.caramel.domain.user.model.UserSetting
 import com.whatever.caramel.domain.user.model.UserStatus
@@ -56,7 +57,7 @@ class UserServiceUnitTest {
     private val mockkUserSettingRepository = mockk<UserSettingRepository>()
     private val spykUserService = spyk(UserService(mockkUserRepository, mockkUserSettingRepository))
 
-    private lateinit var user: com.whatever.caramel.domain.user.model.User
+    private lateinit var user: User
     private var userId: Long = Long.MIN_VALUE
 
     @BeforeEach
@@ -486,7 +487,7 @@ class UserServiceUnitTest {
         }
     }
 
-    private fun createUser() = com.whatever.caramel.domain.user.model.User(
+    private fun createUser() = User(
         id = 1L,
         platform = LoginPlatform.TEST,
         platformUserId = UUID.randomUUID().toString(),

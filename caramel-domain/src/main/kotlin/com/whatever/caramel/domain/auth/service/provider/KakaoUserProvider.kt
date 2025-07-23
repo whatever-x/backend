@@ -5,6 +5,7 @@ import com.whatever.caramel.domain.findByIdAndNotDeleted
 import com.whatever.caramel.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.caramel.domain.user.exception.UserNotFoundException
 import com.whatever.caramel.domain.user.model.LoginPlatform
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.User.Companion.MAX_NICKNAME_LENGTH
 import com.whatever.caramel.domain.user.model.User.Companion.MIN_NICKNAME_LENGTH
 import com.whatever.caramel.domain.user.repository.UserRepository
@@ -31,7 +32,7 @@ class KakaoUserProvider(
     override val platform: LoginPlatform
         get() = LoginPlatform.KAKAO
 
-    override fun findOrCreateUser(socialIdToken: String): com.whatever.caramel.domain.user.model.User {
+    override fun findOrCreateUser(socialIdToken: String): User {
         val kakaoPublicKey = kakaoOIDCClient.getOIDCPublicKey()
         val idTokenPayload = oidcHelper.parseKakaoIdToken(
             idToken = socialIdToken,
@@ -66,7 +67,7 @@ class KakaoUserProvider(
     }
 }
 
-private fun KakaoIdTokenPayload.toUser() = com.whatever.caramel.domain.user.model.User(
+private fun KakaoIdTokenPayload.toUser() = User(
     platform = LoginPlatform.KAKAO,
     platformUserId = platformUserId,
     nickname = nickname?.takeIf { it.trim().length in MIN_NICKNAME_LENGTH..MAX_NICKNAME_LENGTH },

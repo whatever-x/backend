@@ -1,7 +1,7 @@
 package com.whatever.caramel.domain.balancegame.service
 
-import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameExceptionCode
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameIllegalArgumentException
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameIllegalStateException
@@ -15,6 +15,7 @@ import com.whatever.caramel.domain.balancegame.repository.UserChoiceOptionReposi
 import com.whatever.caramel.domain.calendarevent.scheduleevent.service.createCouple
 import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -350,7 +351,7 @@ class BalanceGameServiceTest @Autowired constructor(
     private fun setUpCouple(
         myPlatformId: String = "my-user-id",
         partnerPlatformId: String = "partner-user-id",
-    ): Triple<com.whatever.caramel.domain.user.model.User, com.whatever.caramel.domain.user.model.User, Couple> {
+    ): Triple<User, User, Couple> {
         val (myUser, partnerUser, couple) = createCouple(
             userRepository,
             coupleRepository,

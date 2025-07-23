@@ -23,11 +23,11 @@ import com.whatever.caramel.domain.couple.service.event.dto.CoupleMemberLeaveEve
 import com.whatever.caramel.domain.couple.vo.CoupleDetailVo
 import com.whatever.caramel.domain.couple.vo.CoupleInvitationCodeVo
 import com.whatever.caramel.domain.couple.vo.CoupleVo
-import com.whatever.caramel.domain.couple.vo.UpdateCoupleStartDateVo
 import com.whatever.caramel.domain.findByIdAndNotDeleted
 import com.whatever.caramel.domain.firebase.service.event.dto.CoupleConnectedEvent
 import com.whatever.caramel.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.caramel.domain.user.exception.UserNotFoundException
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserStatus
 import com.whatever.caramel.domain.user.repository.UserRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -262,7 +262,7 @@ class CoupleService(
         )
     }
 
-    private fun validateSingleUser(user: com.whatever.caramel.domain.user.model.User) {
+    private fun validateSingleUser(user: User) {
         if (user.userStatus != UserStatus.SINGLE) {
             logger.warn { "Current user id: ${user.id}, status: ${user.userStatus}" }
             throw CoupleException(
@@ -297,7 +297,7 @@ class CoupleService(
     }
 }
 
-private fun UserRepository.findUserById(id: Long): com.whatever.caramel.domain.user.model.User {
+private fun UserRepository.findUserById(id: Long): User {
     return findByIdAndNotDeleted(id)
         ?: throw UserNotFoundException(errorCode = NOT_FOUND)
 }

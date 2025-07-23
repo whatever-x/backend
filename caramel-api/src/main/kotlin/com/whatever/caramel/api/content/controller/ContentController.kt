@@ -8,7 +8,6 @@ import com.whatever.caramel.api.content.controller.dto.response.ContentSummaryRe
 import com.whatever.caramel.common.response.CaramelApiResponse
 import com.whatever.caramel.common.response.CursoredResponse
 import com.whatever.caramel.common.response.succeed
-import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.caramel.domain.content.exception.ContentException
 import com.whatever.caramel.domain.content.exception.ContentExceptionCode
 import com.whatever.caramel.domain.content.service.ContentService

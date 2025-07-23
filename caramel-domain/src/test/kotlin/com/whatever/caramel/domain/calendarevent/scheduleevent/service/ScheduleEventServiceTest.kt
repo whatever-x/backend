@@ -1,11 +1,11 @@
 package com.whatever.caramel.domain.calendarevent.scheduleevent.service
 
-import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.common.util.endOfDay
 import com.whatever.caramel.common.util.toDateTime
 import com.whatever.caramel.common.util.toZoneId
 import com.whatever.caramel.common.util.withoutNano
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleAccessDeniedException
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleIllegalArgumentException
@@ -27,6 +27,7 @@ import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.findByIdAndNotDeleted
 import com.whatever.caramel.domain.user.model.LoginPlatform
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserStatus
 import com.whatever.caramel.domain.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -70,14 +71,14 @@ class ScheduleEventServiceTest @Autowired constructor(
     private fun setUpCouple(
         myPlatformId: String = "my-user-id",
         partnerPlatformId: String = "partner-user-id",
-    ): Triple<com.whatever.caramel.domain.user.model.User, com.whatever.caramel.domain.user.model.User, Couple> {
+    ): Triple<User, User, Couple> {
         return createCouple(userRepository, coupleRepository, myPlatformId, partnerPlatformId)
     }
 
     private fun setUpCoupleAndSecurity(
         myPlatformId: String = "my-user-id",
         partnerPlatformId: String = "partner-user-id",
-    ): Triple<com.whatever.caramel.domain.user.model.User, com.whatever.caramel.domain.user.model.User, Couple> {
+    ): Triple<User, User, Couple> {
         val (myUser, partnerUser, couple) = createCouple(
             userRepository,
             coupleRepository,
@@ -659,7 +660,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         fun createScheduleEvents(
             numberOfEvents: Int,
             uidPrefix: String,
-            ownerSelector: (Int) -> com.whatever.caramel.domain.user.model.User,
+            ownerSelector: (Int) -> User,
             startDate: LocalDate,
             timeZone: ZoneId,
         ): List<ScheduleEvent> {
@@ -859,7 +860,7 @@ class ScheduleEventServiceTest @Autowired constructor(
     }
 
     private fun createScheduleWithTags(
-        ownerUser: com.whatever.caramel.domain.user.model.User,
+        ownerUser: User,
         tagCount: Int = 10,
     ): Pair<ScheduleEvent, Set<Tag>> {
         val content = contentRepository.save(createContent(ownerUser, ContentType.SCHEDULE))
@@ -905,7 +906,7 @@ internal fun createCouple(
     coupleRepository: CoupleRepository,
     myPlatformUserId: String = "my-user-id",
     partnerPlatformUserId: String = "partner-user-id",
-): Triple<com.whatever.caramel.domain.user.model.User, com.whatever.caramel.domain.user.model.User, Couple> {
+): Triple<User, User, Couple> {
     val myUser = userRepository.save(createUser("my", myPlatformUserId))
     val partnerUser = userRepository.save(createUser("partner", partnerPlatformUserId))
 
@@ -928,8 +929,8 @@ internal fun createUser(
     nickname: String,
     platformUserId: String,
     userStatus: UserStatus = UserStatus.SINGLE,
-): com.whatever.caramel.domain.user.model.User {
-    return com.whatever.caramel.domain.user.model.User(
+): User {
+    return User(
         nickname = nickname,
         birthDate = DateTimeUtil.localNow().toLocalDate(),
         platform = LoginPlatform.KAKAO,
@@ -938,7 +939,7 @@ internal fun createUser(
     )
 }
 
-internal fun createContent(user: com.whatever.caramel.domain.user.model.User, type: ContentType): Content {
+internal fun createContent(user: User, type: ContentType): Content {
     return Content(
         user = user,
         contentDetail = ContentDetail(

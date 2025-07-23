@@ -1,5 +1,6 @@
 package com.whatever.caramel.domain.user.vo
 
+import com.whatever.caramel.domain.user.model.User
 import java.time.LocalDate
 
 data class UpdatedUserProfileVo(
@@ -8,7 +9,7 @@ data class UpdatedUserProfileVo(
     val birthday: LocalDate,
 ) {
     companion object {
-        fun from(user: com.whatever.caramel.domain.user.model.User, id: Long): UpdatedUserProfileVo {
+        fun from(user: User, id: Long): UpdatedUserProfileVo {
             return UpdatedUserProfileVo(
                 id = id,
                 nickname = user.nickname!!,

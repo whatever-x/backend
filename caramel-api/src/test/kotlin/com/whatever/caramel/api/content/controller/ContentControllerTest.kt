@@ -3,10 +3,10 @@ package com.whatever.caramel.api.content.controller
 import com.whatever.caramel.api.ControllerTestSupport
 import com.whatever.caramel.api.content.controller.dto.request.CreateContentRequest
 import com.whatever.caramel.api.content.controller.dto.request.UpdateContentRequest
-import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.caramel.domain.content.exception.ContentExceptionCode
 import com.whatever.caramel.domain.content.vo.ContentSummaryVo
 import com.whatever.caramel.domain.content.vo.ContentType
+import com.whatever.caramel.security.util.SecurityUtil
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
