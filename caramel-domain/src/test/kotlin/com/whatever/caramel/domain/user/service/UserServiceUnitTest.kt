@@ -16,6 +16,7 @@ import com.whatever.caramel.domain.user.vo.UpdateUserProfileVo
 import com.whatever.caramel.domain.user.vo.UpdateUserSettingVo
 import com.whatever.caramel.domain.user.vo.UserInfoVo
 import com.whatever.caramel.domain.user.vo.UserSettingVo
+import com.whatever.caramel.domain.user.vo.UserVo
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -23,6 +24,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
@@ -449,7 +451,41 @@ class UserServiceUnitTest {
             mockkUserRepository.findById(eq(userId))
         }
     }
-    
+
+    @Test
+    @DisplayName("Couple 정보가 담긴 User 정보를 받는다")
+    fun getUserWithCoupleInformation() {
+        // given
+        every { mockkUserRepository.findByIdWithCouple(any()) } returns user
+        val expected = UserVo.from(user)
+
+        // when
+        val result = spykUserService.getUserWithCouple(userId = userId)
+
+        // then
+        assertThat(result).isNotNull
+        assertThat(result).isEqualTo(expected)
+        verify(exactly = 1) {
+            mockkUserRepository.findByIdWithCouple(eq(userId))
+        }
+    }
+
+    @Test
+    @DisplayName("Couple 정보가 담긴 User 정보를 받는다")
+    fun getNullUserWithCoupleInformation() {
+        // given
+        every { mockkUserRepository.findByIdWithCouple(any()) } returns null
+
+        // when
+        val result = spykUserService.getUserWithCouple(userId = userId)
+
+        // then
+        assertThat(result).isNull()
+        verify(exactly = 1) {
+            mockkUserRepository.findByIdWithCouple(eq(userId))
+        }
+    }
+
     private fun createUser() = com.whatever.caramel.domain.user.model.User(
         id = 1L,
         platform = LoginPlatform.TEST,
