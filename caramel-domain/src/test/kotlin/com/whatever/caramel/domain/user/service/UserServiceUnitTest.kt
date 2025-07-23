@@ -471,7 +471,7 @@ class UserServiceUnitTest {
     }
 
     @Test
-    @DisplayName("Couple 정보가 담긴 User 정보를 받는다")
+    @DisplayName("Couple 정보가 담긴 User 정보를 요청했지만 null 인 경우")
     fun getNullUserWithCoupleInformation() {
         // given
         every { mockkUserRepository.findByIdWithCouple(any()) } returns null
