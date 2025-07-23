@@ -19,7 +19,6 @@ dependencies {
 
     // Logging
     implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
-    implementation("org.springframework.boot:spring-boot-starter-log4j2")
     implementation("io.opentelemetry.instrumentation:opentelemetry-log4j-appender-2.17:$opentelemetryVersion-alpha")
 
     // Swagger
