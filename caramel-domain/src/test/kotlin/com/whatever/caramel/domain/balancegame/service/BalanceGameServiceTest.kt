@@ -194,10 +194,30 @@ class BalanceGameServiceTest @Autowired constructor(
         val now = LocalDateTime.of(2025, 5, 5, 9, 0)
         val expectedGame = makeBalanceGame(1, now.toLocalDate()).first()
         val coupleRepository = mock<CoupleRepository>()
-        mock<CoupleRepository> {
-            on { findByIdWithMembers(anyLong()) } doReturn null
-        }
-        whenever(coupleRepository.findByIdWithMembers(anyLong())).doReturn(null)
+        whenever(coupleRepository.findByIdWithMembers(anyLong())).thenReturn(null)
+
+        val balanceGameService =
+            BalanceGameService(balanceGameRepository, userChoiceOptionRepository, coupleRepository, userRepository)
+
+        // when
+        val userChoices = balanceGameService.getCoupleMemberChoices(couple.id, expectedGame.first.id)
+
+        // then
+        assertThat(userChoices.size).isEqualTo(0)
+    }
+
+    @DisplayName("커플의 밸런스 게임 선택 조회시, Couple 안의 MemberId 가 빈 경우 emptyList 를 반환한다")
+    @Test
+    fun getCoupleMemberChoices_WhenMembersIsEmpty() {
+        // given
+        val (user1, user2, couple) = setUpCouple()
+        val now = LocalDateTime.of(2025, 5, 5, 9, 0)
+        val expectedGame = makeBalanceGame(1, now.toLocalDate()).first()
+        val coupleRepository = mock<CoupleRepository>()
+        whenever(coupleRepository.findByIdWithMembers(anyLong())).thenReturn(couple.apply {
+            removeMember(user1)
+            removeMember(user2)
+        })
         val balanceGameService =
             BalanceGameService(balanceGameRepository, userChoiceOptionRepository, coupleRepository, userRepository)
 
