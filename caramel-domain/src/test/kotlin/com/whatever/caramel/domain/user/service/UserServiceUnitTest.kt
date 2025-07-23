@@ -460,11 +460,11 @@ class UserServiceUnitTest {
         val expected = UserVo.from(user)
 
         // when
-        val result = spykUserService.getUserWithCouple(userId = userId)
+        val userVo = spykUserService.getUserWithCouple(userId = userId)
 
         // then
-        assertThat(result).isNotNull
-        assertThat(result).isEqualTo(expected)
+        assertThat(userVo).isNotNull
+        assertThat(userVo).isEqualTo(expected)
         verify(exactly = 1) {
             mockkUserRepository.findByIdWithCouple(eq(userId))
         }
@@ -477,10 +477,10 @@ class UserServiceUnitTest {
         every { mockkUserRepository.findByIdWithCouple(any()) } returns null
 
         // when
-        val result = spykUserService.getUserWithCouple(userId = userId)
+        val userVo = spykUserService.getUserWithCouple(userId = userId)
 
         // then
-        assertThat(result).isNull()
+        assertThat(userVo).isNull()
         verify(exactly = 1) {
             mockkUserRepository.findByIdWithCouple(eq(userId))
         }
