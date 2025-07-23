@@ -83,23 +83,6 @@ class BalanceGameService(
         )
     }
 
-    /**
-     * VO로 이전
-     * 병합 후 삭제
-     */
-//    private fun getSortedActiveBalanceGameOptions(
-//        options: List<BalanceGameOption>,
-//    ): List<BalanceGameOption> {
-//        val sortedOptions = options.filter { !it.isDeleted }.sortedBy { it.id }
-//        if (sortedOptions.size < 2) {
-//            throw BalanceGameIllegalStateException(
-//                errorCode = GAME_OPTION_NOT_ENOUGH,
-//                errorUi = ErrorUi.Toast("밸런스 게임의 선택지가 모두 등록되지 않았어요.")
-//            )
-//        }
-//        return sortedOptions
-//    }
-
     private fun getBalanceGame(
         date: LocalDate = DateTimeUtil.localNow(TARGET_ZONE_ID).toLocalDate(),
     ): BalanceGame {
