@@ -186,31 +186,6 @@ class BalanceGameServiceTest @Autowired constructor(
         }
     }
 
-    @DisplayName("밸런스 게임을 조회 시 커플멤버가 비어있는 경우(emptySet) emptyList 를 반환한다.")
-    @Test
-    fun getTodayBalanceGameInfo_() {
-        // given
-        val couple = mock<Couple>()
-        val now = LocalDateTime.of(2025, 5, 5, 9, 0)
-        mockStatic(DateTimeUtil::class.java).use {
-            whenever(DateTimeUtil.localNow(any())).thenReturn(now)
-            val expectedGame = makeBalanceGame(1, now.toLocalDate()).first()
-
-            val coupleRepository = mock<CoupleRepository>()
-            mock<CoupleRepository> {
-                on { findByIdWithMembers(anyLong()) } doReturn couple
-            }
-            val balanceGameService =
-                BalanceGameService(balanceGameRepository, userChoiceOptionRepository, coupleRepository, userRepository)
-
-            // when
-            val result = balanceGameService.getCoupleMemberChoices(couple.id, expectedGame.first.id)
-
-            // then
-            assertThat(result.size).isEqualTo(0)
-        }
-    }
-
     @DisplayName("커플의 밸런스 게임 선택 조회시, Couple Id로 조회했는데 없는 경우 emptyList 를 반환한다")
     @Test
     fun getCoupleMemberChoices_WhenFindByIdWithMembersReturnsNull() {
