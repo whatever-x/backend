@@ -1,29 +1,28 @@
 package com.whatever.caramel.domain.content.service
 
 import com.whatever.caramel.domain.CaramelDomainSpringBootTest
-import com.whatever.caramel.domain.calendarevent.repository.ScheduleEventRepository
-import com.whatever.caramel.domain.content.exception.ContentAccessDeniedException
+import com.whatever.caramel.domain.content.exception.ContentExceptionCode.UPDATE_CONFLICT
+import com.whatever.caramel.domain.content.exception.ContentIllegalStateException
 import com.whatever.caramel.domain.content.model.Content
 import com.whatever.caramel.domain.content.model.ContentDetail
 import com.whatever.caramel.domain.content.repository.ContentRepository
 import com.whatever.caramel.domain.content.tag.model.Tag
 import com.whatever.caramel.domain.content.tag.model.TagContentMapping
-import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepository
-import com.whatever.caramel.domain.content.tag.repository.TagRepository
 import com.whatever.caramel.domain.content.vo.ContentType
 import com.whatever.caramel.domain.content.vo.UpdateContentRequestVo
 import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.user.model.LoginPlatform
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserGender
 import com.whatever.caramel.domain.user.model.UserStatus
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.time.LocalDate
@@ -32,33 +31,18 @@ import java.util.UUID
 
 @CaramelDomainSpringBootTest
 class ContentServiceRetryableTest {
-    // @MockitoBean
-    private lateinit var memoCreator: MemoCreator
-
     @MockitoBean
     private lateinit var contentRepository: ContentRepository
 
     @MockitoBean
-    private lateinit var tagRepository: TagRepository
-
-    @MockitoBean
-    private lateinit var tagContentMappingRepository: TagContentMappingRepository
-
-    @MockitoBean
     private lateinit var coupleRepository: CoupleRepository
-
-    @MockitoBean
-    private lateinit var scheduleEventRepository: ScheduleEventRepository
-
-    @MockitoBean
-    private lateinit var applicationEventPublisher: ApplicationEventPublisher
 
     @Autowired
     private lateinit var contentService: ContentService
 
-    @DisplayName("updateContent 에서 couple.id 와 contentOwnerCoupleId가 다른 경우 ContentAccessDeniedException 를 던진다")
+    @DisplayName("updateContent 에서 OptimisticLockingException이 발생하면, Recover 에서 ContentIllegalStateException 를 던진다")
     @Test
-    fun updateContent_whenCoupleIdNotMatchedContentOwnerCoupleId() {
+    fun updateContent_whenOptimisticLockingException_thenContentIllegalStateException() {
         val memoId = 1L
         val coupleId = 1L
         val userId = 1L
@@ -83,7 +67,7 @@ class ContentServiceRetryableTest {
         whenever(contentRepository.findContentByIdAndType(id = contentId, type = ContentType.MEMO)).thenReturn(memo)
         whenever(coupleRepository.findByIdWithMembers(any())).thenThrow(expectedException)
 
-        val exception = assertThrows<ContentAccessDeniedException> {
+        val exception = assertThrows<ContentIllegalStateException> {
             contentService.updateContent(
                 contentId = contentId,
                 requestVo = contentRequestVo,
@@ -91,6 +75,23 @@ class ContentServiceRetryableTest {
                 userId = userId,
             )
         }
+
+        assertThat(exception.errorCode).isEqualTo(UPDATE_CONFLICT)
+    }
+
+    @DisplayName("deleteContent 에서 OptimisticLockingException이 발생하면, Recover 에서 ContentIllegalStateException 를 던진다")
+    @Test
+    fun deleteContent_whenOptimisticLockingException_thenContentIllegalStateException() {
+        val contentId = 1L
+
+        val expectedException = OptimisticLockingFailureException("error")
+        whenever(contentRepository.findContentByIdAndType(any(), any())).thenThrow(expectedException)
+
+        val exception = assertThrows<ContentIllegalStateException> {
+            contentService.deleteContent(contentId = contentId)
+        }
+
+        assertThat(exception.errorCode).isEqualTo(UPDATE_CONFLICT)
     }
 
     private fun createTestUser(
@@ -99,8 +100,8 @@ class ContentServiceRetryableTest {
         gender: UserGender = UserGender.MALE,
         userStatus: UserStatus = UserStatus.SINGLE,
         birthYear: Int = 1990,
-    ): com.whatever.caramel.domain.user.model.User {
-        return com.whatever.caramel.domain.user.model.User(
+    ): User {
+        return User(
             id = id,
             platform = LoginPlatform.TEST,
             platformUserId = UUID.randomUUID().toString(),
@@ -113,8 +114,8 @@ class ContentServiceRetryableTest {
 
     private fun createTestCouple(
         id: Long = 1L,
-        user1: com.whatever.caramel.domain.user.model.User,
-        user2: com.whatever.caramel.domain.user.model.User,
+        user1: User,
+        user2: User,
     ): Couple {
         return Couple(id = id).apply {
             addMembers(user1, user2)
@@ -123,7 +124,7 @@ class ContentServiceRetryableTest {
 
     private fun createTestContent(
         id: Long = 1L,
-        user: com.whatever.caramel.domain.user.model.User,
+        user: User,
         title: String? = "테스트 메모",
         description: String? = "테스트 메모 내용",
         isCompleted: Boolean = false,
