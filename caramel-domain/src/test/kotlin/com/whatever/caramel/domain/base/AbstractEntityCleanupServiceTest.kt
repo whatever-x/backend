@@ -1,9 +1,9 @@
 package com.whatever.caramel.domain.base
 
-import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.global.exception.common.CaramelException
 import com.whatever.caramel.common.global.exception.common.CaramelExceptionCode
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows

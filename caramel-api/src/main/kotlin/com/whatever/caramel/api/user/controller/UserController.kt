@@ -11,8 +11,8 @@ import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.TIME_ZONE
 import com.whatever.caramel.common.response.CaramelApiResponse
 import com.whatever.caramel.common.response.succeed
 import com.whatever.caramel.common.util.toZoneId
-import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserId
 import com.whatever.caramel.domain.user.service.UserService
+import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag

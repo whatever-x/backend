@@ -1,6 +1,7 @@
 package com.whatever.caramel.domain.balancegame.model
 
 import com.whatever.caramel.domain.base.BaseEntity
+import com.whatever.caramel.domain.user.model.User
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
@@ -35,5 +36,5 @@ class UserChoiceOption(
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    val user: com.whatever.caramel.domain.user.model.User,
+    val user: User,
 ) : BaseEntity()

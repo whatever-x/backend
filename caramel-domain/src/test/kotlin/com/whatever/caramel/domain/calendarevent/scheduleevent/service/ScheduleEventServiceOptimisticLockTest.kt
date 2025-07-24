@@ -1,9 +1,9 @@
 package com.whatever.caramel.domain.calendarevent.scheduleevent.service
 
-import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.common.util.toZoneId
 import com.whatever.caramel.common.util.withoutNano
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleIllegalStateException
 import com.whatever.caramel.domain.calendarevent.model.ScheduleEvent
@@ -17,6 +17,7 @@ import com.whatever.caramel.domain.content.vo.ContentType
 import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.findByIdAndNotDeleted
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -66,14 +67,14 @@ class ScheduleEventServiceOptimisticLockTest @Autowired constructor(
     private fun setUpCouple(
         myPlatformId: String = "my-user-id",
         partnerPlatformId: String = "partner-user-id",
-    ): Triple<com.whatever.caramel.domain.user.model.User, com.whatever.caramel.domain.user.model.User, Couple> {
+    ): Triple<User, User, Couple> {
         return createCouple(userRepository, coupleRepository, myPlatformId, partnerPlatformId)
     }
 
     private fun setUpCoupleAndSecurity(
         myPlatformId: String = "my-user-id",
         partnerPlatformId: String = "partner-user-id",
-    ): Triple<com.whatever.caramel.domain.user.model.User, com.whatever.caramel.domain.user.model.User, Couple> {
+    ): Triple<User, User, Couple> {
         val (myUser, partnerUser, couple) = createCouple(
             userRepository,
             coupleRepository,

@@ -1,8 +1,8 @@
 package com.whatever.caramel.domain.couple.service
 
-import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.common.util.toZoneId
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.caramel.domain.content.repository.ContentRepository
 import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepository
@@ -18,6 +18,7 @@ import com.whatever.caramel.domain.couple.repository.InvitationCodeRedisReposito
 import com.whatever.caramel.domain.couple.service.event.ExcludeAsyncConfigBean
 import com.whatever.caramel.domain.firebase.service.FirebaseService
 import com.whatever.caramel.domain.user.model.LoginPlatform
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserGender
 import com.whatever.caramel.domain.user.model.UserStatus.COUPLED
 import com.whatever.caramel.domain.user.model.UserStatus.SINGLE
@@ -86,7 +87,7 @@ class CoupleServiceTest @Autowired constructor(
     fun createInvitationCode_WithInvalidUserStatus() {
         // given
         val user = userRepository.save(
-            com.whatever.caramel.domain.user.model.User(
+            User(
                 platform = LoginPlatform.KAKAO,
                 platformUserId = "test-user-id",
                 userStatus = COUPLED
@@ -104,7 +105,7 @@ class CoupleServiceTest @Autowired constructor(
     fun createInvitationCode() {
         // given
         val user = userRepository.save(
-            com.whatever.caramel.domain.user.model.User(
+            User(
                 platform = LoginPlatform.KAKAO,
                 platformUserId = "test-user-id",
                 userStatus = SINGLE
@@ -128,7 +129,7 @@ class CoupleServiceTest @Autowired constructor(
     fun createInvitationCode_WithSameRequestBeforeExpiration() {
         // given
         val user = userRepository.save(
-            com.whatever.caramel.domain.user.model.User(
+            User(
                 platform = LoginPlatform.KAKAO,
                 platformUserId = "test-user-id",
                 userStatus = SINGLE
@@ -181,7 +182,7 @@ class CoupleServiceTest @Autowired constructor(
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
 
         val otherUser = userRepository.save(
-            com.whatever.caramel.domain.user.model.User(
+            User(
                 nickname = "other",
                 birthDate = DateTimeUtil.localNow().toLocalDate(),
                 platform = LoginPlatform.KAKAO,
@@ -201,7 +202,7 @@ class CoupleServiceTest @Autowired constructor(
     fun createCouple() {
         // given
         val myUser = userRepository.save(
-            com.whatever.caramel.domain.user.model.User(
+            User(
                 nickname = "my",
                 birthDate = DateTimeUtil.localNow().toLocalDate(),
                 platform = LoginPlatform.KAKAO,
@@ -211,7 +212,7 @@ class CoupleServiceTest @Autowired constructor(
             )
         )
         val hostUser = userRepository.save(
-            com.whatever.caramel.domain.user.model.User(
+            User(
                 nickname = "host",
                 birthDate = DateTimeUtil.localNow().toLocalDate(),
                 platform = LoginPlatform.KAKAO,
@@ -247,7 +248,7 @@ class CoupleServiceTest @Autowired constructor(
     fun createCouple_BySelfCreateInvitationCode() {
         // given
         val hostUser = userRepository.save(
-            com.whatever.caramel.domain.user.model.User(
+            User(
                 nickname = "host",
                 birthDate = DateTimeUtil.localNow().toLocalDate(),
                 platform = LoginPlatform.KAKAO,
@@ -359,9 +360,9 @@ internal fun makeCouple(
     userRepository: UserRepository,
     coupleRepository: CoupleRepository,
     startDate: LocalDate = DateTimeUtil.localNow().toLocalDate(),
-): Triple<com.whatever.caramel.domain.user.model.User, com.whatever.caramel.domain.user.model.User, Couple> {
+): Triple<User, User, Couple> {
     val myUser = userRepository.save(
-        com.whatever.caramel.domain.user.model.User(
+        User(
             nickname = "my",
             birthDate = DateTimeUtil.localNow().toLocalDate(),
             platform = LoginPlatform.KAKAO,
@@ -371,7 +372,7 @@ internal fun makeCouple(
         )
     )
     val partnerUser = userRepository.save(
-        com.whatever.caramel.domain.user.model.User(
+        User(
             nickname = "partner",
             birthDate = DateTimeUtil.localNow().toLocalDate(),
             platform = LoginPlatform.KAKAO,

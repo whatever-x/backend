@@ -4,6 +4,7 @@ import com.whatever.caramel.domain.couple.exception.CoupleExceptionCode.ILLEGAL_
 import com.whatever.caramel.domain.couple.exception.CoupleIllegalArgumentException
 import com.whatever.caramel.domain.couple.exception.CoupleIllegalStateException
 import com.whatever.caramel.domain.user.model.LoginPlatform
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserStatus
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
@@ -17,13 +18,13 @@ class CoupleTest {
     fun addMembers() {
         // given
         val couple = Couple()
-        val user1 = com.whatever.caramel.domain.user.model.User(
+        val user1 = User(
             id = 1L,
             platform = LoginPlatform.KAKAO,
             platformUserId = "test1",
             userStatus = UserStatus.SINGLE,
         )
-        val user2 = com.whatever.caramel.domain.user.model.User(
+        val user2 = User(
             id = 2L,
             platform = LoginPlatform.KAKAO,
             platformUserId = "test2",
@@ -45,7 +46,7 @@ class CoupleTest {
     fun addMembers_WithSameUser() {
         // given
         val couple = Couple()
-        val user = com.whatever.caramel.domain.user.model.User(
+        val user = User(
             id = 1L,
             platform = LoginPlatform.KAKAO,
             platformUserId = "test1",
@@ -64,13 +65,13 @@ class CoupleTest {
     fun addMembers_WithFullCouple() {
         // given
         val couple = Couple()
-        val user1 = com.whatever.caramel.domain.user.model.User(
+        val user1 = User(
             id = 1L,
             platform = LoginPlatform.KAKAO,
             platformUserId = "test1",
             userStatus = UserStatus.SINGLE,
         )
-        val user2 = com.whatever.caramel.domain.user.model.User(
+        val user2 = User(
             id = 2L,
             platform = LoginPlatform.KAKAO,
             platformUserId = "test2",
@@ -78,7 +79,7 @@ class CoupleTest {
         )
         couple.addMembers(user1, user2)
 
-        val user3 = com.whatever.caramel.domain.user.model.User(
+        val user3 = User(
             id = 3L,
             platform = LoginPlatform.KAKAO,
             platformUserId = "test3",

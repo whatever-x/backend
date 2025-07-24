@@ -1,14 +1,15 @@
 package com.whatever.caramel.domain.auth.service
 
-import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.global.jwt.JwtHelper
 import com.whatever.caramel.common.global.jwt.JwtProperties
 import com.whatever.caramel.common.global.jwt.exception.JwtExceptionCode
 import com.whatever.caramel.common.global.jwt.exception.JwtMalformedException
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.common.util.withoutNano
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.auth.repository.AuthRedisRepository
 import com.whatever.caramel.domain.user.model.LoginPlatform
+import com.whatever.caramel.domain.user.model.User
 import io.jsonwebtoken.ExpiredJwtException
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
@@ -54,7 +55,7 @@ class AuthServiceSignOutTest @Autowired constructor(
     @Test
     fun signOut() {
         // given
-        val user = com.whatever.caramel.domain.user.model.User(
+        val user = User(
             id = 0L,
             platform = LoginPlatform.TEST,
             platformUserId = "test-pid"
@@ -103,7 +104,7 @@ class AuthServiceSignOutTest @Autowired constructor(
     @Test
     fun signOut_WithExpiredAccessToken() {
         // given
-        val user = com.whatever.caramel.domain.user.model.User(
+        val user = User(
             id = 0L,
             platform = LoginPlatform.TEST,
             platformUserId = "test-pid"
@@ -142,7 +143,7 @@ class AuthServiceSignOutTest @Autowired constructor(
     @Test
     fun signOut_WithInvalidBearerFormat() {
         // given
-        val user = com.whatever.caramel.domain.user.model.User(
+        val user = User(
             id = 0L,
             platform = LoginPlatform.TEST,
             platformUserId = "test-pid"

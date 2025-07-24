@@ -6,6 +6,7 @@ import com.whatever.caramel.domain.user.exception.UserExceptionCode.NOT_FOUND
 import com.whatever.caramel.domain.user.exception.UserIllegalStateException
 import com.whatever.caramel.domain.user.exception.UserNotFoundException
 import com.whatever.caramel.domain.user.model.LoginPlatform
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserGender
 import com.whatever.caramel.domain.user.model.UserSetting
 import com.whatever.caramel.domain.user.model.UserStatus
@@ -16,6 +17,7 @@ import com.whatever.caramel.domain.user.vo.UpdateUserProfileVo
 import com.whatever.caramel.domain.user.vo.UpdateUserSettingVo
 import com.whatever.caramel.domain.user.vo.UserInfoVo
 import com.whatever.caramel.domain.user.vo.UserSettingVo
+import com.whatever.caramel.domain.user.vo.UserVo
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -23,6 +25,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
@@ -54,7 +57,7 @@ class UserServiceUnitTest {
     private val mockkUserSettingRepository = mockk<UserSettingRepository>()
     private val spykUserService = spyk(UserService(mockkUserRepository, mockkUserSettingRepository))
 
-    private lateinit var user: com.whatever.caramel.domain.user.model.User
+    private lateinit var user: User
     private var userId: Long = Long.MIN_VALUE
 
     @BeforeEach
@@ -394,24 +397,6 @@ class UserServiceUnitTest {
     }
 
     @Test
-    fun `유저의 세팅을 가져옵니다 - 기본값 userId 기본 세팅`() {
-        // given
-        val response = UserSetting(user = user, notificationEnabled = false)
-        val expected = UserSettingVo(notificationEnabled = false)
-        every { mockkUserRepository.getReferenceById(any()) } returns user
-        every { mockkUserSettingRepository.findByUserAndIsDeleted(user = user, isDeleted = any()) } returns response
-
-        // when
-        val result = spykUserService.getUserSetting(userId = userId)
-
-        // then
-        assertThat(result).isEqualTo(expected)
-        verify(exactly = 1) {
-            spykUserService.getUserSetting(userId = eq(userId))
-        }
-    }
-
-    @Test
     fun `유저의 세팅을 가져오는데, null이 나온 경우 UserIllegalStateException 을 받는다`() {
         // given
         every { mockkUserRepository.getReferenceById(any()) } returns user
@@ -469,29 +454,40 @@ class UserServiceUnitTest {
     }
 
     @Test
-    fun `내 정보를 가져오는데, default value 로 userId 를 세팅`() {
+    @DisplayName("Couple 정보가 담긴 User 를 조회시, User 가 있는 경우 UserVo 를 응답으로 준다")
+    fun getUserWithCoupleInformation() {
         // given
-        val expected = UserInfoVo(
-            id = user.id,
-            email = user.email,
-            birthDate = user.birthDate,
-            signInPlatform = user.platform,
-            nickname = user.nickname,
-            gender = user.gender,
-            userStatus = user.userStatus
-        )
-        every { mockkUserRepository.findById(any()) } returns Optional.of(user)
+        every { mockkUserRepository.findByIdWithCouple(any()) } returns user
+        val expected = UserVo.from(user)
 
         // when
-        val result = spykUserService.getUserInfo(userId = userId)
-        assertThat(result).isEqualTo(expected)
+        val actual = spykUserService.getUserWithCouple(userId = userId)
 
+        // then
+        assertThat(actual).isNotNull
+        assertThat(actual).isEqualTo(expected)
         verify(exactly = 1) {
-            mockkUserRepository.findById(eq(userId))
+            mockkUserRepository.findByIdWithCouple(eq(userId))
         }
     }
 
-    private fun createUser() = com.whatever.caramel.domain.user.model.User(
+    @Test
+    @DisplayName("Couple 정보가 담긴 User 를 조회시, User 가 없을 경우 null 을 반환한다")
+    fun getNullUserWithCoupleInformation() {
+        // given
+        every { mockkUserRepository.findByIdWithCouple(any()) } returns null
+
+        // when
+        val actual = spykUserService.getUserWithCouple(userId = userId)
+
+        // then
+        assertThat(actual).isNull()
+        verify(exactly = 1) {
+            mockkUserRepository.findByIdWithCouple(eq(userId))
+        }
+    }
+
+    private fun createUser() = User(
         id = 1L,
         platform = LoginPlatform.TEST,
         platformUserId = UUID.randomUUID().toString(),

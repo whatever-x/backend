@@ -4,12 +4,10 @@ import com.whatever.caramel.common.global.constants.CaramelHttpHeaders
 import com.whatever.caramel.common.global.jwt.JwtHelper
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.auth.repository.AuthRedisRepository
-import com.whatever.caramel.domain.auth.service.AuthService
 import com.whatever.caramel.domain.user.model.LoginPlatform
 import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserGender
 import com.whatever.caramel.domain.user.model.UserStatus
-import com.whatever.caramel.domain.user.service.UserService
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc

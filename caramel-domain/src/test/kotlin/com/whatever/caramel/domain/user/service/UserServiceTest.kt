@@ -1,7 +1,7 @@
 package com.whatever.caramel.domain.user.service
 
-import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.content.service.createCouple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.user.model.LoginPlatform
@@ -162,7 +162,7 @@ class UserServiceTest {
 
 internal fun createNewUser(
     userRepository: UserRepository,
-): com.whatever.caramel.domain.user.model.User {
+): User {
     return createUser(
         userRepository = userRepository,
         userStatus = UserStatus.NEW,
@@ -191,9 +191,9 @@ internal fun createUser(
     nickname: String? = null,
     gender: UserGender? = null,
     userStatus: UserStatus,
-): com.whatever.caramel.domain.user.model.User {
+): User {
     return userRepository.save(
-        com.whatever.caramel.domain.user.model.User(
+        User(
             email = email,
             birthDate = birthDate,
             platform = LoginPlatform.TEST,

@@ -5,6 +5,7 @@ import com.whatever.caramel.domain.base.BaseEntity
 import com.whatever.caramel.domain.content.exception.ContentExceptionCode.ILLEGAL_CONTENT_DETAIL
 import com.whatever.caramel.domain.content.exception.ContentIllegalArgumentException
 import com.whatever.caramel.domain.content.vo.ContentType
+import com.whatever.caramel.domain.user.model.User
 import jakarta.persistence.Column
 import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
@@ -35,7 +36,7 @@ class Content(
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-    val user: com.whatever.caramel.domain.user.model.User,
+    val user: User,
 
     @Embedded
     val contentDetail: ContentDetail,

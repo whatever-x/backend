@@ -1,11 +1,11 @@
 package com.whatever.caramel.config
 
-import com.whatever.caramel.security.filter.JwtAuthenticationFilter
-import com.whatever.caramel.security.filter.JwtExceptionFilter
-import com.whatever.caramel.security.filter.RequestResponseLoggingFilter
 import com.whatever.caramel.domain.user.model.UserStatus.COUPLED
 import com.whatever.caramel.domain.user.model.UserStatus.NEW
 import com.whatever.caramel.domain.user.model.UserStatus.SINGLE
+import com.whatever.caramel.security.filter.JwtAuthenticationFilter
+import com.whatever.caramel.security.filter.JwtExceptionFilter
+import com.whatever.caramel.security.filter.RequestResponseLoggingFilter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean

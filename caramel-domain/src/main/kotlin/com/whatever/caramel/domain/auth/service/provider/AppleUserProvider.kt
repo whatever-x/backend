@@ -2,6 +2,7 @@ package com.whatever.caramel.domain.auth.service.provider
 
 import com.whatever.caramel.domain.auth.service.OIDCHelper
 import com.whatever.caramel.domain.user.model.LoginPlatform
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.User.Companion.MAX_NICKNAME_LENGTH
 import com.whatever.caramel.domain.user.model.User.Companion.MIN_NICKNAME_LENGTH
 import com.whatever.caramel.domain.user.repository.UserRepository
@@ -25,7 +26,7 @@ class AppleUserProvider(
     override val platform: LoginPlatform
         get() = LoginPlatform.APPLE
 
-    override fun findOrCreateUser(socialIdToken: String): com.whatever.caramel.domain.user.model.User {
+    override fun findOrCreateUser(socialIdToken: String): User {
         val applePublicKey = appleOIDCClient.getOIDCPublicKey()
         val idTokenPayload = oidcHelper.parseAppleIdToken(
             idToken = socialIdToken,
@@ -47,7 +48,7 @@ class AppleUserProvider(
         logger.debug { "Bypass Apple user unlink. userId: ${userId}" }
     }
 
-    fun findOrCreateUserByAppleAuthFormData(appleAuthFormData: AppleAuthFormData): com.whatever.caramel.domain.user.model.User {
+    fun findOrCreateUserByAppleAuthFormData(appleAuthFormData: AppleAuthFormData): User {
         return findOrCreateUserByIdToken(
             socialIdToken = appleAuthFormData.idToken,
             userName = appleAuthFormData.appleUser?.name
@@ -57,7 +58,7 @@ class AppleUserProvider(
     fun findOrCreateUserByIdToken(
         socialIdToken: String,
         userName: AppleUserName? = null,
-    ): com.whatever.caramel.domain.user.model.User {
+    ): User {
         val keys = appleOIDCClient.getOIDCPublicKey().keys
 
         val payload = oidcHelper.parseAppleIdToken(socialIdToken, keys)
@@ -74,7 +75,7 @@ class AppleUserProvider(
     }
 }
 
-private fun AppleIdTokenPayload.toUser(userName: AppleUserName? = null) = com.whatever.caramel.domain.user.model.User(
+private fun AppleIdTokenPayload.toUser(userName: AppleUserName? = null) = User(
     platform = LoginPlatform.APPLE,
     platformUserId = sub,
     email = email,

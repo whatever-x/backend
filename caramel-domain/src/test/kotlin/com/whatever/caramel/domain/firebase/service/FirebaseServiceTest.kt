@@ -6,6 +6,7 @@ import com.whatever.caramel.domain.content.service.createCouple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.firebase.model.FcmToken
 import com.whatever.caramel.domain.firebase.repository.FcmTokenRepository
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserSetting
 import com.whatever.caramel.domain.user.repository.UserRepository
 import com.whatever.caramel.domain.user.repository.UserSettingRepository
@@ -289,7 +290,7 @@ class FirebaseServiceTest @Autowired constructor(
 
     private fun createFcmToken(
         deviceId: String,
-        user: com.whatever.caramel.domain.user.model.User,
+        user: User,
         notificationEnabled: Boolean = true,
     ): FcmToken {
         setUserSetting(user, notificationEnabled)
@@ -302,7 +303,7 @@ class FirebaseServiceTest @Autowired constructor(
         )
     }
 
-    private fun setUserSetting(user: com.whatever.caramel.domain.user.model.User, notificationEnabled: Boolean) {
+    private fun setUserSetting(user: User, notificationEnabled: Boolean) {
         if (!userSettingRepository.existsByUserAndIsDeleted(user)) {
             userSettingRepository.save(UserSetting(user, notificationEnabled))
         }

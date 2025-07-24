@@ -8,6 +8,7 @@ import com.whatever.caramel.domain.content.model.ContentDetail
 import com.whatever.caramel.domain.content.repository.ContentRepository
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.couple.service.makeCouple
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -69,7 +70,7 @@ class ContentCleanupServiceTest @Autowired constructor(
 
 fun createMemos(
     contentRepository: ContentRepository,
-    user: com.whatever.caramel.domain.user.model.User,
+    user: User,
     count: Int,
 ): List<Content> {
     if (count == 0) return emptyList()

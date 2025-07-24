@@ -6,11 +6,11 @@ import com.whatever.caramel.api.user.dto.PutUserProfileRequest
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders
 import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.util.DateTimeUtil
-import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.caramel.domain.user.model.UserGender
 import com.whatever.caramel.domain.user.model.UserStatus
 import com.whatever.caramel.domain.user.vo.CreatedUserProfileVo
 import com.whatever.caramel.domain.user.vo.UpdatedUserProfileVo
+import com.whatever.caramel.security.util.SecurityUtil
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic

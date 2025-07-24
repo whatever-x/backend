@@ -14,7 +14,7 @@ import jakarta.persistence.OneToOne
 class UserSetting(
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
-    val user: com.whatever.caramel.domain.user.model.User,
+    val user: User,
 
     @Column(nullable = false)
     var notificationEnabled: Boolean = false,

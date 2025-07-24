@@ -49,32 +49,32 @@ class User(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L,
 
-    @Convert(converter = com.whatever.caramel.domain.user.model.UserEmailConverter::class)
+    @Convert(converter = UserEmailConverter::class)
     var email: String? = null,
 
     var birthDate: LocalDate? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val platform: com.whatever.caramel.domain.user.model.LoginPlatform,
+    val platform: LoginPlatform,
 
     @Column(nullable = false)
     val platformUserId: String,
 
     @Column(length = 8)
     @field:CodePointLength(
-        min = com.whatever.caramel.domain.user.model.User.Companion.MIN_NICKNAME_LENGTH,
-        max = com.whatever.caramel.domain.user.model.User.Companion.MAX_NICKNAME_LENGTH
+        min = MIN_NICKNAME_LENGTH,
+        max = MAX_NICKNAME_LENGTH
     )
     var nickname: String? = null,
 
     @Enumerated(EnumType.STRING)
-    @Column(length = com.whatever.caramel.domain.user.model.User.Companion.MAX_GENDER_LENGTH)
-    var gender: com.whatever.caramel.domain.user.model.UserGender? = null,
+    @Column(length = MAX_GENDER_LENGTH)
+    var gender: UserGender? = null,
 
     @Enumerated(EnumType.STRING)
-    @Column(length = com.whatever.caramel.domain.user.model.User.Companion.MAX_STATUS_LENGTH, nullable = false)
-    var userStatus: com.whatever.caramel.domain.user.model.UserStatus = com.whatever.caramel.domain.user.model.UserStatus.NEW,
+    @Column(length = MAX_STATUS_LENGTH, nullable = false)
+    var userStatus: UserStatus = UserStatus.NEW,
 
 //    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 //    val contents: MutableList<Content> = mutableListOf(),
@@ -86,7 +86,7 @@ class User(
 
     fun setCouple(couple: Couple) {
         if (userStatus != SINGLE) {
-            com.whatever.caramel.domain.user.model.logger.error { "Current user status is '${userStatus}'. To be coupled, the user status must be '${SINGLE}'." }
+            logger.error { "Current user status is '${userStatus}'. To be coupled, the user status must be '${SINGLE}'." }
             throw UserIllegalStateException(
                 errorCode = INVALID_USER_STATUS_FOR_COUPLING,
                 errorUi = ErrorUi.Toast("커플이 될 수 없는 사용자가 있어요."),
@@ -101,7 +101,7 @@ class User(
         updateUserStatus(SINGLE)
     }
 
-    fun updateUserStatus(newStatus: com.whatever.caramel.domain.user.model.UserStatus) {
+    fun updateUserStatus(newStatus: UserStatus) {
         userStatus = newStatus
     }
 
@@ -123,7 +123,7 @@ class User(
     fun register(
         nickname: String,
         birthday: LocalDate,
-        gender: com.whatever.caramel.domain.user.model.UserGender,
+        gender: UserGender,
         userTimeZone: ZoneId = KST_ZONE_ID,
     ) {
         this.nickname = nickname

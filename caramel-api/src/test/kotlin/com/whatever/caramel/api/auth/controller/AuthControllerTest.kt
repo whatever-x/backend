@@ -6,11 +6,11 @@ import com.whatever.caramel.api.auth.dto.SignInRequest
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.DEVICE_ID
 import com.whatever.caramel.common.util.DateTimeUtil
-import com.whatever.caramel.security.util.SecurityUtil
 import com.whatever.caramel.domain.auth.vo.ServiceTokenVo
 import com.whatever.caramel.domain.auth.vo.SignInVo
 import com.whatever.caramel.domain.user.model.LoginPlatform
 import com.whatever.caramel.domain.user.model.UserStatus
+import com.whatever.caramel.security.util.SecurityUtil
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mockStatic

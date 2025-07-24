@@ -1,7 +1,7 @@
 package com.whatever.caramel.domain.calendarevent.scheduleevent.service
 
-import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleIllegalArgumentException
 import com.whatever.caramel.domain.calendarevent.repository.ScheduleEventRepository
@@ -16,6 +16,7 @@ import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.couple.service.event.ExcludeAsyncConfigBean
 import com.whatever.caramel.domain.findByIdAndNotDeleted
 import com.whatever.caramel.domain.firebase.service.FirebaseService
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -64,7 +65,7 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
     private fun setUpCoupleAndSecurity(
         myPlatformId: String = "my-user-id",
         partnerPlatformId: String = "partner-user-id",
-    ): Triple<com.whatever.caramel.domain.user.model.User, com.whatever.caramel.domain.user.model.User, Couple> {
+    ): Triple<User, User, Couple> {
         val (myUser, partnerUser, couple) = createCouple(
             userRepository,
             coupleRepository,

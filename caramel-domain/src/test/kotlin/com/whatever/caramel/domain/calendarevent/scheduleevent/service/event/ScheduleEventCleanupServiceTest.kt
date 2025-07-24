@@ -1,7 +1,7 @@
 package com.whatever.caramel.domain.calendarevent.scheduleevent.service.event
 
-import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.calendarevent.model.ScheduleEvent
 import com.whatever.caramel.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.caramel.domain.calendarevent.service.event.ScheduleEventCleanupService
@@ -12,6 +12,7 @@ import com.whatever.caramel.domain.content.repository.ContentRepository
 import com.whatever.caramel.domain.content.vo.ContentType
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.couple.service.makeCouple
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -65,7 +66,7 @@ class ScheduleEventCleanupServiceTest @Autowired constructor(
 fun createSchedules(
     scheduleEventRepository: ScheduleEventRepository,
     contentRepository: ContentRepository,
-    user: com.whatever.caramel.domain.user.model.User,
+    user: User,
     count: Int,
 ): List<ScheduleEvent> {
     if (count == 0) return emptyList()

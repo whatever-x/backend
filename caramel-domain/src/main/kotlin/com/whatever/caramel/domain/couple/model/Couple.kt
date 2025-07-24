@@ -10,6 +10,7 @@ import com.whatever.caramel.domain.couple.exception.CoupleExceptionCode.SHARED_M
 import com.whatever.caramel.domain.couple.exception.CoupleIllegalArgumentException
 import com.whatever.caramel.domain.couple.exception.CoupleIllegalStateException
 import com.whatever.caramel.domain.couple.model.CoupleStatus.INACTIVE
+import com.whatever.caramel.domain.user.model.User
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -45,15 +46,15 @@ class Couple(
 ) : BaseEntity() {
 
     @OneToMany(mappedBy = "_couple", fetch = FetchType.LAZY)
-    protected val mutableMembers: MutableSet<com.whatever.caramel.domain.user.model.User> = mutableSetOf()
-    val members: Set<com.whatever.caramel.domain.user.model.User> get() = mutableMembers.toSet()
+    protected val mutableMembers: MutableSet<User> = mutableSetOf()
+    val members: Set<User> get() = mutableMembers.toSet()
 
     @Version
     private var version: Long = 0L
 
     fun addMembers(
-        user1: com.whatever.caramel.domain.user.model.User,
-        user2: com.whatever.caramel.domain.user.model.User,
+        user1: User,
+        user2: User,
     ) {
         if (user1.id == user2.id) {
             throw CoupleIllegalArgumentException(
@@ -73,7 +74,7 @@ class Couple(
         mutableMembers.add(user2)
     }
 
-    fun removeMember(user: com.whatever.caramel.domain.user.model.User) {
+    fun removeMember(user: User) {
         if (!mutableMembers.removeIf { it.id == user.id }) {
             throw CoupleIllegalArgumentException(
                 errorCode = CoupleExceptionCode.NOT_A_MEMBER,

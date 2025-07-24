@@ -252,7 +252,7 @@ class ScheduleEventService(
         e: OptimisticLockingFailureException,
         scheduleId: Long,
         currentUserId: Long,
-        currentUserCoupleId: Long
+        currentUserCoupleId: Long,
     ) {
         logger.error { "delete schedule fail. schedule id: ${scheduleId}" }
         throw ScheduleIllegalStateException(

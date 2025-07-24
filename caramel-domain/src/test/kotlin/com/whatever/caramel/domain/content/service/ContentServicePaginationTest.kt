@@ -1,9 +1,9 @@
 package com.whatever.caramel.domain.content.service
 
-import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.common.global.cursor.Cursor
 import com.whatever.caramel.common.util.CursorUtil
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.content.model.Content
 import com.whatever.caramel.domain.content.model.ContentDetail
 import com.whatever.caramel.domain.content.repository.ContentRepository
@@ -18,6 +18,7 @@ import com.whatever.caramel.domain.content.vo.ContentType
 import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.user.model.LoginPlatform
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserStatus
 import com.whatever.caramel.domain.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -156,7 +157,7 @@ class ContentServicePaginationTest @Autowired constructor(
     private fun setUpCouple(
         myPlatformId: String = "me",
         partnerPlatformId: String = "partner",
-    ): Triple<com.whatever.caramel.domain.user.model.User, com.whatever.caramel.domain.user.model.User, Couple> {
+    ): Triple<User, User, Couple> {
         val (myUser, partnerUser, couple) = createCouple(
             userRepository,
             coupleRepository,
@@ -231,7 +232,7 @@ internal fun createCouple(
     coupleRepository: CoupleRepository,
     myPlatformUserId: String = "me",
     partnerPlatformUserId: String = "partner",
-): Triple<com.whatever.caramel.domain.user.model.User, com.whatever.caramel.domain.user.model.User, Couple> {
+): Triple<User, User, Couple> {
     val myUser = userRepository.save(createUser("my", myPlatformUserId, UserStatus.SINGLE))
     val partnerUser = userRepository.save(createUser("partner", partnerPlatformUserId, UserStatus.SINGLE))
 
@@ -253,8 +254,8 @@ internal fun createUser(
     nickname: String,
     platformUserId: String,
     userStatus: UserStatus = UserStatus.COUPLED,
-): com.whatever.caramel.domain.user.model.User {
-    return com.whatever.caramel.domain.user.model.User(
+): User {
+    return User(
         nickname = nickname,
         birthDate = DateTimeUtil.localNow().toLocalDate().minusYears(25),
         platform = LoginPlatform.KAKAO,
@@ -264,7 +265,7 @@ internal fun createUser(
 }
 
 internal fun createContent(
-    user: com.whatever.caramel.domain.user.model.User,
+    user: User,
     type: ContentType,
     title: String = "Default Title",
     description: String = "Default Description",

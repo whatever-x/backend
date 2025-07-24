@@ -1,5 +1,6 @@
 package com.whatever.caramel.domain.couple.vo
 
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserGender
 import com.whatever.caramel.domain.user.model.UserStatus
 import java.time.LocalDate
@@ -12,7 +13,7 @@ data class CoupleUserInfoVo(
     val gender: UserGender,
 ) {
     companion object {
-        fun from(user: com.whatever.caramel.domain.user.model.User): CoupleUserInfoVo {
+        fun from(user: User): CoupleUserInfoVo {
             return CoupleUserInfoVo(
                 id = user.id,
                 userStatus = user.userStatus,

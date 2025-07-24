@@ -65,7 +65,7 @@ class ContentRepositoryCustomImpl(
             ).whereAnd(
                 path(Content::type).equal(type),
                 path(Content::isDeleted).equal(false),
-                path(Content::user)(com.whatever.caramel.domain.user.model.User::id).`in`(memberIds),
+                path(Content::user)(User::id).`in`(memberIds),
                 tagId?.let { path(TagContentMapping::tag)(Tag::id).equal(it) },
                 applyCursor(queryParameter),
             )

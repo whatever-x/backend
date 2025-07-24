@@ -16,6 +16,7 @@ import com.whatever.caramel.domain.content.vo.ContentType
 import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.user.model.LoginPlatform
+import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserGender
 import com.whatever.caramel.domain.user.model.UserStatus
 import io.mockk.every
@@ -398,8 +399,8 @@ class ContentServiceUnitTest {
         gender: UserGender = UserGender.MALE,
         userStatus: UserStatus = UserStatus.SINGLE,
         birthYear: Int = 1990,
-    ): com.whatever.caramel.domain.user.model.User {
-        return com.whatever.caramel.domain.user.model.User(
+    ): User {
+        return User(
             id = id,
             platform = LoginPlatform.TEST,
             platformUserId = UUID.randomUUID().toString(),
@@ -412,8 +413,8 @@ class ContentServiceUnitTest {
 
     private fun createTestCouple(
         id: Long = 1L,
-        user1: com.whatever.caramel.domain.user.model.User,
-        user2: com.whatever.caramel.domain.user.model.User,
+        user1: User,
+        user2: User,
     ): Couple {
         return Couple(id = id).apply {
             addMembers(user1, user2)
@@ -422,7 +423,7 @@ class ContentServiceUnitTest {
 
     private fun createTestContent(
         id: Long = 1L,
-        user: com.whatever.caramel.domain.user.model.User,
+        user: User,
         title: String? = "테스트 메모",
         description: String? = "테스트 메모 내용",
         isCompleted: Boolean = false,
