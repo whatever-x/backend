@@ -203,7 +203,7 @@ class BalanceGameServiceTest @Autowired constructor(
         val userChoices = balanceGameService.getCoupleMemberChoices(couple.id, expectedGame.first.id)
 
         // then
-        assertThat(userChoices.size).isEqualTo(0)
+        assertThat(userChoices).isEmpty()
     }
 
     @DisplayName("커플의 밸런스 게임 선택 조회시, Couple 안의 MemberId 가 빈 경우 emptyList 를 반환한다")
@@ -225,7 +225,7 @@ class BalanceGameServiceTest @Autowired constructor(
         val userChoices = balanceGameService.getCoupleMemberChoices(couple.id, expectedGame.first.id)
 
         // then
-        assertThat(userChoices.size).isEqualTo(0)
+        assertThat(userChoices).isEmpty()
     }
 
     @DisplayName("밸런스 게임을 조회 시 선택지가 두개 미만일 경우 예외가 발생한다.")
