@@ -31,7 +31,9 @@ import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.LocalDateTime
+import kotlin.contracts.contract
 import kotlin.test.Test
+import kotlin.test.assertNotNull
 
 @CaramelDomainSpringBootTest
 class BalanceGameServiceTest @Autowired constructor(
@@ -270,9 +272,9 @@ class BalanceGameServiceTest @Autowired constructor(
             )
 
             // then
-            assertThat(result.myChoice).isNotNull
-            assertThat(result.myChoice!!.balanceGameId).isEqualTo(gameId)
-            assertThat(result.myChoice!!.balanceGameOptionId).isEqualTo(selectedOptionId)
+            val myChoice = assertNotNull(result.myChoice)
+            assertThat(myChoice.balanceGameId).isEqualTo(gameId)
+            assertThat(myChoice.balanceGameOptionId).isEqualTo(selectedOptionId)
             assertThat(result.partnerChoice).isNull()
         }
     }
@@ -307,9 +309,9 @@ class BalanceGameServiceTest @Autowired constructor(
             )
 
             // then
-            assertThat(result.myChoice).isNotNull
-            assertThat(result.myChoice!!.balanceGameId).isEqualTo(myChoiceOption.balanceGame.id)
-            assertThat(result.myChoice!!.balanceGameOptionId).isEqualTo(myChoiceOption.balanceGameOption.id)
+            val myChoice = assertNotNull(result.myChoice)
+            assertThat(myChoice.balanceGameId).isEqualTo(myChoiceOption.balanceGame.id)
+            assertThat(myChoice.balanceGameOptionId).isEqualTo(myChoiceOption.balanceGameOption.id)
             assertThat(result.partnerChoice).isNull()
         }
     }
