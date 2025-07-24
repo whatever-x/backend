@@ -18,6 +18,7 @@ import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.persistence.Version
 
 @Entity
 @Table(
@@ -44,6 +45,8 @@ class Content(
     @Column(length = 50, nullable = false)
     var type: ContentType = ContentType.MEMO,
 ) : BaseEntity() {
+    @Version
+    private var version: Long = 0L
 
     fun updateContentDetail(newContentDetail: ContentDetail) {
         if (newContentDetail.title == null && newContentDetail.description == null) {

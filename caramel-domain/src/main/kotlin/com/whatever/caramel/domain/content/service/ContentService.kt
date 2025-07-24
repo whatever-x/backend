@@ -188,7 +188,6 @@ class ContentService(
         }
         val savedScheduleEvent = scheduleEventRepository.save(scheduleEvent)
 
-
         applicationEventPublisher.publishEvent(
             ScheduleCreateEvent(
                 userId = userId,
