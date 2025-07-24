@@ -3,8 +3,10 @@ package com.whatever.caramel.domain.balancegame.service
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameExceptionCode
+import com.whatever.caramel.domain.balancegame.exception.BalanceGameExceptionCode.GAME_NOT_EXISTS
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameIllegalArgumentException
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameIllegalStateException
+import com.whatever.caramel.domain.balancegame.exception.BalanceGameNotFoundException
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameOptionNotFoundException
 import com.whatever.caramel.domain.balancegame.model.BalanceGame
 import com.whatever.caramel.domain.balancegame.model.BalanceGameOption
@@ -21,13 +23,18 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
+import org.mockito.Mockito.anyLong
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.LocalDateTime
+import kotlin.contracts.contract
 import kotlin.test.Test
+import kotlin.test.assertNotNull
 
 @CaramelDomainSpringBootTest
 class BalanceGameServiceTest @Autowired constructor(
@@ -48,7 +55,7 @@ class BalanceGameServiceTest @Autowired constructor(
         coupleRepository.deleteAllInBatch()
     }
 
-    @DisplayName("밸러스 게임을 조회 시 게임의 정보가 반환된다.")
+    @DisplayName("밸런스 게임을 조회 시 게임의 정보가 반환된다.")
     @Test
     fun getTodayBalanceGameInfo_WithNoMemberChoices() {
         // given
@@ -67,7 +74,30 @@ class BalanceGameServiceTest @Autowired constructor(
         }
     }
 
-    @DisplayName("밸러스 게임 커플 선택 조회 시, 커플 멤버중 나만 선택했을 경우 내 선택 정보가 반환된다.")
+    @DisplayName("밸런스 게임을 조회 시 밸런스 게임이 없는 경우 BalanceGameNotFoundException 을 던진다")
+    @Test
+    fun getTodayBalanceGameInfo_ButThrowException() {
+        // given
+        setUpCouple()
+        val now = LocalDateTime.of(2025, 5, 5, 9, 0)
+        mockStatic(DateTimeUtil::class.java).use {
+            whenever(DateTimeUtil.localNow(any())).thenReturn(now)
+            mock<BalanceGameRepository> {
+                on { findWithOptionsByGameDate(any()) } doReturn null
+            }
+
+            // when
+            val result = assertThrows<BalanceGameNotFoundException> {
+                balanceGameService.getTodayBalanceGameInfo()
+            }
+
+            // then
+            assertThat(result.errorCode).isEqualTo(GAME_NOT_EXISTS)
+            assertThat(result.errorUi.title).isEqualTo("밸런스 게임을 찾을 수 없어요.")
+        }
+    }
+
+    @DisplayName("밸런스 게임 커플 선택 조회 시, 커플 멤버중 나만 선택했을 경우 내 선택 정보가 반환된다.")
     @Test
     fun getCoupleMemberChoices_WhenIHaveChosen() {
         // given
@@ -96,7 +126,7 @@ class BalanceGameServiceTest @Autowired constructor(
         }
     }
 
-    @DisplayName("밸러스 게임 커플 선택 조회 시, 커플 멤버중 파트너만 선택했을 경우 파트너 선택 정보가 반환된다.")
+    @DisplayName("밸런스 게임 커플 선택 조회 시, 커플 멤버중 파트너만 선택했을 경우 파트너 선택 정보가 반환된다.")
     @Test
     fun getTodayBalanceGameInfo_WhenPartnerChosen() {
         // given
@@ -117,14 +147,14 @@ class BalanceGameServiceTest @Autowired constructor(
             val result = balanceGameService.getCoupleMemberChoices(couple.id, expectedGame.first.id)
 
             // then
-            val myChoiceOption = result.firstOrNull() { it.userId == myUser.id }
+            val myChoiceOption = result.firstOrNull { it.userId == myUser.id }
             val partnerChoiceOption = result.first { it.userId == partnerUser.id }
             assertThat(myChoiceOption).isNull()
             assertThat(partnerChoiceOption.balanceGameOptionId).isEqualTo(partnerChoice.balanceGameOption.id)
         }
     }
 
-    @DisplayName("밸러스 게임을 조회 시 커플멤버 모두 선택했을 경우 선택 정보도 함께 반환된다.")
+    @DisplayName("밸런스 게임을 조회 시 커플멤버 모두 선택했을 경우 선택 정보도 함께 반환된다.")
     @Test
     fun getTodayBalanceGameInfo_WhenBothMembersChosen() {
         // given
@@ -159,7 +189,49 @@ class BalanceGameServiceTest @Autowired constructor(
         }
     }
 
-    @DisplayName("밸러스 게임을 조회 시 선택지가 두개 미만일 경우 예외가 발생한다.")
+    @DisplayName("커플의 밸런스 게임 선택 조회시, Couple Id로 조회했는데 없는 경우 emptyList 를 반환한다")
+    @Test
+    fun getCoupleMemberChoices_WhenFindByIdWithMembersReturnsNull() {
+        // given
+        val (_, _, couple) = setUpCouple()
+        val now = LocalDateTime.of(2025, 5, 5, 9, 0)
+        val expectedGame = makeBalanceGame(1, now.toLocalDate()).first()
+        val coupleRepository = mock<CoupleRepository>()
+        whenever(coupleRepository.findByIdWithMembers(anyLong())).thenReturn(null)
+
+        val balanceGameService =
+            BalanceGameService(balanceGameRepository, userChoiceOptionRepository, coupleRepository, userRepository)
+
+        // when
+        val userChoices = balanceGameService.getCoupleMemberChoices(couple.id, expectedGame.first.id)
+
+        // then
+        assertThat(userChoices).isEmpty()
+    }
+
+    @DisplayName("커플의 밸런스 게임 선택 조회시, Couple 안의 MemberId 가 빈 경우 emptyList 를 반환한다")
+    @Test
+    fun getCoupleMemberChoices_WhenMembersIsEmpty() {
+        // given
+        val (user1, user2, couple) = setUpCouple()
+        val now = LocalDateTime.of(2025, 5, 5, 9, 0)
+        val expectedGame = makeBalanceGame(1, now.toLocalDate()).first()
+        val coupleRepository = mock<CoupleRepository>()
+        whenever(coupleRepository.findByIdWithMembers(anyLong())).thenReturn(couple.apply {
+            removeMember(user1)
+            removeMember(user2)
+        })
+        val balanceGameService =
+            BalanceGameService(balanceGameRepository, userChoiceOptionRepository, coupleRepository, userRepository)
+
+        // when
+        val userChoices = balanceGameService.getCoupleMemberChoices(couple.id, expectedGame.first.id)
+
+        // then
+        assertThat(userChoices).isEmpty()
+    }
+
+    @DisplayName("밸런스 게임을 조회 시 선택지가 두개 미만일 경우 예외가 발생한다.")
     @Test
     fun getTodayBalanceGameInfo_WithIllegalOptionCount() {
         // given
@@ -201,9 +273,9 @@ class BalanceGameServiceTest @Autowired constructor(
             )
 
             // then
-            require(result.myChoice != null)
-            assertThat(result.myChoice.balanceGameId).isEqualTo(gameId)
-            assertThat(result.myChoice.balanceGameOptionId).isEqualTo(selectedOptionId)
+            val myChoice = assertNotNull(result.myChoice)
+            assertThat(myChoice.balanceGameId).isEqualTo(gameId)
+            assertThat(myChoice.balanceGameOptionId).isEqualTo(selectedOptionId)
             assertThat(result.partnerChoice).isNull()
         }
     }
@@ -238,9 +310,9 @@ class BalanceGameServiceTest @Autowired constructor(
             )
 
             // then
-            require(result.myChoice != null)
-            assertThat(result.myChoice.balanceGameId).isEqualTo(myChoiceOption.balanceGame.id)
-            assertThat(result.myChoice.balanceGameOptionId).isEqualTo(myChoiceOption.balanceGameOption.id)
+            val myChoice = assertNotNull(result.myChoice)
+            assertThat(myChoice.balanceGameId).isEqualTo(myChoiceOption.balanceGame.id)
+            assertThat(myChoice.balanceGameOptionId).isEqualTo(myChoiceOption.balanceGameOption.id)
             assertThat(result.partnerChoice).isNull()
         }
     }
@@ -276,14 +348,14 @@ class BalanceGameServiceTest @Autowired constructor(
             )
 
             // then
-            require(result.myChoice != null)
-            assertThat(result.myChoice.balanceGameId).isEqualTo(gameId)
-            assertThat(result.myChoice.balanceGameOptionId).isEqualTo(selectedOptionId)
+            assertThat(result.myChoice).isNotNull
+            assertThat(result.myChoice!!.balanceGameId).isEqualTo(gameId)
+            assertThat(result.myChoice!!.balanceGameOptionId).isEqualTo(selectedOptionId)
 
-            require(result.partnerChoice != null)
+            assertThat(result.partnerChoice).isNotNull
             with(partnerChoiceOption) {
-                assertThat(result.partnerChoice.balanceGameId).isEqualTo(balanceGame.id)
-                assertThat(result.partnerChoice.balanceGameOptionId).isEqualTo(balanceGameOption.id)
+                assertThat(result.partnerChoice!!.balanceGameId).isEqualTo(balanceGame.id)
+                assertThat(result.partnerChoice!!.balanceGameOptionId).isEqualTo(balanceGameOption.id)
             }
         }
     }
