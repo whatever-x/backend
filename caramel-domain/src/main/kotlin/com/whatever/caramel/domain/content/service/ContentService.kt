@@ -80,8 +80,9 @@ class ContentService(
         queryParameterVo: ContentQueryVo,
         coupleId: Long,
     ): PagedSlice<ContentResponseVo> {
-        val memberIds = coupleRepository.findByIdWithMembers(coupleId)?.members?.map { it.id }
-            ?: emptyList()
+        val couple = coupleRepository.findByIdWithMembers(coupleId)
+            ?: throw CoupleNotFoundException(errorCode = COUPLE_NOT_FOUND)
+        val memberIds = couple.members.map { it.id }
 
         val contentList = contentRepository.findByTypeWithCursor(
             type = ContentType.MEMO,
