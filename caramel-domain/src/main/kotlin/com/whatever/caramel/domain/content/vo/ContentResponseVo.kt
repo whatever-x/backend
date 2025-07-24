@@ -12,6 +12,7 @@ data class ContentResponseVo(
     val isCompleted: Boolean,
     val tagList: List<TagVo>,
     val createdAt: LocalDate,
+    val ownerType: ContentOwnerType,
 ) {
     companion object {
         fun from(
@@ -24,7 +25,8 @@ data class ContentResponseVo(
                 description = content.contentDetail.description ?: "",
                 isCompleted = content.contentDetail.isCompleted,
                 tagList = tagList,
-                createdAt = content.getCreatedAtInZone(KST_ZONE_ID).toLocalDate()
+                createdAt = content.getCreatedAtInZone(KST_ZONE_ID).toLocalDate(),
+                ownerType = content.ownerType
             )
         }
     }
