@@ -149,6 +149,7 @@ class ContentService(
         userCoupleId: Long,
         userId: Long,
     ): ContentSummaryVo {
+        println("tjrwn 여기 옴? ")
         val memo = contentRepository.findContentByIdAndType(
             id = contentId,
             type = ContentType.MEMO
@@ -197,7 +198,7 @@ class ContentService(
                 contentDetail = ContentDetailVo.from(savedScheduleEvent.content.contentDetail)
             )
         )
-
+        println("tjrwn 끝까지 갔나 ?")
         return ContentSummaryVo(
             id = savedScheduleEvent.id,
             contentType = ContentType.SCHEDULE,
@@ -243,7 +244,11 @@ class ContentService(
     fun updateRecover(
         e: OptimisticLockingFailureException,
         contentId: Long,
+        requestVo: UpdateContentRequestVo,
+        userCoupleId: Long,
+        userId: Long,
     ) {
+        println("tjrwn 여기옴 ?! 제발 ")
         logger.error { "update memo fail. content id: $contentId" }
         throw ContentIllegalStateException(
             errorCode = ContentExceptionCode.UPDATE_CONFLICT,
