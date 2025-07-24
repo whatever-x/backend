@@ -3,6 +3,7 @@ package com.whatever.caramel.api.content.controller.dto.request
 import com.whatever.caramel.domain.calendarevent.vo.DateTimeInfoVo
 import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
 import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
+import com.whatever.caramel.domain.content.vo.ContentOwnerType
 import com.whatever.caramel.domain.content.vo.CreateContentRequestVo
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED
@@ -30,13 +31,17 @@ data class CreateContentRequest(
         requiredMode = NOT_REQUIRED,
     )
     val tags: List<Long> = emptyList(),
+
+    @Schema(description = "소유자 타입 (ME: 나, PARTNER: 상대방, US: 우리)")
+    val ownerType: ContentOwnerType,
 ) {
     fun toVo(): CreateContentRequestVo {
         return CreateContentRequestVo(
             title = this.title,
             description = this.description,
             isCompleted = this.isCompleted,
-            tags = this.tags
+            tags = this.tags,
+            ownerType = this.ownerType
         )
     }
 }

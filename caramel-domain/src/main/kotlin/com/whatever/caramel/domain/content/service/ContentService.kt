@@ -122,7 +122,8 @@ class ContentService(
             description = contentRequestVo.description,
             isCompleted = contentRequestVo.isCompleted,
             tagIds = contentRequestVo.tags.toSet(),
-            currentUserId = userId
+            currentUserId = userId,
+            ownerType = contentRequestVo.ownerType
         )
 
         applicationEventPublisher.publishEvent(

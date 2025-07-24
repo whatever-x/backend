@@ -6,6 +6,7 @@ import com.whatever.caramel.domain.content.repository.ContentRepository
 import com.whatever.caramel.domain.content.tag.model.TagContentMapping
 import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.caramel.domain.content.tag.repository.TagRepository
+import com.whatever.caramel.domain.content.vo.ContentOwnerType
 import com.whatever.caramel.domain.content.vo.ContentType
 import com.whatever.caramel.domain.content.vo.ContentVo
 import com.whatever.caramel.domain.user.repository.UserRepository
@@ -26,6 +27,7 @@ class MemoCreator(
         isCompleted: Boolean,
         tagIds: Set<Long>,
         currentUserId: Long,
+        ownerType: ContentOwnerType,
     ): ContentVo {
         val contentDetail = ContentDetail(
             title = title,
@@ -37,7 +39,8 @@ class MemoCreator(
         val content = Content(
             user = user,
             contentDetail = contentDetail,
-            type = ContentType.MEMO
+            type = ContentType.MEMO,
+            ownerType = ownerType
         )
 
         val savedContent = contentRepository.save(content)

@@ -11,6 +11,7 @@ import com.whatever.caramel.domain.content.repository.ContentRepository
 import com.whatever.caramel.domain.content.tag.model.TagContentMapping
 import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.caramel.domain.content.tag.repository.TagRepository
+import com.whatever.caramel.domain.content.vo.ContentOwnerType
 import com.whatever.caramel.domain.content.vo.ContentType
 import com.whatever.caramel.domain.content.vo.ScheduleEventVo
 import com.whatever.caramel.domain.user.repository.UserRepository
@@ -34,6 +35,7 @@ class ScheduleCreator(
         tagIds: Set<Long>,
         dateTimeInfo: DateTimeInfoVo,
         getCurrentUserId: Long,
+        ownerType: ContentOwnerType,
     ): ScheduleEventVo {
         val contentDetail = ContentDetail(
             title = title,
@@ -46,7 +48,8 @@ class ScheduleCreator(
         val content = Content(
             user = user,
             contentDetail = contentDetail,
-            type = ContentType.SCHEDULE
+            type = ContentType.SCHEDULE,
+            ownerType = ownerType
         )
         val savedContent = contentRepository.save(content)
 

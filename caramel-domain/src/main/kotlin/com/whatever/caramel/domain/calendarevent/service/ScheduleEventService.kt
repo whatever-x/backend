@@ -136,6 +136,7 @@ class ScheduleEventService(
                 endDateTime = scheduleVo.endDateTime,
             ),
             getCurrentUserId = currentUserId,
+            ownerType = scheduleVo.ownerType,
         )
 
         applicationEventPublisher.publishEvent(
