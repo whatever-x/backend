@@ -12,6 +12,11 @@ import com.whatever.caramel.domain.user.repository.UserRepository
 import com.whatever.caramel.domain.user.repository.UserSettingRepository
 import com.whatever.caramel.infrastructure.firebase.FcmSender
 import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
+import com.whatever.caramel.infrastructure.properties.FirebaseProperties
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
@@ -35,6 +40,12 @@ class FirebaseServiceTest @Autowired constructor(
 
     @MockitoBean
     private lateinit var fcmSender: FcmSender
+
+    private val mockkFcmTokenRepository: FcmTokenRepository = mockk()
+    private val mockkFcmSender: FcmSender = mockk()
+    private val mockkFirebaseProperties: FirebaseProperties = mockk()
+    private val mockkFirebaseService =
+        spyk(FirebaseService(mockkFcmTokenRepository, userRepository, mockkFcmSender, mockkFirebaseProperties))
 
     @AfterEach
     fun tearDown() {
@@ -212,6 +223,30 @@ class FirebaseServiceTest @Autowired constructor(
         verify(fcmSender, never()).sendNotificationAll(any(), any())
     }
 
+    @DisplayName("fcmEnabled 가 false 인경우, sendNotification 아무 동작 없이 끝난다")
+    @Test
+    fun sendNotification_FcmEnabledFalse() {
+        every { mockkFirebaseProperties.fcmEnabled } returns false
+
+        val (myUser, partnerUser, _) = createCouple(userRepository, coupleRepository)
+        createFcmToken("test-device-1", myUser, false)
+        createFcmToken("test-device-2", myUser, false)
+        createFcmToken("test-device-1", partnerUser, false)
+        createFcmToken("test-device-2", partnerUser, false)
+
+        // when
+        mockkFirebaseService.sendNotification(
+            targetUserIds = setOf(myUser.id, partnerUser.id),
+            fcmNotification = FcmNotification("title", "body")
+        )
+
+        verify(exactly = 0) {
+            mockkFcmTokenRepository.findAllSendableTokensByUserIds(any())
+            mockkFcmSender.sendNotification(any(), any())
+            mockkFcmSender.sendNotificationAll(any(), any())
+        }
+    }
+
     @DisplayName("타겟 유저의 fcm 토큰이 없다면 데이터 전송 함수가 실행되지 않는다.")
     @Test
     fun sendData_WithUsersWithoutTokens() {
@@ -286,6 +321,30 @@ class FirebaseServiceTest @Autowired constructor(
         // then
         verify(fcmSender, never()).sendData(any(), any())
         verify(fcmSender, only()).sendDataAll(any(), any())
+    }
+
+    @DisplayName("fcmEnabled 가 false 인경우, sendData는 아무 동작 없이 끝난다")
+    @Test
+    fun sendData_FcmEnabledFalse() {
+        every { mockkFirebaseProperties.fcmEnabled } returns false
+
+        val (myUser, partnerUser, _) = createCouple(userRepository, coupleRepository)
+        createFcmToken("test-device-1", myUser)
+        createFcmToken("test-device-2", myUser)
+        createFcmToken("test-device-1", partnerUser)
+        createFcmToken("test-device-2", partnerUser)
+
+        // when
+        mockkFirebaseService.sendData(
+            targetUserIds = setOf(myUser.id, partnerUser.id),
+            data = mapOf("x" to "y"),
+        )
+
+        verify(exactly = 0) {
+            mockkFcmTokenRepository.findAllSendableTokensByUserIds(any())
+            mockkFcmSender.sendData(any(), any())
+            mockkFcmSender.sendDataAll(any(), any())
+        }
     }
 
     private fun createFcmToken(

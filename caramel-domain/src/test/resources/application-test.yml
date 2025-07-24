@@ -73,3 +73,7 @@ firebase:
 crypto:
   password: ${CRYPTO_PASSWORD}
   salt: ${CRYPTO_SALT}
+
+logging:
+  level:
+    root: DEBUG
