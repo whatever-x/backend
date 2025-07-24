@@ -6,6 +6,7 @@ import com.whatever.caramel.api.content.controller.dto.request.UpdateContentRequ
 import com.whatever.caramel.domain.content.exception.ContentExceptionCode
 import com.whatever.caramel.domain.content.vo.ContentSummaryVo
 import com.whatever.caramel.domain.content.vo.ContentType
+import com.whatever.caramel.domain.content.vo.ContentOwnerType
 import com.whatever.caramel.security.util.SecurityUtil
 import io.mockk.every
 import io.mockk.mockkStatic
@@ -41,6 +42,7 @@ class ContentControllerTest : ControllerTestSupport() {
             title = "메모 제목",
             description = "메모 설명",
             tags = listOf(1L),
+            ownerType = ContentOwnerType.ME
         )
         whenever(contentService.createContent(any(), any(), any()))
             .thenReturn(ContentSummaryVo(0L, ContentType.MEMO))
@@ -97,7 +99,7 @@ class ContentControllerTest : ControllerTestSupport() {
             description = "",
             isCompleted = false,
             tags = emptyList(),
-//            dateTimeInfo = null
+            ownerType = ContentOwnerType.ME
         )
 
         // when // then
@@ -120,7 +122,8 @@ class ContentControllerTest : ControllerTestSupport() {
             title = "수정된 제목",
             description = "수정된 설명",
             isCompleted = true,
-            tagList = listOf(1L)
+            tagList = listOf(1L),
+            ownerType = ContentOwnerType.ME
         )
 
         whenever(contentService.updateContent(any(), any(), any(), any()))
