@@ -2,6 +2,7 @@ package com.whatever.caramel.api.content.controller.dto.request
 
 import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
 import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
+import com.whatever.caramel.domain.content.vo.ContentOwnerType
 import com.whatever.caramel.domain.content.vo.UpdateContentRequestVo
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED
@@ -25,6 +26,9 @@ data class UpdateContentRequest(
 
     @Schema(description = "일정 정보 (캘린더 추가시에만 사용)", requiredMode = NOT_REQUIRED)
     val dateTimeInfo: DateTimeInfoDto? = null,
+
+    @Schema(description = "소유자 타입 (ME: 나, PARTNER: 상대방, US: 우리)")
+    val ownerType: ContentOwnerType,
 ) {
     fun toVo(): UpdateContentRequestVo {
         return UpdateContentRequestVo(
@@ -32,7 +36,8 @@ data class UpdateContentRequest(
             description = this.description,
             isCompleted = this.isCompleted,
             tagList = this.tagList,
-            dateTimeInfo = this.dateTimeInfo?.toVo()
+            dateTimeInfo = this.dateTimeInfo?.toVo(),
+            ownerType = this.ownerType
         )
     }
 }

@@ -193,6 +193,8 @@ class ScheduleEventService(
                 updateTags(scheduleEvent.content, newTags)
             }
 
+            scheduleEvent.content.updateOwnerType(ownerType)
+
             when (startDateTime) {
                 null -> scheduleEvent.convertToMemo(
                     contentDetail = contentDetail

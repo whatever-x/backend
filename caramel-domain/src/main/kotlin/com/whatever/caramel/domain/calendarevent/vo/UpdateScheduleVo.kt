@@ -1,6 +1,7 @@
 package com.whatever.caramel.domain.calendarevent.vo
 
 import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
+import com.whatever.caramel.domain.content.vo.ContentOwnerType
 import org.hibernate.validator.constraints.CodePointLength
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -16,6 +17,7 @@ data class UpdateScheduleVo(
     val endDateTime: LocalDateTime? = null,
     val endTimeZone: String? = null,
     val tagIds: Set<Long> = emptySet(),
+    val ownerType: ContentOwnerType,
 ) {
     companion object {
         fun from(
@@ -28,6 +30,7 @@ data class UpdateScheduleVo(
             endDateTime: LocalDateTime? = null,
             endTimeZone: String? = null,
             tagIds: Set<Long> = emptySet(),
+            ownerType: ContentOwnerType,
         ): UpdateScheduleVo {
             return UpdateScheduleVo(
                 selectedDate = selectedDate,
@@ -39,6 +42,7 @@ data class UpdateScheduleVo(
                 endDateTime = endDateTime,
                 endTimeZone = endTimeZone,
                 tagIds = tagIds,
+                ownerType = ownerType,
             )
         }
     }

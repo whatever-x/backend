@@ -3,6 +3,7 @@ package com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto
 import com.whatever.caramel.domain.calendarevent.vo.UpdateScheduleVo
 import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
 import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
+import com.whatever.caramel.domain.content.vo.ContentOwnerType
 import io.swagger.v3.oas.annotations.media.Schema
 import org.hibernate.validator.constraints.CodePointLength
 import java.time.LocalDate
@@ -39,6 +40,9 @@ data class UpdateScheduleRequest(
 
     @Schema(description = "태그 번호 리스트")
     val tagIds: Set<Long> = emptySet(),
+
+    @Schema(description = "소유자 타입 (ME: 나, PARTNER: 상대방, US: 우리)")
+    val ownerType: ContentOwnerType,
 ) {
     fun toVo(): UpdateScheduleVo {
         return UpdateScheduleVo(
@@ -51,6 +55,7 @@ data class UpdateScheduleRequest(
             endDateTime = this.endDateTime,
             endTimeZone = this.endTimeZone,
             tagIds = this.tagIds,
+            ownerType = this.ownerType,
         )
     }
 }
