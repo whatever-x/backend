@@ -5,6 +5,7 @@ import com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto.Updat
 import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.security.util.SecurityUtil
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
@@ -42,6 +43,7 @@ class ScheduleControllerTest : ControllerTestSupport() {
             isCompleted = false,
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            contentAsignee = ContentAssignee.ME
         )
         every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
         every { SecurityUtil.getCurrentUserId() } returns 0L
@@ -69,6 +71,7 @@ class ScheduleControllerTest : ControllerTestSupport() {
             isCompleted = false,
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            contentAsignee = ContentAssignee.ME,
         )
         every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
         every { SecurityUtil.getCurrentUserId() } returns 0L
@@ -96,6 +99,7 @@ class ScheduleControllerTest : ControllerTestSupport() {
             isCompleted = false,
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when, then
@@ -122,6 +126,7 @@ class ScheduleControllerTest : ControllerTestSupport() {
             isCompleted = false,
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            contentAsignee = ContentAssignee.ME,
         )
         every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
         every { SecurityUtil.getCurrentUserId() } returns 0L
@@ -149,6 +154,7 @@ class ScheduleControllerTest : ControllerTestSupport() {
             isCompleted = false,
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when, then

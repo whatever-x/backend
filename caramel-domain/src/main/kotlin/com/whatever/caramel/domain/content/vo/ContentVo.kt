@@ -6,13 +6,15 @@ data class ContentVo(
     val id: Long,
     val contentDetail: ContentDetailVo,
     val type: ContentType,
+    val contentAsignee: ContentAssignee,
 ) {
     companion object {
         fun from(content: Content): ContentVo {
             return ContentVo(
                 id = content.id,
                 contentDetail = ContentDetailVo.from(content.contentDetail),
-                type = content.type
+                type = content.type,
+                contentAsignee = content.contentAsignee
             )
         }
     }

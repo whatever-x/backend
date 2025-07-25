@@ -14,6 +14,7 @@ import com.whatever.caramel.domain.content.repository.ContentRepository
 import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.caramel.domain.content.tag.repository.TagRepository
 import com.whatever.caramel.domain.content.vo.ContentType
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.findByIdAndNotDeleted
@@ -109,6 +110,7 @@ class ScheduleEventServiceOptimisticLockTest @Autowired constructor(
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
             endDateTime = NOW,
             endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            contentAsignee = ContentAssignee.ME,
         )
 
         val threadCount = 2

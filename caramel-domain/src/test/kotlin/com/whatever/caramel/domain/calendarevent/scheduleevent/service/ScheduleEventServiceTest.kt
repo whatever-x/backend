@@ -23,6 +23,7 @@ import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepos
 import com.whatever.caramel.domain.content.tag.repository.TagRepository
 import com.whatever.caramel.domain.content.tag.vo.TagVo
 import com.whatever.caramel.domain.content.vo.ContentType
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.findByIdAndNotDeleted
@@ -188,6 +189,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
             endDateTime = NOW,
             endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when
@@ -237,6 +239,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
             endDateTime = NOW,
             endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            contentAsignee = ContentAssignee.ME
         )
 
         // when
@@ -284,6 +287,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             isCompleted = true,
             startDateTime = NOW.minusDays(2),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            contentAsignee = ContentAssignee.ME
         )
 
         // when
@@ -326,6 +330,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             isCompleted = true,
             startDateTime = NOW.minusDays(2),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            contentAsignee = ContentAssignee.ME
         )
 
         // when, then
@@ -371,6 +376,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             isCompleted = true,
             startDateTime = NOW.minusDays(2),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            contentAsignee = ContentAssignee.ME
         )
 
         // when, then
@@ -411,6 +417,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
             endDateTime = NOW.minusDays(1),  // 유효하지 않은 endDateTime.
             endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            contentAsignee = ContentAssignee.ME
         )
 
         // when, then
@@ -456,6 +463,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             isCompleted = false,
             startDateTime = NOW.plusDays(1),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            contentAsignee = ContentAssignee.ME
         )
 
         // when, then
@@ -498,6 +506,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             isCompleted = false,
             startDateTime = NOW.plusDays(1),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            contentAsignee = ContentAssignee.ME
         )
 
         // when, then
@@ -547,7 +556,8 @@ class ScheduleEventServiceTest @Autowired constructor(
             isCompleted = false,
             startDateTime = NOW.plusDays(1),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            tagIds = newTagIds
+            tagIds = newTagIds,
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when
@@ -592,6 +602,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             startTimeZone = null,
             endDateTime = NOW,
             endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when
