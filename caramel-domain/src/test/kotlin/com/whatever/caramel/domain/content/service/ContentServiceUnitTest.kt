@@ -12,6 +12,7 @@ import com.whatever.caramel.domain.content.tag.model.Tag
 import com.whatever.caramel.domain.content.tag.model.TagContentMapping
 import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.caramel.domain.content.tag.repository.TagRepository
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.domain.content.vo.ContentListSortType
 import com.whatever.caramel.domain.content.vo.ContentQueryVo
 import com.whatever.caramel.domain.content.vo.ContentType
@@ -423,7 +424,8 @@ class ContentServiceUnitTest {
             title = "a",
             description = "b",
             isCompleted = false,
-            tags = listOf()
+            tags = listOf(),
+            contentAsignee = ContentAssignee.ME,
         )
         every { coupleRepository.findByIdWithMembers(any()) } returns null
 
@@ -450,6 +452,7 @@ class ContentServiceUnitTest {
             isCompleted = false,
             tagList = listOf(),
             dateTimeInfo = null,
+            contentAsignee = ContentAssignee.ME,
         )
         val memo = createTestContent(
             id = memoId,
@@ -491,6 +494,7 @@ class ContentServiceUnitTest {
             isCompleted = false,
             tagList = listOf(),
             dateTimeInfo = null,
+            contentAsignee = ContentAssignee.ME,
         )
         val user = createTestUser(id = userId)
         val user2 = createTestUser(id = user2Id)

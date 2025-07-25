@@ -8,6 +8,7 @@ import com.whatever.caramel.domain.content.model.ContentDetail
 import com.whatever.caramel.domain.content.repository.ContentRepository
 import com.whatever.caramel.domain.content.tag.model.Tag
 import com.whatever.caramel.domain.content.tag.model.TagContentMapping
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.domain.content.vo.ContentType
 import com.whatever.caramel.domain.content.vo.UpdateContentRequestVo
 import com.whatever.caramel.domain.couple.model.Couple
@@ -54,6 +55,7 @@ class ContentServiceRetryableTest {
             isCompleted = false,
             tagList = listOf(),
             dateTimeInfo = null,
+            contentAsignee = ContentAssignee.ME
         )
         val user = createTestUser(id = userId)
         val memo = createTestContent(
