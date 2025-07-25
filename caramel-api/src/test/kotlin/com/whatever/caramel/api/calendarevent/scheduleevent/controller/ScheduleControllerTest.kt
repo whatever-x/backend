@@ -5,7 +5,7 @@ import com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto.Updat
 import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.security.util.SecurityUtil
-import com.whatever.caramel.domain.content.vo.ContentOwnerType
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
@@ -15,8 +15,6 @@ import org.junit.jupiter.api.DisplayName
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.put
 import kotlin.test.Test
-import java.time.LocalDate
-import java.time.LocalDateTime
 
 class ScheduleControllerTest : ControllerTestSupport() {
 
@@ -45,7 +43,7 @@ class ScheduleControllerTest : ControllerTestSupport() {
             isCompleted = false,
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            ownerType = ContentOwnerType.ME
+            contentAsignee = ContentAssignee.ME
         )
         every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
         every { SecurityUtil.getCurrentUserId() } returns 0L
@@ -73,7 +71,7 @@ class ScheduleControllerTest : ControllerTestSupport() {
             isCompleted = false,
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            ownerType = ContentOwnerType.ME,
+            contentAsignee = ContentAssignee.ME,
         )
         every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
         every { SecurityUtil.getCurrentUserId() } returns 0L
@@ -101,7 +99,7 @@ class ScheduleControllerTest : ControllerTestSupport() {
             isCompleted = false,
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            ownerType = ContentOwnerType.ME,
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when, then
@@ -128,7 +126,7 @@ class ScheduleControllerTest : ControllerTestSupport() {
             isCompleted = false,
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            ownerType = ContentOwnerType.ME,
+            contentAsignee = ContentAssignee.ME,
         )
         every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
         every { SecurityUtil.getCurrentUserId() } returns 0L
@@ -156,7 +154,7 @@ class ScheduleControllerTest : ControllerTestSupport() {
             isCompleted = false,
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            ownerType = ContentOwnerType.ME,
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when, then

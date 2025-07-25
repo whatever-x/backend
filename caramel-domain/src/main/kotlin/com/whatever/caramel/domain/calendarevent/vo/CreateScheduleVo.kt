@@ -2,7 +2,7 @@ package com.whatever.caramel.domain.calendarevent.vo
 
 import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
 import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
-import com.whatever.caramel.domain.content.vo.ContentOwnerType
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import org.hibernate.validator.constraints.CodePointLength
 import java.time.LocalDateTime
 
@@ -17,7 +17,7 @@ data class CreateScheduleVo(
     val endDateTime: LocalDateTime? = null,
     val endTimeZone: String? = null,
     val tagIds: Set<Long> = emptySet(),
-    val ownerType: ContentOwnerType,
+    val contentAsignee: ContentAssignee,
 ) {
     companion object {
         fun from(
@@ -29,7 +29,7 @@ data class CreateScheduleVo(
             endDateTime: LocalDateTime? = null,
             endTimeZone: String? = null,
             tagIds: Set<Long> = emptySet(),
-            ownerType: ContentOwnerType,
+            contentAsignee: ContentAssignee,
         ): CreateScheduleVo {
             return CreateScheduleVo(
                 title = title,
@@ -40,7 +40,7 @@ data class CreateScheduleVo(
                 endDateTime = endDateTime,
                 endTimeZone = endTimeZone,
                 tagIds = tagIds,
-                ownerType = ownerType,
+                contentAsignee = contentAsignee,
             )
         }
     }

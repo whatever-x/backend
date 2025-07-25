@@ -19,7 +19,7 @@ import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepos
 import com.whatever.caramel.domain.content.tag.repository.TagRepository
 import com.whatever.caramel.domain.content.tag.vo.TagVo
 import com.whatever.caramel.domain.content.vo.ContentType
-import com.whatever.caramel.domain.content.vo.ContentOwnerType
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.domain.content.vo.CreateContentRequestVo
 import com.whatever.caramel.domain.content.vo.UpdateContentRequestVo
 import com.whatever.caramel.domain.couple.model.Couple
@@ -111,7 +111,7 @@ class ContentServiceTest @Autowired constructor(
             description = "test-desc",
             isCompleted = false,
             tags = emptyList(),
-            ownerType = ContentOwnerType.ME,
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when
@@ -140,7 +140,7 @@ class ContentServiceTest @Autowired constructor(
             description = null,
             isCompleted = false,
             tags = emptyList(),
-            ownerType = ContentOwnerType.ME,
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when
@@ -176,7 +176,7 @@ class ContentServiceTest @Autowired constructor(
             description = description,
             isCompleted = false,
             tags = emptyList(),
-            ownerType = ContentOwnerType.PARTNER,
+            contentAsignee = ContentAssignee.PARTNER,
         )
 
         // when
@@ -202,7 +202,7 @@ class ContentServiceTest @Autowired constructor(
             description = null,
             isCompleted = false,
             tags = emptyList(),
-            ownerType = ContentOwnerType.ME,
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when
@@ -228,7 +228,7 @@ class ContentServiceTest @Autowired constructor(
             description = "test-desc",
             isCompleted = false,
             tags = emptyList(),
-            ownerType = ContentOwnerType.ME,
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when
@@ -354,7 +354,7 @@ class ContentServiceTest @Autowired constructor(
             isCompleted = newCompleted,
             tagList = emptyList(),
             dateTimeInfo = null, // Keep as MEMO
-            ownerType = ContentOwnerType.ME,
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when
@@ -390,7 +390,7 @@ class ContentServiceTest @Autowired constructor(
             isCompleted = memo.contentDetail.isCompleted,
             tagList = listOf(tag2.id, tag3.id),
             dateTimeInfo = null,
-            ownerType = ContentOwnerType.ME,
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when
@@ -424,7 +424,7 @@ class ContentServiceTest @Autowired constructor(
             isCompleted = false,
             tagList = emptyList(),
             dateTimeInfo = null,
-            ownerType = ContentOwnerType.ME,
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when & then
@@ -454,7 +454,7 @@ class ContentServiceTest @Autowired constructor(
                 startTimezone = DateTimeUtil.KST_ZONE_ID.toString(),
             ),
             tagList = emptyList(),
-            ownerType = ContentOwnerType.ME,
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when

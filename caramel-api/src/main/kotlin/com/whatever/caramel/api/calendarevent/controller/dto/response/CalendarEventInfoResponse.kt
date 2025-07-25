@@ -1,7 +1,7 @@
 package com.whatever.caramel.api.calendarevent.controller.dto.response
 
 import com.whatever.caramel.domain.calendarevent.vo.ScheduleDetailVo
-import com.whatever.caramel.domain.content.vo.ContentOwnerType
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDateTime
 
@@ -43,7 +43,7 @@ data class ScheduleDetailDto(
     val description: String?,
 
     @Schema(description = "소유자 타입")
-    val ownerType: ContentOwnerType,
+    val contentAsignee: ContentAssignee,
 ) {
     companion object {
         fun from(scheduleDetailVo: ScheduleDetailVo): ScheduleDetailDto {
@@ -57,7 +57,7 @@ data class ScheduleDetailDto(
                 parentScheduleId = scheduleDetailVo.parentScheduleId,
                 title = scheduleDetailVo.title,
                 description = scheduleDetailVo.description,
-                ownerType = scheduleDetailVo.ownerType,
+                contentAsignee = scheduleDetailVo.contentAsignee,
             )
         }
     }

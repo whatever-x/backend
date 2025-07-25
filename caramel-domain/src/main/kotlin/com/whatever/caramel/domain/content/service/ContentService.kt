@@ -123,7 +123,7 @@ class ContentService(
             isCompleted = contentRequestVo.isCompleted,
             tagIds = contentRequestVo.tags.toSet(),
             currentUserId = userId,
-            ownerType = contentRequestVo.ownerType
+            contentAsignee = contentRequestVo.contentAsignee
         )
 
         applicationEventPublisher.publishEvent(
@@ -169,7 +169,7 @@ class ContentService(
             isCompleted = requestVo.isCompleted
         )
         memo.updateContentDetail(newContentDetail)
-        memo.updateOwnerType(requestVo.ownerType)
+        memo.updatecontentAsignee(requestVo.contentAsignee)
 
         updateTags(memo, requestVo.tagList.toSet())
         if (requestVo.dateTimeInfo == null) {  // 날짜 정보가 없다면 메모 업데이트만 진행
@@ -179,7 +179,7 @@ class ContentService(
             )
         }
 
-        memo.updateOwnerType(requestVo.ownerType)
+        memo.updatecontentAsignee(requestVo.contentAsignee)
         
         val scheduleEvent = with(requestVo.dateTimeInfo) {
             ScheduleEvent.fromMemo(

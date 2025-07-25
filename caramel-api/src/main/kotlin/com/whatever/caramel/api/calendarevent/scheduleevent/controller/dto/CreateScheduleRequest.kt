@@ -3,7 +3,7 @@ package com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto
 import com.whatever.caramel.domain.calendarevent.vo.CreateScheduleVo
 import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
 import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
-import com.whatever.caramel.domain.content.vo.ContentOwnerType
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.com.whatever.caramel.api.content.tag.controller.dto.request.TagIdDto
 import io.swagger.v3.oas.annotations.media.Schema
 import org.hibernate.validator.constraints.CodePointLength
@@ -39,7 +39,7 @@ data class CreateScheduleRequest(
     val tagIds: Set<TagIdDto> = emptySet(),
 
     @Schema(description = "소유자 타입 (ME: 나, PARTNER: 상대방, US: 우리)")
-    val ownerType: ContentOwnerType,
+    val contentAsignee: ContentAssignee,
 ) {
     fun toVo(): CreateScheduleVo {
         return CreateScheduleVo(
@@ -51,7 +51,7 @@ data class CreateScheduleRequest(
             endDateTime = this.endDateTime,
             endTimeZone = this.endTimeZone,
             tagIds = this.tagIds.map { it.tagId }.toSet(),
-            ownerType = this.ownerType,
+            contentAsignee = this.contentAsignee,
         )
     }
 }

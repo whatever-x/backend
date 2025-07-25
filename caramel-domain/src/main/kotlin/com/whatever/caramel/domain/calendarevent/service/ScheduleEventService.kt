@@ -136,7 +136,7 @@ class ScheduleEventService(
                 endDateTime = scheduleVo.endDateTime,
             ),
             getCurrentUserId = currentUserId,
-            ownerType = scheduleVo.ownerType,
+            contentAsignee = scheduleVo.contentAsignee,
         )
 
         applicationEventPublisher.publishEvent(
@@ -193,7 +193,7 @@ class ScheduleEventService(
                 updateTags(scheduleEvent.content, newTags)
             }
 
-            scheduleEvent.content.updateOwnerType(ownerType)
+            scheduleEvent.content.updatecontentAsignee(contentAsignee)
 
             when (startDateTime) {
                 null -> scheduleEvent.convertToMemo(

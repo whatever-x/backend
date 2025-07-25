@@ -11,7 +11,7 @@ import com.whatever.caramel.domain.content.repository.ContentRepository
 import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.caramel.domain.content.tag.repository.TagRepository
 import com.whatever.caramel.domain.content.vo.ContentType
-import com.whatever.caramel.domain.content.vo.ContentOwnerType
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.couple.service.event.ExcludeAsyncConfigBean
@@ -90,7 +90,7 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
             endDateTime = NOW.plusDays(2),
             endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            ownerType = ContentOwnerType.ME,
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when
@@ -134,7 +134,7 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
             isCompleted = false,
             startDateTime = NOW,
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            ownerType = ContentOwnerType.ME,
+            contentAsignee = ContentAssignee.ME,
         )
         // when, then
         val exception = assertThrows<ScheduleIllegalArgumentException> {
@@ -161,7 +161,7 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
             endDateTime = NOW.minusDays(1),
             endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            ownerType = ContentOwnerType.ME,
+            contentAsignee = ContentAssignee.ME,
         )
         // when, then
         val exception = assertThrows<ScheduleIllegalArgumentException> {

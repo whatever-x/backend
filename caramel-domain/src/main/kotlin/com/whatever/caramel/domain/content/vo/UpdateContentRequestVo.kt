@@ -8,5 +8,5 @@ data class UpdateContentRequestVo(
     val isCompleted: Boolean,
     val tagList: List<Long>,
     val dateTimeInfo: DateTimeInfoVo?,
-    val ownerType: ContentOwnerType,
+    val contentAsignee: ContentAssignee,
 )

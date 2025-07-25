@@ -2,7 +2,7 @@ package com.whatever.caramel.api.content.controller.dto.response
 
 import com.whatever.caramel.common.util.DateTimeUtil.KST_ZONE_ID
 import com.whatever.caramel.domain.content.model.Content
-import com.whatever.caramel.domain.content.vo.ContentOwnerType
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.domain.content.vo.ContentResponseVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
@@ -22,7 +22,7 @@ data class ContentResponse(
     @Schema(description = "생성일")
     val createdAt: LocalDate,
     @Schema(description = "소유자 타입")
-    val ownerType: ContentOwnerType,
+    val contentAsignee: ContentAssignee,
 ) {
     companion object {
         fun from(
@@ -35,7 +35,7 @@ data class ContentResponse(
             isCompleted = content.contentDetail.isCompleted,
             tagList = tagList,
             createdAt = content.getCreatedAtInZone(KST_ZONE_ID).toLocalDate(),
-            ownerType = content.ownerType
+            contentAsignee = content.contentAsignee
         )
 
         fun from(contentResponseVo: ContentResponseVo): ContentResponse {
@@ -46,7 +46,7 @@ data class ContentResponse(
                 isCompleted = contentResponseVo.isCompleted,
                 tagList = contentResponseVo.tagList.map { it.id },
                 createdAt = contentResponseVo.createdAt,
-                ownerType = contentResponseVo.ownerType
+                contentAsignee = contentResponseVo.contentAsignee
             )
         }
     }

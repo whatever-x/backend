@@ -1,6 +1,6 @@
 package com.whatever.caramel.domain.content.vo
 
-enum class ContentOwnerType {
+enum class ContentAssignee {
     ME,
     PARTNER,
     US,
