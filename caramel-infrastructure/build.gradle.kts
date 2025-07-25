@@ -9,6 +9,7 @@ dependencies {
     // Spring
     implementation("org.springframework:spring-web")
     implementation("org.springframework.data:spring-data-commons")
+    implementation("org.springframework.boot:spring-boot-starter-batch")
 
     // OpenFeign
     implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
