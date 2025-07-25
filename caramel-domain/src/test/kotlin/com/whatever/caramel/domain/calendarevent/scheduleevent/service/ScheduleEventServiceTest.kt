@@ -57,7 +57,6 @@ import kotlin.test.Test
 import kotlin.test.assertNotNull
 
 @CaramelDomainSpringBootTest
-@Transactional
 class ScheduleEventServiceTest @Autowired constructor(
     private val coupleRepository: CoupleRepository,
     private val userRepository: UserRepository,
@@ -560,7 +559,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         val tagNamesSet = (1..tagCount).map { "testTag${it}" }.toSet()
         val tags = createTags(tagNamesSet, tagRepository)
 
-        val oldTags = tags.filter { it.id <= 10 }.toSet()  // 1~10 태그를 Content에 할당
+        val oldTags = tags.sortedBy { it.id }.take(10, ).toSet()  // N ~ N+9
         addTags(oldContent, oldTags, tagContentMappingRepository)
 
         val oldSchedule = scheduleEventRepository.save(
@@ -574,7 +573,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             )
         )
 
-        val newTags = tags.filter { it.id in 6..tagCount }.toSet()  // 6~15 태그로 변경
+        val newTags = tags.sortedBy { it.id }.takeLast(15).toSet()  // N+4 ~ N+19
         val newTagIds = newTags.map { it.id }.toSet()
 
         val scheduleVo = UpdateScheduleVo(
@@ -612,7 +611,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
         val tags = createTags((1..10).map { "testTag$it" }.toSet(), tagRepository)
 
-        val oldTags = tags.filter { it.id <= 5 }.toSet() // 기존 태그: 1, 2, 3, 4, 5
+        val oldTags = tags.sortedBy{ it.id }.take(5).toSet() // 기존 태그: N ~ N+4
         addTags(oldContent, oldTags, tagContentMappingRepository)
 
         val oldSchedule = scheduleEventRepository.save(
@@ -626,7 +625,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             )
         )
 
-        val newTags = tags.filter { it.id <= 7 }.toSet() // 새로운 태그: 1, 2, 3, 4, 5, 6, 7
+        val newTags = tags.sortedBy{ it.id }.take(7).toSet() // 새로운 태그: N ~ N+7
 
         val scheduleVo = UpdateScheduleVo(
             selectedDate = DateTimeUtil.localNow().toLocalDate(),
@@ -659,7 +658,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
         val tags = createTags((1..10).map { "testTag$it" }.toSet(), tagRepository)
 
-        val oldTags = tags.filter { it.id <= 5 }.toSet() // 기존 태그: 1, 2, 3, 4, 5
+        val oldTags = tags.sortedBy{ it.id }.take(5).toSet() // 기존 태그
         addTags(oldContent, oldTags, tagContentMappingRepository)
 
         val oldSchedule = scheduleEventRepository.save(
@@ -673,7 +672,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             )
         )
 
-        val newTags = tags.filter { it.id <= 3 }.toSet() // 새로운 태그: 1, 2, 3
+        val newTags = tags.sortedBy{ it.id }.take(3).toSet()
 
         val scheduleVo = UpdateScheduleVo(
             selectedDate = DateTimeUtil.localNow().toLocalDate(),
