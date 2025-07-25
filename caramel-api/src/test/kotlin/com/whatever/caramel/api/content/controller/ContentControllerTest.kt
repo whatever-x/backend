@@ -8,6 +8,7 @@ import com.whatever.caramel.domain.content.vo.ContentSummaryVo
 import com.whatever.caramel.domain.content.vo.ContentType
 import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.security.util.SecurityUtil
+import com.whatever.com.whatever.caramel.api.content.tag.controller.dto.request.TagIdDto
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
@@ -41,7 +42,7 @@ class ContentControllerTest : ControllerTestSupport() {
         val request = CreateContentRequest(
             title = "메모 제목",
             description = "메모 설명",
-            tags = listOf(1L),
+            tags = listOf(TagIdDto(1L)),
             contentAsignee = ContentAssignee.ME
         )
         whenever(contentService.createContent(any(), any(), any()))
@@ -122,7 +123,7 @@ class ContentControllerTest : ControllerTestSupport() {
             title = "수정된 제목",
             description = "수정된 설명",
             isCompleted = true,
-            tagList = listOf(1L),
+            tagList = listOf(TagIdDto(1L)),
             contentAsignee = ContentAssignee.ME
         )
 
