@@ -246,15 +246,15 @@ class ScheduleValidatorTest {
     }
 
     private fun createDummyUser(id: Long = 0L): User {
-      return User(
-          id = id,
-          platform = LoginPlatform.TEST,
-          platformUserId = UUID.randomUUID().toString(),
-          nickname = "testnick",
-          gender = UserGender.FEMALE,
-          userStatus = UserStatus.SINGLE,
-      )  
-    } 
+        return User(
+            id = id,
+            platform = LoginPlatform.TEST,
+            platformUserId = UUID.randomUUID().toString(),
+            nickname = "testnick",
+            gender = UserGender.FEMALE,
+            userStatus = UserStatus.SINGLE,
+        )
+    }
 
     private fun createDummyScheduleEvent(owner: User): ScheduleEvent {
         val content = Content(

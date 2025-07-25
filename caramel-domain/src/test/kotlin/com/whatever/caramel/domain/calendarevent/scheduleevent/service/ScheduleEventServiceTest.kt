@@ -36,7 +36,6 @@ import com.whatever.caramel.domain.user.model.LoginPlatform
 import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserStatus
 import com.whatever.caramel.domain.user.repository.UserRepository
-import jakarta.transaction.Transactional
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
@@ -44,7 +43,6 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.NullSource
-import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -559,7 +557,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         val tagNamesSet = (1..tagCount).map { "testTag${it}" }.toSet()
         val tags = createTags(tagNamesSet, tagRepository)
 
-        val oldTags = tags.sortedBy { it.id }.take(10, ).toSet()  // N ~ N+9
+        val oldTags = tags.sortedBy { it.id }.take(10).toSet()  // N ~ N+9
         addTags(oldContent, oldTags, tagContentMappingRepository)
 
         val oldSchedule = scheduleEventRepository.save(
@@ -611,7 +609,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
         val tags = createTags((1..10).map { "testTag$it" }.toSet(), tagRepository)
 
-        val oldTags = tags.sortedBy{ it.id }.take(5).toSet() // 기존 태그: N ~ N+4
+        val oldTags = tags.sortedBy { it.id }.take(5).toSet() // 기존 태그: N ~ N+4
         addTags(oldContent, oldTags, tagContentMappingRepository)
 
         val oldSchedule = scheduleEventRepository.save(
@@ -625,7 +623,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             )
         )
 
-        val newTags = tags.sortedBy{ it.id }.take(7).toSet() // 새로운 태그: N ~ N+7
+        val newTags = tags.sortedBy { it.id }.take(7).toSet() // 새로운 태그: N ~ N+7
 
         val scheduleVo = UpdateScheduleVo(
             selectedDate = DateTimeUtil.localNow().toLocalDate(),
@@ -658,7 +656,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
         val tags = createTags((1..10).map { "testTag$it" }.toSet(), tagRepository)
 
-        val oldTags = tags.sortedBy{ it.id }.take(5).toSet() // 기존 태그
+        val oldTags = tags.sortedBy { it.id }.take(5).toSet() // 기존 태그
         addTags(oldContent, oldTags, tagContentMappingRepository)
 
         val oldSchedule = scheduleEventRepository.save(
@@ -672,7 +670,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             )
         )
 
-        val newTags = tags.sortedBy{ it.id }.take(3).toSet()
+        val newTags = tags.sortedBy { it.id }.take(3).toSet()
 
         val scheduleVo = UpdateScheduleVo(
             selectedDate = DateTimeUtil.localNow().toLocalDate(),
