@@ -11,6 +11,8 @@ import com.whatever.caramel.domain.content.repository.ContentRepository
 import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.caramel.domain.content.tag.repository.TagRepository
 import com.whatever.caramel.domain.content.vo.ContentType
+import com.whatever.caramel.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
+import com.whatever.caramel.domain.couple.exception.CoupleNotFoundException
 import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.couple.service.event.ExcludeAsyncConfigBean
@@ -168,5 +170,33 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
             )
         }
         assertThat(exception).hasMessage(ScheduleExceptionCode.ILLEGAL_DURATION.message)
+    }
+
+    @DisplayName("일정 생성 시 존재하지 않는 커플이라면 예외가 발생한다.")
+    @Test
+    fun createSchedule_whenCoupleNotExists_thenThrowException() {
+        // given
+        val (myUser, partnerUser, _) = setUpCoupleAndSecurity()
+        val createScheduleVo = CreateScheduleVo(
+            title = "Schedule Title",
+            description = "Description Content",
+            isCompleted = false,
+            startDateTime = NOW,
+            startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            endDateTime = NOW.plusDays(2),
+            endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+        )
+
+        // when
+        val result = assertThrows<CoupleNotFoundException> {
+            scheduleEventService.createSchedule(
+                scheduleVo = createScheduleVo,
+                currentUserId = myUser.id,
+                currentUserCoupleId = 0L,  // Invalid couple id
+            )
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(COUPLE_NOT_FOUND)
     }
 }

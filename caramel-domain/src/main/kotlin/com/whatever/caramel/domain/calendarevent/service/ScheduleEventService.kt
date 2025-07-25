@@ -9,13 +9,9 @@ import com.whatever.caramel.common.util.withoutNano
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleAccessDeniedException
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode.COUPLE_NOT_MATCHED
-import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode.ILLEGAL_CONTENT_DETAIL
-import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode.ILLEGAL_DURATION
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode.ILLEGAL_PARTNER_STATUS
-import com.whatever.caramel.domain.calendarevent.exception.ScheduleIllegalArgumentException
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleIllegalStateException
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleNotFoundException
-import com.whatever.caramel.domain.calendarevent.model.ScheduleEvent
 import com.whatever.caramel.domain.calendarevent.repository.ScheduleEventRepository
 import com.whatever.caramel.domain.calendarevent.vo.CreateScheduleVo
 import com.whatever.caramel.domain.calendarevent.vo.DateTimeInfoVo
@@ -45,7 +41,6 @@ import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger { }
 
@@ -57,6 +52,7 @@ class ScheduleEventService(
     private val coupleRepository: CoupleRepository,
     private val scheduleCreator: ScheduleCreator,
     private val applicationEventPublisher: ApplicationEventPublisher,
+    private val scheduleValidator: ScheduleValidator,
 ) {
 
     fun getSchedule(
@@ -88,7 +84,8 @@ class ScheduleEventService(
     ): ScheduleDetailsVo {
         val startDateTime = startDate.toDateTime().withoutNano
         val endDateTime = endDate.toDateTime().endOfDay.withoutNano
-        validateRequestDuration(
+
+        scheduleValidator.validateDuration(
             startDateTime = startDateTime,
             endDateTime = endDateTime,
         )
@@ -117,8 +114,8 @@ class ScheduleEventService(
         currentUserCoupleId: Long,
     ): ContentSummaryVo {
         scheduleVo.apply {
-            validateRequestContentDetail(title, description)
-            validateRequestDuration(startDateTime, endDateTime)
+            scheduleValidator.validateContentDetail(title, description)
+            scheduleValidator.validateDuration(startDateTime, endDateTime)
         }
 
         val couple = coupleRepository.findByIdWithMembers(currentUserCoupleId)
@@ -167,14 +164,14 @@ class ScheduleEventService(
         scheduleVo: UpdateScheduleVo,
     ) {
         scheduleVo.apply {
-            validateRequestContentDetail(title, description)
-            validateRequestDuration(startDateTime, endDateTime)
+            scheduleValidator.validateContentDetail(title, description)
+            scheduleValidator.validateDuration(startDateTime, endDateTime)
         }
 
         val scheduleEvent = scheduleEventRepository.findByIdWithContentAndUser(scheduleId)
             ?: throw ScheduleNotFoundException(errorCode = ScheduleExceptionCode.SCHEDULE_NOT_FOUND)
 
-        validateUserAccess(
+        scheduleValidator.validateUserAccess(
             scheduleEvent = scheduleEvent,
             currentUserId = currentUserId,
             currentUserCoupleId = currentUserCoupleId,
@@ -219,7 +216,7 @@ class ScheduleEventService(
     fun deleteSchedule(scheduleId: Long, currentUserId: Long, currentUserCoupleId: Long) {
         val scheduleEvent = scheduleEventRepository.findByIdWithContentAndUser(scheduleId)
             ?: throw ScheduleNotFoundException(errorCode = ScheduleExceptionCode.SCHEDULE_NOT_FOUND)
-        validateUserAccess(
+        scheduleValidator.validateUserAccess(
             scheduleEvent = scheduleEvent,
             currentUserId = currentUserId,
             currentUserCoupleId = currentUserCoupleId,
@@ -261,51 +258,6 @@ class ScheduleEventService(
         )
     }
 
-    private fun validateRequestContentDetail(title: String?, description: String?) {
-        if (title == null && description == null) {
-            throw ScheduleIllegalArgumentException(
-                errorCode = ILLEGAL_CONTENT_DETAIL,
-                errorUi = ErrorUi.Toast("제목이나 본문 중 하나는 입력해야 해요."),
-            )
-        }
-        if ((title?.isBlank() == true) || (description?.isBlank() == true)) {
-            throw ScheduleIllegalArgumentException(
-                errorCode = ILLEGAL_CONTENT_DETAIL,
-                errorUi = ErrorUi.Toast("공백은 입력할 수 없어요."),
-            )
-        }
-    }
-
-    private fun validateRequestDuration(startDateTime: LocalDateTime?, endDateTime: LocalDateTime?) {
-        if (startDateTime != null && endDateTime?.isBefore(startDateTime) == true) {
-            throw ScheduleIllegalArgumentException(
-                errorCode = ILLEGAL_DURATION,
-                errorUi = ErrorUi.Toast("시작일은 종료일보다 이전이어야 해요."),
-            )
-        }
-    }
-
-    private fun validateUserAccess(
-        scheduleEvent: ScheduleEvent,
-        currentUserId: Long,
-        currentUserCoupleId: Long,
-    ) {
-        val scheduleOwnerUser = scheduleEvent.content.user
-
-        if (currentUserId != scheduleOwnerUser.id) {
-            if (scheduleOwnerUser.userStatus == SINGLE) {
-                throw ScheduleAccessDeniedException(errorCode = ILLEGAL_PARTNER_STATUS)
-            }
-
-            val scheduleOwnerCoupleId = scheduleOwnerUser.couple?.id
-                ?: throw ScheduleAccessDeniedException(errorCode = ILLEGAL_PARTNER_STATUS)
-
-            if (currentUserCoupleId != scheduleOwnerCoupleId) {
-                throw ScheduleAccessDeniedException(errorCode = COUPLE_NOT_MATCHED)
-            }
-        }
-    }
-
     private fun updateTags(content: Content, newTags: Set<Tag>) {
         val existingMappings = tagContentMappingRepository.findAllWithTagByContentId(content.id)
         val currentTags = existingMappings.map { mapping -> mapping.tag }.toSet()
@@ -314,6 +266,7 @@ class ScheduleEventService(
         val tagsToAdd = newTags - currentTags
 
         if (mappingToRemove.isNotEmpty()) {
+            println("mapping remove working")
             mappingToRemove.forEach(TagContentMapping::deleteEntity)
         }
 

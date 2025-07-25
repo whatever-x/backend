@@ -1,6 +1,7 @@
 package com.whatever.caramel.domain.calendarevent.scheduleevent.service
 
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.common.util.DateTimeUtil.UTC_ZONE_ID
 import com.whatever.caramel.common.util.endOfDay
 import com.whatever.caramel.common.util.toDateTime
 import com.whatever.caramel.common.util.toZoneId
@@ -8,6 +9,9 @@ import com.whatever.caramel.common.util.withoutNano
 import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleAccessDeniedException
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode
+import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode.COUPLE_NOT_MATCHED
+import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode.ILLEGAL_PARTNER_STATUS
+import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode.SCHEDULE_NOT_FOUND
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleIllegalArgumentException
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleNotFoundException
 import com.whatever.caramel.domain.calendarevent.model.ScheduleEvent
@@ -23,6 +27,8 @@ import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepos
 import com.whatever.caramel.domain.content.tag.repository.TagRepository
 import com.whatever.caramel.domain.content.tag.vo.TagVo
 import com.whatever.caramel.domain.content.vo.ContentType
+import com.whatever.caramel.domain.couple.exception.CoupleException
+import com.whatever.caramel.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
 import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.findByIdAndNotDeleted
@@ -30,29 +36,39 @@ import com.whatever.caramel.domain.user.model.LoginPlatform
 import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserStatus
 import com.whatever.caramel.domain.user.repository.UserRepository
+import jakarta.transaction.Transactional
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.NullSource
+import org.mockito.Mockito
+import org.mockito.kotlin.any
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import java.time.LocalDate
 import java.time.ZoneId
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 
 @CaramelDomainSpringBootTest
+@Transactional
 class ScheduleEventServiceTest @Autowired constructor(
     private val coupleRepository: CoupleRepository,
     private val userRepository: UserRepository,
     private val scheduleEventRepository: ScheduleEventRepository,
     private val contentRepository: ContentRepository,
-    private val tagContentMappingRepository: TagContentMappingRepository,
+//    private val tagContentMappingRepository: TagContentMappingRepository,
     private val tagRepository: TagRepository,
     private val scheduleEventService: ScheduleEventService,
 ) {
+    @MockitoSpyBean
+    private lateinit var tagContentMappingRepository: TagContentMappingRepository
 
     companion object {
         val NOW = DateTimeUtil.localNow()
@@ -144,6 +160,25 @@ class ScheduleEventServiceTest @Autowired constructor(
         assertThat(result.errorCode).isEqualTo(ScheduleExceptionCode.COUPLE_NOT_MATCHED)
     }
 
+    @DisplayName("일정 조회 시 다른 커플의 일정이라면 예외가 발생한다.")
+    @Test
+    fun getSchedule_whenCoupleNotExists_thenThrowException() {
+        // given
+        val (myUser, _, _) = createCouple(userRepository, coupleRepository)
+        val (schedule, _) = createScheduleWithTags(myUser, 0)
+
+        // when
+        val result = assertThrows<ScheduleAccessDeniedException> {
+            scheduleEventService.getSchedule(
+                scheduleId = schedule.id,
+                ownerCoupleId = 0L,  // Invalid couple id
+            )
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(COUPLE_NOT_MATCHED)
+    }
+
     @DisplayName("일정 조회 시 존재하지 않는 일정이라면 예외가 발생한다.")
     @Test
     fun getSchedule_WithIllegalScheduleId() {
@@ -160,12 +195,14 @@ class ScheduleEventServiceTest @Autowired constructor(
         }
 
         // then
-        assertThat(result.errorCode).isEqualTo(ScheduleExceptionCode.SCHEDULE_NOT_FOUND)
+        assertThat(result.errorCode).isEqualTo(SCHEDULE_NOT_FOUND)
     }
 
     @DisplayName("나의 Schedule 업데이트 시 request 값들이 정상적으로 반영된다.")
-    @Test
-    fun updateSchedule() {
+    @ParameterizedTest
+    @CsvSource("Asia/Seoul", "UTC")
+    @NullSource
+    fun updateSchedule(startTimeZone: ZoneId?) {
         // given
         val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
         val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
@@ -175,7 +212,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 startDateTime = NOW.minusDays(7),
                 startTimeZone = ZoneId.of("Asia/Seoul"),
                 endDateTime = NOW.minusDays(3),
-                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
+                endTimeZone = UTC_ZONE_ID,
                 content = oldContent,
             )
         )
@@ -185,9 +222,9 @@ class ScheduleEventServiceTest @Autowired constructor(
             description = "updated description",
             isCompleted = true,
             startDateTime = NOW.minusDays(2),
-            startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            startTimeZone = startTimeZone?.id,
             endDateTime = NOW,
-            endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            endTimeZone = UTC_ZONE_ID.id,
         )
 
         // when
@@ -200,12 +237,12 @@ class ScheduleEventServiceTest @Autowired constructor(
 
         // then
         val updatedScheduleEvent = scheduleEventRepository.findByIdWithContent(oldSchedule.id)!!
-        updatedScheduleEvent.run {
+        with(updatedScheduleEvent) {
             assertThat(id).isEqualTo(oldSchedule.id)
             assertThat(content.contentDetail.title).isEqualTo(scheduleVo.title)
             assertThat(content.contentDetail.description).isEqualTo(scheduleVo.description)
             assertThat(content.contentDetail.isCompleted).isTrue()
-            assertThat(startTimeZone).isEqualTo(scheduleVo.startTimeZone!!.toZoneId())
+            assertThat(this.startTimeZone).isEqualTo(scheduleVo.startTimeZone?.toZoneId() ?: UTC_ZONE_ID)
             assertThat(startDateTime).isEqualTo(scheduleVo.startDateTime!!.withoutNano)
             assertThat(endTimeZone).isEqualTo(scheduleVo.endTimeZone!!.toZoneId())
             assertThat(endDateTime).isEqualTo(scheduleVo.endDateTime!!.withoutNano)
@@ -224,7 +261,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 startDateTime = NOW.minusDays(7),
                 startTimeZone = ZoneId.of("Asia/Seoul"),
                 endDateTime = NOW.minusDays(3),
-                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
+                endTimeZone = UTC_ZONE_ID,
                 content = oldContent,
             )
         )
@@ -234,9 +271,9 @@ class ScheduleEventServiceTest @Autowired constructor(
             description = "updated description",
             isCompleted = true,
             startDateTime = NOW.minusDays(2),
-            startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            startTimeZone = UTC_ZONE_ID.id,
             endDateTime = NOW,
-            endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            endTimeZone = UTC_ZONE_ID.id,
         )
 
         // when
@@ -273,7 +310,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 startDateTime = NOW.minusDays(7),
                 startTimeZone = ZoneId.of("Asia/Seoul"),
                 endDateTime = NOW.minusDays(3),
-                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
+                endTimeZone = UTC_ZONE_ID,
                 content = oldContent,
             )
         )
@@ -283,7 +320,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             description = "updated description",
             isCompleted = true,
             startDateTime = NOW.minusDays(2),
-            startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            startTimeZone = UTC_ZONE_ID.id,
         )
 
         // when
@@ -315,7 +352,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 startDateTime = NOW.minusDays(7),
                 startTimeZone = ZoneId.of("Asia/Seoul"),
                 endDateTime = NOW.minusDays(3),
-                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
+                endTimeZone = UTC_ZONE_ID,
                 content = oldContent,
             )
         )
@@ -325,7 +362,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             description = null,
             isCompleted = true,
             startDateTime = NOW.minusDays(2),
-            startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            startTimeZone = UTC_ZONE_ID.id,
         )
 
         // when, then
@@ -360,7 +397,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 startDateTime = NOW.minusDays(7),
                 startTimeZone = ZoneId.of("Asia/Seoul"),
                 endDateTime = NOW.minusDays(3),
-                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
+                endTimeZone = UTC_ZONE_ID,
                 content = oldContent,
             )
         )
@@ -370,7 +407,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             description = description,
             isCompleted = true,
             startDateTime = NOW.minusDays(2),
-            startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            startTimeZone = UTC_ZONE_ID.id,
         )
 
         // when, then
@@ -398,7 +435,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 startDateTime = NOW.minusDays(5),
                 startTimeZone = ZoneId.of("Asia/Seoul"),
                 endDateTime = NOW.minusDays(3),
-                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
+                endTimeZone = UTC_ZONE_ID,
                 content = oldContent,
             )
         )
@@ -408,9 +445,9 @@ class ScheduleEventServiceTest @Autowired constructor(
             description = "valid description",
             isCompleted = false,
             startDateTime = NOW,
-            startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            startTimeZone = UTC_ZONE_ID.id,
             endDateTime = NOW.minusDays(1),  // 유효하지 않은 endDateTime.
-            endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            endTimeZone = UTC_ZONE_ID.id,
         )
 
         // when, then
@@ -438,7 +475,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 startDateTime = NOW.minusDays(1),
                 startTimeZone = ZoneId.of("Asia/Seoul"),
                 endDateTime = NOW,
-                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
+                endTimeZone = UTC_ZONE_ID,
                 content = oldContent,
             )
         )
@@ -455,7 +492,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             description = "valid description",
             isCompleted = false,
             startDateTime = NOW.plusDays(1),
-            startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            startTimeZone = UTC_ZONE_ID.id,
         )
 
         // when, then
@@ -483,7 +520,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 startDateTime = NOW.minusDays(5),
                 startTimeZone = ZoneId.of("Asia/Seoul"),
                 endDateTime = NOW.minusDays(3),
-                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
+                endTimeZone = UTC_ZONE_ID,
                 content = oldContent,
             )
         )
@@ -497,7 +534,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             description = "valid description",
             isCompleted = false,
             startDateTime = NOW.plusDays(1),
-            startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            startTimeZone = UTC_ZONE_ID.id,
         )
 
         // when, then
@@ -532,7 +569,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 startDateTime = NOW.minusDays(5),
                 startTimeZone = ZoneId.of("Asia/Seoul"),
                 endDateTime = NOW.minusDays(3),
-                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
+                endTimeZone = UTC_ZONE_ID,
                 content = oldContent,
             )
         )
@@ -546,7 +583,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             description = "valid description",
             isCompleted = false,
             startDateTime = NOW.plusDays(1),
-            startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            startTimeZone = UTC_ZONE_ID.id,
             tagIds = newTagIds
         )
 
@@ -567,6 +604,149 @@ class ScheduleEventServiceTest @Autowired constructor(
         assertThat(updatedTagLabels).containsExactlyInAnyOrderElementsOf(expectedTagLabels)
     }
 
+    @DisplayName("Schedule의 Content Tag 업데이트 시 기존 태그를 유지하며 새로운 태그만 추가된다.")
+    @Test
+    fun updateSchedule_WithOnlyAddingTags() {
+        // given
+        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
+        val tags = createTags((1..10).map { "testTag$it" }.toSet(), tagRepository)
+
+        val oldTags = tags.filter { it.id <= 5 }.toSet() // 기존 태그: 1, 2, 3, 4, 5
+        addTags(oldContent, oldTags, tagContentMappingRepository)
+
+        val oldSchedule = scheduleEventRepository.save(
+            ScheduleEvent(
+                uid = "test-uuid4-value",
+                startDateTime = NOW.minusDays(5),
+                startTimeZone = ZoneId.of("Asia/Seoul"),
+                endDateTime = NOW.minusDays(3),
+                endTimeZone = UTC_ZONE_ID,
+                content = oldContent,
+            )
+        )
+
+        val newTags = tags.filter { it.id <= 7 }.toSet() // 새로운 태그: 1, 2, 3, 4, 5, 6, 7
+
+        val scheduleVo = UpdateScheduleVo(
+            selectedDate = DateTimeUtil.localNow().toLocalDate(),
+            title = "valid title",
+            description = "valid description",
+            isCompleted = false,
+            startDateTime = NOW.plusDays(1),
+            startTimeZone = UTC_ZONE_ID.id,
+            tagIds = newTags.map { it.id }.toSet()
+        )
+
+        // when
+        scheduleEventService.updateSchedule(
+            scheduleId = oldSchedule.id,
+            scheduleVo = scheduleVo,
+            currentUserId = myUser.id,
+            currentUserCoupleId = myUser.couple!!.id
+        )
+
+        // then
+        val updatedTagMappings = tagContentMappingRepository.findAllWithTagByContentId(oldContent.id)
+        assertThat(updatedTagMappings).hasSize(newTags.size)
+    }
+
+    @DisplayName("Schedule의 Content Tag 업데이트 시 일부 태그만 삭제된다.")
+    @Test
+    fun updateSchedule_WithOnlyRemovingTags() {
+        // given
+        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
+        val tags = createTags((1..10).map { "testTag$it" }.toSet(), tagRepository)
+
+        val oldTags = tags.filter { it.id <= 5 }.toSet() // 기존 태그: 1, 2, 3, 4, 5
+        addTags(oldContent, oldTags, tagContentMappingRepository)
+
+        val oldSchedule = scheduleEventRepository.save(
+            ScheduleEvent(
+                uid = "test-uuid4-value",
+                startDateTime = NOW.minusDays(5),
+                startTimeZone = ZoneId.of("Asia/Seoul"),
+                endDateTime = NOW.minusDays(3),
+                endTimeZone = UTC_ZONE_ID,
+                content = oldContent,
+            )
+        )
+
+        val newTags = tags.filter { it.id <= 3 }.toSet() // 새로운 태그: 1, 2, 3
+
+        val scheduleVo = UpdateScheduleVo(
+            selectedDate = DateTimeUtil.localNow().toLocalDate(),
+            title = "valid title",
+            description = "valid description",
+            isCompleted = false,
+            startDateTime = NOW.plusDays(1),
+            startTimeZone = UTC_ZONE_ID.id,
+            tagIds = newTags.map { it.id }.toSet()
+        )
+
+        // when
+        scheduleEventService.updateSchedule(
+            scheduleId = oldSchedule.id,
+            scheduleVo = scheduleVo,
+            currentUserId = myUser.id,
+            currentUserCoupleId = myUser.couple!!.id
+        )
+
+        // then
+        val updatedTagMappings = tagContentMappingRepository.findAllWithTagByContentId(oldContent.id)
+        assertThat(updatedTagMappings).hasSize(newTags.size)
+
+        val updatedTagLabels = updatedTagMappings.map { it.tag.label }
+        val expectedTagLabels = newTags.map { it.label }
+        assertThat(updatedTagLabels).containsExactlyInAnyOrderElementsOf(expectedTagLabels)
+    }
+
+    @DisplayName("Schedule의 Content Tag 업데이트 시 태그에 변화가 없으면 아무 작업도 수행하지 않는다.")
+    @Test
+    fun updateSchedule_WithNoChangeInTags() {
+        // given
+        val (myUser, _, _) = setUpCoupleAndSecurity()
+        val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
+        val tags = createTags((1..5).map { "testTag$it" }.toSet(), tagRepository)
+
+        addTags(oldContent, tags, tagContentMappingRepository)
+        val oldSchedule = scheduleEventRepository.save(
+            ScheduleEvent(
+                uid = "test-uuid4-value",
+                startDateTime = NOW.minusDays(5),
+                startTimeZone = ZoneId.of("Asia/Seoul"),
+                endDateTime = NOW.minusDays(3),
+                endTimeZone = UTC_ZONE_ID,
+                content = oldContent,
+            )
+        )
+
+        val sameTagIds = tags.map { it.id }.toSet() // 변화 없는 태그 ID
+        val scheduleVo = UpdateScheduleVo(
+            selectedDate = DateTimeUtil.localNow().toLocalDate(),
+            title = "valid title",
+            description = "valid description",
+            isCompleted = false,
+            startDateTime = NOW.plusDays(1),
+            startTimeZone = UTC_ZONE_ID.id,
+            tagIds = sameTagIds
+        )
+
+        // when
+        scheduleEventService.updateSchedule(
+            scheduleId = oldSchedule.id,
+            scheduleVo = scheduleVo,
+            currentUserId = myUser.id,
+            currentUserCoupleId = myUser.couple!!.id
+        )
+
+        // then
+        val updatedTagMappings = tagContentMappingRepository.findAllWithTagByContentId(oldContent.id)
+        assertThat(updatedTagMappings).hasSize(tags.size)
+        verify(tagContentMappingRepository, never()).saveAll(setOf(any()))
+    }
+
     @DisplayName("나의 Schedule 업데이트 시 StartDateTime이 null이라면 Content는 Memo로 복구된다.")
     @Test
     fun updateSchedule_WithoutStartDateTime() {
@@ -579,7 +759,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 startDateTime = NOW.minusDays(7),
                 startTimeZone = ZoneId.of("Asia/Seoul"),
                 endDateTime = NOW.minusDays(3),
-                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
+                endTimeZone = UTC_ZONE_ID,
                 content = oldContent,
             )
         )
@@ -591,7 +771,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             startDateTime = null,  // Content를 Memo로 복구하기 위해 nul로 설정
             startTimeZone = null,
             endDateTime = NOW,
-            endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
+            endTimeZone = UTC_ZONE_ID.id,
         )
 
         // when
@@ -628,7 +808,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 startDateTime = NOW.minusDays(5),
                 startTimeZone = ZoneId.of("Asia/Seoul"),
                 endDateTime = NOW.minusDays(3),
-                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
+                endTimeZone = UTC_ZONE_ID,
                 content = content,
             )
         )
@@ -859,6 +1039,115 @@ class ScheduleEventServiceTest @Autowired constructor(
         assertThat(result.map { it.scheduleId }).isSortedAccordingTo(Comparator.naturalOrder())
     }
 
+    @DisplayName("스케줄 조회 시 존재하지 않는 커플일 경우 예외를 반환한다.")
+    @Test
+    fun getSchedules_whenCoupleNotExists_thenThrowException() {
+        // given
+        val startDate = LocalDate.of(2025, 6, 2)
+        val userTimeZone = ZoneId.of("Asia/Seoul")
+        val (myUser, _, _) = setUpCoupleAndSecurity()
+        scheduleEventRepository.save(
+            ScheduleEvent(
+                uid = "test-uid",
+                startDateTime = startDate.toDateTime(),
+                startTimeZone = userTimeZone,
+                endDateTime = startDate.toDateTime().endOfDay,
+                endTimeZone = userTimeZone,
+                content = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
+            )
+        )
+
+        // when
+        val result = assertThrows<CoupleException> {
+            scheduleEventService.getSchedules(
+                startDate = startDate.minusDays(1),
+                endDate = startDate.minusDays(1),
+                userTimeZone = userTimeZone.id,
+                currentUserCoupleId = 0L,  // Invalid couple id
+            )
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(COUPLE_NOT_FOUND)
+    }
+
+    @DisplayName("스케줄 조회 시 커플의 멤버중 한명이라도 SINGLE 상태일 경우 예외를 반환한다.")
+    @Test
+    fun getSchedules_whenCoupleMemberStatusIsSingle_thenThrowException() {
+        // given
+        val startDate = LocalDate.of(2025, 6, 2)
+        val userTimeZone = ZoneId.of("Asia/Seoul")
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
+        partnerUser.updateUserStatus(UserStatus.SINGLE)
+        userRepository.save(partnerUser)
+        scheduleEventRepository.save(
+            ScheduleEvent(
+                uid = "test-uid",
+                startDateTime = startDate.toDateTime(),
+                startTimeZone = userTimeZone,
+                endDateTime = startDate.toDateTime().endOfDay,
+                endTimeZone = userTimeZone,
+                content = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
+            )
+        )
+
+        // when
+        val result = assertThrows<ScheduleAccessDeniedException> {
+            scheduleEventService.getSchedules(
+                startDate = startDate.minusDays(1),
+                endDate = startDate.minusDays(1),
+                userTimeZone = userTimeZone.id,
+                currentUserCoupleId = couple.id,
+            )
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(ILLEGAL_PARTNER_STATUS)
+    }
+
+    @DisplayName("존재하지 않는 Schedule을 삭제할 경우 예외를 반환한다.")
+    @Test
+    fun deleteSchedule_whenScheduleNotExists_thenThrowException() {
+        // given
+        val (myUser, _, couple) = setUpCoupleAndSecurity()
+
+        // when
+        val result = assertThrows<ScheduleNotFoundException> {
+            scheduleEventService.deleteSchedule(
+                scheduleId = 0L,  // Invalid schedule id
+                currentUserId = myUser.id,
+                currentUserCoupleId = couple.id,
+            )
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(SCHEDULE_NOT_FOUND)
+    }
+
+    @DisplayName("존재하지 않는 Schedule을 수정할 경우 예외를 반환한다.")
+    @Test
+    fun updateSchedule_whenScheduleNotExists_thenThrowException() {
+        // given
+        val (myUser, _, couple) = setUpCoupleAndSecurity()
+
+        // when
+        val result = assertThrows<ScheduleNotFoundException> {
+            scheduleEventService.updateSchedule(
+                scheduleId = 0L,  // Invalid schedule id
+                currentUserId = myUser.id,
+                currentUserCoupleId = couple.id,
+                scheduleVo = UpdateScheduleVo(
+                    selectedDate = DateTimeUtil.localNow().toLocalDate(),
+                    title = "test-title",
+                    isCompleted = false,
+                ),
+            )
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(SCHEDULE_NOT_FOUND)
+    }
+
     private fun createScheduleWithTags(
         ownerUser: User,
         tagCount: Int = 10,
@@ -873,7 +1162,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 startDateTime = NOW.minusDays(5),
                 startTimeZone = ZoneId.of("Asia/Seoul"),
                 endDateTime = NOW.minusDays(3),
-                endTimeZone = DateTimeUtil.UTC_ZONE_ID,
+                endTimeZone = UTC_ZONE_ID,
                 content = content,
             )
         )
