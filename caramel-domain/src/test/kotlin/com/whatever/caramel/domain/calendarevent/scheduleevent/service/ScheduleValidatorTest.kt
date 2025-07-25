@@ -1,177 +1,274 @@
-//package com.whatever.caramel.domain.calendarevent.scheduleevent.service
-//
-//import com.whatever.caramel.domain.calendarevent.exception.ScheduleIllegalArgumentException
-//import com.whatever.caramel.domain.calendarevent.service.ScheduleValidator
-//import org.assertj.core.api.Assertions.assertThatThrownBy
-//import org.junit.jupiter.api.assertDoesNotThrow
-//import org.junit.jupiter.api.DisplayName
-//import org.junit.jupiter.api.Test
-//import org.junit.jupiter.api.assertThrows
-//import java.time.LocalDateTime
-//
-//class ScheduleValidatorTest {
-//
-//    private val validator = ScheduleValidator()
-//
-//    // --- validateContentDetail Tests ---
-//
-//    @Test
-//    @DisplayName("제목만 유효할 때 예외를 던지지 않음")
-//    fun validateContentDetail_whenTitleIsValid_thenDoesNotThrowException() {
-//        assertDoesNotThrow {
-//            validator.validateContentDetail("Valid Title", null)
-//        }
-//    }
-//
-//    @Test
-//    @DisplayName("본문만 유효할 때 예외를 던지지 않음")
-//    fun validateContentDetail_whenDescriptionIsValid_thenDoesNotThrowException() {
-//        assertDoesNotThrow {
-//            validator.validateContentDetail(null, "Valid Description")
-//        }
-//    }
-//
-//    @Test
-//    @DisplayName("제목과 본문이 모두 유효할 때 예외를 던지지 않음")
-//    fun validateContentDetail_whenBothAreValid_thenDoesNotThrowException() {
-//        assertDoesNotThrow {
-//            validator.validateContentDetail("Valid Title", "Valid Description")
-//        }
-//    }
-//
-//    @Test
-//    @DisplayName("제목과 본문이 모두 null일 때 예외를 던짐")
-//    fun validateContentDetail_whenBothAreNull_thenThrowException() {
-//        assertThatThrownBy {
-//            validator.validateContentDetail(null, null)
-//        }.isInstanceOf(ScheduleIllegalArgumentException::class.java)
-//    }
-//
-//    @Test
-//    @DisplayName("제목이 공백 문자열일 때 예외를 던짐")
-//    fun validateContentDetail_whenTitleIsBlank_thenThrowException() {
-//        assertThrows<ScheduleIllegalArgumentException> {
-//            validator.validateContentDetail("   ", "Valid Description")
-//        }
-//    }
-//
-//    @Test
-//    @DisplayName("본문이 공백 문자열일 때 예외를 던짐")
-//    fun validateContentDetail_whenDescriptionIsBlank_thenThrowException() {
-//        assertThrows<ScheduleIllegalArgumentException> {
-//            validator.validateContentDetail("Valid Title", "   ")
-//        }
-//    }
-//
-//    // --- validateDuration Tests ---
-//
-//    private val now = LocalDateTime.now()
-//
-//    @Test
-//    @DisplayName("시작일이 종료일보다 이전일 때 예외를 던지지 않음")
-//    fun validateDuration_whenStartIsBeforeEnd_thenDoesNotThrowException() {
-//        assertDoesNotThrow {
-//            validator.validateDuration(now, now.plusDays(1))
-//        }
-//    }
-//
-//    @Test
-//    @DisplayName("시작일과 종료일이 같을 때 예외를 던지지 않음")
-//    fun validateDuration_whenStartEqualsEnd_thenDoesNotThrowException() {
-//        assertDoesNotThrow {
-//            validator.validateDuration(now, now)
-//        }
-//    }
-//
-//    @Test
-//    @DisplayName("시작일이 종료일보다 이후일 때 예외를 던짐")
-//    fun validateDuration_whenStartIsAfterEnd_thenThrowException() {
-//        assertThatThrownBy {
-//            validator.validateDuration(now, now.minusDays(1))
-//        }.isInstanceOf(ScheduleIllegalArgumentException::class.java)
-//    }
-//
-//    // --- validateUserAccess Tests ---
-//
-//    @Test
-//    @DisplayName("사용자가 일정 소유자일 때 예외를 던지지 않음")
-//    fun validateUserAccess_whenUserIsOwner_thenDoesNotThrowException() {
-//        // given
-//        val owner = User(id = 1L)
-//        val schedule = createDummyScheduleEvent(owner)
-//
-//        // when & then
-//        assertDoesNotThrow {
-//            validator.validateUserAccess(schedule, currentUserId = 1L, currentUserCoupleId = 10L)
-//        }
-//    }
-//
-//    @Test
-//    @DisplayName("사용자가 같은 커플의 파트너일 때 예외를 던지지 않음")
-//    fun validateUserAccess_whenUserIsPartnerInSameCouple_thenDoesNotThrowException() {
-//        // given
-//        val owner = User(id = 1L)
-//        val partner = User(id = 2L)
-//        val couple = Couple(id = 10L)
-//        couple.addMember(owner)
-//        couple.addMember(partner)
-//        val schedule = createDummyScheduleEvent(owner)
-//
-//        // when & then
-//        assertDoesNotThrow {
-//            validator.validateUserAccess(schedule, currentUserId = partner.id, currentUserCoupleId = couple.id)
-//        }
-//    }
-//
-//    @Test
-//    @DisplayName("소유자가 싱글이고 다른 사용자가 접근할 때 예외를 던짐")
-//    fun validateUserAccess_whenOwnerIsSingleAndUserIsNotOwner_thenThrowException() {
-//        // given
-//        val owner = User(id = 1L, userStatus = UserStatus.SINGLE)
-//        val otherUser = User(id = 2L)
-//        val schedule = createDummyScheduleEvent(owner)
-//
-//        // when & then
-//        assertThatThrownBy {
-//            validator.validateUserAccess(schedule, currentUserId = otherUser.id, currentUserCoupleId = 99L)
-//        }.isInstanceOf(ScheduleAccessDeniedException::class.java)
-//    }
-//
-//    @Test
-//    @DisplayName("사용자가 다른 커플에 속해있을 때 예외를 던짐")
-//    fun validateUserAccess_whenUserIsInDifferentCouple_thenThrowException() {
-//        // given
-//        val owner = User(id = 1L)
-//        val ownerCouple = Couple(id = 10L)
-//        ownerCouple.addMember(owner)
-//        val schedule = createDummyScheduleEvent(owner)
-//
-//        val otherUser = User(id = 2L)
-//        val otherCouple = Couple(id = 20L)
-//        otherCouple.addMember(otherUser)
-//
-//        // when & then
-//        assertThatThrownBy {
-//            validator.validateUserAccess(schedule, currentUserId = otherUser.id, currentUserCoupleId = otherCouple.id)
-//        }.isInstanceOf(ScheduleAccessDeniedException::class.java)
-//    }
-//
-//    @Test
-//    @DisplayName("소유자가 커플이지만 커플 정보가 null일 때 다른 사용자가 접근하면 예외를 던짐")
-//    fun validateUserAccess_whenOwnerCoupleInfoIsNull_thenThrowException() {
-//        // given
-//        val owner = User(id = 1L, couple = null) // DB 데이터 정합성 문제 상황 가정
-//        val otherUser = User(id = 2L)
-//        val schedule = createDummyScheduleEvent(owner)
-//
-//        // when & then
-//        assertThatThrownBy {
-//            validator.validateUserAccess(schedule, currentUserId = otherUser.id, currentUserCoupleId = 99L)
-//        }.isInstanceOf(ScheduleAccessDeniedException::class.java)
-//    }
-//
-//    private fun createDummyScheduleEvent(owner: User): ScheduleEvent {
-//        val content = Content(id = 100L, user = owner)
-//        return ScheduleEvent(id = 1000L, content = content)
-//    }
-//}
+package com.whatever.caramel.domain.calendarevent.scheduleevent.service
+
+import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.domain.calendarevent.exception.ScheduleAccessDeniedException
+import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode.COUPLE_NOT_MATCHED
+import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode.ILLEGAL_CONTENT_DETAIL
+import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode.ILLEGAL_DURATION
+import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode.ILLEGAL_PARTNER_STATUS
+import com.whatever.caramel.domain.calendarevent.exception.ScheduleIllegalArgumentException
+import com.whatever.caramel.domain.calendarevent.model.ScheduleEvent
+import com.whatever.caramel.domain.calendarevent.service.ScheduleValidator
+import com.whatever.caramel.domain.content.model.Content
+import com.whatever.caramel.domain.content.model.ContentDetail
+import com.whatever.caramel.domain.content.vo.ContentType
+import com.whatever.caramel.domain.couple.model.Couple
+import com.whatever.caramel.domain.user.model.LoginPlatform
+import com.whatever.caramel.domain.user.model.User
+import com.whatever.caramel.domain.user.model.UserGender
+import com.whatever.caramel.domain.user.model.UserStatus
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import java.time.LocalDateTime
+import java.util.*
+
+class ScheduleValidatorTest {
+
+    private val validator = ScheduleValidator()
+
+    @DisplayName("제목과 본문 둘 중 하나라도 값이 있다면 검증에 성공한다.")
+    @ParameterizedTest
+    @CsvSource(
+        "test title, test description",
+        "test title, ",
+        ", test description",
+    )
+    fun validateContentDetail_whenValidTitleAndDescription(
+        title: String?,
+        description: String?,
+    ) {
+        // given, when, then
+        assertDoesNotThrow {
+            validator.validateContentDetail(title, description)
+        }
+    }
+
+    @DisplayName("제목과 본문이 모두 null이거나, 하나라도 공백이라면 예외를 반환한다.")
+    @ParameterizedTest
+    @CsvSource(
+        ",",         // (null, null)
+        ", '  '",             // (null, blank)
+        "'' , ",              // (blank, null)
+        "'' , ' '",           // (blank, blank)
+        "test title, '   '",  // (non-null, blank)
+        "'    ', test desc"  // (blank, non-null)
+    )
+    fun validateContentDetail_whenInvalidTitleAndDescription_thenThrowException(
+        title: String?,
+        description: String?,
+    ) {
+        // given, when
+        val result = assertThrows<ScheduleIllegalArgumentException> {
+            validator.validateContentDetail(title, description)
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(ILLEGAL_CONTENT_DETAIL)
+    }
+
+    private val now = LocalDateTime.now()
+
+    @DisplayName("시작일이 종료일보다 이전일 때 검증에 성공한다.")
+    @Test
+    fun validateDuration_whenStartIsBeforeEnd() {
+        // given, when, then
+        assertDoesNotThrow {
+            validator.validateDuration(now, now.plusNanos(1))
+        }
+    }
+
+    @DisplayName("시작일과 종료일이 같을 때 검증에 성공한다.")
+    @Test
+    fun validateDuration_whenStartEqualsEnd() {
+        // given, when, then
+        assertDoesNotThrow {
+            validator.validateDuration(now, now)
+        }
+    }
+
+    @DisplayName("시작일이 종료일보다 이후라면 예외를 반환한다.")
+    @Test
+    fun validateDuration_whenStartIsAfterEnd_thenThrowException() {
+        // given, when
+        val result = assertThrows<ScheduleIllegalArgumentException> {
+            validator.validateDuration(now, now.minusDays(1))
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(ILLEGAL_DURATION)
+    }
+
+    @DisplayName("시작일이 null일 경우 검증에 성공한다.")
+    @Test
+    fun validateDuration_whenStartIsNull() {
+        // given, when, then
+        assertDoesNotThrow {
+            validator.validateDuration(null, now)
+        }
+    }
+
+    @DisplayName("종료일이 null일 경우 검증에 성공한다.")
+    @Test
+    fun validateDuration_whenEndIsNull() {
+        // given, when, then
+        assertDoesNotThrow {
+            validator.validateDuration(now, null)
+        }
+    }
+
+    @Test
+    @DisplayName("사용자가 일정 소유자일 때 검증이 성공한다.")
+    fun validateUserAccess_whenUserIsOwner() {
+        // given
+        val couple = createDummyCouple()
+        val owner = couple.members.first()
+        val schedule = createDummyScheduleEvent(owner)
+
+        // when & then
+        assertDoesNotThrow {
+            validator.validateUserAccess(
+                scheduleEvent = schedule,
+                currentUserId = owner.id,
+                currentUserCoupleId = couple.id,
+            )
+        }
+    }
+
+    @Test
+    @DisplayName("파트너가 일정 소유자일 때 검증이 성공한다.")
+    fun validateUserAccess_whenUserIsPartnerInSameCouple_thenDoesNotThrowException() {
+        // given
+        val couple = createDummyCouple()
+        val myUser = couple.members.first()
+        val partnerUser = couple.members.last()
+        val schedule = createDummyScheduleEvent(owner = partnerUser)
+
+        // when & then
+        assertDoesNotThrow {
+            validator.validateUserAccess(
+                scheduleEvent = schedule,
+                currentUserId = myUser.id,
+                currentUserCoupleId = couple.id,
+            )
+        }
+    }
+
+    @Test
+    @DisplayName("일정 소유자가 SINGLE 상태이고, 다른 유저가 접근한다면 예외를 반환한다.")
+    fun validateUserAccess_whenOwnerIsSingleAndUserIsNotOwner_thenThrowException() {
+        // given
+        val couple = createDummyCouple()
+        val myUser = couple.members.first()
+        val partnerUser = couple.members.last()
+        val schedule = createDummyScheduleEvent(owner = partnerUser)
+        partnerUser.updateUserStatus(UserStatus.SINGLE)
+
+        // when
+        val result = assertThrows<ScheduleAccessDeniedException> {
+            validator.validateUserAccess(
+                scheduleEvent = schedule,
+                currentUserId = myUser.id,
+                currentUserCoupleId = couple.id,
+            )
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(ILLEGAL_PARTNER_STATUS)
+    }
+
+    @Test
+    @DisplayName("다른 커플에 속한 사용자가 일정에 접근할 경우 예외를 반환한다.")
+    fun validateUserAccess_whenUserIsInDifferentCouple_thenThrowException() {
+        // given
+        val couple = createDummyCouple(
+            id = 0,
+            user1Id = 0,
+            user2Id = 1,
+        )
+        val schedule = createDummyScheduleEvent(owner = couple.members.first())
+
+        val otherCouple = createDummyCouple(
+            id = 1,
+            user1Id = 2,
+            user2Id = 3,
+        )
+        val otherUser = otherCouple.members.first()
+
+        // when
+        val result = assertThrows<ScheduleAccessDeniedException> {
+            validator.validateUserAccess(
+                scheduleEvent = schedule,
+                currentUserId = otherUser.id,
+                currentUserCoupleId = otherCouple.id,
+            )
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(COUPLE_NOT_MATCHED)
+    }
+
+    @Test
+    @DisplayName("소유자가 커플이지만 커플 정보가 null일 때 다른 사용자가 접근하면 예외를 던짐")
+    fun validateUserAccess_whenOwnerCoupleInfoIsNull_thenThrowException() {
+        // given
+        val couple = createDummyCouple()
+        val owner = couple.members.first()
+        val schedule = createDummyScheduleEvent(owner)
+        owner.leaveFromCouple()
+        owner.updateUserStatus(UserStatus.COUPLED)  // DB 정합성에 문제가 발생했을 경우
+
+        val otherUser = couple.members.last()
+
+        // when
+        val result = assertThrows<ScheduleAccessDeniedException> {
+            validator.validateUserAccess(
+                scheduleEvent = schedule,
+                currentUserId = otherUser.id,
+                currentUserCoupleId = couple.id,
+            )
+        }
+
+        // then
+        assertThat(result.errorCode).isEqualTo(ILLEGAL_PARTNER_STATUS)
+    }
+
+    private fun createDummyCouple(id: Long = 0L, user1Id: Long = 0L, user2Id: Long = 1L): Couple {
+        val user1 = createDummyUser(user1Id)
+        val user2 = createDummyUser(user2Id)
+        return Couple(
+            id = id,
+        ).apply { addMembers(user1, user2) }
+    }
+
+    private fun createDummyUser(id: Long = 0L): User {
+      return User(
+          id = id,
+          platform = LoginPlatform.TEST,
+          platformUserId = UUID.randomUUID().toString(),
+          nickname = "testnick",
+          gender = UserGender.FEMALE,
+          userStatus = UserStatus.SINGLE,
+      )  
+    } 
+
+    private fun createDummyScheduleEvent(owner: User): ScheduleEvent {
+        val content = Content(
+            id = 0L, user = owner,
+            contentDetail = ContentDetail(title = "title", description = "desc"),
+            type = ContentType.SCHEDULE,
+        )
+        return ScheduleEvent(
+            id = 0L, content = content,
+            uid = UUID.randomUUID().toString(),
+            startDateTime = now,
+            endDateTime = now.plusDays(7),
+            startTimeZone = DateTimeUtil.KST_ZONE_ID,
+            endTimeZone = DateTimeUtil.KST_ZONE_ID,
+        )
+    }
+}
