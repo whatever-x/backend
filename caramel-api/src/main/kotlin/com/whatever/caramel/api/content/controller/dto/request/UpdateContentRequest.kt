@@ -28,7 +28,7 @@ data class UpdateContentRequest(
     @Schema(description = "일정 정보 (캘린더 추가시에만 사용)", requiredMode = NOT_REQUIRED)
     val dateTimeInfo: DateTimeInfoDto? = null,
 
-    @Schema(description = "소유자 타입 (ME: 나, PARTNER: 상대방, US: 우리)")
+    @Schema(description = "컨텐츠 담당자 (ME: 나, PARTNER: 상대방, US: 우리)")
     val contentAsignee: ContentAssignee,
 ) {
 

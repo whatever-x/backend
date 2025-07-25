@@ -21,7 +21,7 @@ data class ContentResponse(
     val tagList: List<Long>,
     @Schema(description = "생성일")
     val createdAt: LocalDate,
-    @Schema(description = "소유자 타입")
+    @Schema(description = "컨텐츠 담당자 (ME: 나, PARTNER: 상대방, US: 우리)")
     val contentAsignee: ContentAssignee,
 ) {
     companion object {

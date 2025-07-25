@@ -42,7 +42,7 @@ data class ScheduleDetailDto(
     @Schema(description = "캘린더 본문", example = "본문입니다.")
     val description: String?,
 
-    @Schema(description = "소유자 타입")
+    @Schema(description = "컨텐츠 담당자 (ME: 나, PARTNER: 상대방, US: 우리)")
     val contentAsignee: ContentAssignee,
 ) {
     companion object {

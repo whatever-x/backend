@@ -33,7 +33,7 @@ data class CreateContentRequest(
     )
     val tags: List<TagIdDto> = emptyList(),
 
-    @Schema(description = "소유자 타입 (ME: 나, PARTNER: 상대방, US: 우리)")
+    @Schema(description = "컨텐츠 담당자 (ME: 나, PARTNER: 상대방, US: 우리)")
     val contentAsignee: ContentAssignee,
 ) {
     fun toVo(): CreateContentRequestVo {
