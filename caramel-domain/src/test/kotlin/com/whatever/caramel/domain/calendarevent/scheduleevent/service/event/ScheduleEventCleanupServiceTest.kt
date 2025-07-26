@@ -18,7 +18,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
-import java.util.*
+import java.util.UUID
 import kotlin.test.Test
 
 @CaramelDomainSpringBootTest
