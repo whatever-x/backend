@@ -17,7 +17,7 @@ data class CreateScheduleVo(
     val endDateTime: LocalDateTime? = null,
     val endTimeZone: String? = null,
     val tagIds: Set<Long> = emptySet(),
-    val contentAsignee: ContentAssignee,
+    val contentAssignee: ContentAssignee,
 ) {
     companion object {
         fun from(
@@ -29,7 +29,7 @@ data class CreateScheduleVo(
             endDateTime: LocalDateTime? = null,
             endTimeZone: String? = null,
             tagIds: Set<Long> = emptySet(),
-            contentAsignee: ContentAssignee,
+            contentAssignee: ContentAssignee,
         ): CreateScheduleVo {
             return CreateScheduleVo(
                 title = title,
@@ -40,7 +40,7 @@ data class CreateScheduleVo(
                 endDateTime = endDateTime,
                 endTimeZone = endTimeZone,
                 tagIds = tagIds,
-                contentAsignee = contentAsignee,
+                contentAssignee = contentAssignee,
             )
         }
     }

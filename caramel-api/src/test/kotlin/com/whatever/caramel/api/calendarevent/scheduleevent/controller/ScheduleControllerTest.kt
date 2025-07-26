@@ -43,7 +43,7 @@ class ScheduleControllerTest : ControllerTestSupport() {
             isCompleted = false,
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME
+            contentAssignee = ContentAssignee.ME
         )
         every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
         every { SecurityUtil.getCurrentUserId() } returns 0L
@@ -71,7 +71,7 @@ class ScheduleControllerTest : ControllerTestSupport() {
             isCompleted = false,
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
         every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
         every { SecurityUtil.getCurrentUserId() } returns 0L
@@ -99,7 +99,7 @@ class ScheduleControllerTest : ControllerTestSupport() {
             isCompleted = false,
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when, then
@@ -126,7 +126,7 @@ class ScheduleControllerTest : ControllerTestSupport() {
             isCompleted = false,
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
         every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
         every { SecurityUtil.getCurrentUserId() } returns 0L
@@ -154,7 +154,7 @@ class ScheduleControllerTest : ControllerTestSupport() {
             isCompleted = false,
             startDateTime = DateTimeUtil.localNow(),
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when, then

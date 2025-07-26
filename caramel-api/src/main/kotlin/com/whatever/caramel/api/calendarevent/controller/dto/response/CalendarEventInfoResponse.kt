@@ -43,7 +43,7 @@ data class ScheduleDetailDto(
     val description: String?,
 
     @Schema(description = "컨텐츠 담당자 (ME: 나, PARTNER: 상대방, US: 우리)")
-    val contentAsignee: ContentAssignee,
+    val contentAssignee: ContentAssignee,
 ) {
     companion object {
         fun from(scheduleDetailVo: ScheduleDetailVo): ScheduleDetailDto {
@@ -57,7 +57,7 @@ data class ScheduleDetailDto(
                 parentScheduleId = scheduleDetailVo.parentScheduleId,
                 title = scheduleDetailVo.title,
                 description = scheduleDetailVo.description,
-                contentAsignee = scheduleDetailVo.contentAsignee,
+                contentAssignee = scheduleDetailVo.contentAssignee,
             )
         }
     }

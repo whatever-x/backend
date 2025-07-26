@@ -110,7 +110,7 @@ class ScheduleEventServiceOptimisticLockTest @Autowired constructor(
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
             endDateTime = NOW,
             endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         val threadCount = 2

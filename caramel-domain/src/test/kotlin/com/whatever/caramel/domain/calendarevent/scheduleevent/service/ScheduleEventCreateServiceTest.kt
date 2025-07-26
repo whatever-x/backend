@@ -92,7 +92,7 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
             endDateTime = NOW.plusDays(2),
             endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when
@@ -136,7 +136,7 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
             isCompleted = false,
             startDateTime = NOW,
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
         // when, then
         val exception = assertThrows<ScheduleIllegalArgumentException> {
@@ -163,7 +163,7 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
             endDateTime = NOW.minusDays(1),
             endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
         // when, then
         val exception = assertThrows<ScheduleIllegalArgumentException> {
@@ -189,7 +189,7 @@ class ScheduleEventServiceCreateTest @Autowired constructor(
             startTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
             endDateTime = NOW.plusDays(2),
             endTimeZone = DateTimeUtil.UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when

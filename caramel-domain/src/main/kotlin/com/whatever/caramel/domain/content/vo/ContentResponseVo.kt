@@ -12,7 +12,7 @@ data class ContentResponseVo(
     val isCompleted: Boolean,
     val tagList: List<TagVo>,
     val createdAt: LocalDate,
-    val contentAsignee: ContentAssignee,
+    val contentAssignee: ContentAssignee,
 ) {
     companion object {
         fun from(
@@ -26,7 +26,7 @@ data class ContentResponseVo(
                 isCompleted = content.contentDetail.isCompleted,
                 tagList = tagList,
                 createdAt = content.getCreatedAtInZone(KST_ZONE_ID).toLocalDate(),
-                contentAsignee = content.contentAsignee
+                contentAssignee = content.contentAssignee
             )
         }
     }

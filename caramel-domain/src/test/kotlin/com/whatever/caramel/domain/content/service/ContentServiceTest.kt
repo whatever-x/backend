@@ -111,7 +111,7 @@ class ContentServiceTest @Autowired constructor(
             description = "test-desc",
             isCompleted = false,
             tags = emptyList(),
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when
@@ -140,7 +140,7 @@ class ContentServiceTest @Autowired constructor(
             description = null,
             isCompleted = false,
             tags = emptyList(),
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when
@@ -176,7 +176,7 @@ class ContentServiceTest @Autowired constructor(
             description = description,
             isCompleted = false,
             tags = emptyList(),
-            contentAsignee = ContentAssignee.PARTNER,
+            contentAssignee = ContentAssignee.PARTNER,
         )
 
         // when
@@ -202,7 +202,7 @@ class ContentServiceTest @Autowired constructor(
             description = null,
             isCompleted = false,
             tags = emptyList(),
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when
@@ -228,7 +228,7 @@ class ContentServiceTest @Autowired constructor(
             description = "test-desc",
             isCompleted = false,
             tags = emptyList(),
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when
@@ -354,7 +354,7 @@ class ContentServiceTest @Autowired constructor(
             isCompleted = newCompleted,
             tagList = emptyList(),
             dateTimeInfo = null, // Keep as MEMO
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when
@@ -390,7 +390,7 @@ class ContentServiceTest @Autowired constructor(
             isCompleted = memo.contentDetail.isCompleted,
             tagList = listOf(tag2.id, tag3.id),
             dateTimeInfo = null,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when
@@ -424,7 +424,7 @@ class ContentServiceTest @Autowired constructor(
             isCompleted = false,
             tagList = emptyList(),
             dateTimeInfo = null,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when & then
@@ -454,7 +454,7 @@ class ContentServiceTest @Autowired constructor(
                 startTimezone = DateTimeUtil.KST_ZONE_ID.toString(),
             ),
             tagList = emptyList(),
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when

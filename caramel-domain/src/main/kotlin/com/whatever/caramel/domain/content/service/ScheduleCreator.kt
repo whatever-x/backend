@@ -35,7 +35,7 @@ class ScheduleCreator(
         tagIds: Set<Long>,
         dateTimeInfo: DateTimeInfoVo,
         getCurrentUserId: Long,
-        contentAsignee: ContentAssignee,
+        contentAssignee: ContentAssignee,
     ): ScheduleEventVo {
         val contentDetail = ContentDetail(
             title = title,
@@ -49,7 +49,7 @@ class ScheduleCreator(
             user = user,
             contentDetail = contentDetail,
             type = ContentType.SCHEDULE,
-            contentAsignee = contentAsignee
+            contentAssignee = contentAssignee
         )
         val savedContent = contentRepository.save(content)
 

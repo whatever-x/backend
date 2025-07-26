@@ -425,7 +425,7 @@ class ContentServiceUnitTest {
             description = "b",
             isCompleted = false,
             tags = listOf(),
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
         every { coupleRepository.findByIdWithMembers(any()) } returns null
 
@@ -452,7 +452,7 @@ class ContentServiceUnitTest {
             isCompleted = false,
             tagList = listOf(),
             dateTimeInfo = null,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
         val memo = createTestContent(
             id = memoId,
@@ -494,7 +494,7 @@ class ContentServiceUnitTest {
             isCompleted = false,
             tagList = listOf(),
             dateTimeInfo = null,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
         val user = createTestUser(id = userId)
         val user2 = createTestUser(id = user2Id)

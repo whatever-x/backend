@@ -55,7 +55,7 @@ class ContentServiceRetryableTest {
             isCompleted = false,
             tagList = listOf(),
             dateTimeInfo = null,
-            contentAsignee = ContentAssignee.ME
+            contentAssignee = ContentAssignee.ME
         )
         val user = createTestUser(id = userId)
         val memo = createTestContent(

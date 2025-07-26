@@ -43,7 +43,7 @@ class ContentControllerTest : ControllerTestSupport() {
             title = "메모 제목",
             description = "메모 설명",
             tags = listOf(TagIdDto(1L)),
-            contentAsignee = ContentAssignee.ME
+            contentAssignee = ContentAssignee.ME
         )
         whenever(contentService.createContent(any(), any(), any()))
             .thenReturn(ContentSummaryVo(0L, ContentType.MEMO))
@@ -100,7 +100,7 @@ class ContentControllerTest : ControllerTestSupport() {
             description = "",
             isCompleted = false,
             tags = emptyList(),
-            contentAsignee = ContentAssignee.ME
+            contentAssignee = ContentAssignee.ME
         )
 
         // when // then
@@ -124,7 +124,7 @@ class ContentControllerTest : ControllerTestSupport() {
             description = "수정된 설명",
             isCompleted = true,
             tagList = listOf(TagIdDto(1L)),
-            contentAsignee = ContentAssignee.ME
+            contentAssignee = ContentAssignee.ME
         )
 
         whenever(contentService.updateContent(any(), any(), any(), any()))

@@ -5,5 +5,5 @@ data class CreateContentRequestVo(
     val description: String?,
     val isCompleted: Boolean,
     val tags: List<Long>,
-    val contentAsignee: ContentAssignee,
+    val contentAssignee: ContentAssignee,
 )
