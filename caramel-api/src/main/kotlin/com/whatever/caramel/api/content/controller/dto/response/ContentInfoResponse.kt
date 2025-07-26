@@ -22,7 +22,7 @@ data class ContentResponse(
     @Schema(description = "생성일")
     val createdAt: LocalDate,
     @Schema(description = "컨텐츠 담당자 (ME: 나, PARTNER: 상대방, US: 우리)")
-    val contentAsignee: ContentAssignee,
+    val contentAssignee: ContentAssignee,
 ) {
     companion object {
         fun from(
@@ -35,7 +35,7 @@ data class ContentResponse(
             isCompleted = content.contentDetail.isCompleted,
             tagList = tagList,
             createdAt = content.getCreatedAtInZone(KST_ZONE_ID).toLocalDate(),
-            contentAsignee = content.contentAsignee
+            contentAssignee = content.contentAssignee
         )
 
         fun from(contentResponseVo: ContentResponseVo): ContentResponse {
@@ -46,7 +46,7 @@ data class ContentResponse(
                 isCompleted = contentResponseVo.isCompleted,
                 tagList = contentResponseVo.tagList.map { TagDto.from(it) },
                 createdAt = contentResponseVo.createdAt,
-                contentAsignee = contentResponseVo.contentAsignee
+                contentAssignee = contentResponseVo.contentAssignee
             )
         }
     }

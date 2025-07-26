@@ -15,7 +15,7 @@ data class ScheduleDetailVo(
     val parentScheduleId: Long? = null,
     val title: String?,
     val description: String?,
-    val contentAsignee: ContentAssignee,
+    val contentAssignee: ContentAssignee,
 ) {
     companion object {
         fun from(scheduleEvent: ScheduleEvent): ScheduleDetailVo {
@@ -28,7 +28,7 @@ data class ScheduleDetailVo(
                 isCompleted = scheduleEvent.content.contentDetail.isCompleted,
                 title = scheduleEvent.content.contentDetail.title,
                 description = scheduleEvent.content.contentDetail.description,
-                contentAsignee = scheduleEvent.content.contentAsignee,
+                contentAssignee = scheduleEvent.content.contentAssignee,
             )
         }
 
@@ -45,7 +45,7 @@ data class ScheduleDetailVo(
                 isCompleted = content.contentDetail.isCompleted,
                 title = content.contentDetail.title,
                 description = content.contentDetail.description,
-                contentAsignee = content.contentAsignee,
+                contentAssignee = content.contentAssignee,
             )
         }
     }

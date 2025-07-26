@@ -27,7 +27,7 @@ class MemoCreator(
         isCompleted: Boolean,
         tagIds: Set<Long>,
         currentUserId: Long,
-        contentAsignee: ContentAssignee,
+        contentAssignee: ContentAssignee,
     ): ContentVo {
         val contentDetail = ContentDetail(
             title = title,
@@ -40,7 +40,7 @@ class MemoCreator(
             user = user,
             contentDetail = contentDetail,
             type = ContentType.MEMO,
-            contentAsignee = contentAsignee
+            contentAssignee = contentAssignee
         )
 
         val savedContent = contentRepository.save(content)

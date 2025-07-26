@@ -43,7 +43,7 @@ data class UpdateScheduleRequest(
     val tagIds: Set<TagIdDto> = emptySet(),
 
     @Schema(description = "컨텐츠 담당자 (ME: 나, PARTNER: 상대방, US: 우리)")
-    val contentAsignee: ContentAssignee,
+    val contentAssignee: ContentAssignee,
 ) {
     fun toVo(): UpdateScheduleVo {
         return UpdateScheduleVo(
@@ -56,7 +56,7 @@ data class UpdateScheduleRequest(
             endDateTime = this.endDateTime,
             endTimeZone = this.endTimeZone,
             tagIds = this.tagIds.map { it.tagId }.toSet(),
-            contentAsignee = this.contentAsignee,
+            contentAssignee = this.contentAssignee,
         )
     }
 }

@@ -222,7 +222,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             startTimeZone = startTimeZone?.id,
             endDateTime = NOW,
             endTimeZone = UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when
@@ -272,7 +272,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             startTimeZone = UTC_ZONE_ID.id,
             endDateTime = NOW,
             endTimeZone = UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME
+            contentAssignee = ContentAssignee.ME
         )
 
         // when
@@ -320,7 +320,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             isCompleted = true,
             startDateTime = NOW.minusDays(2),
             startTimeZone = UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME
+            contentAssignee = ContentAssignee.ME
         )
 
         // when
@@ -363,7 +363,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             isCompleted = true,
             startDateTime = NOW.minusDays(2),
             startTimeZone = UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME
+            contentAssignee = ContentAssignee.ME
         )
 
         // when, then
@@ -409,7 +409,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             isCompleted = true,
             startDateTime = NOW.minusDays(2),
             startTimeZone = UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME
+            contentAssignee = ContentAssignee.ME
         )
 
         // when, then
@@ -450,7 +450,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             startTimeZone = UTC_ZONE_ID.id,
             endDateTime = NOW.minusDays(1),  // 유효하지 않은 endDateTime.
             endTimeZone = UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME
+            contentAssignee = ContentAssignee.ME
         )
 
         // when, then
@@ -496,7 +496,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             isCompleted = false,
             startDateTime = NOW.plusDays(1),
             startTimeZone = UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME
+            contentAssignee = ContentAssignee.ME
         )
 
         // when, then
@@ -539,7 +539,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             isCompleted = false,
             startDateTime = NOW.plusDays(1),
             startTimeZone = UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME
+            contentAssignee = ContentAssignee.ME
         )
 
         // when, then
@@ -590,7 +590,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             startDateTime = NOW.plusDays(1),
             startTimeZone = UTC_ZONE_ID.id,
             tagIds = newTagIds,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when
@@ -642,7 +642,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             startDateTime = NOW.plusDays(1),
             startTimeZone = UTC_ZONE_ID.id,
             tagIds = newTags.map { it.id }.toSet(),
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when
@@ -690,7 +690,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             startDateTime = NOW.plusDays(1),
             startTimeZone = UTC_ZONE_ID.id,
             tagIds = newTags.map { it.id }.toSet(),
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when
@@ -739,7 +739,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             startDateTime = NOW.plusDays(1),
             startTimeZone = UTC_ZONE_ID.id,
             tagIds = sameTagIds,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when
@@ -781,7 +781,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             startTimeZone = null,
             endDateTime = NOW,
             endTimeZone = UTC_ZONE_ID.id,
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when
@@ -1150,7 +1150,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                     selectedDate = DateTimeUtil.localNow().toLocalDate(),
                     title = "test-title",
                     isCompleted = false,
-                    contentAsignee = ContentAssignee.ME,
+                    contentAssignee = ContentAssignee.ME,
                 ),
             )
         }

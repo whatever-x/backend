@@ -49,7 +49,7 @@ class Content(
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50, nullable = false)
-    var contentAsignee: ContentAssignee = ContentAssignee.ME,
+    var contentAssignee: ContentAssignee = ContentAssignee.ME,
 ) : BaseEntity() {
     @Version
     private var version: Long = 0L
@@ -72,7 +72,7 @@ class Content(
         this.type = type
     }
 
-    fun updatecontentAsignee(contentAsignee: ContentAssignee) {
-        this.contentAsignee = contentAsignee
+    fun updateContentAssignee(contentAssignee: ContentAssignee) {
+        this.contentAssignee = contentAssignee
     }
 }

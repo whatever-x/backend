@@ -84,7 +84,7 @@ class MemoToScheduleConvertTest @Autowired constructor(
                 endTimezone = DateTimeUtil.UTC_ZONE_ID.id,
             ),
             tagList = emptyList(),
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when
@@ -120,7 +120,7 @@ class MemoToScheduleConvertTest @Autowired constructor(
                 startTimezone = DateTimeUtil.UTC_ZONE_ID.id,
             ),
             tagList = emptyList(),
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
         val invalidMemoId = 0L // 존재하지 않는 ID
 
@@ -151,7 +151,7 @@ class MemoToScheduleConvertTest @Autowired constructor(
                 startTimezone = DateTimeUtil.UTC_ZONE_ID.id,
             ),
             tagList = emptyList(),
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
         // when, then
         val exception = assertThrows<ContentNotFoundException> {
@@ -182,7 +182,7 @@ class MemoToScheduleConvertTest @Autowired constructor(
                 startTimezone = DateTimeUtil.UTC_ZONE_ID.id,
             ),
             tagList = emptyList(),
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
         // when, then
         val exception = assertThrows<ContentAccessDeniedException> {
@@ -218,7 +218,7 @@ class MemoToScheduleConvertTest @Autowired constructor(
                 startTimezone = DateTimeUtil.UTC_ZONE_ID.id,
             ),
             tagList = emptyList(),
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
 
         // when, then
@@ -250,7 +250,7 @@ class MemoToScheduleConvertTest @Autowired constructor(
                 endTimezone = DateTimeUtil.UTC_ZONE_ID.id
             ),
             tagList = emptyList(),
-            contentAsignee = ContentAssignee.ME,
+            contentAssignee = ContentAssignee.ME,
         )
         // when, then
         val exception = assertThrows<ScheduleIllegalArgumentException> {

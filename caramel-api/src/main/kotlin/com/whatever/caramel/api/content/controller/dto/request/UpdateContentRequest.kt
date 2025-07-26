@@ -29,7 +29,7 @@ data class UpdateContentRequest(
     val dateTimeInfo: DateTimeInfoDto? = null,
 
     @Schema(description = "컨텐츠 담당자 (ME: 나, PARTNER: 상대방, US: 우리)")
-    val contentAsignee: ContentAssignee,
+    val contentAssignee: ContentAssignee,
 ) {
 
     fun toVo(): UpdateContentRequestVo {
@@ -39,7 +39,7 @@ data class UpdateContentRequest(
             isCompleted = this.isCompleted,
             tagList = this.tagList.map { it.tagId },
             dateTimeInfo = this.dateTimeInfo?.toVo(),
-            contentAsignee = this.contentAsignee
+            contentAssignee = this.contentAssignee
         )
     }
 }

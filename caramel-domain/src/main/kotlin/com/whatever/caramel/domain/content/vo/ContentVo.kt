@@ -6,7 +6,7 @@ data class ContentVo(
     val id: Long,
     val contentDetail: ContentDetailVo,
     val type: ContentType,
-    val contentAsignee: ContentAssignee,
+    val contentAssignee: ContentAssignee,
 ) {
     companion object {
         fun from(content: Content): ContentVo {
@@ -14,7 +14,7 @@ data class ContentVo(
                 id = content.id,
                 contentDetail = ContentDetailVo.from(content.contentDetail),
                 type = content.type,
-                contentAsignee = content.contentAsignee
+                contentAssignee = content.contentAssignee
             )
         }
     }

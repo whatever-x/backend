@@ -34,7 +34,7 @@ data class CreateContentRequest(
     val tags: List<TagIdDto> = emptyList(),
 
     @Schema(description = "컨텐츠 담당자 (ME: 나, PARTNER: 상대방, US: 우리)")
-    val contentAsignee: ContentAssignee,
+    val contentAssignee: ContentAssignee,
 ) {
     fun toVo(): CreateContentRequestVo {
         return CreateContentRequestVo(
@@ -42,7 +42,7 @@ data class CreateContentRequest(
             description = this.description,
             isCompleted = this.isCompleted,
             tags = this.tags.map { it.tagId },
-            contentAsignee = this.contentAsignee
+            contentAssignee = this.contentAssignee
         )
     }
 }
