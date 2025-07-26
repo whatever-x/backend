@@ -4,6 +4,7 @@ import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.domain.base.BaseEntity
 import com.whatever.caramel.domain.content.exception.ContentExceptionCode.ILLEGAL_CONTENT_DETAIL
 import com.whatever.caramel.domain.content.exception.ContentIllegalArgumentException
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.domain.content.vo.ContentType
 import com.whatever.caramel.domain.user.model.User
 import jakarta.persistence.Column
@@ -19,6 +20,7 @@ import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.persistence.Version
 
 @Entity
 @Table(
@@ -44,7 +46,13 @@ class Content(
     @Enumerated(EnumType.STRING)
     @Column(length = 50, nullable = false)
     var type: ContentType = ContentType.MEMO,
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50, nullable = false)
+    var contentAsignee: ContentAssignee = ContentAssignee.ME,
 ) : BaseEntity() {
+    @Version
+    private var version: Long = 0L
 
     fun updateContentDetail(newContentDetail: ContentDetail) {
         if (newContentDetail.title == null && newContentDetail.description == null) {
@@ -62,5 +70,9 @@ class Content(
 
     fun updateType(type: ContentType) {
         this.type = type
+    }
+
+    fun updatecontentAsignee(contentAsignee: ContentAssignee) {
+        this.contentAsignee = contentAsignee
     }
 }

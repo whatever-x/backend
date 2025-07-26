@@ -2,6 +2,7 @@ package com.whatever.caramel.api.content.controller.dto.response
 
 import com.whatever.caramel.common.util.DateTimeUtil.KST_ZONE_ID
 import com.whatever.caramel.domain.content.model.Content
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.domain.content.vo.ContentResponseVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
@@ -20,6 +21,8 @@ data class ContentResponse(
     val tagList: List<Long>,
     @Schema(description = "생성일")
     val createdAt: LocalDate,
+    @Schema(description = "컨텐츠 담당자 (ME: 나, PARTNER: 상대방, US: 우리)")
+    val contentAsignee: ContentAssignee,
 ) {
     companion object {
         fun from(
@@ -31,7 +34,8 @@ data class ContentResponse(
             description = content.contentDetail.description ?: "",
             isCompleted = content.contentDetail.isCompleted,
             tagList = tagList,
-            createdAt = content.getCreatedAtInZone(KST_ZONE_ID).toLocalDate()
+            createdAt = content.getCreatedAtInZone(KST_ZONE_ID).toLocalDate(),
+            contentAsignee = content.contentAsignee
         )
 
         fun from(contentResponseVo: ContentResponseVo): ContentResponse {
@@ -41,7 +45,8 @@ data class ContentResponse(
                 description = contentResponseVo.description,
                 isCompleted = contentResponseVo.isCompleted,
                 tagList = contentResponseVo.tagList.map { it.id },
-                createdAt = contentResponseVo.createdAt
+                createdAt = contentResponseVo.createdAt,
+                contentAsignee = contentResponseVo.contentAsignee
             )
         }
     }

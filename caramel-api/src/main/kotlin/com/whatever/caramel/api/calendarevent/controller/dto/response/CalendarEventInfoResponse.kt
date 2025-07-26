@@ -1,6 +1,7 @@
 package com.whatever.caramel.api.calendarevent.controller.dto.response
 
 import com.whatever.caramel.domain.calendarevent.vo.ScheduleDetailVo
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDateTime
 
@@ -40,6 +41,9 @@ data class ScheduleDetailDto(
 
     @Schema(description = "캘린더 본문", example = "본문입니다.")
     val description: String?,
+
+    @Schema(description = "컨텐츠 담당자 (ME: 나, PARTNER: 상대방, US: 우리)")
+    val contentAsignee: ContentAssignee,
 ) {
     companion object {
         fun from(scheduleDetailVo: ScheduleDetailVo): ScheduleDetailDto {
@@ -53,6 +57,7 @@ data class ScheduleDetailDto(
                 parentScheduleId = scheduleDetailVo.parentScheduleId,
                 title = scheduleDetailVo.title,
                 description = scheduleDetailVo.description,
+                contentAsignee = scheduleDetailVo.contentAsignee,
             )
         }
     }

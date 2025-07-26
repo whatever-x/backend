@@ -14,6 +14,7 @@ import com.whatever.caramel.domain.content.exception.ContentNotFoundException
 import com.whatever.caramel.domain.content.repository.ContentRepository
 import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.caramel.domain.content.tag.repository.TagRepository
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.domain.content.vo.ContentType
 import com.whatever.caramel.domain.content.vo.UpdateContentRequestVo
 import com.whatever.caramel.domain.couple.model.Couple
@@ -83,6 +84,7 @@ class MemoToScheduleConvertTest @Autowired constructor(
                 endTimezone = DateTimeUtil.UTC_ZONE_ID.id,
             ),
             tagList = emptyList(),
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when
@@ -118,6 +120,7 @@ class MemoToScheduleConvertTest @Autowired constructor(
                 startTimezone = DateTimeUtil.UTC_ZONE_ID.id,
             ),
             tagList = emptyList(),
+            contentAsignee = ContentAssignee.ME,
         )
         val invalidMemoId = 0L // 존재하지 않는 ID
 
@@ -148,6 +151,7 @@ class MemoToScheduleConvertTest @Autowired constructor(
                 startTimezone = DateTimeUtil.UTC_ZONE_ID.id,
             ),
             tagList = emptyList(),
+            contentAsignee = ContentAssignee.ME,
         )
         // when, then
         val exception = assertThrows<ContentNotFoundException> {
@@ -178,6 +182,7 @@ class MemoToScheduleConvertTest @Autowired constructor(
                 startTimezone = DateTimeUtil.UTC_ZONE_ID.id,
             ),
             tagList = emptyList(),
+            contentAsignee = ContentAssignee.ME,
         )
         // when, then
         val exception = assertThrows<ContentAccessDeniedException> {
@@ -213,6 +218,7 @@ class MemoToScheduleConvertTest @Autowired constructor(
                 startTimezone = DateTimeUtil.UTC_ZONE_ID.id,
             ),
             tagList = emptyList(),
+            contentAsignee = ContentAssignee.ME,
         )
 
         // when, then
@@ -244,6 +250,7 @@ class MemoToScheduleConvertTest @Autowired constructor(
                 endTimezone = DateTimeUtil.UTC_ZONE_ID.id
             ),
             tagList = emptyList(),
+            contentAsignee = ContentAssignee.ME,
         )
         // when, then
         val exception = assertThrows<ScheduleIllegalArgumentException> {

@@ -2,6 +2,7 @@ package com.whatever.caramel.domain.calendarevent.vo
 
 import com.whatever.caramel.domain.calendarevent.model.ScheduleEvent
 import com.whatever.caramel.domain.content.model.Content
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import java.time.LocalDateTime
 
 data class ScheduleDetailVo(
@@ -14,6 +15,7 @@ data class ScheduleDetailVo(
     val parentScheduleId: Long? = null,
     val title: String?,
     val description: String?,
+    val contentAsignee: ContentAssignee,
 ) {
     companion object {
         fun from(scheduleEvent: ScheduleEvent): ScheduleDetailVo {
@@ -26,6 +28,7 @@ data class ScheduleDetailVo(
                 isCompleted = scheduleEvent.content.contentDetail.isCompleted,
                 title = scheduleEvent.content.contentDetail.title,
                 description = scheduleEvent.content.contentDetail.description,
+                contentAsignee = scheduleEvent.content.contentAsignee,
             )
         }
 
@@ -42,6 +45,7 @@ data class ScheduleDetailVo(
                 isCompleted = content.contentDetail.isCompleted,
                 title = content.contentDetail.title,
                 description = content.contentDetail.description,
+                contentAsignee = content.contentAsignee,
             )
         }
     }

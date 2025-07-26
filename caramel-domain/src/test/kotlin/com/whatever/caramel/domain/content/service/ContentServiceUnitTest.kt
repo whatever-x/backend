@@ -12,7 +12,14 @@ import com.whatever.caramel.domain.content.tag.model.Tag
 import com.whatever.caramel.domain.content.tag.model.TagContentMapping
 import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.caramel.domain.content.tag.repository.TagRepository
+import com.whatever.caramel.domain.content.vo.ContentAssignee
+import com.whatever.caramel.domain.content.vo.ContentListSortType
+import com.whatever.caramel.domain.content.vo.ContentQueryVo
 import com.whatever.caramel.domain.content.vo.ContentType
+import com.whatever.caramel.domain.content.vo.CreateContentRequestVo
+import com.whatever.caramel.domain.content.vo.UpdateContentRequestVo
+import com.whatever.caramel.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
+import com.whatever.caramel.domain.couple.exception.CoupleNotFoundException
 import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.user.model.LoginPlatform
@@ -391,6 +398,128 @@ class ContentServiceUnitTest {
         assertThat(result.description).isEqualTo("완료된 메모 내용")
         assertThat(result.isCompleted).isTrue()
         assertThat(result.tagList).isEmpty()
+    }
+
+    @DisplayName("contentList 에서 coupleId로 조회시에, 없다면 CoupleNotFoundException 을 던진다")
+    @Test
+    fun getContentList_whenCoupleNotFound() {
+        val coupleId = 1L
+        val contentQueryVo = ContentQueryVo(1, "a", sortType = ContentListSortType.ID_DESC, 1L)
+        every { coupleRepository.findByIdWithMembers(any()) } returns null
+
+        val exception = assertThrows<CoupleNotFoundException> {
+            contentService.getContentList(coupleId = coupleId, queryParameterVo = contentQueryVo)
+        }
+
+        assertThat(exception.errorCode).isEqualTo(COUPLE_NOT_FOUND)
+        assertThat(exception.errorUi.title).isEqualTo("커플 정보를 찾을 수 없어요.")
+    }
+
+    @DisplayName("createContent 에서 coupleId로 조회시에, 없다면 CoupleNotFoundException 을 던진다")
+    @Test
+    fun createContent_whenCoupleNotFound() {
+        val coupleId = 1L
+        val userId = 1L
+        val contentRequestVo = CreateContentRequestVo(
+            title = "a",
+            description = "b",
+            isCompleted = false,
+            tags = listOf(),
+            contentAsignee = ContentAssignee.ME,
+        )
+        every { coupleRepository.findByIdWithMembers(any()) } returns null
+
+        val exception = assertThrows<CoupleNotFoundException> {
+            contentService.createContent(coupleId = coupleId, userId = userId, contentRequestVo = contentRequestVo)
+        }
+
+        assertThat(exception.errorCode).isEqualTo(COUPLE_NOT_FOUND)
+        assertThat(exception.errorUi.title).isEqualTo("커플 정보를 찾을 수 없어요.")
+    }
+
+    @DisplayName("updateContent 에서 coupleId로 조회시에, 없다면 CoupleNotFoundException 을 던진다")
+    @Test
+    fun updateContent_whenCoupleNotFound() {
+        val memoId = 1L
+        val coupleId = 1L
+        val userId = 1L
+        val contentId = 1L
+
+        val user = createTestUser(id = userId)
+        val contentRequestVo = UpdateContentRequestVo(
+            title = "a",
+            description = "b",
+            isCompleted = false,
+            tagList = listOf(),
+            dateTimeInfo = null,
+            contentAsignee = ContentAssignee.ME,
+        )
+        val memo = createTestContent(
+            id = memoId,
+            user = user,
+            title = "완료된 메모",
+            description = "완료된 메모 내용",
+            isCompleted = true
+        )
+        every { contentRepository.findContentByIdAndType(id = any(), type = any()) } returns memo
+        every { coupleRepository.findByIdWithMembers(any()) } returns null
+
+        val exception = assertThrows<CoupleNotFoundException> {
+            contentService.updateContent(
+                userCoupleId = coupleId,
+                userId = userId,
+                requestVo = contentRequestVo,
+                contentId = contentId,
+            )
+        }
+
+        assertThat(exception.errorCode).isEqualTo(COUPLE_NOT_FOUND)
+        assertThat(exception.errorUi.title).isEqualTo("커플 정보를 찾을 수 없어요.")
+    }
+
+    @DisplayName("updateContent 에서 couple.id 와 contentOwnerCoupleId가 다른 경우 ContentAccessDeniedException 를 던진다")
+    @Test
+    fun updateContent_whenCoupleIdNotMatchedContentOwnerCoupleId() {
+        val memoId = 1L
+        val coupleId = 1L
+        val userId = 1L
+        val contentId = 1L
+        val user2Id = 3L
+        val partner2Id = 4L
+        val couple2Id = 5L
+
+        val contentRequestVo = UpdateContentRequestVo(
+            title = "a",
+            description = "b",
+            isCompleted = false,
+            tagList = listOf(),
+            dateTimeInfo = null,
+            contentAsignee = ContentAssignee.ME,
+        )
+        val user = createTestUser(id = userId)
+        val user2 = createTestUser(id = user2Id)
+        val memo = createTestContent(
+            id = memoId,
+            user = user,
+            title = "완료된 메모",
+            description = "완료된 메모 내용",
+            isCompleted = true
+        )
+        val partner2 = createTestUser(id = partner2Id, nickname = "파트너", gender = UserGender.FEMALE, birthYear = 1991)
+        val couple2 = createTestCouple(id = couple2Id, user1 = user2, user2 = partner2)
+        every { contentRepository.findContentByIdAndType(id = any(), type = any()) } returns memo
+        every { coupleRepository.findByIdWithMembers(any()) } returns couple2
+
+        val exception = assertThrows<ContentAccessDeniedException> {
+            contentService.updateContent(
+                contentId = contentId,
+                requestVo = contentRequestVo,
+                userCoupleId = coupleId,
+                userId = userId,
+            )
+        }
+
+        assertThat(exception.errorCode).isEqualTo(COUPLE_NOT_MATCHED)
     }
 
     private fun createTestUser(

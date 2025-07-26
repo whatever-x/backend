@@ -3,7 +3,9 @@ package com.whatever.caramel.api.content.controller.dto.request
 import com.whatever.caramel.domain.calendarevent.vo.DateTimeInfoVo
 import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_DESCRIPTION_LENGTH
 import com.whatever.caramel.domain.content.model.ContentDetail.Companion.MAX_TITLE_LENGTH
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.domain.content.vo.CreateContentRequestVo
+import com.whatever.com.whatever.caramel.api.content.tag.controller.dto.request.TagIdDto
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED
 import org.hibernate.validator.constraints.CodePointLength
@@ -29,14 +31,18 @@ data class CreateContentRequest(
         description = "태그 번호 리스트",
         requiredMode = NOT_REQUIRED,
     )
-    val tags: List<Long> = emptyList(),
+    val tags: List<TagIdDto> = emptyList(),
+
+    @Schema(description = "컨텐츠 담당자 (ME: 나, PARTNER: 상대방, US: 우리)")
+    val contentAsignee: ContentAssignee,
 ) {
     fun toVo(): CreateContentRequestVo {
         return CreateContentRequestVo(
             title = this.title,
             description = this.description,
             isCompleted = this.isCompleted,
-            tags = this.tags
+            tags = this.tags.map { it.tagId },
+            contentAsignee = this.contentAsignee
         )
     }
 }

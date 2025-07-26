@@ -133,6 +133,7 @@ class ScheduleEventService(
                 endDateTime = scheduleVo.endDateTime,
             ),
             getCurrentUserId = currentUserId,
+            contentAsignee = scheduleVo.contentAsignee,
         )
 
         applicationEventPublisher.publishEvent(
@@ -188,6 +189,8 @@ class ScheduleEventService(
                 val newTags = tagRepository.findAllByIdInAndIsDeleted(tagIds).toSet()
                 updateTags(scheduleEvent.content, newTags)
             }
+
+            scheduleEvent.content.updatecontentAsignee(contentAsignee)
 
             when (startDateTime) {
                 null -> scheduleEvent.convertToMemo(

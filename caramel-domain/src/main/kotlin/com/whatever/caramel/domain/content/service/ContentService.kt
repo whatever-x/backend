@@ -80,8 +80,9 @@ class ContentService(
         queryParameterVo: ContentQueryVo,
         coupleId: Long,
     ): PagedSlice<ContentResponseVo> {
-        val memberIds = coupleRepository.findByIdWithMembers(coupleId)?.members?.map { it.id }
-            ?: emptyList()
+        val couple = coupleRepository.findByIdWithMembers(coupleId)
+            ?: throw CoupleNotFoundException(errorCode = COUPLE_NOT_FOUND)
+        val memberIds = couple.members.map { it.id }
 
         val contentList = contentRepository.findByTypeWithCursor(
             type = ContentType.MEMO,
@@ -121,7 +122,8 @@ class ContentService(
             description = contentRequestVo.description,
             isCompleted = contentRequestVo.isCompleted,
             tagIds = contentRequestVo.tags.toSet(),
-            currentUserId = userId
+            currentUserId = userId,
+            contentAsignee = contentRequestVo.contentAsignee
         )
 
         applicationEventPublisher.publishEvent(
@@ -167,6 +169,7 @@ class ContentService(
             isCompleted = requestVo.isCompleted
         )
         memo.updateContentDetail(newContentDetail)
+        memo.updatecontentAsignee(requestVo.contentAsignee)
 
         updateTags(memo, requestVo.tagList.toSet())
         if (requestVo.dateTimeInfo == null) {  // 날짜 정보가 없다면 메모 업데이트만 진행
@@ -176,6 +179,8 @@ class ContentService(
             )
         }
 
+        memo.updatecontentAsignee(requestVo.contentAsignee)
+        
         val scheduleEvent = with(requestVo.dateTimeInfo) {
             ScheduleEvent.fromMemo(
                 memo = memo,
@@ -187,7 +192,6 @@ class ContentService(
         }
         val savedScheduleEvent = scheduleEventRepository.save(scheduleEvent)
 
-
         applicationEventPublisher.publishEvent(
             ScheduleCreateEvent(
                 userId = userId,
@@ -196,7 +200,6 @@ class ContentService(
                 contentDetail = ContentDetailVo.from(savedScheduleEvent.content.contentDetail)
             )
         )
-
         return ContentSummaryVo(
             id = savedScheduleEvent.id,
             contentType = ContentType.SCHEDULE,
@@ -242,7 +245,10 @@ class ContentService(
     fun updateRecover(
         e: OptimisticLockingFailureException,
         contentId: Long,
-    ) {
+        requestVo: UpdateContentRequestVo,
+        userCoupleId: Long,
+        userId: Long,
+    ): ContentSummaryVo {
         logger.error { "update memo fail. content id: $contentId" }
         throw ContentIllegalStateException(
             errorCode = ContentExceptionCode.UPDATE_CONFLICT,
