@@ -57,7 +57,7 @@ class User(
     var birthDate: LocalDate? = null,
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "user_platform_enum", nullable = false)
+    @Column(nullable = false)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     val platform: LoginPlatform,
 
@@ -72,12 +72,12 @@ class User(
     var nickname: String? = null,
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "user_gender_enum")
+//    @Column(columnDefinition = "user_gender_enum")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     var gender: UserGender? = null,
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "user_status_enum", nullable = false)
+    @Column(nullable = false)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     var userStatus: UserStatus = UserStatus.NEW,
 

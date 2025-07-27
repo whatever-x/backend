@@ -46,12 +46,12 @@ class Content(
     val contentDetail: ContentDetail,
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "content_type_enum", nullable = false)
+    @Column(nullable = false)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     var type: ContentType = ContentType.MEMO,
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "content_assignee_enum", nullable = false)
+    @Column(nullable = false)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     var contentAssignee: ContentAssignee = ContentAssignee.ME,
 ) : BaseEntity() {

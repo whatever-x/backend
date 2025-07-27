@@ -43,7 +43,7 @@ class Couple(
     var sharedMessage: String? = null,
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "couple_status_enum", nullable = false)
+    @Column(nullable = false)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     var status: CoupleStatus = CoupleStatus.ACTIVE,
 ) : BaseEntity() {
