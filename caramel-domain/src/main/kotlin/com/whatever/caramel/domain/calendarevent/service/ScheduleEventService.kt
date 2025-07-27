@@ -58,6 +58,7 @@ class ScheduleEventService(
     fun getSchedule(
         scheduleId: Long,
         ownerCoupleId: Long,
+        requestUserId: Long,
     ): GetScheduleVo {
         val schedule = scheduleEventRepository.findByIdWithContent(scheduleId)
             ?: throw ScheduleNotFoundException(errorCode = ScheduleExceptionCode.SCHEDULE_NOT_FOUND)
@@ -73,6 +74,7 @@ class ScheduleEventService(
             schedule = schedule,
             content = schedule.content,
             tags = tags,
+            requestUserId = requestUserId,
         )
     }
 
@@ -81,6 +83,7 @@ class ScheduleEventService(
         endDate: LocalDate,
         userTimeZone: String,
         currentUserCoupleId: Long,
+        requestUserId: Long,
     ): ScheduleDetailsVo {
         val startDateTime = startDate.toDateTime().withoutNano
         val endDateTime = endDate.toDateTime().endOfDay.withoutNano
@@ -104,7 +107,7 @@ class ScheduleEventService(
             memberIds = memberIds
         )
 
-        return ScheduleDetailsVo.from(coupleSchedules = coupleSchedules)
+        return ScheduleDetailsVo.from(coupleSchedules = coupleSchedules, requestUserId = requestUserId)
     }
 
     @Transactional

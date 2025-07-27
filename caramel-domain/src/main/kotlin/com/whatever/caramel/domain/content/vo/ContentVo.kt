@@ -17,5 +17,15 @@ data class ContentVo(
                 contentAssignee = content.contentAssignee
             )
         }
+
+        fun from(content: Content, requestUserId: Long): ContentVo {
+            val isContentOwnerSameAsRequester = content.user.id == requestUserId
+            return ContentVo(
+                id = content.id,
+                contentDetail = ContentDetailVo.from(content.contentDetail),
+                type = content.type,
+                contentAssignee = content.contentAssignee.fromRequestorPerspective(isContentOwnerSameAsRequester)
+            )
+        }
     }
 } 

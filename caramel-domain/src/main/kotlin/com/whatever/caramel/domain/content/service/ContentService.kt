@@ -56,6 +56,7 @@ class ContentService(
     fun getMemo(
         memoId: Long,
         ownerCoupleId: Long,
+        requestUserId: Long,
     ): ContentResponseVo {
         val memo = contentRepository.findContentByIdAndType(
             id = memoId,
@@ -72,6 +73,7 @@ class ContentService(
         return ContentResponseVo.from(
             content = memo,
             tagList = tagVos,
+            requestUserId = requestUserId,
         )
     }
 
@@ -79,6 +81,7 @@ class ContentService(
     fun getContentList(
         queryParameterVo: ContentQueryVo,
         coupleId: Long,
+        requestUserId: Long,
     ): PagedSlice<ContentResponseVo> {
         val couple = coupleRepository.findByIdWithMembers(coupleId)
             ?: throw CoupleNotFoundException(errorCode = COUPLE_NOT_FOUND)
@@ -104,7 +107,7 @@ class ContentService(
             )
         }.map { content ->
             val existingTags = tagContentMap[content.id]?.map { TagVo.from(it.tag) } ?: emptyList()
-            ContentResponseVo.from(content, existingTags)
+            ContentResponseVo.from(content, existingTags, requestUserId)
         }
     }
 
