@@ -1,6 +1,8 @@
 package com.whatever.caramel.api.calendarevent.scheduleevent.controller
 
 import com.whatever.caramel.api.calendarevent.controller.dto.request.GetCalendarQueryParameter
+import com.whatever.caramel.api.calendarevent.controller.dto.response.CalendarDetailResponse
+import com.whatever.caramel.api.calendarevent.controller.dto.response.CalendarEventsDto
 import com.whatever.caramel.api.calendarevent.controller.dto.response.ScheduleDetailDto
 import com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto.CreateScheduleRequest
 import com.whatever.caramel.api.calendarevent.scheduleevent.controller.dto.GetScheduleResponse
@@ -45,7 +47,7 @@ class ScheduleController(
     @GetMapping
     fun getSchedules(
         @ParameterObject queryParameter: GetCalendarQueryParameter,
-    ): CaramelApiResponse<List<ScheduleDetailDto>> {
+    ): CaramelApiResponse<CalendarDetailResponse> {
         val scheduleDetailsVo = scheduleEventService.getSchedules(
             startDate = queryParameter.startDate,
             endDate = queryParameter.endDate,
@@ -53,9 +55,13 @@ class ScheduleController(
             currentUserCoupleId = getCurrentUserCoupleId(),
         )
 
-        return scheduleDetailsVo.scheduleDetailVoList
+        val scheduleList = scheduleDetailsVo.scheduleDetailVoList
             .map { ScheduleDetailDto.from(it) }
-            .succeed()
+        
+        val calendarResult = CalendarEventsDto(scheduleList = scheduleList)
+        val response = CalendarDetailResponse(calendarResult = calendarResult)
+        
+        return response.succeed()
     }
 
     @Operation(
