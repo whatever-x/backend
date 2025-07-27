@@ -1,5 +1,7 @@
-package com.whatever.caramel.infrastructure.config
+package com.whatever.caramel.batch.config
 
+import com.whatever.caramel.domain.firebase.service.FirebaseService
+import com.whatever.caramel.domain.user.repository.UserRepository
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.job.builder.JobBuilder
@@ -15,7 +17,10 @@ import org.springframework.jdbc.support.JdbcTransactionManager
 import javax.sql.DataSource
 
 @Configuration
-class BatchConfig {
+class BatchConfig(
+    private val userRepository: UserRepository,
+    private val firebaseService: FirebaseService,
+) {
     @Bean
     fun transactionManager(dataSource: DataSource): JdbcTransactionManager {
         return JdbcTransactionManager(dataSource)
