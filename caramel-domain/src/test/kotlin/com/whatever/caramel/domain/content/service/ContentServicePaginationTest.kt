@@ -76,7 +76,7 @@ class ContentServicePaginationTest @Autowired constructor(
                 sortType = ContentListSortType.ID_DESC,
                 tagId = null
             )
-            val response = contentService.getContentList(queryParameter, couple.id)
+            val response = contentService.getContentList(queryParameter, couple.id, myUser.id)
 
             allFetchedContents.addAll(response.list)
             currentCursor = response.cursor.next
@@ -115,7 +115,7 @@ class ContentServicePaginationTest @Autowired constructor(
         )
 
         // when
-        val result = contentService.getContentList(queryParameter, couple.id)
+        val result = contentService.getContentList(queryParameter, couple.id, myUser.id)
 
         // then
         assertThat(result.list).isEmpty()
@@ -145,7 +145,7 @@ class ContentServicePaginationTest @Autowired constructor(
         )
 
         // when
-        val result = contentService.getContentList(queryParameter, couple.id)
+        val result = contentService.getContentList(queryParameter, couple.id, myUser.id)
 
         // then
         assertThat(result.list).hasSize(expectedContents.size)
@@ -189,7 +189,7 @@ class ContentServicePaginationTest @Autowired constructor(
         )
 
         // when
-        val result = contentService.getContentList(queryParameter, couple.id)
+        val result = contentService.getContentList(queryParameter, couple.id, myUser.id)
 
         // then
         assertThat(result.list).hasSize(1)
@@ -217,7 +217,7 @@ class ContentServicePaginationTest @Autowired constructor(
         )
 
         // when
-        val result = contentService.getContentList(queryParameter, couple.id)
+        val result = contentService.getContentList(queryParameter, couple.id, myUser.id)
 
         // then
         val response = result.list.find { it.id == content.id }!!
