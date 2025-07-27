@@ -29,5 +29,22 @@ data class ContentResponseVo(
                 contentAssignee = content.contentAssignee
             )
         }
+
+        fun from(
+            content: Content,
+            tagList: List<TagVo>,
+            requestUserId: Long,
+        ): ContentResponseVo {
+            val isContentOwnerSameAsRequester = content.user.id == requestUserId
+            return ContentResponseVo(
+                id = content.id,
+                title = content.contentDetail.title ?: "",
+                description = content.contentDetail.description ?: "",
+                isCompleted = content.contentDetail.isCompleted,
+                tagList = tagList,
+                createdAt = content.getCreatedAtInZone(KST_ZONE_ID).toLocalDate(),
+                contentAssignee = content.contentAssignee.fromRequestorPerspective(isContentOwnerSameAsRequester)
+            )
+        }
     }
 } 

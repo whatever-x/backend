@@ -3,6 +3,7 @@ package com.whatever.caramel.domain.calendarevent.vo
 import com.whatever.caramel.domain.calendarevent.model.ScheduleEvent
 import com.whatever.caramel.domain.content.model.Content
 import com.whatever.caramel.domain.content.vo.ContentAssignee
+import com.whatever.caramel.domain.content.vo.fromRequestorPerspective
 import java.time.LocalDateTime
 
 data class ScheduleDetailVo(
@@ -48,6 +49,21 @@ data class ScheduleDetailVo(
                 contentAssignee = content.contentAssignee,
             )
         }
+
+        fun from(scheduleEvent: ScheduleEvent, content: Content, requestUserId: Long): ScheduleDetailVo {
+            val isContentOwnerSameAsRequester = content.user.id == requestUserId
+            return ScheduleDetailVo(
+                scheduleId = scheduleEvent.id,
+                startDateTime = scheduleEvent.startDateTime,
+                endDateTime = scheduleEvent.endDateTime,
+                startDateTimezone = scheduleEvent.startTimeZone.id,
+                endDateTimezone = scheduleEvent.endTimeZone.id,
+                isCompleted = content.contentDetail.isCompleted,
+                title = content.contentDetail.title,
+                description = content.contentDetail.description,
+                contentAssignee = content.contentAssignee.fromRequestorPerspective(isContentOwnerSameAsRequester),
+            )
+        }
     }
 }
 
@@ -58,6 +74,12 @@ data class ScheduleDetailsVo(
         fun from(coupleSchedules: List<ScheduleEvent>): ScheduleDetailsVo {
             return ScheduleDetailsVo(
                 coupleSchedules.map { ScheduleDetailVo.from(it) }
+            )
+        }
+
+        fun from(coupleSchedules: List<ScheduleEvent>, requestUserId: Long): ScheduleDetailsVo {
+            return ScheduleDetailsVo(
+                coupleSchedules.map { ScheduleDetailVo.from(it, it.content, requestUserId) }
             )
         }
     }

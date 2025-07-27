@@ -16,5 +16,12 @@ data class GetScheduleVo(
                 tags = tags.map { TagVo.from(it) }
             )
         }
+
+        fun from(schedule: ScheduleEvent, content: Content, tags: List<Tag>, requestUserId: Long): GetScheduleVo {
+            return GetScheduleVo(
+                scheduleDetail = ScheduleDetailVo.from(schedule, content, requestUserId),
+                tags = tags.map { TagVo.from(it) }
+            )
+        }
     }
 }
