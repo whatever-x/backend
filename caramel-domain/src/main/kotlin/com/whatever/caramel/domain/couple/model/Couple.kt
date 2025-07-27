@@ -21,6 +21,8 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Version
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import org.hibernate.validator.constraints.CodePointLength
 import java.time.LocalDate
 import java.time.ZoneId
@@ -41,7 +43,8 @@ class Couple(
     var sharedMessage: String? = null,
 
     @Enumerated(EnumType.STRING)
-    @Column(length = MAX_STATUS_LENGTH, nullable = false)
+    @Column(columnDefinition = "couple_status_enum", length = MAX_STATUS_LENGTH, nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     var status: CoupleStatus = CoupleStatus.ACTIVE,
 ) : BaseEntity() {
 

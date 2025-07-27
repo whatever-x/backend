@@ -10,6 +10,8 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import java.time.LocalDate
 
 @Entity
@@ -27,7 +29,8 @@ class SpecialDay(
     val id: Long = 0L,
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20, nullable = false)
+    @Column(columnDefinition = "special_day_type_enum", length = 20, nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     val type: SpecialDayType,
 
     @Column(nullable = false)

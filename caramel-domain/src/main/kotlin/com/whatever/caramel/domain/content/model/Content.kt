@@ -21,6 +21,8 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.Version
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(
@@ -44,11 +46,13 @@ class Content(
     val contentDetail: ContentDetail,
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 50, nullable = false)
+    @Column(columnDefinition = "content_type_enum", length = 50, nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     var type: ContentType = ContentType.MEMO,
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 50, nullable = false)
+    @Column(columnDefinition = "content_assignee_enum", length = 50, nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     var contentAssignee: ContentAssignee = ContentAssignee.ME,
 ) : BaseEntity() {
     @Version
