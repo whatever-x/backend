@@ -517,6 +517,72 @@ class ContentServiceTest @Autowired constructor(
         val content = contentRepository.findByIdOrNull(nonExistentId)
         assertThat(content).isNull()
     }
+
+    @DisplayName("A가 PARTNER로 컨텐츠를 생성하면 B가 조회할 때 ME로 조회된다")
+    @Test
+    fun getMemo_WhenCreatedAsPARTNER_ThenViewedAsME() {
+        // given
+        val requestVo = CreateContentRequestVo(
+            title = "Partner Content",
+            description = "This is for partner",
+            isCompleted = false,
+            tags = emptyList(),
+            contentAssignee = ContentAssignee.PARTNER,
+        )
+
+        // A가 PARTNER로 컨텐츠 생성
+        val createdContent = contentService.createContent(
+            contentRequestVo = requestVo,
+            userId = testUser.id,
+            coupleId = testCouple.id,
+        )
+
+        // when - B가 조회
+        val result = contentService.getMemo(
+            memoId = createdContent.id,
+            ownerCoupleId = testCouple.id,
+            requestUserId = testPartnerUser.id,
+        )
+
+        // then - B의 관점에서는 ME로 조회되어야 함
+        assertThat(result.contentAssignee).isEqualTo(ContentAssignee.ME)
+        assertThat(result.id).isEqualTo(createdContent.id)
+        assertThat(result.title).isEqualTo(requestVo.title)
+        assertThat(result.description).isEqualTo(requestVo.description)
+    }
+
+    @DisplayName("A가 ME로 컨텐츠를 생성하면 B가 조회할 때 PARTNER로 조회된다")
+    @Test
+    fun getMemo_WhenCreatedAsME_ThenViewedAsPARTNER() {
+        // given
+        val requestVo = CreateContentRequestVo(
+            title = "My Content",
+            description = "This is for me",
+            isCompleted = false,
+            tags = emptyList(),
+            contentAssignee = ContentAssignee.ME,
+        )
+
+        // A가 ME로 컨텐츠 생성
+        val createdContent = contentService.createContent(
+            contentRequestVo = requestVo,
+            userId = testUser.id,
+            coupleId = testCouple.id,
+        )
+
+        // when - B가 조회
+        val result = contentService.getMemo(
+            memoId = createdContent.id,
+            ownerCoupleId = testCouple.id,
+            requestUserId = testPartnerUser.id,
+        )
+
+        // then - B의 관점에서는 PARTNER로 조회되어야 함
+        assertThat(result.contentAssignee).isEqualTo(ContentAssignee.PARTNER)
+        assertThat(result.id).isEqualTo(createdContent.id)
+        assertThat(result.title).isEqualTo(requestVo.title)
+        assertThat(result.description).isEqualTo(requestVo.description)
+    }
 }
 
 fun TagContentMappingRepository.findAllByContentIdIncludingDeleted(contentId: Long): List<TagContentMapping> {
