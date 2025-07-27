@@ -5,20 +5,30 @@ import org.springframework.batch.core.Step
 import org.springframework.batch.core.job.builder.JobBuilder
 import org.springframework.batch.core.launch.support.RunIdIncrementer
 import org.springframework.batch.core.repository.JobRepository
+import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.repeat.RepeatStatus
+import org.springframework.batch.support.DatabaseType
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.support.JdbcTransactionManager
 import javax.sql.DataSource
 
 @Configuration
-class BatchConfig(
-    private val dataSource: DataSource,
-) {
+class BatchConfig {
     @Bean
-    fun transactionManager(): JdbcTransactionManager {
+    fun transactionManager(dataSource: DataSource): JdbcTransactionManager {
         return JdbcTransactionManager(dataSource)
+    }
+
+    @Bean
+    fun whatEverJobRepository(dataSource: DataSource, transactionManager: JdbcTransactionManager): JobRepository {
+        return JobRepositoryFactoryBean().apply {
+            setDataSource(dataSource)
+            setDatabaseType(DatabaseType.POSTGRES.name)
+            setTransactionManager(transactionManager)
+            afterPropertiesSet()
+        }.`object`
     }
 
     @Bean
