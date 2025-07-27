@@ -29,7 +29,7 @@ class SpecialDay(
     val id: Long = 0L,
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "special_day_type_enum", length = 20, nullable = false)
+    @Column(columnDefinition = "special_day_type_enum", nullable = false)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     val type: SpecialDayType,
 
