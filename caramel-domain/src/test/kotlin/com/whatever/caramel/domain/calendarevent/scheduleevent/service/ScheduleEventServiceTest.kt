@@ -112,6 +112,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         val result = scheduleEventService.getSchedule(
             scheduleId = schedule.id,
             ownerCoupleId = couple.id,
+            requestUserId = myUser.id,
         )
 
         // then
@@ -130,6 +131,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         val result = scheduleEventService.getSchedule(
             scheduleId = schedule.id,
             ownerCoupleId = couple.id,
+            requestUserId = myUser.id,
         )
 
         // then
@@ -150,6 +152,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             scheduleEventService.getSchedule(
                 scheduleId = schedule.id,
                 ownerCoupleId = couple.id,
+                requestUserId = otherUser1.id,
             )
         }
 
@@ -168,7 +171,8 @@ class ScheduleEventServiceTest @Autowired constructor(
         val result = assertThrows<ScheduleAccessDeniedException> {
             scheduleEventService.getSchedule(
                 scheduleId = schedule.id,
-                ownerCoupleId = 0L,  // Invalid couple id
+                ownerCoupleId = 0L,  // Invalid couple id,
+                requestUserId = myUser.id,
             )
         }
 
@@ -180,7 +184,7 @@ class ScheduleEventServiceTest @Autowired constructor(
     @Test
     fun getSchedule_WithIllegalScheduleId() {
         // given
-        val (_, _, couple) = createCouple(userRepository, coupleRepository)
+        val (myUser, _, couple) = createCouple(userRepository, coupleRepository)
         val illegalScheduleId = 0L
 
         // when
@@ -188,6 +192,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             scheduleEventService.getSchedule(
                 scheduleId = illegalScheduleId,
                 ownerCoupleId = couple.id,
+                requestUserId = myUser.id,
             )
         }
 
@@ -919,6 +924,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             endDate = endDate,
             userTimeZone = userTimeZone.id,
             currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+            requestUserId = myUser.id,
         ).scheduleDetailVoList
 
         // then
@@ -963,12 +969,14 @@ class ScheduleEventServiceTest @Autowired constructor(
             endDate = startDate,
             userTimeZone = userTimeZone.id,
             currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+            requestUserId = myUser.id,
         ).scheduleDetailVoList
         val resultWeekly = scheduleEventService.getSchedules(
             startDate = startDate,
             endDate = startDate.plusDays(6),
             userTimeZone = userTimeZone.id,
             currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+            requestUserId = myUser.id,
         ).scheduleDetailVoList
 
         // then
@@ -1002,6 +1010,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             endDate = startDate.minusDays(1),
             userTimeZone = userTimeZone.id,
             currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+            requestUserId = myUser.id,
         ).scheduleDetailVoList
 
         // then
@@ -1042,6 +1051,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             endDate = startDate.plusDays(1),
             userTimeZone = userTimeZone.id,
             currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+            requestUserId = myUser.id,
         ).scheduleDetailVoList
 
         // then
@@ -1074,6 +1084,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 endDate = startDate.minusDays(1),
                 userTimeZone = userTimeZone.id,
                 currentUserCoupleId = 0L,  // Invalid couple id
+                requestUserId = myUser.id,
             )
         }
 
@@ -1108,6 +1119,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 endDate = startDate.minusDays(1),
                 userTimeZone = userTimeZone.id,
                 currentUserCoupleId = couple.id,
+                requestUserId = myUser.id,
             )
         }
 

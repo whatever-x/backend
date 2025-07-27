@@ -12,12 +12,7 @@ import com.whatever.caramel.domain.content.tag.model.Tag
 import com.whatever.caramel.domain.content.tag.model.TagContentMapping
 import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.caramel.domain.content.tag.repository.TagRepository
-import com.whatever.caramel.domain.content.vo.ContentAssignee
-import com.whatever.caramel.domain.content.vo.ContentListSortType
-import com.whatever.caramel.domain.content.vo.ContentQueryVo
-import com.whatever.caramel.domain.content.vo.ContentType
-import com.whatever.caramel.domain.content.vo.CreateContentRequestVo
-import com.whatever.caramel.domain.content.vo.UpdateContentRequestVo
+import com.whatever.caramel.domain.content.vo.*
 import com.whatever.caramel.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
 import com.whatever.caramel.domain.couple.exception.CoupleNotFoundException
 import com.whatever.caramel.domain.couple.model.Couple
@@ -36,7 +31,7 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 @ActiveProfiles("test")
 class ContentServiceUnitTest {
@@ -83,6 +78,7 @@ class ContentServiceUnitTest {
         val result = contentService.getMemo(
             memoId = memoId,
             ownerCoupleId = coupleId,
+            requestUserId = 1L,
         )
 
         // then
@@ -109,6 +105,7 @@ class ContentServiceUnitTest {
             contentService.getMemo(
                 memoId = memoId,
                 ownerCoupleId = coupleId,
+                requestUserId = 1L,
             )
         }
 
@@ -135,6 +132,7 @@ class ContentServiceUnitTest {
             contentService.getMemo(
                 memoId = memoId,
                 ownerCoupleId = coupleId,
+                requestUserId = 1L,
             )
         }
 
@@ -172,6 +170,7 @@ class ContentServiceUnitTest {
             contentService.getMemo(
                 memoId = memoId,
                 ownerCoupleId = coupleId,
+                requestUserId = 1L,
             )
         }
 
@@ -198,7 +197,7 @@ class ContentServiceUnitTest {
         every { tagContentMappingRepository.findAllWithTagByContentId(memoId) } returns emptyList()
 
         // when
-        val result = contentService.getMemo(memoId, coupleId)
+        val result = contentService.getMemo(memoId, coupleId, requestUserId = 1L)
 
         // then
         assertThat(result.id).isEqualTo(memoId)
@@ -235,6 +234,7 @@ class ContentServiceUnitTest {
         val result = contentService.getMemo(
             memoId = memoId,
             ownerCoupleId = coupleId,
+            requestUserId = 1L,
         )
 
         // then
@@ -279,6 +279,7 @@ class ContentServiceUnitTest {
         val result = contentService.getMemo(
             memoId = memoId,
             ownerCoupleId = coupleId,
+            requestUserId = 1L,
         )
 
         // then
@@ -315,6 +316,7 @@ class ContentServiceUnitTest {
         val result = contentService.getMemo(
             memoId = memoId,
             ownerCoupleId = coupleId,
+            requestUserId = 1L,
         )
 
         // then
@@ -352,6 +354,7 @@ class ContentServiceUnitTest {
         val result = contentService.getMemo(
             memoId = memoId,
             ownerCoupleId = coupleId,
+            requestUserId = 1L,
         )
 
         // then
@@ -390,6 +393,7 @@ class ContentServiceUnitTest {
         val result = contentService.getMemo(
             memoId = memoId,
             ownerCoupleId = coupleId,
+            requestUserId = 1L,
         )
 
         // then
@@ -408,7 +412,7 @@ class ContentServiceUnitTest {
         every { coupleRepository.findByIdWithMembers(any()) } returns null
 
         val exception = assertThrows<CoupleNotFoundException> {
-            contentService.getContentList(coupleId = coupleId, queryParameterVo = contentQueryVo)
+            contentService.getContentList(coupleId = coupleId, queryParameterVo = contentQueryVo, requestUserId = 1L)
         }
 
         assertThat(exception.errorCode).isEqualTo(COUPLE_NOT_FOUND)

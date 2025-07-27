@@ -263,7 +263,8 @@ class ContentServiceTest @Autowired constructor(
         // when
         val result = contentService.getMemo(
             memoId = testMemo.id,
-            ownerCoupleId = testCouple.id
+            ownerCoupleId = testCouple.id,
+            requestUserId = testUser.id,
         )
 
         // then
@@ -289,7 +290,8 @@ class ContentServiceTest @Autowired constructor(
         // when
         val result = contentService.getMemo(
             memoId = testMemo.id,
-            ownerCoupleId = testCouple.id
+            ownerCoupleId = testCouple.id,
+            requestUserId = testUser.id,
         )
 
         // then
@@ -315,7 +317,8 @@ class ContentServiceTest @Autowired constructor(
         val result = assertThrows<ContentAccessDeniedException> {
             contentService.getMemo(
                 memoId = testMemo.id,
-                ownerCoupleId = testCouple.id
+                ownerCoupleId = testCouple.id,
+                requestUserId = testUser.id,
             )
         }
 
@@ -332,7 +335,8 @@ class ContentServiceTest @Autowired constructor(
         val result = assertThrows<ContentNotFoundException> {
             contentService.getMemo(
                 memoId = 0L,  // illegal memo id
-                ownerCoupleId = testCouple.id
+                ownerCoupleId = testCouple.id,
+                requestUserId = testUser.id,
             )
         }
 
