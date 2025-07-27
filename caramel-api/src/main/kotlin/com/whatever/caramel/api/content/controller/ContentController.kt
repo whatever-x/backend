@@ -54,7 +54,7 @@ class ContentController(
         @ParameterObject queryParameter: GetContentListQueryParameter,
     ): CaramelApiResponse<CursoredResponse<ContentResponse>> {
         val coupleId = getCurrentUserCoupleId()
-        val contentListVo = contentService.getContentList(queryParameter.toVo(), coupleId)
+        val contentListVo = contentService.getContentList(queryParameter.toVo(), coupleId, getCurrentUserId())
         val responsePagedSlice = contentListVo.map { ContentResponse.from(it) }
         val response = CursoredResponse.from(responsePagedSlice)
         return response.succeed()
@@ -76,7 +76,7 @@ class ContentController(
         @PathVariable("memo-id") memoId: Long,
     ): CaramelApiResponse<ContentResponse> {
         val coupleId = getCurrentUserCoupleId()
-        val contentResponseVo = contentService.getMemo(memoId, coupleId)
+        val contentResponseVo = contentService.getMemo(memoId, coupleId, getCurrentUserId())
         val response = ContentResponse.from(contentResponseVo)
         return response.succeed()
     }
