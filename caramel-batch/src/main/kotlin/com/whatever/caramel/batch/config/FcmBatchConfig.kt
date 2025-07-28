@@ -23,7 +23,7 @@ import org.springframework.jdbc.support.JdbcTransactionManager
 import javax.sql.DataSource
 
 @Configuration
-class BatchConfig(
+class FcmBatchConfig(
     // user repository는 임시로, 추후에 ScheduledNotification 테이블에대한 repository 생기면 추가해줄것
     private val userRepository: UserRepository,
     private val firebaseService: FirebaseService,
