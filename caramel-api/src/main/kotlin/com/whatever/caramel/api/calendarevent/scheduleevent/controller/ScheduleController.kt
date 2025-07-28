@@ -53,6 +53,7 @@ class ScheduleController(
             endDate = queryParameter.endDate,
             userTimeZone = queryParameter.userTimeZone,
             currentUserCoupleId = getCurrentUserCoupleId(),
+            requestUserId = getCurrentUserId(),
         )
 
         val scheduleList = scheduleDetailsVo.scheduleDetailVoList
@@ -82,6 +83,7 @@ class ScheduleController(
         val getScheduleVo = scheduleEventService.getSchedule(
             scheduleId = scheduleId,
             ownerCoupleId = getCurrentUserCoupleId(),
+            requestUserId = getCurrentUserId(),
         )
         return GetScheduleResponse.from(getScheduleVo).succeed()
     }

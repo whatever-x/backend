@@ -25,7 +25,9 @@ import com.whatever.caramel.domain.content.tag.model.Tag
 import com.whatever.caramel.domain.content.tag.model.TagContentMapping
 import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.caramel.domain.content.tag.repository.TagRepository
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.domain.content.vo.ContentSummaryVo
+import com.whatever.caramel.domain.content.vo.fromRequestorPerspective
 import com.whatever.caramel.domain.couple.exception.CoupleException
 import com.whatever.caramel.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
 import com.whatever.caramel.domain.couple.exception.CoupleNotFoundException
@@ -58,6 +60,7 @@ class ScheduleEventService(
     fun getSchedule(
         scheduleId: Long,
         ownerCoupleId: Long,
+        requestUserId: Long,
     ): GetScheduleVo {
         val schedule = scheduleEventRepository.findByIdWithContent(scheduleId)
             ?: throw ScheduleNotFoundException(errorCode = ScheduleExceptionCode.SCHEDULE_NOT_FOUND)
@@ -73,6 +76,7 @@ class ScheduleEventService(
             schedule = schedule,
             content = schedule.content,
             tags = tags,
+            requestUserId = requestUserId,
         )
     }
 
@@ -81,6 +85,7 @@ class ScheduleEventService(
         endDate: LocalDate,
         userTimeZone: String,
         currentUserCoupleId: Long,
+        requestUserId: Long,
     ): ScheduleDetailsVo {
         val startDateTime = startDate.toDateTime().withoutNano
         val endDateTime = endDate.toDateTime().endOfDay.withoutNano
@@ -104,7 +109,7 @@ class ScheduleEventService(
             memberIds = memberIds
         )
 
-        return ScheduleDetailsVo.from(coupleSchedules = coupleSchedules)
+        return ScheduleDetailsVo.from(coupleSchedules = coupleSchedules, requestUserId = requestUserId)
     }
 
     @Transactional
@@ -190,7 +195,7 @@ class ScheduleEventService(
                 updateTags(scheduleEvent.content, newTags)
             }
 
-            scheduleEvent.content.updateContentAssignee(contentAssignee)
+            updateContentAssigneeIfChanged(scheduleEvent.content, contentAssignee, currentUserId)
 
             when (startDateTime) {
                 null -> scheduleEvent.convertToMemo(
@@ -276,5 +281,14 @@ class ScheduleEventService(
             val newMappings = tagsToAdd.map { tag -> TagContentMapping(tag = tag, content = content) }
             tagContentMappingRepository.saveAll(newMappings)
         }
+    }
+
+    private fun updateContentAssigneeIfChanged(content: Content, requestedAssignee: ContentAssignee, requestUserId: Long) {
+        val isContentOwnerSameAsRequester = content.user.id == requestUserId
+        val currentAssigneeFromRequestorPerspective = content.contentAssignee.fromRequestorPerspective(isContentOwnerSameAsRequester)
+
+        if(currentAssigneeFromRequestorPerspective == requestedAssignee) return
+        val actualAssigneeToStore = requestedAssignee.fromRequestorPerspective(isContentOwnerSameAsRequester)
+        content.updateContentAssignee(actualAssigneeToStore)
     }
 }

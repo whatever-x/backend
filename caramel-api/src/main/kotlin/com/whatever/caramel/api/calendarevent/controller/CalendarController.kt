@@ -11,6 +11,7 @@ import com.whatever.caramel.common.response.succeed
 import com.whatever.caramel.domain.calendarevent.service.ScheduleEventService
 import com.whatever.caramel.domain.specialday.service.SpecialDayService
 import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserCoupleId
+import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -51,6 +52,7 @@ class CalendarController(
             endDate = queryParameter.endDate,
             userTimeZone = queryParameter.userTimeZone,
             currentUserCoupleId = getCurrentUserCoupleId(),
+            requestUserId = getCurrentUserId(),
         )
 
         val calendarResult = CalendarEventsDto(

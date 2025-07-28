@@ -263,7 +263,8 @@ class ContentServiceTest @Autowired constructor(
         // when
         val result = contentService.getMemo(
             memoId = testMemo.id,
-            ownerCoupleId = testCouple.id
+            ownerCoupleId = testCouple.id,
+            requestUserId = testUser.id,
         )
 
         // then
@@ -289,7 +290,8 @@ class ContentServiceTest @Autowired constructor(
         // when
         val result = contentService.getMemo(
             memoId = testMemo.id,
-            ownerCoupleId = testCouple.id
+            ownerCoupleId = testCouple.id,
+            requestUserId = testUser.id,
         )
 
         // then
@@ -315,7 +317,8 @@ class ContentServiceTest @Autowired constructor(
         val result = assertThrows<ContentAccessDeniedException> {
             contentService.getMemo(
                 memoId = testMemo.id,
-                ownerCoupleId = testCouple.id
+                ownerCoupleId = testCouple.id,
+                requestUserId = testUser.id,
             )
         }
 
@@ -332,7 +335,8 @@ class ContentServiceTest @Autowired constructor(
         val result = assertThrows<ContentNotFoundException> {
             contentService.getMemo(
                 memoId = 0L,  // illegal memo id
-                ownerCoupleId = testCouple.id
+                ownerCoupleId = testCouple.id,
+                requestUserId = testUser.id,
             )
         }
 
@@ -516,6 +520,184 @@ class ContentServiceTest @Autowired constructor(
         }
         val content = contentRepository.findByIdOrNull(nonExistentId)
         assertThat(content).isNull()
+    }
+
+    @DisplayName("A가 PARTNER로 컨텐츠를 생성하면 B가 조회할 때 ME로 조회된다")
+    @Test
+    fun getMemo_WhenCreatedAsPARTNER_ThenViewedAsME() {
+        // given
+        val requestVo = CreateContentRequestVo(
+            title = "Partner Content",
+            description = "This is for partner",
+            isCompleted = false,
+            tags = emptyList(),
+            contentAssignee = ContentAssignee.PARTNER,
+        )
+
+        // A가 PARTNER로 컨텐츠 생성
+        val createdContent = contentService.createContent(
+            contentRequestVo = requestVo,
+            userId = testUser.id,
+            coupleId = testCouple.id,
+        )
+
+        // when - B가 조회
+        val result = contentService.getMemo(
+            memoId = createdContent.id,
+            ownerCoupleId = testCouple.id,
+            requestUserId = testPartnerUser.id,
+        )
+
+        // then - B의 관점에서는 ME로 조회되어야 함
+        assertThat(result.contentAssignee).isEqualTo(ContentAssignee.ME)
+        assertThat(result.id).isEqualTo(createdContent.id)
+        assertThat(result.title).isEqualTo(requestVo.title)
+        assertThat(result.description).isEqualTo(requestVo.description)
+    }
+
+    @DisplayName("A가 ME로 컨텐츠를 생성하면 B가 조회할 때 PARTNER로 조회된다")
+    @Test
+    fun getMemo_WhenCreatedAsME_ThenViewedAsPARTNER() {
+        // given
+        val requestVo = CreateContentRequestVo(
+            title = "My Content",
+            description = "This is for me",
+            isCompleted = false,
+            tags = emptyList(),
+            contentAssignee = ContentAssignee.ME,
+        )
+
+        // A가 ME로 컨텐츠 생성
+        val createdContent = contentService.createContent(
+            contentRequestVo = requestVo,
+            userId = testUser.id,
+            coupleId = testCouple.id,
+        )
+
+        // when - B가 조회
+        val result = contentService.getMemo(
+            memoId = createdContent.id,
+            ownerCoupleId = testCouple.id,
+            requestUserId = testPartnerUser.id,
+        )
+
+        // then - B의 관점에서는 PARTNER로 조회되어야 함
+        assertThat(result.contentAssignee).isEqualTo(ContentAssignee.PARTNER)
+        assertThat(result.id).isEqualTo(createdContent.id)
+        assertThat(result.title).isEqualTo(requestVo.title)
+        assertThat(result.description).isEqualTo(requestVo.description)
+    }
+
+    @DisplayName("A가 PARTNER로 컨텐츠를 생성 후, B가 ME로 수정 요청해도 실제로는 변경되지 않는다")
+    @Test
+    fun updateContent_WhenCreatedAsPARTNER_AndUpdatedAsME_ThenAssigneeNotChanged() {
+        // given - A가 PARTNER로 컨텐츠 생성
+        val createRequestVo = CreateContentRequestVo(
+            title = "Partner Content",
+            description = "This is for partner",
+            isCompleted = false,
+            tags = emptyList(),
+            contentAssignee = ContentAssignee.PARTNER,
+        )
+
+        val createdContent = contentService.createContent(
+            contentRequestVo = createRequestVo,
+            userId = testUser.id,
+            coupleId = testCouple.id,
+        )
+
+        // B가 조회할 때는 ME로 보임
+        val retrievedByPartner = contentService.getMemo(
+            memoId = createdContent.id,
+            ownerCoupleId = testCouple.id,
+            requestUserId = testPartnerUser.id,
+        )
+        assertThat(retrievedByPartner.contentAssignee).isEqualTo(ContentAssignee.ME)
+
+        // when - B가 ME로 수정 요청 (실제로는 변경되지 않아야 함)
+        val updateRequestVo = UpdateContentRequestVo(
+            title = "Updated Title",
+            description = "Updated Description",
+            isCompleted = true,
+            tagList = emptyList(),
+            dateTimeInfo = null,
+            contentAssignee = ContentAssignee.ME, // B 관점에서는 ME로 요청
+        )
+
+        contentService.updateContent(
+            contentId = createdContent.id,
+            requestVo = updateRequestVo,
+            userCoupleId = testCouple.id,
+            userId = testPartnerUser.id,
+        )
+
+        // then - 실제 저장된 값은 여전히 PARTNER여야 함
+        val updatedContent = contentRepository.findByIdOrNull(createdContent.id)!!
+        assertThat(updatedContent.contentAssignee).isEqualTo(ContentAssignee.PARTNER)
+
+        // A가 조회할 때는 여전히 PARTNER로 보여야 함
+        val retrievedByOwner = contentService.getMemo(
+            memoId = createdContent.id,
+            ownerCoupleId = testCouple.id,
+            requestUserId = testUser.id,
+        )
+        assertThat(retrievedByOwner.contentAssignee).isEqualTo(ContentAssignee.PARTNER)
+    }
+
+    @DisplayName("A가 PARTNER로 컨텐츠를 생성 후, B가 PARTNER로 수정 요청하면 실제로는 ME로 변경된다")
+    @Test
+    fun updateContent_WhenCreatedAsPARTNER_AndUpdatedAsPARTNER_ThenAssigneeChangedToME() {
+        // given - A가 PARTNER로 컨텐츠 생성
+        val createRequestVo = CreateContentRequestVo(
+            title = "Partner Content",
+            description = "This is for partner",
+            isCompleted = false,
+            tags = emptyList(),
+            contentAssignee = ContentAssignee.PARTNER,
+        )
+
+        val createdContent = contentService.createContent(
+            contentRequestVo = createRequestVo,
+            userId = testUser.id,
+            coupleId = testCouple.id,
+        )
+
+        // when - B가 PARTNER로 수정 요청 (실제로는 ME로 변경되어야 함)
+        val updateRequestVo = UpdateContentRequestVo(
+            title = "Updated Title",
+            description = "Updated Description",
+            isCompleted = true,
+            tagList = emptyList(),
+            dateTimeInfo = null,
+            contentAssignee = ContentAssignee.PARTNER, // B 관점에서는 PARTNER로 요청
+        )
+
+        contentService.updateContent(
+            contentId = createdContent.id,
+            requestVo = updateRequestVo,
+            userCoupleId = testCouple.id,
+            userId = testPartnerUser.id,
+        )
+
+        // then - 실제 저장된 값은 ME로 변경되어야 함
+        val updatedContent = contentRepository.findByIdOrNull(createdContent.id)!!
+        assertThat(updatedContent.contentAssignee).isEqualTo(ContentAssignee.ME)
+
+        // A가 조회할 때는 ME로 보여야 함
+        val retrievedByOwner = contentService.getMemo(
+            memoId = createdContent.id,
+            ownerCoupleId = testCouple.id,
+            requestUserId = testUser.id,
+        )
+        assertThat(retrievedByOwner.contentAssignee).isEqualTo(ContentAssignee.ME)
+
+        // B가 조회할 때는 PARTNER로 보여야 함
+        val retrievedByPartner = contentService.getMemo(
+            memoId = createdContent.id,
+            ownerCoupleId = testCouple.id,
+            requestUserId = testPartnerUser.id,
+        )
+        assertThat(retrievedByPartner.contentAssignee).isEqualTo(ContentAssignee.PARTNER)
     }
 }
 

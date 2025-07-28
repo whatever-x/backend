@@ -1,17 +1,11 @@
 package com.whatever.caramel.domain.calendarevent.scheduleevent.service
 
-import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.common.util.*
 import com.whatever.caramel.common.util.DateTimeUtil.UTC_ZONE_ID
-import com.whatever.caramel.common.util.endOfDay
-import com.whatever.caramel.common.util.toDateTime
-import com.whatever.caramel.common.util.toZoneId
-import com.whatever.caramel.common.util.withoutNano
 import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleAccessDeniedException
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode
-import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode.COUPLE_NOT_MATCHED
-import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode.ILLEGAL_PARTNER_STATUS
-import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode.SCHEDULE_NOT_FOUND
+import com.whatever.caramel.domain.calendarevent.exception.ScheduleExceptionCode.*
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleIllegalArgumentException
 import com.whatever.caramel.domain.calendarevent.exception.ScheduleNotFoundException
 import com.whatever.caramel.domain.calendarevent.model.ScheduleEvent
@@ -26,10 +20,10 @@ import com.whatever.caramel.domain.content.tag.model.TagContentMapping
 import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.caramel.domain.content.tag.repository.TagRepository
 import com.whatever.caramel.domain.content.tag.vo.TagVo
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.domain.content.vo.ContentType
 import com.whatever.caramel.domain.couple.exception.CoupleException
 import com.whatever.caramel.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
-import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.findByIdAndNotDeleted
@@ -112,6 +106,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         val result = scheduleEventService.getSchedule(
             scheduleId = schedule.id,
             ownerCoupleId = couple.id,
+            requestUserId = myUser.id,
         )
 
         // then
@@ -130,6 +125,7 @@ class ScheduleEventServiceTest @Autowired constructor(
         val result = scheduleEventService.getSchedule(
             scheduleId = schedule.id,
             ownerCoupleId = couple.id,
+            requestUserId = myUser.id,
         )
 
         // then
@@ -150,6 +146,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             scheduleEventService.getSchedule(
                 scheduleId = schedule.id,
                 ownerCoupleId = couple.id,
+                requestUserId = otherUser1.id,
             )
         }
 
@@ -168,7 +165,8 @@ class ScheduleEventServiceTest @Autowired constructor(
         val result = assertThrows<ScheduleAccessDeniedException> {
             scheduleEventService.getSchedule(
                 scheduleId = schedule.id,
-                ownerCoupleId = 0L,  // Invalid couple id
+                ownerCoupleId = 0L,  // Invalid couple id,
+                requestUserId = myUser.id,
             )
         }
 
@@ -180,7 +178,7 @@ class ScheduleEventServiceTest @Autowired constructor(
     @Test
     fun getSchedule_WithIllegalScheduleId() {
         // given
-        val (_, _, couple) = createCouple(userRepository, coupleRepository)
+        val (myUser, _, couple) = createCouple(userRepository, coupleRepository)
         val illegalScheduleId = 0L
 
         // when
@@ -188,6 +186,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             scheduleEventService.getSchedule(
                 scheduleId = illegalScheduleId,
                 ownerCoupleId = couple.id,
+                requestUserId = myUser.id,
             )
         }
 
@@ -919,6 +918,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             endDate = endDate,
             userTimeZone = userTimeZone.id,
             currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+            requestUserId = myUser.id,
         ).scheduleDetailVoList
 
         // then
@@ -963,12 +963,14 @@ class ScheduleEventServiceTest @Autowired constructor(
             endDate = startDate,
             userTimeZone = userTimeZone.id,
             currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+            requestUserId = myUser.id,
         ).scheduleDetailVoList
         val resultWeekly = scheduleEventService.getSchedules(
             startDate = startDate,
             endDate = startDate.plusDays(6),
             userTimeZone = userTimeZone.id,
             currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+            requestUserId = myUser.id,
         ).scheduleDetailVoList
 
         // then
@@ -1002,6 +1004,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             endDate = startDate.minusDays(1),
             userTimeZone = userTimeZone.id,
             currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+            requestUserId = myUser.id,
         ).scheduleDetailVoList
 
         // then
@@ -1042,6 +1045,7 @@ class ScheduleEventServiceTest @Autowired constructor(
             endDate = startDate.plusDays(1),
             userTimeZone = userTimeZone.id,
             currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
+            requestUserId = myUser.id,
         ).scheduleDetailVoList
 
         // then
@@ -1074,6 +1078,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 endDate = startDate.minusDays(1),
                 userTimeZone = userTimeZone.id,
                 currentUserCoupleId = 0L,  // Invalid couple id
+                requestUserId = myUser.id,
             )
         }
 
@@ -1108,6 +1113,7 @@ class ScheduleEventServiceTest @Autowired constructor(
                 endDate = startDate.minusDays(1),
                 userTimeZone = userTimeZone.id,
                 currentUserCoupleId = couple.id,
+                requestUserId = myUser.id,
             )
         }
 
@@ -1157,6 +1163,128 @@ class ScheduleEventServiceTest @Autowired constructor(
 
         // then
         assertThat(result.errorCode).isEqualTo(SCHEDULE_NOT_FOUND)
+    }
+
+    @DisplayName("A가 PARTNER로 일정을 생성 후, B가 ME로 수정 요청해도 실제로는 변경되지 않는다")
+    @Test
+    fun updateSchedule_WhenCreatedAsPARTNER_AndUpdatedAsME_ThenAssigneeNotChanged() {
+        // given - A가 PARTNER로 일정 생성
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
+        val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
+        oldContent.contentAssignee = ContentAssignee.PARTNER
+        contentRepository.save(oldContent)
+
+        val oldSchedule = scheduleEventRepository.save(
+            ScheduleEvent(
+                uid = "test-uuid4-value",
+                startDateTime = NOW.minusDays(7),
+                startTimeZone = ZoneId.of("Asia/Seoul"),
+                endDateTime = NOW.minusDays(3),
+                endTimeZone = UTC_ZONE_ID,
+                content = oldContent,
+            )
+        )
+
+        // B가 조회할 때는 ME로 보임을 확인
+        val retrievedByPartner = scheduleEventService.getSchedule(
+            scheduleId = oldSchedule.id,
+            ownerCoupleId = couple.id,
+            requestUserId = partnerUser.id,
+        )
+        assertThat(retrievedByPartner.scheduleDetail.contentAssignee).isEqualTo(ContentAssignee.ME)
+
+        // when - B가 ME로 수정 요청 (실제로는 변경되지 않아야 함)
+        val scheduleVo = UpdateScheduleVo(
+            selectedDate = DateTimeUtil.localNow().toLocalDate(),
+            title = "updated title",
+            description = "updated description",
+            isCompleted = true,
+            startDateTime = NOW.minusDays(2),
+            startTimeZone = UTC_ZONE_ID.id,
+            endDateTime = NOW,
+            endTimeZone = UTC_ZONE_ID.id,
+            contentAssignee = ContentAssignee.ME, // B 관점에서는 ME로 요청
+        )
+
+        scheduleEventService.updateSchedule(
+            scheduleId = oldSchedule.id,
+            scheduleVo = scheduleVo,
+            currentUserId = partnerUser.id,
+            currentUserCoupleId = couple.id,
+        )
+
+        // then - 실제 저장된 값은 여전히 PARTNER여야 함
+        val updatedScheduleEvent = scheduleEventRepository.findByIdWithContent(oldSchedule.id)!!
+        assertThat(updatedScheduleEvent.content.contentAssignee).isEqualTo(ContentAssignee.PARTNER)
+
+        // A가 조회할 때는 여전히 PARTNER로 보여야 함
+        val retrievedByOwner = scheduleEventService.getSchedule(
+            scheduleId = oldSchedule.id,
+            ownerCoupleId = couple.id,
+            requestUserId = myUser.id,
+        )
+        assertThat(retrievedByOwner.scheduleDetail.contentAssignee).isEqualTo(ContentAssignee.PARTNER)
+    }
+
+    @DisplayName("A가 PARTNER로 일정을 생성 후, B가 PARTNER로 수정 요청하면 실제로는 ME로 변경된다")
+    @Test
+    fun updateSchedule_WhenCreatedAsPARTNER_AndUpdatedAsPARTNER_ThenAssigneeChangedToME() {
+        // given - A가 PARTNER로 일정 생성
+        val (myUser, partnerUser, couple) = setUpCoupleAndSecurity()
+        val oldContent = contentRepository.save(createContent(myUser, ContentType.SCHEDULE))
+        oldContent.contentAssignee = ContentAssignee.PARTNER
+        contentRepository.save(oldContent)
+
+        val oldSchedule = scheduleEventRepository.save(
+            ScheduleEvent(
+                uid = "test-uuid4-value",
+                startDateTime = NOW.minusDays(7),
+                startTimeZone = ZoneId.of("Asia/Seoul"),
+                endDateTime = NOW.minusDays(3),
+                endTimeZone = UTC_ZONE_ID,
+                content = oldContent,
+            )
+        )
+
+        // when - B가 PARTNER로 수정 요청 (실제로는 ME로 변경되어야 함)
+        val scheduleVo = UpdateScheduleVo(
+            selectedDate = DateTimeUtil.localNow().toLocalDate(),
+            title = "updated title",
+            description = "updated description",
+            isCompleted = true,
+            startDateTime = NOW.minusDays(2),
+            startTimeZone = UTC_ZONE_ID.id,
+            endDateTime = NOW,
+            endTimeZone = UTC_ZONE_ID.id,
+            contentAssignee = ContentAssignee.PARTNER, // B 관점에서는 PARTNER로 요청
+        )
+
+        scheduleEventService.updateSchedule(
+            scheduleId = oldSchedule.id,
+            scheduleVo = scheduleVo,
+            currentUserId = partnerUser.id,
+            currentUserCoupleId = couple.id,
+        )
+
+        // then - 실제 저장된 값은 ME로 변경되어야 함
+        val updatedScheduleEvent = scheduleEventRepository.findByIdWithContent(oldSchedule.id)!!
+        assertThat(updatedScheduleEvent.content.contentAssignee).isEqualTo(ContentAssignee.ME)
+
+        // A가 조회할 때는 ME로 보여야 함
+        val retrievedByOwner = scheduleEventService.getSchedule(
+            scheduleId = oldSchedule.id,
+            ownerCoupleId = couple.id,
+            requestUserId = myUser.id,
+        )
+        assertThat(retrievedByOwner.scheduleDetail.contentAssignee).isEqualTo(ContentAssignee.ME)
+
+        // B가 조회할 때는 PARTNER로 보여야 함
+        val retrievedByPartner = scheduleEventService.getSchedule(
+            scheduleId = oldSchedule.id,
+            ownerCoupleId = couple.id,
+            requestUserId = partnerUser.id,
+        )
+        assertThat(retrievedByPartner.scheduleDetail.contentAssignee).isEqualTo(ContentAssignee.PARTNER)
     }
 
     private fun createScheduleWithTags(
@@ -1249,4 +1377,6 @@ internal fun createContent(user: User, type: ContentType): Content {
         ),
         type = type
     )
+
+
 }
