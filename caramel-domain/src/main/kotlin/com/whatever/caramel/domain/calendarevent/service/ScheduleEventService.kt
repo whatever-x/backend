@@ -25,7 +25,9 @@ import com.whatever.caramel.domain.content.tag.model.Tag
 import com.whatever.caramel.domain.content.tag.model.TagContentMapping
 import com.whatever.caramel.domain.content.tag.repository.TagContentMappingRepository
 import com.whatever.caramel.domain.content.tag.repository.TagRepository
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.domain.content.vo.ContentSummaryVo
+import com.whatever.caramel.domain.content.vo.fromRequestorPerspective
 import com.whatever.caramel.domain.couple.exception.CoupleException
 import com.whatever.caramel.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
 import com.whatever.caramel.domain.couple.exception.CoupleNotFoundException
@@ -193,7 +195,7 @@ class ScheduleEventService(
                 updateTags(scheduleEvent.content, newTags)
             }
 
-            scheduleEvent.content.updateContentAssignee(contentAssignee)
+            updateContentAssigneeIfChanged(scheduleEvent.content, contentAssignee, currentUserId)
 
             when (startDateTime) {
                 null -> scheduleEvent.convertToMemo(
@@ -279,5 +281,14 @@ class ScheduleEventService(
             val newMappings = tagsToAdd.map { tag -> TagContentMapping(tag = tag, content = content) }
             tagContentMappingRepository.saveAll(newMappings)
         }
+    }
+
+    private fun updateContentAssigneeIfChanged(content: Content, requestedAssignee: ContentAssignee, requestUserId: Long) {
+        val isContentOwnerSameAsRequester = content.user.id == requestUserId
+        val currentAssigneeFromRequestorPerspective = content.contentAssignee.fromRequestorPerspective(isContentOwnerSameAsRequester)
+
+        if(currentAssigneeFromRequestorPerspective == requestedAssignee) return
+        val actualAssigneeToStore = requestedAssignee.fromRequestorPerspective(isContentOwnerSameAsRequester)
+        content.updateContentAssignee(actualAssigneeToStore)
     }
 }

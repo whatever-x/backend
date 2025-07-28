@@ -24,9 +24,11 @@ import com.whatever.caramel.domain.content.vo.ContentDetailVo
 import com.whatever.caramel.domain.content.vo.ContentQueryVo
 import com.whatever.caramel.domain.content.vo.ContentResponseVo
 import com.whatever.caramel.domain.content.vo.ContentSummaryVo
+import com.whatever.caramel.domain.content.vo.ContentAssignee
 import com.whatever.caramel.domain.content.vo.ContentType
 import com.whatever.caramel.domain.content.vo.CreateContentRequestVo
 import com.whatever.caramel.domain.content.vo.UpdateContentRequestVo
+import com.whatever.caramel.domain.content.vo.fromRequestorPerspective
 import com.whatever.caramel.domain.couple.exception.CoupleExceptionCode.COUPLE_NOT_FOUND
 import com.whatever.caramel.domain.couple.exception.CoupleNotFoundException
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
@@ -172,18 +174,17 @@ class ContentService(
             isCompleted = requestVo.isCompleted
         )
         memo.updateContentDetail(newContentDetail)
-        memo.updateContentAssignee(requestVo.contentAssignee)
-
+        
+        updateContentAssigneeIfChanged(memo, requestVo.contentAssignee, userId)
         updateTags(memo, requestVo.tagList.toSet())
-        if (requestVo.dateTimeInfo == null) {  // 날짜 정보가 없다면 메모 업데이트만 진행
+        
+        if (requestVo.dateTimeInfo == null) { // 날짜 정보가 없다면 메모 업데이트만 진행
             return ContentSummaryVo(
                 id = memo.id,
                 contentType = memo.type
             )
         }
 
-        memo.updateContentAssignee(requestVo.contentAssignee)
-        
         val scheduleEvent = with(requestVo.dateTimeInfo) {
             ScheduleEvent.fromMemo(
                 memo = memo,
@@ -242,6 +243,15 @@ class ContentService(
             val newMappings = tagsToAdd.map { TagContentMapping(tag = it, content = content) }
             tagContentMappingRepository.saveAll(newMappings)
         }
+    }
+
+    private fun updateContentAssigneeIfChanged(content: Content, requestedAssignee: ContentAssignee, requestUserId: Long) {
+        val isContentOwnerSameAsRequester = content.user.id == requestUserId
+        val currentAssigneeFromRequestorPerspective = content.contentAssignee.fromRequestorPerspective(isContentOwnerSameAsRequester)
+
+        if(currentAssigneeFromRequestorPerspective == requestedAssignee) return
+        val actualAssigneeToStore = requestedAssignee.fromRequestorPerspective(isContentOwnerSameAsRequester)
+        content.updateContentAssignee(actualAssigneeToStore)
     }
 
     @Recover
