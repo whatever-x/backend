@@ -36,7 +36,7 @@ data class CreateScheduleRequest(
     val endTimeZone: String? = null,
 
     @Schema(description = "태그 번호 리스트")
-    val tagIds: Set<TagIdDto> = emptySet(),
+    val tagIds: Set<Long> = emptySet(),
 
     @Schema(description = "컨텐츠 담당자 (ME: 나, PARTNER: 상대방, US: 우리)")
     val contentAssignee: ContentAssignee = ContentAssignee.ME,
@@ -50,7 +50,7 @@ data class CreateScheduleRequest(
             startTimeZone = this.startTimeZone,
             endDateTime = this.endDateTime,
             endTimeZone = this.endTimeZone,
-            tagIds = this.tagIds.map { it.tagId }.toSet(),
+            tagIds = this.tagIds,
             contentAssignee = this.contentAssignee,
         )
     }
