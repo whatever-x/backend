@@ -12,9 +12,9 @@ data class ContentResponse(
     @Schema(description = "메모 id")
     val id: Long,
     @Schema(description = "제목")
-    val title: String,
+    val title: String?,
     @Schema(description = "본문")
-    val description: String,
+    val description: String?,
     @Schema(description = "완료 여부")
     val isCompleted: Boolean,
     @Schema(description = "연관 태그 Id 리스트")
@@ -30,8 +30,8 @@ data class ContentResponse(
             tagList: List<TagDto>,
         ) = ContentResponse(
             id = content.id,
-            title = content.contentDetail.title ?: "",
-            description = content.contentDetail.description ?: "",
+            title = content.contentDetail.title,
+            description = content.contentDetail.description,
             isCompleted = content.contentDetail.isCompleted,
             tagList = tagList,
             createdAt = content.getCreatedAtInZone(KST_ZONE_ID).toLocalDate(),
