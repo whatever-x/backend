@@ -27,6 +27,8 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import org.hibernate.validator.constraints.CodePointLength
 import org.springframework.security.crypto.encrypt.TextEncryptor
 import org.springframework.stereotype.Component
@@ -56,6 +58,7 @@ class User(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     val platform: LoginPlatform,
 
     @Column(nullable = false)
@@ -69,11 +72,13 @@ class User(
     var nickname: String? = null,
 
     @Enumerated(EnumType.STRING)
-    @Column(length = MAX_GENDER_LENGTH)
+//    @Column(columnDefinition = "user_gender_enum")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     var gender: UserGender? = null,
 
     @Enumerated(EnumType.STRING)
-    @Column(length = MAX_STATUS_LENGTH, nullable = false)
+    @Column(nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     var userStatus: UserStatus = UserStatus.NEW,
 
 //    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
@@ -133,8 +138,6 @@ class User(
     }
 
     companion object {
-        const val MAX_GENDER_LENGTH = 50
-        const val MAX_STATUS_LENGTH = 50
         const val MIN_NICKNAME_LENGTH = 1
         const val MAX_NICKNAME_LENGTH = 8
     }
