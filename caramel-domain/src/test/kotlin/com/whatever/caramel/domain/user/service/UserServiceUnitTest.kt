@@ -35,6 +35,7 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.whenever
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
 import java.util.Optional
@@ -51,11 +52,14 @@ class UserServiceUnitTest {
     @Mock
     private lateinit var mockUserSettingRepository: UserSettingRepository
 
+    @Mock
+    private lateinit var applicationEventPublisher: ApplicationEventPublisher
+
     @InjectMocks
     private lateinit var userService: UserService
     private val mockkUserRepository = mockk<UserRepository>()
     private val mockkUserSettingRepository = mockk<UserSettingRepository>()
-    private val spykUserService = spyk(UserService(mockkUserRepository, mockkUserSettingRepository))
+    private val spykUserService = spyk(UserService(mockkUserRepository, mockkUserSettingRepository, applicationEventPublisher))
 
     private lateinit var user: User
     private var userId: Long = Long.MIN_VALUE
