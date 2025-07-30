@@ -33,7 +33,7 @@ class ScheduledNotificationService(
     fun deleteScheduledNotifications(
         targetUserIds: Set<Long>,
         notificationTypes: Set<NotificationType>,
-    ): Long {
+    ): Int {
         return scheduledNotificationRepository.deleteAllByNotificationTypeInAndTargetUserIdIn(
             notificationTypes = notificationTypes,
             targetUserIds = targetUserIds
