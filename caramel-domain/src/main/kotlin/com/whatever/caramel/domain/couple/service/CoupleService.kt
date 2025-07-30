@@ -155,7 +155,8 @@ class CoupleService(
         coupleId: Long,
         currentUserId: Long,
     ): CoupleDetailVo {
-        val couple = coupleRepository.findCoupleById(coupleId)
+        val couple = coupleRepository.findByIdWithMembers(coupleId)
+            ?: throw CoupleNotFoundException(errorCode = COUPLE_NOT_FOUND)
 
         val myUser = couple.members.firstOrNull { it.id == currentUserId }
             ?: throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
