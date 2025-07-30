@@ -5,6 +5,7 @@ import java.time.LocalDate
 
 data class AnniversaryVo(
     val ownerId: Long? = null,
+    val ownerNickname: String? = null,
     val type: CoupleAnniversaryType,
     val date: LocalDate,
     val label: String,
@@ -13,6 +14,7 @@ data class AnniversaryVo(
     companion object {
         fun from(
             ownerId: Long? = null,
+            ownerNickname: String? = null,
             type: CoupleAnniversaryType,
             date: LocalDate,
             label: String,
@@ -20,6 +22,7 @@ data class AnniversaryVo(
         ): AnniversaryVo {
             return AnniversaryVo(
                 ownerId = ownerId,
+                ownerNickname = ownerNickname,
                 type = type,
                 date = date,
                 label = label,
