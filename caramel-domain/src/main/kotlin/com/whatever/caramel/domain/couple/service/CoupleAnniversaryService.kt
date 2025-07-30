@@ -31,12 +31,12 @@ class CoupleAnniversaryService(
 
         val me = couple.members.firstOrNull { it.id == requestUserId }
         val myBirthDates = me?.birthDate?.let {
-            getBirthDay(it, startDate, endDate, "${me.nickname!!} 생일")
+            getBirthDay(me.id, it, startDate, endDate, "${me.nickname!!} 생일")
         }.orEmpty()
 
         val partner = couple.members.firstOrNull { it.id != requestUserId }
         val partnerBirthDates = partner?.birthDate?.let {
-            getBirthDay(it, startDate, endDate, "${partner.nickname!!} 생일")
+            getBirthDay(partner.id, it, startDate, endDate, "${partner.nickname!!} 생일")
         }.orEmpty()
 
         return CoupleAnniversaryVo.from(
@@ -89,12 +89,13 @@ class CoupleAnniversaryService(
                 type = CoupleAnniversaryType.YEARLY,
                 date = it.date,
                 label = "${it.nTh}${yearlyLabel}",
-                isAdjustedForNonLeapYear = it.isAdjustedForNonLeapYear
+                isAdjustedForNonLeapYear = it.isAdjustedForNonLeapYear,
             )
         }
     }
 
     fun getBirthDay(
+        ownerId: Long,
         userBirthDate: LocalDate,
         startDate: LocalDate,
         endDate: LocalDate,
@@ -108,6 +109,7 @@ class CoupleAnniversaryService(
             feb29InNonLeapYearAdjust = feb29InNonLeapYearAdjust
         ).map {
             AnniversaryVo.from(
+                ownerId = ownerId,
                 type = CoupleAnniversaryType.BIRTHDAY,
                 date = it.date,
                 label = birthDayLabel,
