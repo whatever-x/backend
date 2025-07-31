@@ -1,0 +1,149 @@
+name: Caramel CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [ opened, ready_for_review, synchronize ]
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      SPRING_SERVER_PORT: ${{ secrets.SPRING_SERVER_PORT }}
+      SPRING_PROFILES_ACTIVE: ${{ secrets.SPRING_PROFILES_ACTIVE }}
+      SECRET_KEY_STR: ${{ secrets.SECRET_KEY_STR }}
+      ACCESS_EXPIRATION_SEC: ${{ secrets.ACCESS_EXPIRATION_SEC }}
+      REFRESH_EXPIRATION_SEC: ${{ secrets.REFRESH_EXPIRATION_SEC }}
+      OAUTH_BASE_URL: ${{ secrets.OAUTH_BASE_URL }}
+      OAUTH_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
+      OAUTH_CLIENT_SECRET: ${{ secrets.OAUTH_CLIENT_SECRET }}
+      OAUTH_REDIRECT_URL: ${{ secrets.OAUTH_REDIRECT_URL }}
+      OAUTH_APP_ID: ${{ secrets.OAUTH_APP_ID }}
+      OAUTH_ADMIN_KEY: ${{ secrets.OAUTH_ADMIN_KEY }}
+      APPLE_BASE_URL: ${{ secrets.APPLE_BASE_URL }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APPLE_SERVICE_ID: ${{ secrets.APPLE_SERVICE_ID }}
+      APPLE_KEY_ID: ${{ secrets.APPLE_KEY_ID }}
+      APPLE_KEY_PATH: ${{ secrets.APPLE_KEY_PATH }}
+      APPLE_REDIRECT_URI: ${{ secrets.APPLE_REDIRECT_URI }}
+      SWAGGER_USER: ${{ secrets.SWAGGER_USER }}
+      SWAGGER_PASSWORD: ${{ secrets.SWAGGER_PASSWORD }}
+      DEV_SERVER_URL: ${{ secrets.DEV_SERVER_URL }}
+      LOCAL_SERVER_URL: ${{ secrets.LOCAL_SERVER_URL }}
+      ACTUATOR_BASE_PATH: ${{ secrets.ACTUATOR_BASE_PATH }}
+      ACTUATOR_BASE_PORT: ${{ secrets.ACTUATOR_BASE_PORT }}
+      ACTUATOR_APPLICATION_NAME: ${{ secrets.ACTUATOR_APPLICATION_NAME }}
+      ACTUATOR_EXPOSURE_API: ${{ secrets.ACTUATOR_EXPOSURE_API }}
+      OPENAPI_SPECIALDAY_KEY: ${{ secrets.OPENAPI_SPECIALDAY_KEY }}
+      GOOGLE_APPLICATION_CREDENTIALS: ./firebase-test-sdk.json
+      FCM_ENABLED: ${{ secrets.FCM_ENABLED }}
+      DB_MAX_CONNECTION: ${{ secrets.DB_MAX_CONNECTION }}
+      CRYPTO_PASSWORD: ${{ secrets.CRYPTO_PASSWORD }}
+      CRYPTO_SALT: ${{ secrets.CRYPTO_SALT }}
+      POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+      POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DATABASE: ${{ secrets.POSTGRESQL_DATABASE }}
+      REDIS_HOST: ${{ secrets.REDIS_HOST }}
+      REDIS_PORT: ${{ secrets.REDIS_PORT }}
+      REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+    services:
+      redis:
+        image: redis
+        ports:
+          - '6379:6379'
+      postgresql:
+        image: docker.io/bitnami/postgresql:17
+        ports:
+          - '5432:5432'
+        env:
+          POSTGRESQL_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+          POSTGRESQL_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRESQL_DATABASE: ${{ secrets.POSTGRESQL_DATABASE }}
+          POSTGRESQL_TIMEZONE: UTC
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: create-json
+        uses: jsdaniell/create-json@v1.2.3
+        with:
+          name: firebase-test-sdk.json  # The name of the file to be written. | file.json
+          json: ${{ secrets.FIREBASE_ADMIN_SDK }}
+          dir: ./
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      # Gradle 캐싱
+      - name: Gradle Caching
+        id: cache-gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: Cache Hit Check
+        if: steps.cache-gradle.outputs.cache-hit == 'true'
+        run: echo 'Gradle cache hit!'
+
+      - name: Gradle Test
+        run: ./gradlew :caramel-domain:test
+        env:
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+
+      - name: Upload Jacoco Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report.xml
+          path: ${{ github.workspace }}/caramel-domain/build/jacocoXml/test
+
+      - name: Jacoco Report
+        id: jacoco
+        uses: Madrapps/jacoco-report@v1.7.2
+        with:
+          paths: ${{ github.workspace }}/caramel-domain/build/jacocoXml/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 0 # default 값이 80. 커버리지를 충분히 올린 뒤 수정
+          min-coverage-changed-files: 0
+          title: Caramel Code Coverage
+          update-comment: true
+          debug-mode: true
+
+      - name: Get the Coverage info
+        run: |
+          echo "Total coverage ${{ steps.jacoco.outputs.coverage-overall }}"
+          echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
+
+  dependency-submission:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+      - name: Generate and submit dependency graph
+        uses: gradle/actions/dependency-submission@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0

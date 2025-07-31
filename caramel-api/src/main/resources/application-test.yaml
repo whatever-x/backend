@@ -1,0 +1,65 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+    import: optional:file:.env[.properties]
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        show_sql: false
+        use_sql_comments: false
+        format_sql: true
+        globally_quoted_identifiers: true
+        order_updates: true
+        jdbc:
+          batch_size: 20
+  cloud:
+    openfeign:
+      okhttp:
+        enabled: true
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+  cache:
+    type: redis
+
+oauth:
+  kakao:
+    base-url: ${OAUTH_BASE_URL}
+    client-id: ${OAUTH_CLIENT_ID}
+    client-secret: ${OAUTH_CLIENT_SECRET}
+    redirect-url: ${OAUTH_REDIRECT_URL}
+    app-id: ${OAUTH_APP_ID}
+    admin-key: ${OAUTH_ADMIN_KEY}
+springdoc:
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+  swagger-ui:
+    path: /swagger
+    disable-swagger-default-url: true
+    display-request-duration: true
+jwt:
+  secret-key-str: ${SECRET_KEY_STR}
+  access-expiration-sec: ${ACCESS_EXPIRATION_SEC}
+  refresh-expiration-sec: ${REFRESH_EXPIRATION_SEC}
+  issuer: Caramel
+kor: # Kor Open Api Key
+  openapi:
+    specialday:
+      key: ${OPENAPI_SPECIALDAY_KEY}
+firebase:
+  credential-file-path: ${GOOGLE_APPLICATION_CREDENTIALS}
+  fcm-enabled: ${FCM_ENABLED}
+crypto:
+  password: ${CRYPTO_PASSWORD}
+  salt: ${CRYPTO_SALT}
