@@ -3,6 +3,7 @@ package com.whatever.caramel.domain.notification.service
 import com.whatever.caramel.domain.notification.model.NotificationType
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import com.whatever.caramel.domain.notification.repository.ScheduledNotificationRepository
+import com.whatever.caramel.domain.notification.vo.NotificationMessage
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -10,24 +11,27 @@ import java.time.LocalDateTime
 class ScheduledNotificationService(
     private val scheduledNotificationRepository: ScheduledNotificationRepository,
 ) {
-    fun scheduleNotification(
-        targetUserId: Long,
+    fun scheduleNotifications(
+        messagesByUserId: Map<Long, NotificationMessage>,
         notificationType: NotificationType,
         notifyAt: LocalDateTime,
-        title: String,
-        body: String,
         image: String? = null,
     ) {
-        val newNotification = ScheduledNotification(
-            targetUserId = targetUserId,
-            notificationType = notificationType,
-            notifyAt = notifyAt,
-            title = title,
-            body = body,
-            image = image
-        )
+        if (messagesByUserId.isEmpty()) {
+            return
+        }
 
-        scheduledNotificationRepository.save(newNotification)
+        val notifications = messagesByUserId.map { (userId, message) ->
+            ScheduledNotification(
+                targetUserId = userId,
+                notificationType = notificationType,
+                notifyAt = notifyAt,
+                title = message.title,
+                body = message.body,
+                image = image,
+            )
+        }
+        scheduledNotificationRepository.saveAll(notifications)
     }
 
     fun deleteScheduledNotifications(

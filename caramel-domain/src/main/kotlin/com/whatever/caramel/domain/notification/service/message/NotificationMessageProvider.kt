@@ -10,9 +10,11 @@ class NotificationMessageProvider(
 ) {
     private val generatorMap = generators.associateBy { it.supports() }
 
-    fun provide(type: NotificationType, notificationMessageParameter: NotificationMessageParameter): NotificationMessage {
+    fun provide(
+        type: NotificationType,
+        notificationMessageParameter: NotificationMessageParameter,
+    ): NotificationMessage {
         val generator = generatorMap[type] ?: throw RuntimeException()  // TODO CustomException
         return generator.generate(notificationMessageParameter)
-
     }
 }

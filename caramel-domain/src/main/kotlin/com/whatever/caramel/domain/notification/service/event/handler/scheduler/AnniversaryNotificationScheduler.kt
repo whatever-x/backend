@@ -33,15 +33,11 @@ class HundredDayAnniversaryNotificationScheduler(
             notificationMessageParameter = HundredAnniversaryParameter(label = param.anniversaryVo.label),
         )
 
-        param.memberIds.forEach { memberId ->
-            scheduledNotificationService.scheduleNotification(
-                targetUserId = memberId,
-                notificationType = notificationType,
-                notifyAt = notifyAt,
-                title = message.title,
-                body = message.body
-            )
-        }
+        scheduledNotificationService.scheduleNotifications(
+            messagesByUserId = param.memberIds.associateWith { memberId -> message },
+            notificationType = notificationType,
+            notifyAt = notifyAt,
+        )
     }
 }
 
@@ -60,15 +56,11 @@ class YearlyAnniversaryNotificationScheduler(
             notificationMessageParameter = YearlyAnniversaryParameter(label = param.anniversaryVo.label),
         )
 
-        param.memberIds.forEach { memberId ->
-            scheduledNotificationService.scheduleNotification(
-                targetUserId = memberId,
-                notificationType = notificationType,
-                notifyAt = notifyAt,
-                title = message.title,
-                body = message.body
-            )
-        }
+        scheduledNotificationService.scheduleNotifications(
+            messagesByUserId = param.memberIds.associateWith { memberId -> message },
+            notificationType = notificationType,
+            notifyAt = notifyAt,
+        )
     }
 }
 
@@ -82,8 +74,8 @@ class BirthDateNotificationScheduler(
         val notificationType  = NotificationType.BIRTHDAY
         val param = notificationSchedulingParameter as? BirthDateNotificationSchedulingParameter ?: throw IllegalArgumentException("")  // TODO Custom Exception
 
-        setOf(param.birthdayMemberId, param.partnerId).forEach { memberId ->
-            val message = notificationMessageProvider.provide(
+        val messagesByUserId = setOf(param.birthdayMemberId, param.partnerId).associateWith { memberId ->
+            notificationMessageProvider.provide(
                 type = notificationType,
                 notificationMessageParameter = BirthDayParameter(
                     label = param.anniversaryVo.label,
@@ -91,14 +83,12 @@ class BirthDateNotificationScheduler(
                     isMyBirthday = memberId == param.birthdayMemberId,
                 ),
             )
-
-            scheduledNotificationService.scheduleNotification(
-                targetUserId = memberId,
-                notificationType = notificationType,
-                notifyAt = notifyAt,
-                title = message.title,
-                body = message.body
-            )
         }
+
+        scheduledNotificationService.scheduleNotifications(
+            messagesByUserId = messagesByUserId,
+            notificationType = notificationType,
+            notifyAt = notifyAt,
+        )
     }
 }
