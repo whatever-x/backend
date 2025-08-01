@@ -15,8 +15,9 @@ import com.whatever.caramel.domain.notification.model.NotificationType.BIRTHDAY
 import com.whatever.caramel.domain.notification.service.event.handler.scheduler.NotificationSchedulingParameter
 import com.whatever.caramel.domain.notification.service.event.handler.scheduler.BirthDateNotificationSchedulingParameter
 import com.whatever.caramel.domain.notification.service.event.handler.scheduler.CoupleNotificationSchedulingParameter
-import com.whatever.caramel.domain.notification.service.event.handler.scheduler.AnniversaryNotificationScheduler
+import com.whatever.caramel.domain.notification.service.event.handler.scheduler.AnniversaryNotificationSchedulerV2
 import com.whatever.caramel.domain.notification.service.ScheduledNotificationService
+import com.whatever.caramel.domain.notification.service.event.handler.scheduler.AnniversaryNotificationScheduler
 import com.whatever.caramel.domain.user.service.event.dto.UserBirthDateUpdateEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
@@ -159,9 +160,9 @@ class AnniversaryUpdatedEventHandler(
             CoupleAnniversaryType.BIRTHDAY -> {
                 BirthDateNotificationSchedulingParameter(
                     anniversaryVo = anniversaryVo,
-                    birthdayMemberId = requireNotNull(anniversaryVo.ownerId),
                     birthdayMemberNickname = requireNotNull(anniversaryVo.ownerNickname),
-                    partnerId = memberIds.first { it != anniversaryVo.ownerId }
+                    memberIds = memberIds,
+                    birthdayMemberId = requireNotNull(anniversaryVo.ownerId),
                 )
             }
         }

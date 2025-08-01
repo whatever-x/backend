@@ -2,16 +2,22 @@ package com.whatever.caramel.domain.notification.service.event.handler.scheduler
 
 import com.whatever.caramel.domain.couple.vo.AnniversaryVo
 
-interface NotificationSchedulingParameter
+sealed interface NotificationSchedulingParameter {
+    val anniversaryVo: AnniversaryVo
+    val memberIds: Set<Long>
+}
 
 data class CoupleNotificationSchedulingParameter(
-    val anniversaryVo: AnniversaryVo,
-    val memberIds: Set<Long>,
+    override val anniversaryVo: AnniversaryVo,
+    override val memberIds: Set<Long>,
 ) : NotificationSchedulingParameter
 
 data class BirthDateNotificationSchedulingParameter(
-    val anniversaryVo: AnniversaryVo,
+    override val anniversaryVo: AnniversaryVo,
+    override val memberIds: Set<Long>,
     val birthdayMemberNickname: String,
     val birthdayMemberId: Long,
-    val partnerId: Long,
-) : NotificationSchedulingParameter
+) : NotificationSchedulingParameter {
+    val isMyBirthday: Boolean
+        get() = memberIds.any { it == birthdayMemberId }
+}

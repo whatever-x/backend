@@ -1,17 +1,19 @@
 package com.whatever.caramel.domain.notification.service.message
 
-interface NotificationMessageParameter
+interface NotificationMessageParameter {
+    val label: String
+}
 
 data class YearlyAnniversaryParameter(
-    val label: String
+    override val label: String
 ): NotificationMessageParameter
 
 data class HundredAnniversaryParameter(
-    val label: String
+    override val label: String
 ): NotificationMessageParameter
 
 data class BirthDayParameter(
-    val label: String,
+    override val label: String,
     val birthdayMemberNickname: String,
     val isMyBirthday: Boolean,
 ): NotificationMessageParameter
