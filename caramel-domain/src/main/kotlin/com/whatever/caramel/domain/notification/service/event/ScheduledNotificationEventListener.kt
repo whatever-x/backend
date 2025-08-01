@@ -2,6 +2,7 @@ package com.whatever.caramel.domain.notification.service.event
 
 import com.whatever.caramel.domain.couple.service.event.dto.CoupleStartDateUpdateEvent
 import com.whatever.caramel.domain.notification.service.event.handler.AnniversaryUpdatedEventHandler
+import com.whatever.caramel.domain.user.service.event.dto.UserBirthDateUpdateEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
@@ -26,6 +27,12 @@ class ScheduledNotificationEventListener(
     @TransactionalEventListener(phase = AFTER_COMMIT)
     @Async
     fun scheduleCoupleStartDateNotification(event: CoupleStartDateUpdateEvent) {
+        anniversaryUpdatedEventHandler.handle(event)
+    }
+
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    @Async
+    fun scheduleUserBirthDateNotification(event: UserBirthDateUpdateEvent) {
         anniversaryUpdatedEventHandler.handle(event)
     }
 }

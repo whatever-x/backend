@@ -5,6 +5,7 @@ import com.whatever.caramel.common.util.DateTimeUtil.KST_ZONE_ID
 import com.whatever.caramel.common.util.toDateTime
 import com.whatever.caramel.domain.couple.model.CoupleAnniversaryType
 import com.whatever.caramel.domain.couple.service.CoupleAnniversaryService
+import com.whatever.caramel.domain.couple.service.CoupleService
 import com.whatever.caramel.domain.couple.service.event.dto.CoupleStartDateUpdateEvent
 import com.whatever.caramel.domain.couple.vo.AnniversaryVo
 import com.whatever.caramel.domain.notification.model.NotificationType
@@ -16,6 +17,7 @@ import com.whatever.caramel.domain.notification.service.event.handler.scheduler.
 import com.whatever.caramel.domain.notification.service.event.handler.scheduler.CoupleNotificationSchedulingParameter
 import com.whatever.caramel.domain.notification.service.event.handler.scheduler.AnniversaryNotificationScheduler
 import com.whatever.caramel.domain.notification.service.ScheduledNotificationService
+import com.whatever.caramel.domain.user.service.event.dto.UserBirthDateUpdateEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -25,9 +27,10 @@ private val logger = KotlinLogging.logger {  }
 
 @Component
 class AnniversaryUpdatedEventHandler(
-    private val coupleAnniversaryService: CoupleAnniversaryService,
-    private val scheduledNotificationService: ScheduledNotificationService,
     anniversaryNotificationSchedulers: List<AnniversaryNotificationScheduler>,
+    private val scheduledNotificationService: ScheduledNotificationService,
+    private val coupleAnniversaryService: CoupleAnniversaryService,
+    private val coupleService: CoupleService,
 ) {
     private val schedulerMap = anniversaryNotificationSchedulers.associateBy { it.supports() }
 
@@ -48,6 +51,41 @@ class AnniversaryUpdatedEventHandler(
         scheduleAnniversaryNotification(
             anniversaryVos = anniversaryVos,
             memberIds = event.memberIds,
+            targetDate = targetDate,
+        )
+    }
+
+    @Transactional
+    fun handle(
+        event: UserBirthDateUpdateEvent,
+        targetDate: LocalDate = DateTimeUtil.localNow(KST_ZONE_ID).toLocalDate(),
+    ) {
+        val memberIds = coupleService.getCoupleAndMemberInfo(event.coupleId, event.userId)
+            .run { setOf(myInfo.id, partnerInfo.id) }
+
+        event.oldDate?.let { oldBirthDate ->
+            val birthDate = findBirthDateOn(
+                ownerId = event.userId,
+                ownerNickname = event.userNickname,
+                birthDate = oldBirthDate,
+                targetDate = targetDate,
+            )
+
+            deleteScheduledAnniversaryNotifications(
+                anniversaryVos = birthDate,
+                memberIds = memberIds,
+            )
+        }
+
+        val birthDate = findBirthDateOn(
+            ownerId = event.userId,
+            ownerNickname = event.userNickname,
+            birthDate = event.newDate,
+            targetDate = targetDate,
+        )
+        scheduleAnniversaryNotification(
+            anniversaryVos = birthDate,
+            memberIds = memberIds,
             targetDate = targetDate,
         )
     }
@@ -92,6 +130,21 @@ class AnniversaryUpdatedEventHandler(
         val hundredDay = coupleAnniversaryService.findHundredDaysAnniversaryOn(coupleStartDate, targetDate)
 
         return yearly + hundredDay
+    }
+
+    private fun findBirthDateOn(
+        ownerId: Long,
+        ownerNickname: String,
+        birthDate: LocalDate,
+        targetDate: LocalDate,
+    ): List<AnniversaryVo> {
+        return coupleAnniversaryService.getBirthDay(
+            ownerId = ownerId,
+            ownerNickname = ownerNickname,
+            userBirthDate = birthDate,
+            startDate = targetDate,
+            endDate = targetDate,
+        )
     }
 
     private fun createAnniversarySchedulingParameter(
