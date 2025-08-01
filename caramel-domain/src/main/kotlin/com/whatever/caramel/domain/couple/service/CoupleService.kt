@@ -119,13 +119,11 @@ class CoupleService(
             )
         }
 
-        applicationEventPublisher.publishEvent(
-            CoupleStartDateUpdateEvent(
-                oldDate = oldStartDate,
-                newDate = newCoupleStartDate,
-                memberIds = couple.members.map { it.id }.toSet(),
-            )
-        )
+        applicationEventPublisher.publishEvent(CoupleStartDateUpdateEvent(
+            oldDate = oldStartDate,
+            newDate = newCoupleStartDate,
+            memberIds = couple.members.map { it.id }.toSet(),
+        ))
 
         return CoupleVo.from(updatedCouple)
     }
