@@ -10,6 +10,9 @@ import com.whatever.caramel.domain.notification.service.message.YearlyAnniversar
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
+/**
+ * CoupleAnniversaryType에 따른 알림 예약 생성을 담당하는 인터페이스
+ */
 interface AnniversaryNotificationScheduler {
     fun supports(): CoupleAnniversaryType
     fun schedule(notifyAt: LocalDateTime, notificationSchedulingParameter: NotificationSchedulingParameter)

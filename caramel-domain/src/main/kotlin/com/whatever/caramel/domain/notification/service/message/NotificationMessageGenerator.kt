@@ -6,6 +6,9 @@ import com.whatever.caramel.domain.notification.model.NotificationType.ANNIVERSA
 import com.whatever.caramel.domain.notification.vo.NotificationMessage
 import org.springframework.stereotype.Component
 
+/**
+ * NotificationType에 따른 알림 메시지를 생성을 담당하는 인터페이스
+ */
 interface NotificationMessageGenerator {
     fun supports(): NotificationType
     fun generate(notificationMessageParameter: NotificationMessageParameter): NotificationMessage
