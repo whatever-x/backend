@@ -17,7 +17,4 @@ data class BirthDateNotificationSchedulingParameter(
     override val memberIds: Set<Long>,
     val birthdayMemberNickname: String,
     val birthdayMemberId: Long,
-) : NotificationSchedulingParameter {
-    val isMyBirthday: Boolean
-        get() = memberIds.any { it == birthdayMemberId }
-}
+) : NotificationSchedulingParameter

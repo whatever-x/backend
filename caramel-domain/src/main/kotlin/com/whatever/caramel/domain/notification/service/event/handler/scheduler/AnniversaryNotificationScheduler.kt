@@ -42,43 +42,44 @@ class AnniversaryNotificationSchedulerImpl(
             CoupleAnniversaryType.YEARLY -> NotificationType.ANNIVERSARY_YEARLY
             CoupleAnniversaryType.BIRTHDAY -> NotificationType.BIRTHDAY
         }
-        val parameter = when (notificationSchedulingParameter) {
-            is BirthDateNotificationSchedulingParameter -> {
-                when (notificationType) {
-                    NotificationType.BIRTHDAY -> BirthDayParameter(
-                        label = notificationSchedulingParameter.anniversaryVo.label,
-                        birthdayMemberNickname = notificationSchedulingParameter.birthdayMemberNickname,
-                        isMyBirthday = notificationSchedulingParameter.isMyBirthday,
-                    )
 
-                    else -> {
-                        error("헉")
+        val messagesByUserId = notificationSchedulingParameter.memberIds.associateWith { memberId ->
+            val parameter = when (notificationSchedulingParameter) {
+                is BirthDateNotificationSchedulingParameter -> {
+                    when (notificationType) {
+                        NotificationType.BIRTHDAY -> BirthDayParameter(
+                            label = notificationSchedulingParameter.anniversaryVo.label,
+                            birthdayMemberNickname = notificationSchedulingParameter.birthdayMemberNickname,
+                            isMyBirthday = notificationSchedulingParameter.birthdayMemberId == memberId,
+                        )
+
+                        else -> {
+                            error("헉")
+                        }
+                    }
+                }
+
+                is CoupleNotificationSchedulingParameter -> {
+                    when (notificationType) {
+                        NotificationType.ANNIVERSARY_HUNDRED -> {
+                            HundredAnniversaryParameter(label = notificationSchedulingParameter.anniversaryVo.label)
+                        }
+
+                        NotificationType.ANNIVERSARY_YEARLY -> {
+                            YearlyAnniversaryParameter(label = notificationSchedulingParameter.anniversaryVo.label)
+                        }
+
+                        else -> {
+                            error("헉")
+                        }
                     }
                 }
             }
-
-            is CoupleNotificationSchedulingParameter -> {
-                when (notificationType) {
-                    NotificationType.ANNIVERSARY_HUNDRED -> {
-                        HundredAnniversaryParameter(label = notificationSchedulingParameter.anniversaryVo.label)
-                    }
-
-                    NotificationType.ANNIVERSARY_YEARLY -> {
-                        YearlyAnniversaryParameter(label = notificationSchedulingParameter.anniversaryVo.label)
-                    }
-
-                    else -> {
-                        error("헉")
-                    }
-                }
-            }
+            notificationMessageProvider.provide(
+                type = notificationType,
+                notificationMessageParameter = parameter
+            )
         }
-        val message = notificationMessageProvider.provide(
-            type = notificationType,
-            notificationMessageParameter = parameter
-        )
-
-        val messagesByUserId = notificationSchedulingParameter.memberIds.associateWith { memberId -> message }
 
         scheduledNotificationService.scheduleNotifications(
             messagesByUserId = messagesByUserId,
