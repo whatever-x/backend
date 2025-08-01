@@ -9,6 +9,7 @@ import com.whatever.caramel.domain.user.exception.UserNotFoundException
 import com.whatever.caramel.domain.user.model.UserSetting
 import com.whatever.caramel.domain.user.repository.UserRepository
 import com.whatever.caramel.domain.user.repository.UserSettingRepository
+import com.whatever.caramel.domain.user.service.event.dto.UserBirthDateUpdateEvent
 import com.whatever.caramel.domain.user.vo.CreateUserProfileVo
 import com.whatever.caramel.domain.user.vo.CreatedUserProfileVo
 import com.whatever.caramel.domain.user.vo.UpdateUserProfileVo
@@ -17,6 +18,7 @@ import com.whatever.caramel.domain.user.vo.UpdatedUserProfileVo
 import com.whatever.caramel.domain.user.vo.UserInfoVo
 import com.whatever.caramel.domain.user.vo.UserSettingVo
 import com.whatever.caramel.domain.user.vo.UserVo
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneId
@@ -25,6 +27,7 @@ import java.time.ZoneId
 class UserService(
     private val userRepository: UserRepository,
     private val userSettingRepository: UserSettingRepository,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
     @Transactional
     fun createProfile(
@@ -58,7 +61,18 @@ class UserService(
             }
 
             if (updateUserProfileVo.birthday != null) {
+                val oldDate = birthDate
                 updateBirthDate(updateUserProfileVo.birthday, userTimeZone)
+
+                couple?.id?.let { coupleId ->
+                    applicationEventPublisher.publishEvent(UserBirthDateUpdateEvent(
+                        userId = id,
+                        userNickname = requireNotNull(nickname),
+                        oldDate = oldDate,
+                        newDate = updateUserProfileVo.birthday,
+                        coupleId = coupleId
+                    ))
+                }
             }
         } ?: throw UserNotFoundException(errorCode = NOT_FOUND)
 

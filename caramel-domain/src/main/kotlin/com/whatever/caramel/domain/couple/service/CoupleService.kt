@@ -20,6 +20,7 @@ import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.couple.repository.InvitationCodeRedisRepository
 import com.whatever.caramel.domain.couple.service.event.dto.CoupleMemberLeaveEvent
+import com.whatever.caramel.domain.couple.service.event.dto.CoupleStartDateUpdateEvent
 import com.whatever.caramel.domain.couple.vo.CoupleDetailVo
 import com.whatever.caramel.domain.couple.vo.CoupleInvitationCodeVo
 import com.whatever.caramel.domain.couple.vo.CoupleVo
@@ -107,14 +108,22 @@ class CoupleService(
         newCoupleStartDate: LocalDate,
         timeZone: String,
     ): CoupleVo {
-        val couple = coupleRepository.findCoupleById(coupleId)
+        val couple = coupleRepository.findByIdWithMembers(coupleId)
+            ?: throw CoupleNotFoundException(errorCode = COUPLE_NOT_FOUND)
 
+        val oldStartDate = couple.startDate
         val updatedCouple = couple.apply {
             updateStartDate(
                 newDate = newCoupleStartDate,
                 userZoneId = timeZone.toZoneId()
             )
         }
+
+        applicationEventPublisher.publishEvent(CoupleStartDateUpdateEvent(
+            oldDate = oldStartDate,
+            newDate = newCoupleStartDate,
+            memberIds = couple.members.map { it.id }.toSet(),
+        ))
 
         return CoupleVo.from(updatedCouple)
     }
@@ -146,7 +155,8 @@ class CoupleService(
         coupleId: Long,
         currentUserId: Long,
     ): CoupleDetailVo {
-        val couple = coupleRepository.findCoupleById(coupleId)
+        val couple = coupleRepository.findByIdWithMembers(coupleId)
+            ?: throw CoupleNotFoundException(errorCode = COUPLE_NOT_FOUND)
 
         val myUser = couple.members.firstOrNull { it.id == currentUserId }
             ?: throw CoupleAccessDeniedException(errorCode = NOT_A_MEMBER)
@@ -187,7 +197,6 @@ class CoupleService(
                 errorCode = INVITATION_CODE_EXPIRED,
                 errorUi = ErrorUi.Dialog("사용할 수 없는 초대코드에요.")
             )
-        // val joinerUserId = getCurrentUserId()  // 초대를 수락한(api를 실행한) 유져 id
 
         if (creatorUserId == joinerUserId) {
             throw CoupleException(
