@@ -32,21 +32,23 @@ class AnniversaryUpdatedEventHandler(
     private val schedulerMap = anniversaryNotificationSchedulers.associateBy { it.supports() }
 
     @Transactional
-    fun handle(event: CoupleStartDateUpdateEvent) {
-        val today = DateTimeUtil.localNow(KST_ZONE_ID).toLocalDate()
+    fun handle(
+        event: CoupleStartDateUpdateEvent,
+        targetDate: LocalDate = DateTimeUtil.localNow(KST_ZONE_ID).toLocalDate(),
+    ) {
         event.oldDate?.let { oldCoupleStartDate ->
-            val anniversaryVos = getTodaysAnniversary(coupleStartDate = oldCoupleStartDate, today = today)
+            val anniversaryVos = findAnniversariesOn(coupleStartDate = oldCoupleStartDate, targetDate = targetDate)
             deleteScheduledAnniversaryNotifications(
                 anniversaryVos = anniversaryVos,
                 memberIds = event.memberIds,
             )
         }
 
-        val anniversaryVos = getTodaysAnniversary(coupleStartDate = event.newDate, today = today)
+        val anniversaryVos = findAnniversariesOn(coupleStartDate = event.newDate, targetDate = targetDate)
         scheduleAnniversaryNotification(
             anniversaryVos = anniversaryVos,
             memberIds = event.memberIds,
-            today = today,
+            targetDate = targetDate,
         )
     }
 
@@ -67,7 +69,7 @@ class AnniversaryUpdatedEventHandler(
     private fun scheduleAnniversaryNotification(
         anniversaryVos: List<AnniversaryVo>,
         memberIds: Set<Long>,
-        today: LocalDate,
+        targetDate: LocalDate,
     ) {
         anniversaryVos.forEach { anniversaryVo ->
             val scheduler = schedulerMap[anniversaryVo.type] ?: run {
@@ -76,18 +78,18 @@ class AnniversaryUpdatedEventHandler(
             }
 
             scheduler.schedule(
-                notifyAt = today.toDateTime(),
+                notifyAt = targetDate.toDateTime(),
                 notificationSchedulingParameter = createAnniversarySchedulingParameter(anniversaryVo, memberIds),
             )
         }
     }
 
-    private fun getTodaysAnniversary(
+    private fun findAnniversariesOn(
         coupleStartDate: LocalDate,
-        today: LocalDate,
+        targetDate: LocalDate,
     ): List<AnniversaryVo> {
-        val yearly = coupleAnniversaryService.getTodaysYearlyAnniversary(coupleStartDate, today)
-        val hundredDay = coupleAnniversaryService.getTodaysHundredDaysAnniversary(coupleStartDate, today)
+        val yearly = coupleAnniversaryService.findYearlyAnniversaryOn(coupleStartDate, targetDate)
+        val hundredDay = coupleAnniversaryService.findHundredDaysAnniversaryOn(coupleStartDate, targetDate)
 
         return yearly + hundredDay
     }
@@ -120,23 +122,23 @@ private fun CoupleAnniversaryType.toNotificationType(): NotificationType {
         CoupleAnniversaryType.BIRTHDAY -> BIRTHDAY
     }
 }
-private fun CoupleAnniversaryService.getTodaysYearlyAnniversary(
+private fun CoupleAnniversaryService.findYearlyAnniversaryOn(
     coupleStartDate: LocalDate,
-    today: LocalDate,
+    targetDate: LocalDate,
 ): List<AnniversaryVo> {
     return getYearly(
         coupleStartDate = coupleStartDate,
-        startDate = today,
-        endDate = today,
+        startDate = targetDate,
+        endDate = targetDate,
     )
 }
-private fun CoupleAnniversaryService.getTodaysHundredDaysAnniversary(
+private fun CoupleAnniversaryService.findHundredDaysAnniversaryOn(
     coupleStartDate: LocalDate,
-    today: LocalDate,
+    targetDate: LocalDate,
 ): List<AnniversaryVo> {
     return get100ThDay(
         coupleStartDate = coupleStartDate,
-        startDate = today,
-        endDate = today,
+        startDate = targetDate,
+        endDate = targetDate,
     )
 }
