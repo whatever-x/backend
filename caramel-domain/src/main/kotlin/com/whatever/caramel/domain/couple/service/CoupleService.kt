@@ -220,19 +220,16 @@ class CoupleService(
 
         inviCodeRedisRepository.deleteInvitationCode(invitationCode, creatorUserId)
 
-        applicationEventPublisher.publishEvent(
-            CoupleConnectedEvent(
-                coupleId = savedCouple.id,
-                memberIds = setOf(creatorUserId, joinerUserId),
-            )
-        )
-
-        logger.debug { "New couple created. CreatorUser:${creatorUserId}, JoinerUser:${joinerUserId}" }
-        return CoupleDetailVo.from(
+        val coupleDetailVo = CoupleDetailVo.from(
             couple = savedCouple,
             myUser = joinerUser,
             partnerUser = creatorUser
         )
+        applicationEventPublisher.publishEvent(
+            CoupleConnectedEvent(coupleDetailVo = coupleDetailVo)
+        )
+        logger.debug { "New couple created. CreatorUser:${creatorUserId}, JoinerUser:${joinerUserId}" }
+        return coupleDetailVo
     }
 
     fun createInvitationCode(
