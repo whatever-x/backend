@@ -16,15 +16,6 @@ private val logger = KotlinLogging.logger {  }
 class ScheduledNotificationEventListener(
     private val anniversaryUpdatedEventHandler: AnniversaryUpdatedEventHandler
 ) {
-
-    /**
-     * 해당 이벤트들은 반드시
-     * scheduled notificatio이 배치로 적재된 이후에
-     * 로직이 돌아야 함
-     *
-     * 배치와 합치고 해당 주석 제거
-     */
-
     @TransactionalEventListener(phase = AFTER_COMMIT)
     @Async
     fun scheduleCoupleStartDateNotification(event: CoupleStartDateUpdateEvent) {
