@@ -89,7 +89,7 @@ class CoupleServiceOptimisticLockTest @Autowired constructor(
         // given
         val (myUser, partnerUser, savedCouple) = makeCouple(userRepository, coupleRepository)
 
-        whenever(coupleRepository.findByIdOrNull(any())).doThrow(ObjectOptimisticLockingFailureException::class)
+        whenever(coupleRepository.findByIdWithMembers(any())).doThrow(ObjectOptimisticLockingFailureException::class)
 
         val request = LocalDate.EPOCH
         val timeZone = "Asia/Seoul"
