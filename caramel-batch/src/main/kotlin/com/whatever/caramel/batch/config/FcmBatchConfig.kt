@@ -5,7 +5,10 @@ import com.whatever.caramel.domain.user.model.LoginPlatform
 import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.repository.UserRepository
 import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
+import org.springframework.batch.core.BatchStatus
 import org.springframework.batch.core.Job
+import org.springframework.batch.core.JobExecution
+import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.job.builder.JobBuilder
 import org.springframework.batch.core.launch.support.RunIdIncrementer
@@ -53,22 +56,22 @@ class FcmBatchConfig(
     @Bean
     fun userItemWriter(): ItemWriter<User> {
         return ItemWriter {
-            userRepository.saveAll(it.items)
+            // userRepository.saveAll(it.items)
         }
     }
 
     @Bean
     fun compositeItemProcessor(): ItemProcessor<User, User> {
         return ItemProcessor<User, User> {
-            val fcmNotification = FcmNotification(
-                title = "배치 축하",
-                body = "연인이 새로운 배치를 등록했어요!",
-            )
+            // val fcmNotification = FcmNotification(
+            //     title = "배치 축하",
+            //     body = "연인이 새로운 배치를 등록했어요!",
+            // )
 
-            firebaseService.sendNotification(
-                setOf(it.id),
-                fcmNotification
-            )
+            // firebaseService.sendNotification(
+            //     setOf(it.id),
+            //     fcmNotification
+            // )
             it
         }
     }
@@ -96,5 +99,20 @@ class FcmBatchConfig(
             .incrementer(RunIdIncrementer())
             .start(step)
             .build()
+    }
+
+    @Bean
+    fun jobExecutionListener(): JobExecutionListener {
+        return object : JobExecutionListener {
+            override fun beforeJob(jobExecution: JobExecution) {
+                super.beforeJob(jobExecution)
+            }
+
+            override fun afterJob(jobExecution: JobExecution) {
+                if (jobExecution.status == BatchStatus.COMPLETED) {
+                    println(" 배치 성공했으니 디비 전부 제거같은 것 수행도 가능")
+                }
+            }
+        }
     }
 }
