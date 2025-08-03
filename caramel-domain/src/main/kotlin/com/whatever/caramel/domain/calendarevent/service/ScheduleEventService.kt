@@ -97,7 +97,7 @@ class ScheduleEventService(
             throw ScheduleAccessDeniedException(errorCode = ILLEGAL_PARTNER_STATUS)
         }
 
-        val memberIds = couple.members.map { it.id }.toSet()
+        val memberIds = couple.memberIds
         val coupleSchedules = scheduleEventRepository.findAllByDurationAndUsers(
             startDateTime = startDateTime,
             endDateTime = endDateTime,
@@ -140,7 +140,7 @@ class ScheduleEventService(
             ScheduleCreateEvent(
                 userId = currentUserId,
                 coupleId = couple.id,
-                memberIds = couple.members.map { it.id }.toSet(),
+                memberIds = couple.memberIds,
                 contentDetail = savedScheduleEvent.content.contentDetail,
             )
         )

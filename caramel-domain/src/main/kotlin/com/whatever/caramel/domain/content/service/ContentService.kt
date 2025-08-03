@@ -130,7 +130,7 @@ class ContentService(
             MemoCreateEvent(
                 userId = userId,
                 coupleId = couple.id,
-                memberIds = couple.members.map { it.id }.toSet(),
+                memberIds = couple.memberIds,
                 contentDetail = memo.contentDetail,
             )
         )
@@ -196,7 +196,7 @@ class ContentService(
             ScheduleCreateEvent(
                 userId = userId,
                 coupleId = couple.id,
-                memberIds = couple.members.map { it.id }.toSet(),
+                memberIds = couple.memberIds,
                 contentDetail = ContentDetailVo.from(savedScheduleEvent.content.contentDetail)
             )
         )
