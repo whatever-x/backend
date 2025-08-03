@@ -353,6 +353,8 @@ class CoupleAnniversaryServiceTest @Autowired constructor(
         // when
         val birthDayLabel = "누구누구 생일"
         val result = coupleAnniversaryService.getBirthDay(
+            ownerId = 0L,
+            ownerNickname = "누구누구",
             userBirthDate = birthDate,
             startDate = searchStart,
             endDate = searchEnd,
@@ -382,6 +384,8 @@ class CoupleAnniversaryServiceTest @Autowired constructor(
         // when
         val birthDayLabel = "누구누구 생일"
         val result = coupleAnniversaryService.getBirthDay(
+            ownerId = 0L,
+            ownerNickname = "누구누구",
             userBirthDate = birthDate,
             startDate = searchStart,
             endDate = searchEnd,
