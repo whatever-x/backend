@@ -161,7 +161,7 @@ class AnniversaryUpdatedEventHandler(
                     anniversaryVo = anniversaryVo,
                     birthdayMemberId = requireNotNull(anniversaryVo.ownerId),
                     birthdayMemberNickname = requireNotNull(anniversaryVo.ownerNickname),
-                    partnerId = memberIds.first { it != anniversaryVo.ownerId }
+                    memberIds = memberIds,
                 )
             }
         }

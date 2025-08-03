@@ -74,7 +74,7 @@ class BirthDateNotificationScheduler(
         val notificationType  = NotificationType.BIRTHDAY
         val param = notificationSchedulingParameter as? BirthDateNotificationSchedulingParameter ?: throw IllegalArgumentException("")  // TODO Custom Exception
 
-        val messagesByUserId = setOf(param.birthdayMemberId, param.partnerId).associateWith { memberId ->
+        val messagesByUserId = param.memberIds.associateWith { memberId ->
             notificationMessageProvider.provide(
                 type = notificationType,
                 notificationMessageParameter = BirthDayParameter(
