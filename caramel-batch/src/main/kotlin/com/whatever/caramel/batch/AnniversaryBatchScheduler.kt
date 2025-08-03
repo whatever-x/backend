@@ -23,5 +23,4 @@ class AnniversaryBatchScheduler(
             .toJobParameters()
         jobLauncher.run(anniversaryJob, params)
     }
-    // Job 안에 있는 jobinstance, -> parameter
 }
