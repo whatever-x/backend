@@ -5,6 +5,9 @@ spring:
     active: local-mem
   application:
     name: whatever-backend
+  batch:
+    job:
+      enabled: false
   datasource:
     hikari:
       maximum-pool-size: ${DB_MAX_CONNECTION}
