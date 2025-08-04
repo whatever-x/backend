@@ -4,7 +4,6 @@ import com.whatever.caramel.domain.firebase.service.FirebaseService
 import com.whatever.caramel.domain.user.model.LoginPlatform
 import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.repository.UserRepository
-import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import org.springframework.batch.core.BatchStatus
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.JobExecution
@@ -23,6 +22,7 @@ import org.springframework.batch.support.DatabaseType
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.support.JdbcTransactionManager
+import org.springframework.transaction.PlatformTransactionManager
 import javax.sql.DataSource
 
 @Configuration
@@ -31,13 +31,16 @@ class FcmBatchConfig(
     private val userRepository: UserRepository,
     private val firebaseService: FirebaseService,
 ) {
-    @Bean
-    fun transactionManager(dataSource: DataSource): JdbcTransactionManager {
+    @Bean("batchTransactionManager")
+    fun batchTransactionManager(dataSource: DataSource): PlatformTransactionManager {
         return JdbcTransactionManager(dataSource)
     }
 
     @Bean
-    fun whatEverJobRepository(dataSource: DataSource, transactionManager: JdbcTransactionManager): JobRepository {
+    fun whatEverJobRepository(
+        dataSource: DataSource,
+        batchTransactionManager: PlatformTransactionManager,
+    ): JobRepository {
         return JobRepositoryFactoryBean().apply {
             setDataSource(dataSource)
             setDatabaseType(DatabaseType.POSTGRES.name)
