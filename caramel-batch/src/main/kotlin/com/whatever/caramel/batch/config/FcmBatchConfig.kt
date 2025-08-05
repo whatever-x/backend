@@ -19,6 +19,7 @@ import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.support.ListItemReader
 import org.springframework.batch.support.DatabaseType
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.support.JdbcTransactionManager
@@ -39,12 +40,12 @@ class FcmBatchConfig(
     @Bean
     fun whatEverJobRepository(
         dataSource: DataSource,
-        batchTransactionManager: PlatformTransactionManager,
+        @Qualifier("batchTransactionManager") batchTransactionManager: PlatformTransactionManager,
     ): JobRepository {
         return JobRepositoryFactoryBean().apply {
             setDataSource(dataSource)
             setDatabaseType(DatabaseType.POSTGRES.name)
-            setTransactionManager(transactionManager)
+            setTransactionManager(batchTransactionManager)
             afterPropertiesSet()
         }.`object`
     }
@@ -82,13 +83,13 @@ class FcmBatchConfig(
     @Bean
     fun step(
         whatEverJobRepository: JobRepository,
-        transactionManager: JdbcTransactionManager,
+        @Qualifier("batchTransactionManager") batchTransactionManager: PlatformTransactionManager,
         itemReader: ItemReader<User>,
         compositeItemProcessor: ItemProcessor<User, User>,
         itemWriter: ItemWriter<User>,
     ): Step {
         return StepBuilder("step", whatEverJobRepository)
-            .chunk<User, User>(10, transactionManager)
+            .chunk<User, User>(10, batchTransactionManager)
             .reader(itemReader)
             .processor(compositeItemProcessor)
             .writer(itemWriter)
