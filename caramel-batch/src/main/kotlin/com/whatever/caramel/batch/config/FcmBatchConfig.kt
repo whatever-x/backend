@@ -34,36 +34,12 @@ class FcmBatchConfig(
     private val scheduledNotificationService: ScheduledNotificationService,
     private val firebaseService: FirebaseService,
 ) {
-    @Bean("batchTransactionManager")
-    fun batchTransactionManager(dataSource: DataSource): PlatformTransactionManager {
-        return JdbcTransactionManager(dataSource)
-    }
-
-    @Bean
-    fun whatEverJobRepository(
-        dataSource: DataSource,
-        @Qualifier("batchTransactionManager") batchTransactionManager: PlatformTransactionManager,
-    ): JobRepository {
-        return JobRepositoryFactoryBean().apply {
-            setDataSource(dataSource)
-            setDatabaseType(DatabaseType.POSTGRES.name)
-            transactionManager = batchTransactionManager
-            afterPropertiesSet()
-        }.`object`
-    }
-
     // 겨우 이거떄문에 의존성 가져가야하는가?
     @Bean
-    fun userItemReader(
-        date: LocalDateTime = DateTimeUtil.localNow(TARGET_ZONE_ID),
-    ): ItemReader<ScheduledNotification> {
+    fun anniversaryItemReader(): ItemReader<ScheduledNotification> {
+        val date: LocalDateTime = DateTimeUtil.localNow(TARGET_ZONE_ID)
         val scheduleList = scheduledNotificationService.getMatchedScheduledNotifications(date)
         return ListItemReader(scheduleList)
-    }
-
-    @Bean
-    fun userItemWriter(): ItemWriter<ScheduledNotification> {
-        return ItemWriter { /*no-op*/ }
     }
 
     @Bean
@@ -82,27 +58,32 @@ class FcmBatchConfig(
     }
 
     @Bean
-    fun step(
+    fun anniversaryItemWriter(): ItemWriter<ScheduledNotification> {
+        return ItemWriter { /*no-op*/ }
+    }
+
+    @Bean
+    fun anniversaryStep(
         whatEverJobRepository: JobRepository,
         @Qualifier("batchTransactionManager") batchTransactionManager: PlatformTransactionManager,
-        itemReader: ItemReader<ScheduledNotification>,
+        anniversaryItemReader: ItemReader<ScheduledNotification>,
         compositeItemProcessor: ItemProcessor<ScheduledNotification, ScheduledNotification>,
-        itemWriter: ItemWriter<ScheduledNotification>,
+        anniversaryItemWriter: ItemWriter<ScheduledNotification>,
     ): Step {
-        return StepBuilder("step", whatEverJobRepository)
+        return StepBuilder("anniversary", whatEverJobRepository)
             .chunk<ScheduledNotification, ScheduledNotification>(10, batchTransactionManager)
-            .reader(itemReader)
+            .reader(anniversaryItemReader)
             .processor(compositeItemProcessor)
-            .writer(itemWriter)
+            .writer(anniversaryItemWriter)
             .allowStartIfComplete(true)
             .build()
     }
 
     @Bean
-    fun job(jobRepository: JobRepository, step: Step): Job {
+    fun anniversaryJob(jobRepository: JobRepository, anniversaryStep: Step): Job {
         return JobBuilder("anniversary", jobRepository)
             .incrementer(RunIdIncrementer())
-            .start(step)
+            .start(anniversaryStep)
             .build()
     }
 
@@ -122,6 +103,6 @@ class FcmBatchConfig(
     }
 
     companion object {
-        private val TARGET_ZONE_ID: ZoneId = ZoneId.of("Asia/Seoul")
+        internal val TARGET_ZONE_ID: ZoneId = ZoneId.of("Asia/Seoul")
     }
 }
