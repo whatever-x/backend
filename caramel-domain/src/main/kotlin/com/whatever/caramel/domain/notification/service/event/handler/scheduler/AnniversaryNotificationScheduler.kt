@@ -30,7 +30,7 @@ class HundredDayAnniversaryNotificationScheduler(
 
         val message = notificationMessageProvider.provide(
             type = notificationType,
-            notificationMessageParameter = HundredAnniversaryParameter(label = param.anniversaryVo.label),
+            notificationMessageParameter = HundredAnniversaryParameter(label = param.anniversaryItem.label),
         )
 
         scheduledNotificationService.scheduleNotifications(
@@ -52,7 +52,7 @@ class YearlyAnniversaryNotificationScheduler(
 
         val message = notificationMessageProvider.provide(
             type = notificationType,
-            notificationMessageParameter = YearlyAnniversaryParameter(label = param.anniversaryVo.label),
+            notificationMessageParameter = YearlyAnniversaryParameter(label = param.anniversaryItem.label),
         )
 
         scheduledNotificationService.scheduleNotifications(
@@ -79,7 +79,7 @@ class BirthDateNotificationScheduler(
             notificationMessageProvider.provide(
                 type = notificationType,
                 notificationMessageParameter = BirthDayParameter(
-                    label = param.anniversaryVo.label,
+                    label = param.anniversaryItem.label,
                     birthdayMemberNickname = param.birthdayMemberNickname,
                     isMyBirthday = memberId == param.birthdayMemberId,
                 ),

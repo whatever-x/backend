@@ -1,7 +1,7 @@
 package com.whatever.caramel.api.couple.controller.dto.response
 
 import com.whatever.caramel.domain.couple.model.CoupleAnniversaryType
-import com.whatever.caramel.domain.couple.vo.AnniversaryVo
+import com.whatever.caramel.domain.couple.vo.AnniversaryItem
 import com.whatever.caramel.domain.couple.vo.CoupleAnniversaryVo
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
@@ -58,12 +58,12 @@ data class CoupleAnniversaryDto(
     val isAdjustedForNonLeapYear: Boolean = false,
 ) {
     companion object {
-        fun from(anniversaryVo: AnniversaryVo): CoupleAnniversaryDto {
+        fun from(anniversaryItem: AnniversaryItem): CoupleAnniversaryDto {
             return CoupleAnniversaryDto(
-                type = anniversaryVo.type,
-                date = anniversaryVo.date,
-                label = anniversaryVo.label,
-                isAdjustedForNonLeapYear = anniversaryVo.isAdjustedForNonLeapYear,
+                type = anniversaryItem.type,
+                date = anniversaryItem.date,
+                label = anniversaryItem.label,
+                isAdjustedForNonLeapYear = anniversaryItem.isAdjustedForNonLeapYear,
             )
         }
     }
