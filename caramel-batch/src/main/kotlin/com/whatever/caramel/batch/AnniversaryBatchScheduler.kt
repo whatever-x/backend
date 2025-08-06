@@ -16,7 +16,7 @@ class AnniversaryBatchScheduler(
     /**
      * 시간 변경 필요
      */
-    @Scheduled(cron = "0 03 23 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 50 23 * * *", zone = "Asia/Seoul")
     fun runJob() {
         val params = JobParametersBuilder()
             .addString("runDate", LocalDate.now().toString())

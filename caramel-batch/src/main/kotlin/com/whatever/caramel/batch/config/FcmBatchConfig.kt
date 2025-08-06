@@ -1,9 +1,10 @@
 package com.whatever.caramel.batch.config
 
+import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.firebase.service.FirebaseService
-import com.whatever.caramel.domain.user.model.LoginPlatform
-import com.whatever.caramel.domain.user.model.User
-import com.whatever.caramel.domain.user.repository.UserRepository
+import com.whatever.caramel.domain.notification.model.ScheduledNotification
+import com.whatever.caramel.domain.notification.service.ScheduledNotificationService
+import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import org.springframework.batch.core.BatchStatus
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.JobExecution
@@ -24,12 +25,13 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.support.JdbcTransactionManager
 import org.springframework.transaction.PlatformTransactionManager
+import java.time.LocalDateTime
+import java.time.ZoneId
 import javax.sql.DataSource
 
 @Configuration
 class FcmBatchConfig(
-    // user repository는 임시로, 추후에 ScheduledNotification 테이블에대한 repository 생기면 추가해줄것
-    private val userRepository: UserRepository,
+    private val scheduledNotificationService: ScheduledNotificationService,
     private val firebaseService: FirebaseService,
 ) {
     @Bean("batchTransactionManager")
@@ -45,37 +47,36 @@ class FcmBatchConfig(
         return JobRepositoryFactoryBean().apply {
             setDataSource(dataSource)
             setDatabaseType(DatabaseType.POSTGRES.name)
-            setTransactionManager(batchTransactionManager)
+            transactionManager = batchTransactionManager
             afterPropertiesSet()
         }.`object`
     }
 
+    // 겨우 이거떄문에 의존성 가져가야하는가?
     @Bean
-    fun userItemReader(): ItemReader<User> {
-        val user = listOf(User(platform = LoginPlatform.KAKAO, platformUserId = "k"))
-        // 여기서 repository 에서 리스트 요소 조회
-        return ListItemReader(user)
+    fun userItemReader(
+        date: LocalDateTime = DateTimeUtil.localNow(TARGET_ZONE_ID),
+    ): ItemReader<ScheduledNotification> {
+        val scheduleList = scheduledNotificationService.getMatchedScheduledNotifications(date)
+        return ListItemReader(scheduleList)
     }
 
     @Bean
-    fun userItemWriter(): ItemWriter<User> {
-        return ItemWriter {
-            // userRepository.saveAll(it.items)
-        }
+    fun userItemWriter(): ItemWriter<ScheduledNotification> {
+        return ItemWriter { /*no-op*/ }
     }
 
     @Bean
-    fun compositeItemProcessor(): ItemProcessor<User, User> {
-        return ItemProcessor<User, User> {
-            // val fcmNotification = FcmNotification(
-            //     title = "배치 축하",
-            //     body = "연인이 새로운 배치를 등록했어요!",
-            // )
-
-            // firebaseService.sendNotification(
-            //     setOf(it.id),
-            //     fcmNotification
-            // )
+    fun compositeItemProcessor(): ItemProcessor<ScheduledNotification, ScheduledNotification> {
+        return ItemProcessor<ScheduledNotification, ScheduledNotification> {
+            val fcmNotification = FcmNotification(
+                title = it.title,
+                body = it.body,
+            )
+            firebaseService.sendNotification(
+                setOf(it.targetUserId),
+                fcmNotification
+            )
             it
         }
     }
@@ -84,12 +85,12 @@ class FcmBatchConfig(
     fun step(
         whatEverJobRepository: JobRepository,
         @Qualifier("batchTransactionManager") batchTransactionManager: PlatformTransactionManager,
-        itemReader: ItemReader<User>,
-        compositeItemProcessor: ItemProcessor<User, User>,
-        itemWriter: ItemWriter<User>,
+        itemReader: ItemReader<ScheduledNotification>,
+        compositeItemProcessor: ItemProcessor<ScheduledNotification, ScheduledNotification>,
+        itemWriter: ItemWriter<ScheduledNotification>,
     ): Step {
         return StepBuilder("step", whatEverJobRepository)
-            .chunk<User, User>(10, batchTransactionManager)
+            .chunk<ScheduledNotification, ScheduledNotification>(10, batchTransactionManager)
             .reader(itemReader)
             .processor(compositeItemProcessor)
             .writer(itemWriter)
@@ -118,5 +119,9 @@ class FcmBatchConfig(
                 }
             }
         }
+    }
+
+    companion object {
+        private val TARGET_ZONE_ID: ZoneId = ZoneId.of("Asia/Seoul")
     }
 }
