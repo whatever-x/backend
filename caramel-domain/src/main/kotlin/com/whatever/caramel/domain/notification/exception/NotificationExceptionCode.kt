@@ -14,6 +14,11 @@ enum class NotificationExceptionCode(
         message = "알림 예약에 필요한 정보가 잘못되었습니다.",
         status = HttpStatus.INTERNAL_SERVER_ERROR,
     ),
+    INVALID_MESSAGE_PARAMETER(
+        sequence = "002",
+        message = "알림 메시지 생성에 필요한 정보가 잘못되었습니다.",
+        status = HttpStatus.INTERNAL_SERVER_ERROR,
+    ),
     ;
 
     override val code = "NOTIFICATION$sequence"
