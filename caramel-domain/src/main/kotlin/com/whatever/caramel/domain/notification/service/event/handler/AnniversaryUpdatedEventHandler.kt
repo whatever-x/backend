@@ -183,8 +183,6 @@ private fun deleteScheduledAnniversaryNotifications(
             is MemberAnniversaryItem -> {
                 BirthDateNotificationSchedulingParameter(
                     anniversaryItem = anniversaryItem,
-                    birthdayMemberId = anniversaryItem.ownerId,
-                    birthdayMemberNickname = anniversaryItem.ownerNickname,
                     memberIds = memberIds,
                 )
             }

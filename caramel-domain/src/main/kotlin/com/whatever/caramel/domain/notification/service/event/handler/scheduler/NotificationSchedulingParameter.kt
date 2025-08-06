@@ -17,6 +17,9 @@ data class CoupleNotificationSchedulingParameter(
 data class BirthDateNotificationSchedulingParameter(
     override val anniversaryItem: MemberAnniversaryItem,
     override val memberIds: Set<Long>,
-    val birthdayMemberNickname: String,
-    val birthdayMemberId: Long,
-) : NotificationSchedulingParameter
+) : NotificationSchedulingParameter {
+    val birthdayMemberId: Long
+        get() = anniversaryItem.ownerId
+    val birthdayMemberNickname: String
+        get() = anniversaryItem.ownerNickname
+}
