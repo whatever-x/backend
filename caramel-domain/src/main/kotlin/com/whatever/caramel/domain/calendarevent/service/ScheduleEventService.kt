@@ -83,7 +83,6 @@ class ScheduleEventService(
     fun getSchedules(
         startDate: LocalDate,
         endDate: LocalDate,
-        userTimeZone: String,
         currentUserCoupleId: Long,
         requestUserId: Long,
     ): ScheduleDetailsVo {
