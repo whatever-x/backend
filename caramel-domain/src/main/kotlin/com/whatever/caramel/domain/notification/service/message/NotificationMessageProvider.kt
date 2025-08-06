@@ -1,7 +1,7 @@
 package com.whatever.caramel.domain.notification.service.message
 
 import com.whatever.caramel.domain.notification.model.NotificationType
-import com.whatever.caramel.domain.notification.vo.NotificationMessage
+import com.whatever.caramel.domain.notification.vo.NotificationMessageVo
 import org.springframework.stereotype.Component
 
 @Component
@@ -13,7 +13,7 @@ class NotificationMessageProvider(
     fun provide(
         type: NotificationType,
         notificationMessageParameter: NotificationMessageParameter,
-    ): NotificationMessage {
+    ): NotificationMessageVo {
         val generator = generatorMap[type] ?: throw RuntimeException()  // TODO CustomException
         return generator.generate(notificationMessageParameter)
     }

@@ -35,7 +35,6 @@ class HundredDayAnniversaryNotificationScheduler(
 
         scheduledNotificationService.scheduleNotifications(
             messagesByUserId = param.memberIds.associateWith { memberId -> message },
-            notificationType = notificationType,
             notifyAt = notifyAt,
         )
     }
@@ -58,7 +57,6 @@ class YearlyAnniversaryNotificationScheduler(
 
         scheduledNotificationService.scheduleNotifications(
             messagesByUserId = param.memberIds.associateWith { memberId -> message },
-            notificationType = notificationType,
             notifyAt = notifyAt,
         )
     }
@@ -71,10 +69,13 @@ class BirthDateNotificationScheduler(
 ) : AnniversaryNotificationScheduler {
     override fun supports(): CoupleAnniversaryType = CoupleAnniversaryType.BIRTHDAY
     override fun schedule(notifyAt: LocalDateTime, notificationSchedulingParameter: NotificationSchedulingParameter) {
-        val notificationType  = NotificationType.BIRTHDAY
         val param = notificationSchedulingParameter as? BirthDateNotificationSchedulingParameter ?: throw IllegalArgumentException("")  // TODO Custom Exception
 
         val messagesByUserId = param.memberIds.associateWith { memberId ->
+            val notificationType =
+                if (memberId == param.birthdayMemberId) NotificationType.MY_BIRTHDAY
+                else NotificationType.PARTNER_BIRTHDAY
+
             notificationMessageProvider.provide(
                 type = notificationType,
                 notificationMessageParameter = BirthDayParameter(
@@ -87,7 +88,6 @@ class BirthDateNotificationScheduler(
 
         scheduledNotificationService.scheduleNotifications(
             messagesByUserId = messagesByUserId,
-            notificationType = notificationType,
             notifyAt = notifyAt,
         )
     }

@@ -1,14 +1,9 @@
 package com.whatever.caramel.domain.notification.vo
 
-data class NotificationVo(
-    val targetUserId: Long,
-    val title: String,
-    val body: String,
-    val image: String? = null,
-)
+import com.whatever.caramel.domain.notification.model.NotificationType
 
-
-data class NotificationMessage(
+data class NotificationMessageVo(
+    val type: NotificationType,
     val title: String,
     val body: String,
 )

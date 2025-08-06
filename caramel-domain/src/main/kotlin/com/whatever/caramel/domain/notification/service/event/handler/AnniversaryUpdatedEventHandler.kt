@@ -11,12 +11,11 @@ import com.whatever.caramel.domain.couple.vo.AnniversaryVo
 import com.whatever.caramel.domain.notification.model.NotificationType
 import com.whatever.caramel.domain.notification.model.NotificationType.ANNIVERSARY_HUNDRED
 import com.whatever.caramel.domain.notification.model.NotificationType.ANNIVERSARY_YEARLY
-import com.whatever.caramel.domain.notification.model.NotificationType.BIRTHDAY
-import com.whatever.caramel.domain.notification.service.event.handler.scheduler.NotificationSchedulingParameter
+import com.whatever.caramel.domain.notification.service.ScheduledNotificationService
+import com.whatever.caramel.domain.notification.service.event.handler.scheduler.AnniversaryNotificationScheduler
 import com.whatever.caramel.domain.notification.service.event.handler.scheduler.BirthDateNotificationSchedulingParameter
 import com.whatever.caramel.domain.notification.service.event.handler.scheduler.CoupleNotificationSchedulingParameter
-import com.whatever.caramel.domain.notification.service.event.handler.scheduler.AnniversaryNotificationScheduler
-import com.whatever.caramel.domain.notification.service.ScheduledNotificationService
+import com.whatever.caramel.domain.notification.service.event.handler.scheduler.NotificationSchedulingParameter
 import com.whatever.caramel.domain.user.service.event.dto.UserBirthDateUpdateEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
@@ -70,7 +69,6 @@ class AnniversaryUpdatedEventHandler(
                 birthDate = oldBirthDate,
                 targetDate = targetDate,
             )
-
             deleteScheduledAnniversaryNotifications(
                 anniversaryVos = birthDate,
                 memberIds = memberIds,
@@ -90,19 +88,43 @@ class AnniversaryUpdatedEventHandler(
         )
     }
 
-    private fun deleteScheduledAnniversaryNotifications(
-        anniversaryVos: List<AnniversaryVo>,
-        memberIds: Set<Long>,
-    ) {
-        anniversaryVos.forEach { anniversaryVo ->
-            val typeToDelete = anniversaryVo.type.toNotificationType()
-            val effectedRows = scheduledNotificationService.deleteScheduledNotifications(
-                targetUserIds = memberIds,
-                notificationTypes = setOf(typeToDelete),
-            )
-            logger.debug { "Deleted today's anniversary notifications ($typeToDelete) for users $memberIds. Effected rows: $effectedRows" }
+private fun deleteScheduledAnniversaryNotifications(
+    anniversaryVos: List<AnniversaryVo>,
+    memberIds: Set<Long>,
+) {
+    anniversaryVos.forEach { anniversaryVo ->
+        val typeToDelete = anniversaryVo.type.toNotificationType()
+
+        when (anniversaryVo.type) {
+            CoupleAnniversaryType.N_TH_DAY, CoupleAnniversaryType.YEARLY -> {
+                val effectedRows = scheduledNotificationService.deleteScheduledNotifications(
+                    targetUserIds = memberIds,
+                    notificationTypes = typeToDelete,
+                )
+                logger.debug { "Deleted today's anniversary notifications ($typeToDelete) for users $memberIds. Effected rows: $effectedRows" }
+            }
+
+            CoupleAnniversaryType.BIRTHDAY -> {
+                val ownerId = anniversaryVo.ownerId ?: return@forEach
+
+                memberIds.firstOrNull { it == ownerId }?.let{ ownerId ->
+                    scheduledNotificationService.deleteScheduledNotifications(
+                        targetUserIds = setOf(ownerId),
+                        notificationTypes = setOf(NotificationType.MY_BIRTHDAY),
+                    )
+                }
+
+                memberIds.firstOrNull { it != ownerId }?.let { partnerId ->
+                    scheduledNotificationService.deleteScheduledNotifications(
+                        targetUserIds = setOf(partnerId),
+                        notificationTypes = setOf(NotificationType.PARTNER_BIRTHDAY),
+                    )
+                }
+            }
         }
+
     }
+}
 
     private fun scheduleAnniversaryNotification(
         anniversaryVos: List<AnniversaryVo>,
@@ -168,11 +190,11 @@ class AnniversaryUpdatedEventHandler(
     }
 }
 
-private fun CoupleAnniversaryType.toNotificationType(): NotificationType {
+private fun CoupleAnniversaryType.toNotificationType(): Set<NotificationType> {
     return when (this) {
-        CoupleAnniversaryType.N_TH_DAY -> ANNIVERSARY_HUNDRED
-        CoupleAnniversaryType.YEARLY -> ANNIVERSARY_YEARLY
-        CoupleAnniversaryType.BIRTHDAY -> BIRTHDAY
+        CoupleAnniversaryType.N_TH_DAY -> setOf(ANNIVERSARY_HUNDRED)
+        CoupleAnniversaryType.YEARLY -> setOf(ANNIVERSARY_YEARLY)
+        CoupleAnniversaryType.BIRTHDAY -> setOf(NotificationType.MY_BIRTHDAY, NotificationType.PARTNER_BIRTHDAY)
     }
 }
 private fun CoupleAnniversaryService.findYearlyAnniversaryOn(

@@ -3,7 +3,7 @@ package com.whatever.caramel.domain.notification.service
 import com.whatever.caramel.domain.notification.model.NotificationType
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import com.whatever.caramel.domain.notification.repository.ScheduledNotificationRepository
-import com.whatever.caramel.domain.notification.vo.NotificationMessage
+import com.whatever.caramel.domain.notification.vo.NotificationMessageVo
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -12,8 +12,7 @@ class ScheduledNotificationService(
     private val scheduledNotificationRepository: ScheduledNotificationRepository,
 ) {
     fun scheduleNotifications(
-        messagesByUserId: Map<Long, NotificationMessage>,
-        notificationType: NotificationType,
+        messagesByUserId: Map<Long, NotificationMessageVo>,
         notifyAt: LocalDateTime,
         image: String? = null,
     ) {
@@ -24,7 +23,7 @@ class ScheduledNotificationService(
         val notifications = messagesByUserId.map { (userId, message) ->
             ScheduledNotification(
                 targetUserId = userId,
-                notificationType = notificationType,
+                notificationType = message.type,
                 notifyAt = notifyAt,
                 title = message.title,
                 body = message.body,
