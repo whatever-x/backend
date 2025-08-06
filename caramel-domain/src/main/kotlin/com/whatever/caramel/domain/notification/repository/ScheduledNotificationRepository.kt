@@ -20,8 +20,8 @@ interface ScheduledNotificationRepository : JpaRepository<ScheduledNotification,
     ): Int
 
     @Query("""
-        select * from ScheduledNotification sn
-        where sn.notifyAt = :todayLocalDate
+        select sn from ScheduledNotification sn
+        where sn.notifyAt = :todayLocalDateTime
     """)
     fun findByNotifyAt(todayLocalDateTime: LocalDateTime): List<ScheduledNotification>
 }
