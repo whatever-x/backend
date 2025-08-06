@@ -46,8 +46,8 @@ class MyBirthdayMessageGenerator : AbstractNotificationMessageGenerator<BirthDay
     override fun generateMessage(parameter: BirthDayParameter): NotificationMessageVo {
         return NotificationMessageVo(
             type = supports(),
-            title = "내일은 ${parameter.label}일이에요!",
-            body = "당신의 생일 축하축하",
+            title = "내일은 기다리던 나의 생일! \uD83C\uDF82",  // 🎂
+            body = "가장 특별한 하루, 즐겁고 행복하게 보내세요!",
         )
     }
 }
@@ -58,8 +58,8 @@ class PartnerBirthdayMessageGenerator : AbstractNotificationMessageGenerator<Bir
     override fun generateMessage(parameter: BirthDayParameter): NotificationMessageVo {
         return NotificationMessageVo(
             type = supports(),
-            title = "내일은 ${parameter.label}일이에요!",
-            body = "${parameter.birthdayMemberNickname}님의 생일이니 축하해주시오",
+            title = "내일은 ${parameter.birthdayMemberNickname}님의 생일이에요! \uD83E\uDD73",  // 🥳
+            body = "잊지 말고 축하의 마음을 전하는건 어떨까요?",
         )
     }
 }
@@ -71,8 +71,8 @@ class HundredAnniversaryMessageGenerator
     override fun generateMessage(parameter: HundredAnniversaryParameter): NotificationMessageVo {
         return NotificationMessageVo(
             type = supports(),
-            title = "내일은 ${parameter.label}일이에요!",
-            body = "해피해피 데이데이"
+            title = "내일은 ${parameter.label}이에요!",
+            body = "함께 쌓아온 소중한 시간, 앞으로도 예쁘게 채워가요!",
         )
     }
 }
@@ -85,7 +85,7 @@ class YearlyAnniversaryMessageGenerator
         return NotificationMessageVo(
             type = supports(),
             title = "내일은 ${parameter.label} 기념일이에요!",
-            body = "해피해피 데이데이"
+            body = "함께여서 모든 계절이 특별했지 않나요? 내일은 더 소중한 하루를 만들어요.",
         )
     }
 }

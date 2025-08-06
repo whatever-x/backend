@@ -56,8 +56,8 @@ class NotificationMessageProviderTest {
         // then
         assertThat(resultMessage).isEqualTo(resultMessage)
 
-        verify(exactly = 1) {mockMyBirthdayMessageGenerator.generate(parameter)}
-        verify(exactly = 0) {mockPartnerBirthdayGenerator.generate(any())}
+        verify(exactly = 1) { mockMyBirthdayMessageGenerator.generate(parameter) }
+        verify(exactly = 0) { mockPartnerBirthdayGenerator.generate(any()) }
     }
 
     @DisplayName("지원하지 않은 타입을 받을경우 예외를 반환한다.")
