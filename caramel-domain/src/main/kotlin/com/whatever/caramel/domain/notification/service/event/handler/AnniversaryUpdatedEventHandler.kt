@@ -141,7 +141,7 @@ private fun deleteScheduledAnniversaryNotifications(
 
             scheduler.schedule(
                 notifyAt = targetDate.toDateTime(),
-                notificationSchedulingParameter = createAnniversarySchedulingParameter(anniversary, memberIds),
+                schedulingParameter = createAnniversarySchedulingParameter(anniversary, memberIds),
             )
         }
     }
