@@ -51,7 +51,6 @@ class ScheduleController(
         val scheduleDetailsVo = scheduleEventService.getSchedules(
             startDate = queryParameter.startDate,
             endDate = queryParameter.endDate,
-            userTimeZone = queryParameter.userTimeZone,
             currentUserCoupleId = getCurrentUserCoupleId(),
             requestUserId = getCurrentUserId(),
         )
