@@ -1,5 +1,7 @@
 package com.whatever.caramel.domain.notification.service.event
 
+import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.common.util.DateTimeUtil.KST_ZONE_ID
 import com.whatever.caramel.domain.couple.service.event.dto.CoupleStartDateUpdateEvent
 import com.whatever.caramel.domain.firebase.service.event.dto.CoupleConnectedEvent
 import com.whatever.caramel.domain.notification.exception.NotificationException
@@ -21,7 +23,10 @@ class ScheduledNotificationEventListener(
     @Async
     fun scheduleCoupleStartDateNotification(event: CoupleStartDateUpdateEvent) {
         try {
-            anniversaryUpdatedEventHandler.handle(event)
+            anniversaryUpdatedEventHandler.handle(
+                event = event,
+                targetDate = DateTimeUtil.localNow(KST_ZONE_ID).toLocalDate(),
+            )
         } catch (e: Exception) {
             logger.error {
                 "Filed to handle couple start date update event. " +
@@ -35,7 +40,10 @@ class ScheduledNotificationEventListener(
     @Async
     fun scheduleUserBirthDateNotification(event: UserBirthDateUpdateEvent) {
         try {
-            anniversaryUpdatedEventHandler.handle(event)
+            anniversaryUpdatedEventHandler.handle(
+                event = event,
+                targetDate = DateTimeUtil.localNow(KST_ZONE_ID).toLocalDate(),
+            )
         } catch (e: Exception) {
             logger.error {
                 "Filed to handle user birthday update event. " +
@@ -57,7 +65,10 @@ class ScheduledNotificationEventListener(
                     newDate = member.birthDate,
                     coupleId = event.coupleDetailVo.id
                 )
-                anniversaryUpdatedEventHandler.handle(birthDateUpdateEvent)
+                anniversaryUpdatedEventHandler.handle(
+                    event = birthDateUpdateEvent,
+                    targetDate = DateTimeUtil.localNow(KST_ZONE_ID).toLocalDate(),
+                )
             }
         } catch (e: Exception) {
             logger.error {

@@ -21,6 +21,10 @@ enum class NotificationExceptionCode(
         sequence = "003",
         message = "지원하지 않는 알림 타입입니다.",
     ),
+    UNSUPPORTED_COUPLE_ANNIV_TYPE(
+        sequence = "004",
+        message = "지원하지 않는 커플 기념일 타입입니다.",
+    ),
     ;
 
     override val code = "NOTIFICATION$sequence"

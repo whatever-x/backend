@@ -1,7 +1,5 @@
 package com.whatever.caramel.domain.notification.service.event.handler
 
-import com.whatever.caramel.common.util.DateTimeUtil
-import com.whatever.caramel.common.util.DateTimeUtil.KST_ZONE_ID
 import com.whatever.caramel.common.util.toDateTime
 import com.whatever.caramel.domain.couple.model.CoupleAnniversaryType
 import com.whatever.caramel.domain.couple.service.CoupleAnniversaryService
@@ -14,7 +12,7 @@ import com.whatever.caramel.domain.notification.model.NotificationType
 import com.whatever.caramel.domain.notification.model.NotificationType.ANNIVERSARY_HUNDRED
 import com.whatever.caramel.domain.notification.model.NotificationType.ANNIVERSARY_YEARLY
 import com.whatever.caramel.domain.notification.service.ScheduledNotificationService
-import com.whatever.caramel.domain.notification.service.event.handler.scheduler.AnniversaryNotificationScheduler
+import com.whatever.caramel.domain.notification.service.event.handler.scheduler.AnniversaryNotificationSchedulerProvider
 import com.whatever.caramel.domain.notification.service.event.handler.scheduler.BirthDateNotificationSchedulingParameter
 import com.whatever.caramel.domain.notification.service.event.handler.scheduler.CoupleNotificationSchedulingParameter
 import com.whatever.caramel.domain.notification.service.event.handler.scheduler.NotificationSchedulingParameter
@@ -28,17 +26,15 @@ private val logger = KotlinLogging.logger {  }
 
 @Component
 class AnniversaryUpdatedEventHandler(
-    anniversaryNotificationSchedulers: List<AnniversaryNotificationScheduler>,
+    private val schedulerProvider: AnniversaryNotificationSchedulerProvider,
     private val scheduledNotificationService: ScheduledNotificationService,
     private val coupleAnniversaryService: CoupleAnniversaryService,
     private val coupleService: CoupleService,
 ) {
-    private val schedulerMap = anniversaryNotificationSchedulers.associateBy { it.supports() }
-
     @Transactional
     fun handle(
         event: CoupleStartDateUpdateEvent,
-        targetDate: LocalDate = DateTimeUtil.localNow(KST_ZONE_ID).toLocalDate(),
+        targetDate: LocalDate,
     ) {
         event.oldDate?.let { oldCoupleStartDate ->
             val anniversaryVos = findAnniversariesOn(coupleStartDate = oldCoupleStartDate, targetDate = targetDate)
@@ -59,7 +55,7 @@ class AnniversaryUpdatedEventHandler(
     @Transactional
     fun handle(
         event: UserBirthDateUpdateEvent,
-        targetDate: LocalDate = DateTimeUtil.localNow(KST_ZONE_ID).toLocalDate(),
+        targetDate: LocalDate,
     ) {
         val memberIds = coupleService.getCoupleAndMemberInfo(event.coupleId, event.userId)
             .run { setOf(myInfo.id, partnerInfo.id) }
@@ -124,7 +120,6 @@ private fun deleteScheduledAnniversaryNotifications(
                 }
             }
         }
-
     }
 }
 
@@ -134,12 +129,7 @@ private fun deleteScheduledAnniversaryNotifications(
         targetDate: LocalDate,
     ) {
         anniversaryItems.forEach { anniversary ->
-            val scheduler = schedulerMap[anniversary.type] ?: run {
-                logger.warn { "Unsupported couple anniversary type for notification scheduling: ${anniversary.type}" }
-                return@forEach  // continue to next anniversary
-            }
-
-            scheduler.schedule(
+            schedulerProvider.provide(anniversary.type).schedule(
                 notifyAt = targetDate.toDateTime(),
                 schedulingParameter = createAnniversarySchedulingParameter(anniversary, memberIds),
             )
@@ -179,12 +169,8 @@ private fun deleteScheduledAnniversaryNotifications(
              is CoupleAnniversaryItem -> {
                 CoupleNotificationSchedulingParameter(anniversaryItem = anniversaryItem, memberIds = memberIds)
             }
-
             is MemberAnniversaryItem -> {
-                BirthDateNotificationSchedulingParameter(
-                    anniversaryItem = anniversaryItem,
-                    memberIds = memberIds,
-                )
+                BirthDateNotificationSchedulingParameter(anniversaryItem = anniversaryItem, memberIds = memberIds)
             }
         }
     }
