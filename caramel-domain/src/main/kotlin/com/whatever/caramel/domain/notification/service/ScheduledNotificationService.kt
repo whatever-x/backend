@@ -37,6 +37,10 @@ class ScheduledNotificationService(
         targetUserIds: Set<Long>,
         notificationTypes: Set<NotificationType>,
     ): Int {
+        if (targetUserIds.isEmpty() || notificationTypes.isEmpty()) {
+            return 0
+        }
+
         return scheduledNotificationRepository.deleteAllByNotificationTypeInAndTargetUserIdIn(
             notificationTypes = notificationTypes,
             targetUserIds = targetUserIds
