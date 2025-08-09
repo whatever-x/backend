@@ -3,7 +3,7 @@ package com.whatever.caramel.batch.config
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean
 import org.springframework.batch.support.DatabaseType
-import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.autoconfigure.batch.BatchTransactionManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.jdbc.support.JdbcTransactionManager
@@ -12,7 +12,8 @@ import javax.sql.DataSource
 
 @Configuration
 class BatchConfig {
-    @Bean("batchTransactionManager")
+    @Bean
+    @BatchTransactionManager
     fun batchTransactionManager(dataSource: DataSource): PlatformTransactionManager {
         return JdbcTransactionManager(dataSource)
     }
@@ -20,7 +21,7 @@ class BatchConfig {
     @Bean
     fun whatEverJobRepository(
         dataSource: DataSource,
-        @Qualifier("batchTransactionManager") batchTransactionManager: PlatformTransactionManager,
+        @BatchTransactionManager batchTransactionManager: PlatformTransactionManager,
     ): JobRepository {
         return JobRepositoryFactoryBean().apply {
             setDataSource(dataSource)
