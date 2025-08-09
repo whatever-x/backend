@@ -13,21 +13,17 @@ import org.springframework.batch.core.Step
 import org.springframework.batch.core.job.builder.JobBuilder
 import org.springframework.batch.core.launch.support.RunIdIncrementer
 import org.springframework.batch.core.repository.JobRepository
-import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemProcessor
 import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.support.ListItemReader
-import org.springframework.batch.support.DatabaseType
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.jdbc.support.JdbcTransactionManager
 import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDateTime
 import java.time.ZoneId
-import javax.sql.DataSource
 
 @Configuration
 class FcmBatchConfig(
@@ -90,9 +86,6 @@ class FcmBatchConfig(
     @Bean
     fun jobExecutionListener(): JobExecutionListener {
         return object : JobExecutionListener {
-            override fun beforeJob(jobExecution: JobExecution) {
-                super.beforeJob(jobExecution)
-            }
 
             override fun afterJob(jobExecution: JobExecution) {
                 if (jobExecution.status == BatchStatus.COMPLETED) {

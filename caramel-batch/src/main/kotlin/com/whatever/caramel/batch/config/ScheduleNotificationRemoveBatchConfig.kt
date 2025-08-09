@@ -1,6 +1,5 @@
 package com.whatever.caramel.batch.config
 
-import com.whatever.caramel.batch.config.FcmBatchConfig.Companion
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.notification.model.NotificationType
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
@@ -80,9 +79,6 @@ class ScheduleNotificationRemoveBatchConfig(
     @Bean
     fun scheduleRemoveJobExecutionListener(): JobExecutionListener {
         return object : JobExecutionListener {
-            override fun beforeJob(jobExecution: JobExecution) {
-                super.beforeJob(jobExecution)
-            }
 
             override fun afterJob(jobExecution: JobExecution) {
                 if (jobExecution.status == BatchStatus.COMPLETED) {
