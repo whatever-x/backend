@@ -2,13 +2,14 @@ package com.whatever.caramel.batch.config
 
 import com.whatever.caramel.domain.firebase.service.FirebaseService
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
+import com.whatever.caramel.domain.notification.service.ScheduledNotificationService
 import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
-import jakarta.persistence.EntityManagerFactory
 import org.springframework.batch.core.BatchStatus
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.JobExecution
 import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.Step
+import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.job.builder.JobBuilder
 import org.springframework.batch.core.launch.support.RunIdIncrementer
 import org.springframework.batch.core.repository.JobRepository
@@ -16,7 +17,7 @@ import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemProcessor
 import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
-import org.springframework.batch.item.database.JpaPagingItemReader
+import org.springframework.batch.item.support.ListItemReader
 import org.springframework.boot.autoconfigure.batch.BatchTransactionManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -26,36 +27,34 @@ import java.time.ZoneId
 
 @Configuration
 class FcmBatchConfig(
+    private val scheduledNotificationService: ScheduledNotificationService,
     private val firebaseService: FirebaseService,
 ) {
     @Bean
-    fun anniversaryItemReader(entityManagerFactory: EntityManagerFactory): ItemReader<ScheduledNotification> {
+    @StepScope
+    fun anniversaryItemReader(): ItemReader<ScheduledNotification> {
         val zoneSource = ZoneId.of("Asia/Seoul")
         val localDateTime = LocalDateTime.now(zoneSource)
         val startOfDay = localDateTime.toLocalDate().atStartOfDay(zoneSource).toLocalDateTime()
         val endOfDay = localDateTime.toLocalDate().atTime(23, 59, 59)
+        val scheduledNotificationList =
+            scheduledNotificationService.getMatchedScheduledNotifications(startOfDay, endOfDay)
 
-        return JpaPagingItemReader<ScheduledNotification>().apply {
-            setEntityManagerFactory(entityManagerFactory)
-            setQueryString("SELECT s FROM ScheduledNotification s WHERE s.notifyAt BETWEEN :startOfDay AND :endOfDay")
-            setParameterValues(mapOf("startOfDay" to startOfDay, "endOfDay" to endOfDay))
-            pageSize = 10
-            afterPropertiesSet()
-        }
+        return ListItemReader(scheduledNotificationList)
     }
 
     @Bean
     fun compositeItemProcessor(): ItemProcessor<ScheduledNotification, ScheduledNotification> {
-        return ItemProcessor<ScheduledNotification, ScheduledNotification> {
+        return ItemProcessor<ScheduledNotification, ScheduledNotification> { notification ->
             val fcmNotification = FcmNotification(
-                title = it.title,
-                body = it.body,
+                title = notification.title,
+                body = notification.body,
             )
             firebaseService.sendNotification(
-                setOf(it.targetUserId),
+                setOf(notification.targetUserId),
                 fcmNotification
             )
-            it
+            notification
         }
     }
 
@@ -77,7 +76,6 @@ class FcmBatchConfig(
             .reader(anniversaryItemReader)
             .processor(compositeItemProcessor)
             .writer(anniversaryItemWriter)
-            .allowStartIfComplete(true)
             .build()
     }
 

@@ -20,8 +20,8 @@ interface ScheduledNotificationRepository : JpaRepository<ScheduledNotification,
     ): Int
 
     @Query("""
-        select sn from ScheduledNotification sn
-        where sn.notifyAt = :todayLocalDateTime
+        SELECT s FROM ScheduledNotification s 
+        WHERE s.notifyAt BETWEEN :startOfDay AND :endOfDay
     """)
-    fun findByNotifyAt(todayLocalDateTime: LocalDateTime): List<ScheduledNotification>
+    fun findByNotifyAt(startOfDay: LocalDateTime, endOfDay: LocalDateTime): List<ScheduledNotification>
 }

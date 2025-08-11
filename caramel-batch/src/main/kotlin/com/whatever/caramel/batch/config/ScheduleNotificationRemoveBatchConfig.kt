@@ -45,6 +45,7 @@ class ScheduleNotificationRemoveBatchConfig(
 
     @Bean
     fun scheduleRemoveItemWriter(): ItemWriter<ScheduledNotification> {
+        // JpaItemWriter 도 있어요
         return ItemWriter {
             val targetUserIds = mutableSetOf<Long>()
             val notificationTypes = mutableSetOf<NotificationType>()
@@ -72,7 +73,6 @@ class ScheduleNotificationRemoveBatchConfig(
             .chunk<ScheduledNotification, ScheduledNotification>(10, batchTransactionManager)
             .reader(scheduleRemoveItemReader)
             .writer(scheduleRemoveItemWriter)
-            .allowStartIfComplete(true)
             .build()
     }
 
