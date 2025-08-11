@@ -37,7 +37,7 @@ class ScheduledNotificationService(
 
     @Transactional(readOnly = true)
     fun getMatchedScheduledNotifications(todayLocalDateTime: LocalDateTime): List<ScheduledNotification> {
-        return scheduledNotificationRepository.findByNotifyAt(todayLocalDateTime)
+        return scheduledNotificationRepository.findAll()
     }
 
     fun deleteScheduledNotifications(

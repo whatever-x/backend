@@ -6,6 +6,7 @@ import org.springframework.batch.core.launch.JobLauncher
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Component
 class AnniversaryBatchScheduler(
@@ -17,19 +18,21 @@ class AnniversaryBatchScheduler(
     /**
      * 협의해서 시간 변경 필요
      */
-    @Scheduled(cron = "0 50 23 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 44 3 * * *", zone = "Asia/Seoul")
     fun runAnniversaryJob() {
         val params = JobParametersBuilder()
-            .addString("anniversary", LocalDate.now().toString())
+            .addString("anniversary", System.currentTimeMillis().toString())
             .toJobParameters()
+        println("tjrwn run job 수행")
         jobLauncher.run(anniversaryJob, params)
     }
 
-    @Scheduled(cron = "0 0 5 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 46 3 * * *", zone = "Asia/Seoul")
     fun runDeleteJob() {
         val params = JobParametersBuilder()
-            .addString("delete", LocalDate.now().toString())
+            .addString("delete", System.currentTimeMillis().toString())
             .toJobParameters()
+        println("tjrwn delete job 수행")
         jobLauncher.run(scheduleRemoveJob, params)
     }
 }
