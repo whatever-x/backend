@@ -1,5 +1,10 @@
 package com.whatever.caramel.config
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.cache.CacheManager
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
@@ -17,9 +22,16 @@ import java.time.Duration
 class RedisCacheConfig {
     @Bean
     fun cacheManager(redisConnectionFactory: RedisConnectionFactory): CacheManager {
+        val ptv = BasicPolymorphicTypeValidator.builder().allowIfBaseType(Any::class.java).build()
+        val customObjectMapper = jacksonObjectMapper()
+            .registerModule(KotlinModule.Builder().build())
+            .registerModule(JavaTimeModule())
+            .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.EVERYTHING)
+
+
         val keySerializationPair = RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer())
         val valueSerializationPair =
-            RedisSerializationContext.SerializationPair.fromSerializer(GenericJackson2JsonRedisSerializer())
+            RedisSerializationContext.SerializationPair.fromSerializer(GenericJackson2JsonRedisSerializer(customObjectMapper))
         val baseConfig = RedisCacheConfiguration.defaultCacheConfig()
             .serializeKeysWith(keySerializationPair)
             .serializeValuesWith(valueSerializationPair)
