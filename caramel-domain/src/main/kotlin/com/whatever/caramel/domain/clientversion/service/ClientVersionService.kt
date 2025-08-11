@@ -17,12 +17,8 @@ class ClientVersionService(
     fun checkVersion(osType: OsType, versionCode: Int): VersionPolicyVo {
 
         val (latestVersion, minimumVersion) = clientVersionCacheService.getActiveVersions(osType)
-        if (latestVersion == null) {
-            logger.warn { "Failed to find LATEST client version for osType: ${osType}" }
-            return NoUpdate
-        }
-        if (minimumVersion == null) {
-            logger.warn { "Failed to find MINIMUM client version for osType: ${osType}" }
+        if (latestVersion == null || minimumVersion == null) {
+            logger.warn { "Failed to find valid client version(Latest or Minimum) for osType: ${osType}" }
             return NoUpdate
         }
 
