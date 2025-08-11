@@ -54,7 +54,6 @@ interface KakaoOIDCClient {
     @Cacheable(
         cacheNames = ["oidc-public-key"],
         key = "'KAKAO'",
-        cacheManager = "oidcCacheManager"
     )
     @GetMapping(
         path = ["/.well-known/jwks.json"],

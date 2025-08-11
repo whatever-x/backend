@@ -18,7 +18,6 @@ interface AppleOIDCClient {
     @Cacheable(
         cacheNames = ["oidc-public-key"],
         key = "'APPLE'",
-        cacheManager = "oidcCacheManager"
     )
     @GetMapping(
         path = ["/auth/keys"],

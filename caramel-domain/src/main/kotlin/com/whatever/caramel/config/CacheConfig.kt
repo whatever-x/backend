@@ -1,6 +1,5 @@
 package com.whatever.caramel.config
 
-import com.whatever.caramel.domain.user.model.LoginPlatform
 import org.springframework.cache.CacheManager
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
@@ -16,21 +15,21 @@ import java.time.Duration
 @EnableCaching
 @Configuration
 class RedisCacheConfig {
-
-    @Bean(name = ["oidcCacheManager"])
-    fun oidcCacheManager(redisConnectionFactory: RedisConnectionFactory): CacheManager {
-        val stringSerializationPair =
-            RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer())
-        val jsonSerializerPair =
+    @Bean
+    fun cacheManager(redisConnectionFactory: RedisConnectionFactory): CacheManager {
+        val keySerializationPair = RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer())
+        val valueSerializationPair =
             RedisSerializationContext.SerializationPair.fromSerializer(GenericJackson2JsonRedisSerializer())
+        val baseConfig = RedisCacheConfiguration.defaultCacheConfig()
+            .serializeKeysWith(keySerializationPair)
+            .serializeValuesWith(valueSerializationPair)
 
-        val redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
-            .serializeKeysWith(stringSerializationPair)
-            .serializeValuesWith(jsonSerializerPair)
-            .entryTtl(CacheType.OIDC_PUBLIC_KEY.ttl)
+        val cacheConfigurations = CacheType.entries.associate { cacheType ->
+            cacheType.cacheName to baseConfig.entryTtl(cacheType.ttl)
+        }
 
         return RedisCacheManager.builder(redisConnectionFactory)
-            .cacheDefaults(redisCacheConfiguration)
+            .withInitialCacheConfigurations(cacheConfigurations)
             .build()
     }
 }
@@ -38,7 +37,7 @@ class RedisCacheConfig {
 enum class CacheType(
     val cacheName: String,
     val ttl: Duration = Duration.ofDays(7L),
-    val maximumSize: Long = LoginPlatform.entries.size.toLong(),
 ) {
-    OIDC_PUBLIC_KEY("oidc"),
+    OIDC_PUBLIC_KEY("oidc-public-key"),
+    CLIENT_VERSIONS("client-versions"),
 }

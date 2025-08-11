@@ -23,7 +23,6 @@ import com.whatever.caramel.domain.user.model.LoginPlatform
 import com.whatever.caramel.domain.user.repository.UserRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.ExpiredJwtException
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.cache.CacheManager
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -36,7 +35,7 @@ class AuthService(
     private val jwtProperties: JwtProperties,
     private val authRedisRepository: AuthRedisRepository,
     userProviders: List<SocialUserProvider>,
-    @Qualifier("oidcCacheManager") private val oidcCacheManager: CacheManager,
+    private val oidcCacheManager: CacheManager,
     private val userRepository: UserRepository,
     private val coupleService: CoupleService,
 ) {
