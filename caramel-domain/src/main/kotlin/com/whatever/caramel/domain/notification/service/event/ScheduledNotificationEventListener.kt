@@ -22,12 +22,12 @@ class ScheduledNotificationEventListener(
     @TransactionalEventListener(phase = AFTER_COMMIT)
     @Async
     fun scheduleCoupleStartDateNotification(event: CoupleStartDateUpdateEvent) {
-        try {
+        runCatching {
             anniversaryUpdatedEventHandler.handle(
                 event = event,
                 targetDate = DateTimeUtil.localNow(KST_ZONE_ID).toLocalDate(),
             )
-        } catch (e: Exception) {
+        }.onFailure { e ->
             logger.error {
                 "Filed to handle couple start date update event. " +
                 "Received event: ${event}. " +
@@ -39,12 +39,12 @@ class ScheduledNotificationEventListener(
     @TransactionalEventListener(phase = AFTER_COMMIT)
     @Async
     fun scheduleUserBirthDateNotification(event: UserBirthDateUpdateEvent) {
-        try {
+        runCatching {
             anniversaryUpdatedEventHandler.handle(
                 event = event,
                 targetDate = DateTimeUtil.localNow(KST_ZONE_ID).toLocalDate(),
             )
-        } catch (e: Exception) {
+        }.onFailure { e ->
             logger.error {
                 "Filed to handle user birthday update event. " +
                 "Received event: ${event}. " +
@@ -56,7 +56,7 @@ class ScheduledNotificationEventListener(
     @TransactionalEventListener(phase = AFTER_COMMIT)
     @Async
     fun scheduleUserBirthDateNotification(event: CoupleConnectedEvent) {
-        try {
+        runCatching {
             event.members.forEach { member ->
                 val birthDateUpdateEvent = UserBirthDateUpdateEvent(
                     userId = member.id,
@@ -70,7 +70,7 @@ class ScheduledNotificationEventListener(
                     targetDate = DateTimeUtil.localNow(KST_ZONE_ID).toLocalDate(),
                 )
             }
-        } catch (e: Exception) {
+        }.onFailure { e ->
             logger.error {
                 "Filed to handle user birthday update event after couple connected. " +
                 "Received event: ${event}. " +
