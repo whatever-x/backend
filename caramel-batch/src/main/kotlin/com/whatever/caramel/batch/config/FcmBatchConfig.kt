@@ -1,9 +1,7 @@
 package com.whatever.caramel.batch.config
 
-import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.firebase.service.FirebaseService
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
-import com.whatever.caramel.domain.notification.service.ScheduledNotificationService
 import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import jakarta.persistence.EntityManagerFactory
 import org.springframework.batch.core.BatchStatus
@@ -19,32 +17,28 @@ import org.springframework.batch.item.ItemProcessor
 import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.database.JpaPagingItemReader
-import org.springframework.batch.item.support.ListItemReader
 import org.springframework.boot.autoconfigure.batch.BatchTransactionManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDateTime
 import java.time.ZoneId
-import javax.sql.DataSource
 
-/**
- * 테스트 방법
- * 1. 임의로 로컬 디비 안에 오늘 날짜의 데이터를 3개쯤 넣는다
- * 2. FCM의 발송은 걍 내걸로 세팅해보기
- * 3. delete 도 잘되는지 보기
- */
 @Configuration
 class FcmBatchConfig(
-    private val scheduledNotificationService: ScheduledNotificationService,
     private val firebaseService: FirebaseService,
 ) {
-    // 겨우 이거떄문에 의존성 가져가야하는가?
     @Bean
     fun anniversaryItemReader(entityManagerFactory: EntityManagerFactory): ItemReader<ScheduledNotification> {
+        val zoneSource = ZoneId.of("Asia/Seoul")
+        val localDateTime = LocalDateTime.now(zoneSource)
+        val startOfDay = localDateTime.toLocalDate().atStartOfDay(zoneSource).toLocalDateTime()
+        val endOfDay = localDateTime.toLocalDate().atTime(23, 59, 59)
+
         return JpaPagingItemReader<ScheduledNotification>().apply {
             setEntityManagerFactory(entityManagerFactory)
-            setQueryString("SELECT s from ScheduledNotification s")
+            setQueryString("SELECT s FROM ScheduledNotification s WHERE s.notifyAt BETWEEN :startOfDay AND :endOfDay")
+            setParameterValues(mapOf("startOfDay" to startOfDay, "endOfDay" to endOfDay))
             pageSize = 10
             afterPropertiesSet()
         }
@@ -53,7 +47,6 @@ class FcmBatchConfig(
     @Bean
     fun compositeItemProcessor(): ItemProcessor<ScheduledNotification, ScheduledNotification> {
         return ItemProcessor<ScheduledNotification, ScheduledNotification> {
-            println("tjrwn composite 옴 ${it.notificationType}, ${it.title}, ${it.body}")
             val fcmNotification = FcmNotification(
                 title = it.title,
                 body = it.body,
@@ -106,9 +99,5 @@ class FcmBatchConfig(
                 }
             }
         }
-    }
-
-    companion object {
-        internal val TARGET_ZONE_ID: ZoneId = ZoneId.of("Asia/Seoul")
     }
 }

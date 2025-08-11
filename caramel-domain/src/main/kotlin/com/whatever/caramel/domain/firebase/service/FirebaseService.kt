@@ -46,38 +46,29 @@ class FirebaseService(
         targetUserIds: Set<Long>,
         fcmNotification: FcmNotification,
     ) {
-        // println("tjrwn sendNoti  - 1")
-        // if (!firebaseProperties.fcmEnabled) {
-        //     return
-        // }
-        //
-        // println("tjrwn sendNoti  - 2")
-        // val tokens = getSendableFcmTokens(targetUserIds).map { it.token }
-        //
-        // println("tjrwn sendNoti  - 3")
-        // if (tokens.isEmpty()) {
-        //     println("tjrwn sendNoti  - 4")
-        //     logger.debug { "No FCM tokens to send notification. User IDs: ${targetUserIds}" }
-        //     return
-        // }
-        // println("tjrwn sendNoti  - 5")
-        // logger.info { "Sending FCM notification to ${tokens.size} tokens." }
-        //
-        // if (tokens.size == 1) {
-            println("tjrwn 여기옴 size == 1 으로")
+        if (!firebaseProperties.fcmEnabled) {
+            return
+        }
+
+        val tokens = getSendableFcmTokens(targetUserIds).map { it.token }
+
+        if (tokens.isEmpty()) {
+            logger.debug { "No FCM tokens to send notification. User IDs: ${targetUserIds}" }
+            return
+        }
+        logger.info { "Sending FCM notification to ${tokens.size} tokens." }
+
+        if (tokens.size == 1) {
             fcmSender.sendNotification(
-                token = "cupnI2LnsEqYqPUQwaOL9s:APA91bF2xA9NUvZpscuO0-1V53dkcT-TN7gWZuHkMZtY3b0zWrSGiqgaIBIRMgVRZc9sSQuW8D-d1XDoLHOHTrfFBvvherol0e2J7fXt5X5He7Qd8m7B644",
+                token = tokens.single(),
                 fcmNotification = fcmNotification,
             )
-        // } else {
-        //     println("tjrwn 여기옴 size == 1 아닌 else")
-        //     fcmSender.sendNotificationAll(
-        //         tokens = listOf(
-        //             "cupnI2LnsEqYqPUQwaOL9s:APA91bF2xA9NUvZpscuO0-1V53dkcT-TN7gWZuHkMZtY3b0zWrSGiqgaIBIRMgVRZc9sSQuW8D-d1XDoLHOHTrfFBvvherol0e2J7fXt5X5He7Qd8m7B644"
-        //         ),
-        //         fcmNotification = fcmNotification,
-        //     )
-        // }
+        } else {
+            fcmSender.sendNotificationAll(
+                tokens = tokens,
+                fcmNotification = fcmNotification,
+            )
+        }
     }
 
     fun sendData(

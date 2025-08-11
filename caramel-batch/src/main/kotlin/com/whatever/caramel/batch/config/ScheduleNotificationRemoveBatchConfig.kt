@@ -1,9 +1,9 @@
 package com.whatever.caramel.batch.config
 
-import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.notification.model.NotificationType
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import com.whatever.caramel.domain.notification.service.ScheduledNotificationService
+import jakarta.persistence.EntityManagerFactory
 import org.springframework.batch.core.BatchStatus
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.JobExecution
@@ -15,7 +15,7 @@ import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
-import org.springframework.batch.item.support.ListItemReader
+import org.springframework.batch.item.database.JpaPagingItemReader
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -27,12 +27,20 @@ import java.time.ZoneId
 class ScheduleNotificationRemoveBatchConfig(
     private val scheduledNotificationService: ScheduledNotificationService,
 ) {
-    // 겨우 이거떄문에 의존성 가져가야하는가?
     @Bean
-    fun scheduleRemoveItemReader(): ItemReader<ScheduledNotification> {
-        val date: LocalDateTime = DateTimeUtil.localNow(FcmBatchConfig.TARGET_ZONE_ID)
-        val scheduleList = scheduledNotificationService.getMatchedScheduledNotifications(date)
-        return ListItemReader(scheduleList)
+    fun scheduleRemoveItemReader(entityManagerFactory: EntityManagerFactory): ItemReader<ScheduledNotification> {
+        val zoneSource = ZoneId.of("Asia/Seoul")
+        val localDateTime = LocalDateTime.now(zoneSource)
+        val startOfDay = localDateTime.toLocalDate().atStartOfDay(zoneSource).toLocalDateTime()
+        val endOfDay = localDateTime.toLocalDate().atTime(23, 59, 59)
+
+        return JpaPagingItemReader<ScheduledNotification>().apply {
+            setEntityManagerFactory(entityManagerFactory)
+            setQueryString("SELECT s FROM ScheduledNotification s WHERE s.notifyAt BETWEEN :startOfDay AND :endOfDay")
+            setParameterValues(mapOf("startOfDay" to startOfDay, "endOfDay" to endOfDay))
+            pageSize = 10
+            afterPropertiesSet()
+        }
     }
 
     @Bean
@@ -86,9 +94,5 @@ class ScheduleNotificationRemoveBatchConfig(
                 }
             }
         }
-    }
-
-    companion object {
-        private val TARGET_ZONE_ID: ZoneId = ZoneId.of("Asia/Seoul")
     }
 }

@@ -18,21 +18,19 @@ class AnniversaryBatchScheduler(
     /**
      * 협의해서 시간 변경 필요
      */
-    @Scheduled(cron = "0 44 3 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 40 23 * * *", zone = "Asia/Seoul")
     fun runAnniversaryJob() {
         val params = JobParametersBuilder()
             .addString("anniversary", System.currentTimeMillis().toString())
             .toJobParameters()
-        println("tjrwn run job 수행")
         jobLauncher.run(anniversaryJob, params)
     }
 
-    @Scheduled(cron = "0 46 3 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 55 23 * * *", zone = "Asia/Seoul")
     fun runDeleteJob() {
         val params = JobParametersBuilder()
             .addString("delete", System.currentTimeMillis().toString())
             .toJobParameters()
-        println("tjrwn delete job 수행")
         jobLauncher.run(scheduleRemoveJob, params)
     }
 }
