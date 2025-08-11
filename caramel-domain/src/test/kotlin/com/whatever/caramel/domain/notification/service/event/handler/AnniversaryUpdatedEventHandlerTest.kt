@@ -1,5 +1,6 @@
 package com.whatever.caramel.domain.notification.service.event.handler
 
+import com.whatever.caramel.common.util.toDateTime
 import com.whatever.caramel.domain.couple.model.CoupleAnniversaryType
 import com.whatever.caramel.domain.couple.service.CoupleAnniversaryService
 import com.whatever.caramel.domain.couple.service.CoupleService
@@ -11,6 +12,8 @@ import com.whatever.caramel.domain.notification.model.NotificationType
 import com.whatever.caramel.domain.notification.service.ScheduledNotificationService
 import com.whatever.caramel.domain.notification.service.event.handler.scheduler.AnniversaryNotificationScheduler
 import com.whatever.caramel.domain.notification.service.event.handler.scheduler.AnniversaryNotificationSchedulerProvider
+import com.whatever.caramel.domain.notification.service.event.handler.scheduler.BirthDateNotificationSchedulingParameter
+import com.whatever.caramel.domain.notification.service.event.handler.scheduler.CoupleNotificationSchedulingParameter
 import com.whatever.caramel.domain.user.service.event.dto.UserBirthDateUpdateEvent
 import io.mockk.every
 import io.mockk.mockk
@@ -77,6 +80,8 @@ class AnniversaryUpdatedEventHandlerTest {
         }
         stubFindAnniversaries(newDate, newAnniversaries)
 
+
+
         // when
         handler.handle(event, today)
 
@@ -91,7 +96,13 @@ class AnniversaryUpdatedEventHandlerTest {
         } else {
             verify(exactly = 0) { mockScheduledNotificationService.deleteScheduledNotifications(any(), any()) }
         }
-        verify(exactly = 1) { mockSchedulerNth.schedule(any(), any()) }
+        verify(exactly = 1) {
+            val expectedSchedulingParameter = CoupleNotificationSchedulingParameter(
+                anniversaryItem = newAnniversaries.first(),
+                memberIds = memberIds,
+            )
+            mockSchedulerNth.schedule(today.toDateTime(), expectedSchedulingParameter)
+        }
         verify(exactly = 0) { mockSchedulerBirthday.schedule(any(), any()) }
         verify(exactly = 0) { mockSchedulerYearly.schedule(any(), any()) }
     }
@@ -135,7 +146,13 @@ class AnniversaryUpdatedEventHandlerTest {
         } else {
             verify(exactly = 0) { mockScheduledNotificationService.deleteScheduledNotifications(any(), any()) }
         }
-        verify(exactly = 1) { mockSchedulerBirthday.schedule(any(), any()) }
+        verify(exactly = 1) {
+            val expectedSchedulingParameter = BirthDateNotificationSchedulingParameter(
+                anniversaryItem = newBirthDateItem,
+                memberIds = setOf(ownerId, partnerId),
+            )
+            mockSchedulerBirthday.schedule(today.toDateTime(), expectedSchedulingParameter)
+        }
         verify(exactly = 0) { mockSchedulerYearly.schedule(any(), any()) }
         verify(exactly = 0) { mockSchedulerNth.schedule(any(), any()) }
     }
@@ -178,7 +195,13 @@ class AnniversaryUpdatedEventHandlerTest {
         verify(exactly = 1) {
             mockScheduledNotificationService.deleteScheduledNotifications(targetUserIds = setOf(partnerId), notificationTypes = setOf(NotificationType.PARTNER_BIRTHDAY))
         }
-        verify(exactly = 1) { mockSchedulerBirthday.schedule(any(), any()) }
+        verify(exactly = 1) {
+            val expectedSchedulingParameter = BirthDateNotificationSchedulingParameter(
+                anniversaryItem = newBirthDateItem,
+                memberIds = setOf(partnerId),
+            )
+            mockSchedulerBirthday.schedule(today.toDateTime(), expectedSchedulingParameter)
+        }
         verify(exactly = 0) { mockSchedulerYearly.schedule(any(), any()) }
         verify(exactly = 0) { mockSchedulerNth.schedule(any(), any()) }
     }
@@ -189,7 +212,8 @@ class AnniversaryUpdatedEventHandlerTest {
         // given
         val oldDate = today.minusYears(2)
         val newDate = today.minusYears(1)
-        val event = CoupleStartDateUpdateEvent(oldDate = oldDate, newDate = newDate, memberIds = setOf(1L, 2L))
+        val memberIds = setOf(1L, 2L)
+        val event = CoupleStartDateUpdateEvent(oldDate = oldDate, newDate = newDate, memberIds = memberIds)
 
         val oldAnniversaries = listOf(CoupleAnniversaryItem(type = CoupleAnniversaryType.YEARLY, date = oldDate, label = "2주년"))
         stubFindAnniversaries(oldDate, oldAnniversaries)
@@ -213,7 +237,13 @@ class AnniversaryUpdatedEventHandlerTest {
                 notificationTypes = setOf(NotificationType.ANNIVERSARY_YEARLY),
             )
         }
-        verify(exactly = 1) { mockSchedulerYearly.schedule(any(), any()) }
+        verify(exactly = 1) {
+            val expectedSchedulingParameter = CoupleNotificationSchedulingParameter(
+                anniversaryItem = newAnniversaries.first(),
+                memberIds = memberIds,
+            )
+            mockSchedulerYearly.schedule(today.toDateTime(), expectedSchedulingParameter)
+        }
         verify(exactly = 0) { mockSchedulerNth.schedule(any(), any()) }
         verify(exactly = 0) { mockSchedulerBirthday.schedule(any(), any()) }
     }

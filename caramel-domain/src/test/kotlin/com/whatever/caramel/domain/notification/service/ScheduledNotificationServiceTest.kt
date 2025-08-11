@@ -7,6 +7,7 @@ import com.whatever.caramel.domain.notification.repository.ScheduledNotification
 import com.whatever.caramel.domain.notification.vo.NotificationMessageVo
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -16,6 +17,8 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.time.LocalDate
 import java.time.LocalDateTime
+import kotlin.collections.component1
+import kotlin.collections.component2
 import kotlin.test.Test
 
 class ScheduledNotificationServiceTest {
@@ -38,11 +41,20 @@ class ScheduledNotificationServiceTest {
         val messagesByUserId = mapOf(myId to message, partnerId to message)
         val notifyAt = LocalDate.of(2025, 8, 8).toDateTime()
 
+        val scheduledNotificationsSlot = slot<List<ScheduledNotification>>()
+
         // when
         service.scheduleNotifications(messagesByUserId, notifyAt)
 
         // then
-        verify(exactly = 1) { mockScheduledNotificationRepository.saveAll(any<List<ScheduledNotification>>()) }
+        verify(exactly = 1) { mockScheduledNotificationRepository.saveAll(capture(scheduledNotificationsSlot)) }
+
+        val capturedNotifications = scheduledNotificationsSlot.captured
+        assertThat(capturedNotifications).hasSize(2)
+        assertThat(capturedNotifications[0].targetUserId).isEqualTo(myId)
+        assertThat(capturedNotifications[1].targetUserId).isEqualTo(partnerId)
+        assertThat(capturedNotifications.map { it.notificationType }).containsOnly(NotificationType.ANNIVERSARY_YEARLY)
+        assertThat(capturedNotifications.map { it.notifyAt }).containsOnly(notifyAt)
     }
 
     @DisplayName("알림 메시지가 비어있을 경우, 저장 로직을 호출하지 않는다")
@@ -107,4 +119,16 @@ class ScheduledNotificationServiceTest {
             )
         }
     }
+}
+
+private fun Map<Long, NotificationMessageVo>.toEntity(notifyAt: LocalDateTime): List<ScheduledNotification> {
+    return map { (userId, message) ->
+        ScheduledNotification(
+            targetUserId = userId,
+            notificationType = message.type,
+            notifyAt = notifyAt,
+            title = message.title,
+            body = message.body,
+        )
+    }.toList()
 }
