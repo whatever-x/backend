@@ -2,6 +2,7 @@ package com.whatever.caramel.api.clientversion.controller
 
 import com.whatever.caramel.api.clientversion.controller.dto.GetUpdatePolicyResponse
 import com.whatever.caramel.common.global.annotation.DisableSwaggerAuthButton
+import com.whatever.caramel.common.global.constants.CaramelHttpHeaders
 import com.whatever.caramel.common.response.CaramelApiResponse
 import com.whatever.caramel.common.response.succeed
 import com.whatever.caramel.domain.clientversion.model.OsType
@@ -15,6 +16,7 @@ import com.whatever.caramel.domain.clientversion.vo.VersionPolicyVo
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -30,14 +32,17 @@ class ClientVersionController(
     private lateinit var iosStoreUri: String
 
     @DisableSwaggerAuthButton
-    @GetMapping("/{osType}/update-policy")
+    @GetMapping("/update-policy")
     fun getUpdatePolicy(
-        @PathVariable osType: OsType,
+        @RequestHeader(name = CaramelHttpHeaders.OS_TYPE) osType: OsType,
         @RequestParam currentVersionCode: Int,
     ): CaramelApiResponse<GetUpdatePolicyResponse> {
         val versionPolicyVo = clientVersionService.checkVersion(osType, currentVersionCode)
 
-        return versionPolicyVo.toResponse(iosStoreUri, androidStoreUri).succeed()
+        return versionPolicyVo.toResponse(
+            androidStoreUri = androidStoreUri,
+            iosStoreUri = iosStoreUri,
+        ).succeed()
     }
 }
 
@@ -50,7 +55,7 @@ private fun VersionPolicyVo.toResponse(androidStoreUri: String, iosStoreUri: Str
     }
     return when (this) {
         is ForceUpdate -> GetUpdatePolicyResponse(forceUpdate = true, storeUri = osType.getStoreUri())
-        is RecommendUpdate -> GetUpdatePolicyResponse(forceUpdate = false, storeUri = osType.getStoreUri())
+        is RecommendUpdate -> GetUpdatePolicyResponse(forceUpdate = false)
         is NoUpdate -> GetUpdatePolicyResponse(forceUpdate = false)
     }
 }
