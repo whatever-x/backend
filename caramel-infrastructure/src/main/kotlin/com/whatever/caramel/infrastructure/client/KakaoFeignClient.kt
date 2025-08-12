@@ -52,7 +52,7 @@ interface KakaoKapiClient {
 interface KakaoOIDCClient {
 
     @Cacheable(
-        cacheNames = ["oidc-public-key"],
+        cacheNames = ["auth:oidc-public-key"],
         key = "'KAKAO'",
     )
     @GetMapping(

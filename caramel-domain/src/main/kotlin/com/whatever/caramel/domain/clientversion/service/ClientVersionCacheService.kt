@@ -12,7 +12,7 @@ class ClientVersionCacheService(
     private val clientVersionRepository: ClientVersionRepository,
 ) {
     @Cacheable(
-        cacheNames = ["client-versions"],
+        cacheNames = ["app:client-versions"],
         key = "#osType",
         unless = "#result.latest == null",
     )

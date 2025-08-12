@@ -50,6 +50,6 @@ enum class CacheType(
     val cacheName: String,
     val ttl: Duration = Duration.ofDays(7L),
 ) {
-    OIDC_PUBLIC_KEY("oidc-public-key"),
-    CLIENT_VERSIONS("client-versions"),
+    OIDC_PUBLIC_KEY("auth:oidc-public-key"),
+    CLIENT_VERSIONS("app:client-versions"),
 }

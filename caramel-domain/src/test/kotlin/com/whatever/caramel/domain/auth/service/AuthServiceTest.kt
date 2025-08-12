@@ -5,6 +5,8 @@ import com.whatever.caramel.common.global.exception.GlobalExceptionCode
 import com.whatever.caramel.common.global.jwt.JwtHelper
 import com.whatever.caramel.common.global.jwt.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.config.CacheType
+import com.whatever.caramel.config.CacheType.OIDC_PUBLIC_KEY
 import com.whatever.caramel.domain.CaramelDomainSpringBootTest
 import com.whatever.caramel.domain.auth.exception.AuthException
 import com.whatever.caramel.domain.auth.exception.AuthExceptionCode.ILLEGAL_KID
@@ -191,7 +193,6 @@ class AuthServiceTest @Autowired constructor(
     @Test
     fun signUpOrSignIn_whenUnexpectedException_thenThrowException() {
         // given
-        val oidcPublicKeyCacheName = "oidc-public-key"
         val idToken = "idTokenWithPublicKeyIssue"
         val deviceId = "test-device"
         val user = userRepository.save(
@@ -206,7 +207,7 @@ class AuthServiceTest @Autowired constructor(
             .thenReturn(OIDCPublicKeysResponse())
         whenever(oidcHelper.parseKakaoIdToken(any(), any()))
             .thenThrow(RuntimeException("Unexpected Exception"))
-        whenever(oidcCacheManager.getCache(oidcPublicKeyCacheName))
+        whenever(oidcCacheManager.getCache(OIDC_PUBLIC_KEY.cacheName))
             .thenReturn(mock(Cache::class.java))
 
         // when, then
@@ -217,14 +218,13 @@ class AuthServiceTest @Autowired constructor(
                 deviceId = deviceId,
             )
         }
-        verify(oidcCacheManager.getCache(oidcPublicKeyCacheName), never())!!.evictIfPresent(any())
+        verify(oidcCacheManager.getCache(OIDC_PUBLIC_KEY.cacheName), never())!!.evictIfPresent(any())
     }
 
     @DisplayName("캐시에 일치하는 oidc 공개키가 없다면 다시 로드 후 정상 흐름으로 동작한다.")
     @Test
     fun signUpOrSignIn() {
         // given
-        val oidcPublicKeyCacheName = "oidc-public-key"
         val idToken = "idTokenWithPublicKeyIssue"
         val deviceId = "test-device"
         val user = userRepository.save(
@@ -257,7 +257,7 @@ class AuthServiceTest @Autowired constructor(
             .whenever(jwtHelper).createAccessToken(user.id)
         doReturn(fakeServiceToken.refreshToken)
             .whenever(jwtHelper).createRefreshToken()
-        whenever(oidcCacheManager.getCache(oidcPublicKeyCacheName))
+        whenever(oidcCacheManager.getCache(OIDC_PUBLIC_KEY.cacheName))
             .thenReturn(mock(Cache::class.java))
 
         // when
@@ -268,7 +268,7 @@ class AuthServiceTest @Autowired constructor(
         )
 
         // then
-        verify(oidcCacheManager.getCache(oidcPublicKeyCacheName), never())!!.evictIfPresent(user.platform.name)
+        verify(oidcCacheManager.getCache(OIDC_PUBLIC_KEY.cacheName), never())!!.evictIfPresent(user.platform.name)
         assertThat(result.nickname).isEqualTo(user.nickname)
         assertThat(result.accessToken).isEqualTo(fakeServiceToken.accessToken)
         assertThat(result.refreshToken).isEqualTo(fakeServiceToken.refreshToken)
@@ -278,7 +278,6 @@ class AuthServiceTest @Autowired constructor(
     @Test
     fun signUpOrSignIn_WithExpiredOidcPublicKey() {
         // given
-        val oidcPublicKeyCacheName = "oidc-public-key"
         val idToken = "idTokenWithPublicKeyIssue"
         val deviceId = "test-device"
         val exception = OidcPublicKeyMismatchException(ILLEGAL_KID)
@@ -314,7 +313,7 @@ class AuthServiceTest @Autowired constructor(
             .whenever(jwtHelper).createAccessToken(user.id)
         doReturn(fakeServiceToken.refreshToken)
             .whenever(jwtHelper).createRefreshToken()
-        whenever(oidcCacheManager.getCache(oidcPublicKeyCacheName))
+        whenever(oidcCacheManager.getCache(OIDC_PUBLIC_KEY.cacheName))
             .thenReturn(mock(Cache::class.java))
 
         // when
@@ -325,7 +324,7 @@ class AuthServiceTest @Autowired constructor(
         )
 
         // then
-        verify(oidcCacheManager.getCache(oidcPublicKeyCacheName), times(1))!!.evictIfPresent(user.platform.name)
+        verify(oidcCacheManager.getCache(OIDC_PUBLIC_KEY.cacheName), times(1))!!.evictIfPresent(user.platform.name)
         assertThat(result.nickname).isEqualTo(user.nickname)
         assertThat(result.accessToken).isEqualTo(fakeServiceToken.accessToken)
         assertThat(result.refreshToken).isEqualTo(fakeServiceToken.refreshToken)
@@ -335,7 +334,6 @@ class AuthServiceTest @Autowired constructor(
     @Test
     fun signUpOrSignIn_whenOIDCPublicKeyNotExists_thenPassEvict() {
         // given
-        val oidcPublicKeyCacheName = "oidc-public-key"
         val idToken = "idTokenWithPublicKeyIssue"
         val deviceId = "test-device"
         val exception = OidcPublicKeyMismatchException(ILLEGAL_KID)
@@ -371,7 +369,7 @@ class AuthServiceTest @Autowired constructor(
             .whenever(jwtHelper).createAccessToken(user.id)
         doReturn(fakeServiceToken.refreshToken)
             .whenever(jwtHelper).createRefreshToken()
-        whenever(oidcCacheManager.getCache(oidcPublicKeyCacheName))
+        whenever(oidcCacheManager.getCache(OIDC_PUBLIC_KEY.cacheName))
             .thenReturn(null)
 
         // when
@@ -391,7 +389,6 @@ class AuthServiceTest @Autowired constructor(
     @Test
     fun signUpOrSignIn_whenInvalidOidcPublicKey_thenThrowException() {
         // given
-        val oidcPublicKeyCacheName = "oidc-public-key"
         val idToken = "idTokenWithPublicKeyIssue"
         val deviceId = "test-device"
         val exception = OidcPublicKeyMismatchException(ILLEGAL_KID)
@@ -418,7 +415,7 @@ class AuthServiceTest @Autowired constructor(
             .whenever(jwtHelper).createAccessToken(user.id)
         doReturn(fakeServiceToken.refreshToken)
             .whenever(jwtHelper).createRefreshToken()
-        whenever(oidcCacheManager.getCache(oidcPublicKeyCacheName))
+        whenever(oidcCacheManager.getCache(OIDC_PUBLIC_KEY.cacheName))
             .thenReturn(mock(Cache::class.java))
 
         // when
@@ -432,7 +429,7 @@ class AuthServiceTest @Autowired constructor(
 
         // then
         assertThat(result.errorCode).isEqualTo(ILLEGAL_KID)
-        verify(oidcCacheManager.getCache(oidcPublicKeyCacheName), times(1))!!.evictIfPresent(user.platform.name)
+        verify(oidcCacheManager.getCache(OIDC_PUBLIC_KEY.cacheName), times(1))!!.evictIfPresent(user.platform.name)
     }
 
     @DisplayName("회원 탈퇴 시 유저 상태가 COUPLED라면 커플탈퇴와 유저삭제, 로그아웃을 진행한다.")

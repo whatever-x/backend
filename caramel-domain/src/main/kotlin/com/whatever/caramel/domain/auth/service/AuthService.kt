@@ -5,6 +5,7 @@ import com.whatever.caramel.common.global.jwt.JwtHelper
 import com.whatever.caramel.common.global.jwt.JwtHelper.Companion.BEARER_TYPE
 import com.whatever.caramel.common.global.jwt.JwtProperties
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.config.CacheType
 import com.whatever.caramel.domain.auth.exception.AuthException
 import com.whatever.caramel.domain.auth.exception.AuthExceptionCode
 import com.whatever.caramel.domain.auth.exception.AuthExceptionCode.USER_PROVIDER_NOT_FOUND
@@ -165,7 +166,7 @@ class AuthService(
 }
 
 private fun CacheManager.evictOidcPublicKeyCache(loginPlatform: LoginPlatform) {
-    val cache = getCache("oidc-public-key")
+    val cache = getCache(CacheType.OIDC_PUBLIC_KEY.cacheName)
     if (cache == null) {
         logger.debug { "Cache 'oidc-public-key' not available. Skipping eviction for ${loginPlatform.name}." }
         return

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping
 interface AppleOIDCClient {
 
     @Cacheable(
-        cacheNames = ["oidc-public-key"],
+        cacheNames = ["auth:oidc-public-key"],
         key = "'APPLE'",
     )
     @GetMapping(
