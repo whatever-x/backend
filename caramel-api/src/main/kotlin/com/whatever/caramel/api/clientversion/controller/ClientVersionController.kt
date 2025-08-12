@@ -1,6 +1,7 @@
 package com.whatever.caramel.api.clientversion.controller
 
 import com.whatever.caramel.api.clientversion.controller.dto.GetUpdatePolicyResponse
+import com.whatever.caramel.common.global.annotation.DisableSwaggerAuthButton
 import com.whatever.caramel.common.response.CaramelApiResponse
 import com.whatever.caramel.common.response.succeed
 import com.whatever.caramel.domain.clientversion.model.OsType
@@ -28,6 +29,7 @@ class ClientVersionController(
     @Value("\${app-store.ios-uri}")
     private lateinit var iosStoreUri: String
 
+    @DisableSwaggerAuthButton
     @GetMapping("/{osType}/update-policy")
     fun getUpdatePolicy(
         @PathVariable osType: OsType,
