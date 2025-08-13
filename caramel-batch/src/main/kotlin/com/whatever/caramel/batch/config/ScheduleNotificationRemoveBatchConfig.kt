@@ -17,7 +17,6 @@ import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.database.JpaPagingItemReader
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
@@ -67,12 +66,12 @@ class ScheduleNotificationRemoveBatchConfig(
     @Bean
     fun scheduleRemoveStep(
         whatEverJobRepository: JobRepository,
-        @Qualifier("batchTransactionManager") batchTransactionManager: PlatformTransactionManager,
+        transactionManager: PlatformTransactionManager,
         scheduleRemoveItemReader: ItemReader<ScheduledNotification>,
         scheduleRemoveItemWriter: ItemWriter<ScheduledNotification>,
     ): Step {
         return StepBuilder("delete", whatEverJobRepository)
-            .chunk<ScheduledNotification, ScheduledNotification>(10, batchTransactionManager)
+            .chunk<ScheduledNotification, ScheduledNotification>(10, transactionManager)
             .reader(scheduleRemoveItemReader)
             .writer(scheduleRemoveItemWriter)
             .build()
