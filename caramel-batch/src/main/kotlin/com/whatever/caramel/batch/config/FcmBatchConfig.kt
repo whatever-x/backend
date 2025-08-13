@@ -21,7 +21,7 @@ import org.springframework.batch.item.support.ListItemReader
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
-import java.time.LocalDateTime
+import java.time.LocalDate
 import java.time.ZoneId
 
 @Configuration
@@ -33,9 +33,9 @@ class FcmBatchConfig(
     @StepScope
     fun anniversaryItemReader(): ItemReader<ScheduledNotification> {
         val zoneSource = ZoneId.of("Asia/Seoul")
-        val localDateTime = LocalDateTime.now(zoneSource)
-        val startOfDay = localDateTime.toLocalDate().atStartOfDay(zoneSource).toLocalDateTime()
-        val endOfDay = localDateTime.toLocalDate().atTime(23, 59, 59)
+        val localDate = LocalDate.now(zoneSource)
+        val startOfDay = localDate.atStartOfDay(zoneSource).toLocalDateTime()
+        val endOfDay = localDate.atTime(23, 59, 59).withNano(0)
         val scheduledNotificationList =
             scheduledNotificationService.getMatchedScheduledNotifications(startOfDay, endOfDay)
 
