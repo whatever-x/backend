@@ -1,8 +1,7 @@
 package com.whatever.caramel.batch.config
 
-import com.whatever.caramel.domain.notification.model.NotificationType
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
-import com.whatever.caramel.domain.notification.service.ScheduledNotificationService
+import com.whatever.caramel.domain.notification.repository.ScheduledNotificationRepository
 import jakarta.persistence.EntityManagerFactory
 import org.springframework.batch.core.BatchStatus
 import org.springframework.batch.core.Job
@@ -25,7 +24,7 @@ import java.time.ZoneId
 
 @Configuration
 class ScheduleNotificationRemoveBatchConfig(
-    private val scheduledNotificationService: ScheduledNotificationService,
+    private val scheduledNotificationRepository: ScheduledNotificationRepository,
 ) {
     @Bean
     @StepScope
@@ -45,21 +44,11 @@ class ScheduleNotificationRemoveBatchConfig(
     }
 
     @Bean
+    @StepScope
     fun scheduleRemoveItemWriter(): ItemWriter<ScheduledNotification> {
-        // JpaItemWriter 도 있어요
+        scheduledNotificationRepository.deleteAllInBatch()
         return ItemWriter {
-            val targetUserIds = mutableSetOf<Long>()
-            val notificationTypes = mutableSetOf<NotificationType>()
-
-            it.items.map { notification ->
-                targetUserIds.add(notification.targetUserId)
-                notificationTypes.add(notification.notificationType)
-            }
-
-            scheduledNotificationService.deleteScheduledNotifications(
-                targetUserIds = targetUserIds,
-                notificationTypes = notificationTypes,
-            )
+            /* no-op */
         }
     }
 
