@@ -3,10 +3,7 @@ package com.whatever.caramel.batch.config
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import com.whatever.caramel.domain.notification.repository.ScheduledNotificationRepository
 import jakarta.persistence.EntityManagerFactory
-import org.springframework.batch.core.BatchStatus
 import org.springframework.batch.core.Job
-import org.springframework.batch.core.JobExecution
-import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.job.builder.JobBuilder
@@ -72,17 +69,5 @@ class ScheduleNotificationRemoveBatchConfig(
             .incrementer(RunIdIncrementer())
             .start(scheduleRemoveStep)
             .build()
-    }
-
-    @Bean
-    fun scheduleRemoveJobExecutionListener(): JobExecutionListener {
-        return object : JobExecutionListener {
-
-            override fun afterJob(jobExecution: JobExecution) {
-                if (jobExecution.status == BatchStatus.COMPLETED) {
-                    println("배치 성공했으니 슬랙 쏘는 것 같은 것도 가능 할지도")
-                }
-            }
-        }
     }
 }

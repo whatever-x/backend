@@ -5,10 +5,7 @@ import com.whatever.caramel.domain.firebase.service.FirebaseService
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import com.whatever.caramel.domain.notification.service.ScheduledNotificationService
 import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
-import org.springframework.batch.core.BatchStatus
 import org.springframework.batch.core.Job
-import org.springframework.batch.core.JobExecution
-import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.job.builder.JobBuilder
@@ -98,17 +95,5 @@ class FcmBatchConfig(
             .incrementer(RunIdIncrementer())
             .start(anniversaryStep)
             .build()
-    }
-
-    @Bean
-    fun jobExecutionListener(): JobExecutionListener {
-        return object : JobExecutionListener {
-
-            override fun afterJob(jobExecution: JobExecution) {
-                if (jobExecution.status == BatchStatus.COMPLETED) {
-                    println(" 배치 성공했으니 디비 전부 제거같은 것 수행도 가능")
-                }
-            }
-        }
     }
 }
