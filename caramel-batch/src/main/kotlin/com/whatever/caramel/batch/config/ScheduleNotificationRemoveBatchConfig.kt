@@ -43,9 +43,8 @@ class ScheduleNotificationRemoveBatchConfig(
     @Bean
     @StepScope
     fun scheduleRemoveItemWriter(): ItemWriter<ScheduledNotification> {
-        scheduledNotificationRepository.deleteAllInBatch()
-        return ItemWriter {
-            /* no-op */
+        return ItemWriter { chunk ->
+            scheduledNotificationRepository.deleteAllInBatch(chunk)
         }
     }
 
