@@ -1,5 +1,6 @@
 package com.whatever.caramel.batch.config
 
+import com.whatever.caramel.batch.entity.BatchFcmNotification
 import com.whatever.caramel.domain.firebase.service.FirebaseService
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import com.whatever.caramel.domain.notification.service.ScheduledNotificationService
@@ -43,23 +44,36 @@ class FcmBatchConfig(
     }
 
     @Bean
-    fun compositeItemProcessor(): ItemProcessor<ScheduledNotification, ScheduledNotification> {
-        return ItemProcessor<ScheduledNotification, ScheduledNotification> { notification ->
+    fun compositeItemProcessor(): ItemProcessor<ScheduledNotification, BatchFcmNotification> {
+        return ItemProcessor<ScheduledNotification, BatchFcmNotification> { notification ->
             val fcmNotification = FcmNotification(
                 title = notification.title,
                 body = notification.body,
+                image = notification.image,
             )
-            firebaseService.sendNotification(
-                setOf(notification.targetUserId),
-                fcmNotification
+            BatchFcmNotification(
+                targetId = notification.targetUserId,
+                fcmNotification = fcmNotification,
             )
-            notification
         }
     }
 
     @Bean
-    fun anniversaryItemWriter(): ItemWriter<ScheduledNotification> {
-        return ItemWriter { /*no-op*/ }
+    fun anniversaryItemWriter(): ItemWriter<BatchFcmNotification> {
+        return ItemWriter { chunk ->
+            chunk.items.map { notification ->
+                with(notification) {
+                    firebaseService.sendNotification(
+                        setOf(targetId),
+                        FcmNotification(
+                            title = fcmNotification.title,
+                            body = fcmNotification.body,
+                            image = fcmNotification.image,
+                        )
+                    )
+                }
+            }
+        }
     }
 
     @Bean
@@ -67,11 +81,11 @@ class FcmBatchConfig(
         whatEverJobRepository: JobRepository,
         transactionManager: PlatformTransactionManager,
         anniversaryItemReader: ItemReader<ScheduledNotification>,
-        compositeItemProcessor: ItemProcessor<ScheduledNotification, ScheduledNotification>,
-        anniversaryItemWriter: ItemWriter<ScheduledNotification>,
+        compositeItemProcessor: ItemProcessor<ScheduledNotification, BatchFcmNotification>,
+        anniversaryItemWriter: ItemWriter<BatchFcmNotification>,
     ): Step {
         return StepBuilder("anniversary", whatEverJobRepository)
-            .chunk<ScheduledNotification, ScheduledNotification>(10, transactionManager)
+            .chunk<ScheduledNotification, BatchFcmNotification>(BatchConfig.DEFAULT_BATCH_SIZE, transactionManager)
             .reader(anniversaryItemReader)
             .processor(compositeItemProcessor)
             .writer(anniversaryItemWriter)

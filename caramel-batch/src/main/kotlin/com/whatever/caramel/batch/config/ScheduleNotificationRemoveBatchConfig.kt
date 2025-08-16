@@ -60,7 +60,7 @@ class ScheduleNotificationRemoveBatchConfig(
         scheduleRemoveItemWriter: ItemWriter<ScheduledNotification>,
     ): Step {
         return StepBuilder("delete", whatEverJobRepository)
-            .chunk<ScheduledNotification, ScheduledNotification>(10, transactionManager)
+            .chunk<ScheduledNotification, ScheduledNotification>(BatchConfig.DEFAULT_BATCH_SIZE, transactionManager)
             .reader(scheduleRemoveItemReader)
             .writer(scheduleRemoveItemWriter)
             .build()

@@ -23,4 +23,8 @@ class BatchConfig {
             afterPropertiesSet()
         }.`object`
     }
+
+    companion object {
+        const val DEFAULT_BATCH_SIZE = 10
+    }
 }
