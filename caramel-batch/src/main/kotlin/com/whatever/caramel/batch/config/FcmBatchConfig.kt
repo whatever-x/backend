@@ -1,122 +1,99 @@
 package com.whatever.caramel.batch.config
 
+import com.whatever.caramel.batch.entity.BatchFcmNotification
 import com.whatever.caramel.domain.firebase.service.FirebaseService
-import com.whatever.caramel.domain.user.model.LoginPlatform
-import com.whatever.caramel.domain.user.model.User
-import com.whatever.caramel.domain.user.repository.UserRepository
-import org.springframework.batch.core.BatchStatus
+import com.whatever.caramel.domain.notification.model.ScheduledNotification
+import com.whatever.caramel.domain.notification.service.ScheduledNotificationService
+import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import org.springframework.batch.core.Job
-import org.springframework.batch.core.JobExecution
-import org.springframework.batch.core.JobExecutionListener
 import org.springframework.batch.core.Step
+import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.job.builder.JobBuilder
 import org.springframework.batch.core.launch.support.RunIdIncrementer
 import org.springframework.batch.core.repository.JobRepository
-import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemProcessor
 import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.support.ListItemReader
-import org.springframework.batch.support.DatabaseType
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.jdbc.support.JdbcTransactionManager
 import org.springframework.transaction.PlatformTransactionManager
-import javax.sql.DataSource
+import java.time.LocalDate
+import java.time.ZoneId
 
 @Configuration
 class FcmBatchConfig(
-    // user repository는 임시로, 추후에 ScheduledNotification 테이블에대한 repository 생기면 추가해줄것
-    private val userRepository: UserRepository,
+    private val scheduledNotificationService: ScheduledNotificationService,
     private val firebaseService: FirebaseService,
 ) {
-    @Bean("batchTransactionManager")
-    fun batchTransactionManager(dataSource: DataSource): PlatformTransactionManager {
-        return JdbcTransactionManager(dataSource)
+    @Bean
+    @StepScope
+    fun anniversaryItemReader(): ItemReader<ScheduledNotification> {
+        val zoneSource = ZoneId.of("Asia/Seoul")
+        val localDate = LocalDate.now(zoneSource)
+        val startOfDay = localDate.atStartOfDay(zoneSource).toLocalDateTime()
+        val endOfDay = localDate.atTime(23, 59, 59).withNano(0)
+        val scheduledNotificationList =
+            scheduledNotificationService.getMatchedScheduledNotifications(startOfDay, endOfDay)
+
+        return ListItemReader(scheduledNotificationList)
     }
 
     @Bean
-    fun whatEverJobRepository(
-        dataSource: DataSource,
-        @Qualifier("batchTransactionManager") batchTransactionManager: PlatformTransactionManager,
-    ): JobRepository {
-        return JobRepositoryFactoryBean().apply {
-            setDataSource(dataSource)
-            setDatabaseType(DatabaseType.POSTGRES.name)
-            setTransactionManager(batchTransactionManager)
-            afterPropertiesSet()
-        }.`object`
-    }
-
-    @Bean
-    fun userItemReader(): ItemReader<User> {
-        val user = listOf(User(platform = LoginPlatform.KAKAO, platformUserId = "k"))
-        // 여기서 repository 에서 리스트 요소 조회
-        return ListItemReader(user)
-    }
-
-    @Bean
-    fun userItemWriter(): ItemWriter<User> {
-        return ItemWriter {
-            // userRepository.saveAll(it.items)
+    fun compositeItemProcessor(): ItemProcessor<ScheduledNotification, BatchFcmNotification> {
+        return ItemProcessor<ScheduledNotification, BatchFcmNotification> { notification ->
+            val fcmNotification = FcmNotification(
+                title = notification.title,
+                body = notification.body,
+                image = notification.image,
+            )
+            BatchFcmNotification(
+                targetId = notification.targetUserId,
+                fcmNotification = fcmNotification,
+            )
         }
     }
 
     @Bean
-    fun compositeItemProcessor(): ItemProcessor<User, User> {
-        return ItemProcessor<User, User> {
-            // val fcmNotification = FcmNotification(
-            //     title = "배치 축하",
-            //     body = "연인이 새로운 배치를 등록했어요!",
-            // )
-
-            // firebaseService.sendNotification(
-            //     setOf(it.id),
-            //     fcmNotification
-            // )
-            it
-        }
-    }
-
-    @Bean
-    fun step(
-        whatEverJobRepository: JobRepository,
-        @Qualifier("batchTransactionManager") batchTransactionManager: PlatformTransactionManager,
-        itemReader: ItemReader<User>,
-        compositeItemProcessor: ItemProcessor<User, User>,
-        itemWriter: ItemWriter<User>,
-    ): Step {
-        return StepBuilder("step", whatEverJobRepository)
-            .chunk<User, User>(10, batchTransactionManager)
-            .reader(itemReader)
-            .processor(compositeItemProcessor)
-            .writer(itemWriter)
-            .allowStartIfComplete(true)
-            .build()
-    }
-
-    @Bean
-    fun job(jobRepository: JobRepository, step: Step): Job {
-        return JobBuilder("anniversary", jobRepository)
-            .incrementer(RunIdIncrementer())
-            .start(step)
-            .build()
-    }
-
-    @Bean
-    fun jobExecutionListener(): JobExecutionListener {
-        return object : JobExecutionListener {
-            override fun beforeJob(jobExecution: JobExecution) {
-                super.beforeJob(jobExecution)
-            }
-
-            override fun afterJob(jobExecution: JobExecution) {
-                if (jobExecution.status == BatchStatus.COMPLETED) {
-                    println(" 배치 성공했으니 디비 전부 제거같은 것 수행도 가능")
+    fun anniversaryItemWriter(): ItemWriter<BatchFcmNotification> {
+        return ItemWriter { chunk ->
+            chunk.items.map { notification ->
+                with(notification) {
+                    firebaseService.sendNotification(
+                        setOf(targetId),
+                        FcmNotification(
+                            title = fcmNotification.title,
+                            body = fcmNotification.body,
+                            image = fcmNotification.image,
+                        )
+                    )
                 }
             }
         }
+    }
+
+    @Bean
+    fun anniversaryStep(
+        whatEverJobRepository: JobRepository,
+        transactionManager: PlatformTransactionManager,
+        anniversaryItemReader: ItemReader<ScheduledNotification>,
+        compositeItemProcessor: ItemProcessor<ScheduledNotification, BatchFcmNotification>,
+        anniversaryItemWriter: ItemWriter<BatchFcmNotification>,
+    ): Step {
+        return StepBuilder("anniversary", whatEverJobRepository)
+            .chunk<ScheduledNotification, BatchFcmNotification>(BatchConfig.DEFAULT_BATCH_SIZE, transactionManager)
+            .reader(anniversaryItemReader)
+            .processor(compositeItemProcessor)
+            .writer(anniversaryItemWriter)
+            .build()
+    }
+
+    @Bean
+    fun anniversaryJob(jobRepository: JobRepository, anniversaryStep: Step): Job {
+        return JobBuilder("anniversary", jobRepository)
+            .incrementer(RunIdIncrementer())
+            .start(anniversaryStep)
+            .build()
     }
 }

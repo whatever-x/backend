@@ -11,16 +11,25 @@ import java.time.LocalDate
 class AnniversaryBatchScheduler(
     private val jobLauncher: JobLauncher,
     private val anniversaryJob: Job,
+    private val scheduleRemoveJob: Job,
 ) {
 
     /**
-     * 시간 변경 필요
+     * 협의해서 시간 변경 필요
      */
-    @Scheduled(cron = "0 03 23 * * *", zone = "Asia/Seoul")
-    fun runJob() {
+    @Scheduled(cron = "0 40 23 * * *", zone = "Asia/Seoul")
+    fun runAnniversaryJob() {
         val params = JobParametersBuilder()
-            .addString("runDate", LocalDate.now().toString())
+            .addString("anniversary", LocalDate.now().toString())
             .toJobParameters()
         jobLauncher.run(anniversaryJob, params)
+    }
+
+    @Scheduled(cron = "0 55 23 * * *", zone = "Asia/Seoul")
+    fun runDeleteJob() {
+        val params = JobParametersBuilder()
+            .addString("delete", LocalDate.now().toString())
+            .toJobParameters()
+        jobLauncher.run(scheduleRemoveJob, params)
     }
 }
