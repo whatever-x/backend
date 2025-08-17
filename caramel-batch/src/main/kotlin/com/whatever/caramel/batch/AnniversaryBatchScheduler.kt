@@ -14,9 +14,6 @@ class AnniversaryBatchScheduler(
     private val scheduleRemoveJob: Job,
 ) {
 
-    /**
-     * 협의해서 시간 변경 필요
-     */
     @Scheduled(cron = "0 40 23 * * *", zone = "Asia/Seoul")
     fun runAnniversaryJob() {
         val params = JobParametersBuilder()
@@ -25,7 +22,7 @@ class AnniversaryBatchScheduler(
         jobLauncher.run(anniversaryJob, params)
     }
 
-    @Scheduled(cron = "0 55 23 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
     fun runDeleteJob() {
         val params = JobParametersBuilder()
             .addString("delete", LocalDate.now().toString())
