@@ -54,32 +54,37 @@ class BalanceGameService(
             )
         }
 
-        val memberChoices = getCoupleMemberChoices(
+        val memberChoices = getCoupleMemberChoicesEntity(
             coupleId = coupleId,
             gameId = balanceGame.id,
         )
+        val selectedOption = balanceGame.options.find { it.id == selectedOptionId }
+            ?: throw BalanceGameOptionNotFoundException(errorCode = ILLEGAL_OPTION)
 
-        val partnerChoice = memberChoices.find { it.userId != requestUserId }
-        val myChoice = memberChoices.find { it.userId == requestUserId }
-            ?: run {
-                val selectedOption = balanceGame.options.find { it.id == selectedOptionId }
-                    ?: throw BalanceGameOptionNotFoundException(errorCode = ILLEGAL_OPTION)
-
-                val requestUser = userRepository.getReferenceById(requestUserId)
-                val newChoice = UserChoiceOption(
-                    balanceGame = balanceGame,
-                    balanceGameOption = selectedOption,
-                    user = requestUser,
-                )
-
-                userChoiceOptionRepository.save(newChoice).run {
-                    UserChoiceOptionVo.from(this)
+        val myChoice = memberChoices.find { it.user.id == requestUserId }
+            ?.let { userChoiceOption ->
+                userChoiceOption.apply {
+                    balanceGameOption = selectedOption
                 }
-            }
+            } ?: run {
+            val requestUser = userRepository.getReferenceById(requestUserId)
+            val newChoice = UserChoiceOption(
+                balanceGame = balanceGame,
+                balanceGameOption = selectedOption,
+                user = requestUser,
+            )
+
+            userChoiceOptionRepository.save(newChoice)
+        }
+
+        val partnerChoiceVo = memberChoices.find { it.user.id != requestUserId }?.let {
+            UserChoiceOptionVo.from(it)
+        }
+        val myChoiceVo = UserChoiceOptionVo.from(myChoice)
 
         return CoupleChoiceOptionVo.from(
-            myChoice = myChoice,
-            partnerChoice = partnerChoice,
+            myChoice = myChoiceVo,
+            partnerChoice = partnerChoiceVo,
         )
     }
 
@@ -94,13 +99,21 @@ class BalanceGameService(
         coupleId: Long,
         gameId: Long,
     ): List<UserChoiceOptionVo> {
+        return getCoupleMemberChoicesEntity(coupleId, gameId).map {
+            UserChoiceOptionVo.from(it)
+        }
+    }
+
+    private fun getCoupleMemberChoicesEntity(
+        coupleId: Long,
+        gameId: Long,
+    ): List<UserChoiceOption> {
         val couple = coupleRepository.findByIdWithMembers(coupleId) ?: return emptyList()
         val memberIds = couple.members.map { it.id }.ifEmpty { return emptyList() }
-        val memberChoices = userChoiceOptionRepository.findAllWithOptionByBalanceGameIdAndUsers(
+        return userChoiceOptionRepository.findAllWithOptionByBalanceGameIdAndUsers(
             gameId = gameId,
             userIds = memberIds,
         )
-        return memberChoices.map { UserChoiceOptionVo.from(it) }
     }
 
     companion object {
