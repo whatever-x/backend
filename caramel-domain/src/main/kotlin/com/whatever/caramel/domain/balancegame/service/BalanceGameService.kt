@@ -2,10 +2,12 @@ package com.whatever.caramel.domain.balancegame.service
 
 import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.domain.balancegame.exception.BalanceGameExceptionCode.ALREADY_PICKED
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameExceptionCode.GAME_CHANGED
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameExceptionCode.GAME_NOT_EXISTS
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameExceptionCode.ILLEGAL_OPTION
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameIllegalArgumentException
+import com.whatever.caramel.domain.balancegame.exception.BalanceGameIllegalStateException
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameNotFoundException
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameOptionNotFoundException
 import com.whatever.caramel.domain.balancegame.model.BalanceGame
@@ -61,8 +63,19 @@ class BalanceGameService(
         val selectedOption = balanceGame.options.find { it.id == selectedOptionId }
             ?: throw BalanceGameOptionNotFoundException(errorCode = ILLEGAL_OPTION)
 
+        val partnerChoiceVo = memberChoices.find { it.user.id != requestUserId }?.let {
+            UserChoiceOptionVo.from(it)
+        }
+
         val myChoice = memberChoices.find { it.user.id == requestUserId }
             ?.let { userChoiceOption ->
+                // 추후에 PATCH 분리시 이곳을 분리해야함
+                if (partnerChoiceVo != null) {
+                    throw BalanceGameIllegalStateException(
+                        errorCode = ALREADY_PICKED,
+                        errorUi = ErrorUi.Toast("파트너가 이미 골랐어요."),
+                    )
+                }
                 userChoiceOption.apply {
                     balanceGameOption = selectedOption
                 }
@@ -77,9 +90,6 @@ class BalanceGameService(
             userChoiceOptionRepository.save(newChoice)
         }
 
-        val partnerChoiceVo = memberChoices.find { it.user.id != requestUserId }?.let {
-            UserChoiceOptionVo.from(it)
-        }
         val myChoiceVo = UserChoiceOptionVo.from(myChoice)
 
         return CoupleChoiceOptionVo.from(
