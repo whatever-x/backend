@@ -11,7 +11,7 @@ import java.time.LocalDate
 class AnniversaryBatchScheduler(
     private val jobLauncher: JobLauncher,
     private val anniversaryJob: Job,
-    private val scheduleRemoveJob: Job,
+    private val combinedJob: Job,
 ) {
 
     @Scheduled(cron = "0 40 23 * * *", zone = "Asia/Seoul")
@@ -23,10 +23,10 @@ class AnniversaryBatchScheduler(
     }
 
     @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
-    fun runDeleteJob() {
+    fun runCombinedJob() {
         val params = JobParametersBuilder()
-            .addString("delete", LocalDate.now().toString())
+            .addString("combinedJob", LocalDate.now().toString())
             .toJobParameters()
-        jobLauncher.run(scheduleRemoveJob, params)
+        jobLauncher.run(combinedJob, params)
     }
 }
