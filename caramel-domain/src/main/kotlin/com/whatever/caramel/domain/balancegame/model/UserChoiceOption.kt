@@ -10,17 +10,9 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import jakarta.persistence.UniqueConstraint
 
 @Entity
-@Table(
-    uniqueConstraints = [
-        UniqueConstraint(
-            name = "user_choice_option_unique_idx_user_id_and_game_id",
-            columnNames = ["user_id", "game_id"]
-        )
-    ],
-)
+@Table
 class UserChoiceOption(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

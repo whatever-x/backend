@@ -60,22 +60,20 @@ class BalanceGameService(
         )
 
         val partnerChoice = memberChoices.find { it.userId != requestUserId }
-        val myChoice = memberChoices.find { it.userId == requestUserId }
-            ?: run {
-                val selectedOption = balanceGame.options.find { it.id == selectedOptionId }
-                    ?: throw BalanceGameOptionNotFoundException(errorCode = ILLEGAL_OPTION)
 
-                val requestUser = userRepository.getReferenceById(requestUserId)
-                val newChoice = UserChoiceOption(
-                    balanceGame = balanceGame,
-                    balanceGameOption = selectedOption,
-                    user = requestUser,
-                )
+        val selectedOption = balanceGame.options.find { it.id == selectedOptionId }
+            ?: throw BalanceGameOptionNotFoundException(errorCode = ILLEGAL_OPTION)
 
-                userChoiceOptionRepository.save(newChoice).run {
-                    UserChoiceOptionVo.from(this)
-                }
-            }
+        val requestUser = userRepository.getReferenceById(requestUserId)
+        val newChoice = UserChoiceOption(
+            balanceGame = balanceGame,
+            balanceGameOption = selectedOption,
+            user = requestUser,
+        )
+
+        val myChoice = userChoiceOptionRepository.save(newChoice).run {
+            UserChoiceOptionVo.from(this)
+        }
 
         return CoupleChoiceOptionVo.from(
             myChoice = myChoice,
