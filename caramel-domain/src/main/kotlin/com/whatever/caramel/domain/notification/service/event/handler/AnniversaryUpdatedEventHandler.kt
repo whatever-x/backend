@@ -104,18 +104,15 @@ private fun deleteScheduledAnniversaryNotifications(
 
             is MemberAnniversaryItem -> {
                 val ownerId = anniversaryVo.ownerId
-
-                memberIds.firstOrNull { it == ownerId }?.let{ ownerId ->
-                    scheduledNotificationService.deleteScheduledNotifications(
-                        targetUserIds = setOf(ownerId),
-                        notificationTypes = setOf(NotificationType.MY_BIRTHDAY),
-                    )
+                val deletionMemberIdByNotificationType = memberIds.groupBy { memberId ->
+                    if (memberId == ownerId) NotificationType.MY_BIRTHDAY
+                    else NotificationType.PARTNER_BIRTHDAY
                 }
 
-                memberIds.firstOrNull { it != ownerId }?.let { partnerId ->
+                deletionMemberIdByNotificationType.forEach { (notificationType, memberIds) ->
                     scheduledNotificationService.deleteScheduledNotifications(
-                        targetUserIds = setOf(partnerId),
-                        notificationTypes = setOf(NotificationType.PARTNER_BIRTHDAY),
+                        targetUserIds = memberIds.toSet(),
+                        notificationTypes = setOf(notificationType),
                     )
                 }
             }
