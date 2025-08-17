@@ -32,6 +32,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.LocalDateTime
+import kotlin.contracts.contract
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 
@@ -298,20 +299,20 @@ class BalanceGameServiceTest @Autowired constructor(
             )
 
             val gameId = gameInfo.first.id
-            val differentSelectedOptionId = gameInfo.second.last().id  // select a different option-id
+            val selectedOptionId = gameInfo.second.last().id  // select a different option-id
 
             // when
             val result = balanceGameService.chooseBalanceGameOption(
                 gameId = gameId,
-                selectedOptionId = differentSelectedOptionId,
+                selectedOptionId = selectedOptionId,
                 coupleId = couple.id,
                 requestUserId = myUser.id,
             )
 
             // then
-            val resultMyChoice = assertNotNull(result.myChoice)
-            assertThat(resultMyChoice.balanceGameId).isEqualTo(myChoiceOption.balanceGame.id)
-            assertThat(resultMyChoice.balanceGameOptionId).isEqualTo(differentSelectedOptionId)
+            val myChoice = assertNotNull(result.myChoice)
+            assertThat(myChoice.balanceGameId).isEqualTo(myChoiceOption.balanceGame.id)
+            assertThat(myChoice.balanceGameOptionId).isEqualTo(myChoiceOption.balanceGameOption.id)
             assertThat(result.partnerChoice).isNull()
         }
     }
