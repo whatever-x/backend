@@ -6,8 +6,9 @@ import com.whatever.caramel.domain.couple.exception.CoupleExceptionCode.COUPLE_N
 import com.whatever.caramel.domain.couple.exception.CoupleNotFoundException
 import com.whatever.caramel.domain.couple.model.CoupleAnniversaryType
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
-import com.whatever.caramel.domain.couple.vo.AnniversaryVo
+import com.whatever.caramel.domain.couple.vo.CoupleAnniversaryItem
 import com.whatever.caramel.domain.couple.vo.CoupleAnniversaryVo
+import com.whatever.caramel.domain.couple.vo.MemberAnniversaryItem
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.MonthDay
@@ -53,7 +54,7 @@ class CoupleAnniversaryService(
         startDate: LocalDate,
         endDate: LocalDate,
         thDayLabel: String = "일",
-    ): List<AnniversaryVo> {
+    ): List<CoupleAnniversaryItem> {
         return findNThDayAnniversary(
             targetDate = coupleStartDate,
             startDate = startDate,
@@ -64,7 +65,7 @@ class CoupleAnniversaryService(
                 return@mapNotNull null
             }
 
-            AnniversaryVo.from(
+            CoupleAnniversaryItem(
                 type = CoupleAnniversaryType.N_TH_DAY,
                 date = it.date,
                 label = "${it.nTh}${thDayLabel}",
@@ -78,14 +79,14 @@ class CoupleAnniversaryService(
         endDate: LocalDate,
         yearlyLabel: String = "주년",
         feb29InNonLeapYearAdjust: MonthDay? = MonthDay.of(2, 28),
-    ): List<AnniversaryVo> {
+    ): List<CoupleAnniversaryItem> {
         return findYearlyAnniversary(
             targetDate = coupleStartDate,
             startDate = startDate,
             endDate = endDate,
             feb29InNonLeapYearAdjust = feb29InNonLeapYearAdjust
         ).map {
-            AnniversaryVo.from(
+            CoupleAnniversaryItem(
                 type = CoupleAnniversaryType.YEARLY,
                 date = it.date,
                 label = "${it.nTh}${yearlyLabel}",
@@ -102,14 +103,14 @@ class CoupleAnniversaryService(
         endDate: LocalDate,
         birthDayLabel: String = "생일",
         feb29InNonLeapYearAdjust: MonthDay? = MonthDay.of(2, 28),
-    ): List<AnniversaryVo> {
+    ): List<MemberAnniversaryItem> {
         return findYearlyAnniversary(
             targetDate = userBirthDate,
             startDate = startDate,
             endDate = endDate,
             feb29InNonLeapYearAdjust = feb29InNonLeapYearAdjust
         ).map {
-            AnniversaryVo.from(
+            MemberAnniversaryItem(
                 ownerId = ownerId,
                 ownerNickname = ownerNickname,
                 type = CoupleAnniversaryType.BIRTHDAY,
