@@ -27,7 +27,7 @@ class ScheduleNotificationRemoveBatchConfig(
     @StepScope
     fun scheduleRemoveItemReader(entityManagerFactory: EntityManagerFactory): JpaPagingItemReader<ScheduledNotification> {
         val zoneSource = ZoneId.of("Asia/Seoul")
-        val localDate = LocalDate.now(zoneSource)
+        val localDate = LocalDate.now(zoneSource).minusDays(1)
         val startOfDay = localDate.atStartOfDay(zoneSource).toLocalDateTime()
         val endOfDay = localDate.atTime(23, 59, 59).withNano(0)
 
