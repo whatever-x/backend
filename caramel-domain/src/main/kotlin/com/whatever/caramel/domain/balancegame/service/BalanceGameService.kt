@@ -73,7 +73,7 @@ class BalanceGameService(
                 if (partnerChoiceVo != null) {
                     throw BalanceGameIllegalStateException(
                         errorCode = ALREADY_PICKED,
-                        errorUi = ErrorUi.Toast("파트너가 이미 골랐어요."),
+                        errorUi = ErrorUi.Toast("파트너의 선택이 완료되어 변경할 수 없어요"),
                     )
                 }
                 userChoiceOption.apply {
