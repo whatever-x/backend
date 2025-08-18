@@ -18,7 +18,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -34,9 +33,9 @@ class ClientVersionController(
     private val clientVersionService: ClientVersionService,
 ) {
     @Value("\${app-store.android-uri}")
-    private lateinit var androidStoreUri: String
+    private lateinit var androidUpdateUri: String
     @Value("\${app-store.ios-uri}")
-    private lateinit var iosStoreUri: String
+    private lateinit var iosUpdateUri: String
 
     @DisableSwaggerAuthButton
     @Operation(
@@ -56,21 +55,21 @@ class ClientVersionController(
         val versionPolicyVo = clientVersionService.checkVersion(osType, currentVersionCode)
 
         return versionPolicyVo.toResponse(
-            androidStoreUri = androidStoreUri,
-            iosStoreUri = iosStoreUri,
+            androidUpdateUri = androidUpdateUri,
+            iosUpdateUri = iosUpdateUri,
         ).succeed()
     }
 }
 
-private fun VersionPolicyVo.toResponse(androidStoreUri: String, iosStoreUri: String): GetUpdatePolicyResponse {
-    fun OsType.getStoreUri(): String {
+private fun VersionPolicyVo.toResponse(androidUpdateUri: String, iosUpdateUri: String): GetUpdatePolicyResponse {
+    fun OsType.getUpdateUri(): String {
         return when (this) {
-            ANDROID -> androidStoreUri
-            IOS -> iosStoreUri
+            ANDROID -> androidUpdateUri
+            IOS -> iosUpdateUri
         }
     }
     return when (this) {
-        is ForceUpdate -> GetUpdatePolicyResponse(forceUpdate = true, storeUri = osType.getStoreUri())
+        is ForceUpdate -> GetUpdatePolicyResponse(forceUpdate = true, updateUri = osType.getUpdateUri())
         is RecommendUpdate -> GetUpdatePolicyResponse(forceUpdate = false)
         is NoUpdate -> GetUpdatePolicyResponse(forceUpdate = false)
     }
