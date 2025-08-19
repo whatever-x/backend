@@ -10,7 +10,9 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.PositiveOrZero
 
 @Entity
 @Table(
@@ -29,15 +31,22 @@ class ClientVersion(
 
     @Column(nullable = false)
     @field:Min(value = 10)  // client의 major 버전이 10으로 시작
+    @field:Max(value = 99)
     val major: Int,
 
     @Column(nullable = false)
+    @field:PositiveOrZero
+    @field:Max(value = 99)
     val minor: Int,
 
     @Column(nullable = false)
+    @field:PositiveOrZero
+    @field:Max(value = 99)
     val patch: Int,
 
     @Column(nullable = false)
+    @field:PositiveOrZero
+    @field:Max(value = 99)
     val build: Int,
 
     @Column(length = 100)
