@@ -15,13 +15,4 @@ interface ClientVersionRepository : JpaRepository<ClientVersion, Long> {
     """
     )
     fun findLatestVersionByOsType(osType: OsType): ClientVersion?
-
-    @Query(
-        """
-        select cv from ClientVersion cv
-        where cv.isMinimum = true and cv.osType = :osType
-        order by cv.code desc limit 1
-    """
-    )
-    fun findMinimumVersionByOsType(osType: OsType): ClientVersion?
 }

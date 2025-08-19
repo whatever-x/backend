@@ -40,9 +40,6 @@ class ClientVersion(
     @Column(nullable = false)
     val build: Int,
 
-    @Column(nullable = false)
-    val isMinimum: Boolean = false,
-
     @Column(length = 100)
     val releaseNote: String? = null,
 ) : BaseTimeEntity() {

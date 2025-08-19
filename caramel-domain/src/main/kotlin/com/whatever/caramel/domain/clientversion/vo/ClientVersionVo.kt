@@ -5,6 +5,7 @@ import com.whatever.caramel.domain.clientversion.model.OsType
 
 data class SupportedVersionsVo(
     val latest: ClientVersionVo?,
+    val recommended: ClientVersionVo?,
     val minimum: ClientVersionVo?,
 )
 
@@ -15,7 +16,6 @@ data class ClientVersionVo(
     val patch: Int,
     val build: Int,
     val code: Int,
-    val isMinimum: Boolean,
     val releaseNote: String?,
 ){
     companion object {
@@ -27,8 +27,7 @@ data class ClientVersionVo(
                 patch = clientVersion.patch,
                 build = clientVersion.build,
                 code = clientVersion.code,
-                isMinimum = clientVersion.isMinimum,
-                releaseNote = clientVersion.releaseNote
+                releaseNote = clientVersion.releaseNote,
             )
         }
     }
