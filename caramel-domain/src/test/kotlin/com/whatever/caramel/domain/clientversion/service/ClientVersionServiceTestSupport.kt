@@ -6,7 +6,6 @@ import com.whatever.caramel.domain.clientversion.vo.ClientVersionVo
 
 interface ClientVersionServiceTestSupport {
     fun createDummyVersionVo(
-        isMinimum: Boolean,
         major: Int,
         minor: Int,
         patch: Int,
@@ -14,7 +13,6 @@ interface ClientVersionServiceTestSupport {
     ): ClientVersionVo {
         return ClientVersionVo.from(
             createDummyVersion(
-                isMinimum = isMinimum,
                 major = major,
                 minor = minor,
                 patch = patch,
@@ -24,7 +22,6 @@ interface ClientVersionServiceTestSupport {
     }
 
     fun createDummyVersion(
-        isMinimum: Boolean,
         major: Int,
         minor: Int,
         patch: Int,
@@ -32,7 +29,6 @@ interface ClientVersionServiceTestSupport {
     ): ClientVersion {
         return ClientVersion(
             osType = OsType.ANDROID,
-            isMinimum = isMinimum,
             major = major,
             minor = minor,
             patch = patch,
