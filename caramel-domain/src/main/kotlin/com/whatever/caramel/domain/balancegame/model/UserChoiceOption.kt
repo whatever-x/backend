@@ -32,7 +32,7 @@ class UserChoiceOption(
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "option_id", nullable = false)
-    val balanceGameOption: BalanceGameOption,
+    var balanceGameOption: BalanceGameOption,
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
