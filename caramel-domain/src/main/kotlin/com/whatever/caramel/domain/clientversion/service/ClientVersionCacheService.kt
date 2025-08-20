@@ -8,6 +8,7 @@ import com.whatever.caramel.domain.clientversion.vo.ClientVersionVo
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class ClientVersionCacheService(
@@ -19,6 +20,7 @@ class ClientVersionCacheService(
         key = "#osType",
         unless = "#result.latest == null",
     )
+    @Transactional(readOnly = true)
     fun getActiveVersions(osType: OsType): SupportedVersionsVo {
         val latestVersion = clientVersionRepository.findLatestVersionByOsType(osType)
         val policy = osVersionPolicyRepository.findByIdOrNull(osType)
