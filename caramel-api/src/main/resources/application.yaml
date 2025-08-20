@@ -102,6 +102,10 @@ crypto:
   password: ${CRYPTO_PASSWORD}
   salt: ${CRYPTO_SALT}
 
+app-store:
+  android-uri: https://play.google.com/store/apps/details?id=com.whatever.caramel&hl=ko
+  ios-uri: https://apps.apple.com/kr/app/%EC%B9%B4%EB%9D%BC%EB%A9%9C-caramel-%EC%9A%B0%EB%A6%AC%EB%A7%8C%EC%9D%98-%EA%B0%90%EC%84%B1-%EC%BB%A4%ED%94%8C-%EB%8B%A4%EC%9D%B4%EC%96%B4%EB%A6%AC/id6745321351
+
 ---
 # ┌──────────────────────────── Production 프로파일 ──────────────────────────
 spring:
