@@ -14,6 +14,7 @@ import org.springframework.transaction.PlatformTransactionManager
 class CombinedJobConfig(
     private val jobRepository: JobRepository,
     private val scheduleRemoveJob: Job,
+    private val scheduleAddJob: Job,
 ) {
     @Bean
     fun combinedJob(
@@ -22,6 +23,7 @@ class CombinedJobConfig(
         return JobBuilder("combined", jobRepository)
             .incrementer(RunIdIncrementer())
             .start(deleteStep())
+            .next(addStep())
             .build()
     }
 
@@ -29,6 +31,13 @@ class CombinedJobConfig(
     fun deleteStep(): Step {
         return StepBuilder("deleteStep", jobRepository)
             .job(scheduleRemoveJob)
+            .build()
+    }
+
+    @Bean
+    fun addStep(): Step {
+        return StepBuilder("addStep", jobRepository)
+            .job(scheduleAddJob)
             .build()
     }
 }
