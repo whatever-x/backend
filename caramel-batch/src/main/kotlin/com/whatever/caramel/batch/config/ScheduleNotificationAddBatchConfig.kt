@@ -19,7 +19,6 @@ import org.springframework.batch.item.ItemProcessor
 import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.database.JpaPagingItemReader
-import org.springframework.batch.item.support.CompositeItemProcessor
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
@@ -35,14 +34,25 @@ class ScheduleNotificationAddBatchConfig(
     @StepScope
     fun userBirthdayItemReader(entityManagerFactory: EntityManagerFactory): JpaPagingItemReader<User> {
         val zoneSource = ZoneId.of("Asia/Seoul")
-        val localDate = LocalDate.now(zoneSource)
-        val startOfBirthDay = localDate.atStartOfDay(zoneSource).toLocalDateTime()
-        val endOfBirthDay = localDate.atTime(23, 59, 59).withNano(0)
+        val expectedDate = LocalDate.now(zoneSource).plusDays(1)
+
+        val month = expectedDate.monthValue
+        val day = expectedDate.dayOfMonth
 
         return JpaPagingItemReader<User>().apply {
             setEntityManagerFactory(entityManagerFactory)
-            setQueryString("SELECT u FROM User u WHERE u.birthDate BETWEEN :startOfDay AND :endOfDay")
-            setParameterValues(mapOf("startOfBirthDay" to startOfBirthDay, "endOfBirthDay" to endOfBirthDay))
+            setQueryString(
+                """
+                    SELECT DISTINCT u FROM User u
+                    JOIN FETCH u._couple c
+                    WHERE function('TO_CHAR', u.birthDate, 'MM') = LPAD(CAST(:month AS text), 2, '0')
+                    AND function('TO_CHAR', u.birthDate, 'DD') = LPAD(CAST(:day AS text), 2, '0')
+                    ORDER BY u.id
+                """.trimIndent()
+            )
+            setParameterValues(
+                mapOf("month" to month, "day" to day)
+            )
             pageSize = DEFAULT_BATCH_SIZE
             afterPropertiesSet()
         }
@@ -50,14 +60,22 @@ class ScheduleNotificationAddBatchConfig(
 
     @Bean
     @StepScope
-    fun userBirthdayListItemProcessor(): ItemProcessor<User, List<ScheduledNotification>> {
+    fun userBirthdayListItemProcessor(): ItemProcessor<User, User> {
+        return ItemProcessor<User, User> { user ->
+            user
+        }
+    }
+
+    @Bean
+    @StepScope
+    fun userBirthdayItemProcessor(): ItemProcessor<User, List<ScheduledNotification>> {
         return ItemProcessor<User, List<ScheduledNotification>> { user ->
             val zoneSource = ZoneId.of("Asia/Seoul")
 
             val partner = user.couple?.members?.find { it.id != user.id }
                 ?: return@ItemProcessor emptyList()
 
-            val notifyAt = user.birthDate?.atStartOfDay(zoneSource)?.toLocalDateTime()
+            val notifyAt = user.birthDate?.atStartOfDay(zoneSource)?.toLocalDateTime()?.minusDays(1)
                 ?: return@ItemProcessor emptyList()
 
             val birthdayUserMessage = messageProvider.provide(
@@ -95,41 +113,16 @@ class ScheduleNotificationAddBatchConfig(
                 body = partnerMessage.body,
                 image = null
             )
+
             listOf(birthDayUserScheduleNotification, partnerScheduleNotification)
         }
     }
 
     @Bean
     @StepScope
-    fun userBirthdayItemProcessor(): ItemProcessor<List<ScheduledNotification>, ScheduledNotification> {
-        return ItemProcessor<List<ScheduledNotification>, ScheduledNotification> {
-            val iterator = it.iterator()
-            if (iterator.hasNext()) {
-                iterator.next()
-            } else {
-                null
-            }
-        }
-    }
-
-    @Bean
-    @StepScope
-    fun compositeProcessor(
-        userBirthdayListItemProcessor: ItemProcessor<User, List<ScheduledNotification>>,
-        userBirthdayItemProcessor: ItemProcessor<List<ScheduledNotification>, ScheduledNotification>,
-    ): CompositeItemProcessor<User, ScheduledNotification> {
-        return CompositeItemProcessor<User, ScheduledNotification>().apply {
-            setDelegates(
-                listOf(userBirthdayListItemProcessor, userBirthdayItemProcessor)
-            )
-        }
-    }
-
-    @Bean
-    @StepScope
-    fun userBirthdayAddItemWriter(): ItemWriter<ScheduledNotification> {
+    fun userBirthdayAddItemWriter(): ItemWriter<List<ScheduledNotification>> {
         return ItemWriter { chunk ->
-            scheduledNotificationRepository.saveAll(chunk)
+            scheduledNotificationRepository.saveAll(chunk.flatten())
         }
     }
 
@@ -138,13 +131,13 @@ class ScheduleNotificationAddBatchConfig(
         whatEverJobRepository: JobRepository,
         transactionManager: PlatformTransactionManager,
         userBirthdayItemReader: ItemReader<User>,
-        compositeProcessor: ItemProcessor<User, ScheduledNotification>,
-        userBirthdayAddItemWriter: ItemWriter<ScheduledNotification>,
+        userBirthdayItemProcessor: ItemProcessor<User, List<ScheduledNotification>>,
+        userBirthdayAddItemWriter: ItemWriter<List<ScheduledNotification>>,
     ): Step {
         return StepBuilder("add", whatEverJobRepository)
-            .chunk<User, ScheduledNotification>(DEFAULT_BATCH_SIZE, transactionManager)
+            .chunk<User, List<ScheduledNotification>>(DEFAULT_BATCH_SIZE, transactionManager)
             .reader(userBirthdayItemReader)
-            .processor(compositeProcessor)
+            .processor(userBirthdayItemProcessor)
             .writer(userBirthdayAddItemWriter)
             .build()
     }
