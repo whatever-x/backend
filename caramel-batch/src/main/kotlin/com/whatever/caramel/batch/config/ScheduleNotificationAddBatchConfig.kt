@@ -1,6 +1,7 @@
 package com.whatever.caramel.batch.config
 
 import com.whatever.caramel.batch.config.BatchConfig.Companion.DEFAULT_BATCH_SIZE
+import com.whatever.caramel.common.util.AnniversaryUtil
 import com.whatever.caramel.domain.notification.model.NotificationType
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import com.whatever.caramel.domain.notification.repository.ScheduledNotificationRepository
@@ -32,29 +33,44 @@ class ScheduleNotificationAddBatchConfig(
 ) {
     @Bean
     @StepScope
-    fun userBirthdayItemReader(entityManagerFactory: EntityManagerFactory): JpaPagingItemReader<User> {
+    fun userBirthdayItemReader(entityManagerFactory: EntityManagerFactory): ItemReader<User> {
         val zoneSource = ZoneId.of("Asia/Seoul")
-        val expectedDate = LocalDate.now(zoneSource).plusDays(1)
+        val tomorrow = LocalDate.now(zoneSource).plusDays(1)
 
-        val month = expectedDate.monthValue
-        val day = expectedDate.dayOfMonth
+        return object : ItemReader<User> {
+            private val reader: JpaPagingItemReader<User>? by lazy {
+                val expectedDate = AnniversaryUtil.findYearlyAnniversary(
+                    targetDate = tomorrow,
+                    startDate = tomorrow,
+                    endDate = tomorrow,
+                ).firstOrNull() ?: return@lazy null
 
-        return JpaPagingItemReader<User>().apply {
-            setEntityManagerFactory(entityManagerFactory)
-            setQueryString(
-                """
+                val month = expectedDate.date.monthValue
+                val day = expectedDate.date.dayOfMonth
+
+                JpaPagingItemReader<User>().apply {
+                    setEntityManagerFactory(entityManagerFactory)
+                    setQueryString(
+                        """
                     SELECT DISTINCT u FROM User u
                     JOIN FETCH u._couple c
                     WHERE function('TO_CHAR', u.birthDate, 'MM') = LPAD(CAST(:month AS text), 2, '0')
                     AND function('TO_CHAR', u.birthDate, 'DD') = LPAD(CAST(:day AS text), 2, '0')
                     ORDER BY u.id
                 """.trimIndent()
-            )
-            setParameterValues(
-                mapOf("month" to month, "day" to day)
-            )
-            pageSize = DEFAULT_BATCH_SIZE
-            afterPropertiesSet()
+                    )
+                    setParameterValues(
+                        mapOf("month" to month, "day" to day)
+                    )
+                    pageSize = DEFAULT_BATCH_SIZE
+                    afterPropertiesSet()
+                }
+
+            }
+
+            override fun read(): User? {
+                return reader?.read()
+            }
         }
     }
 
