@@ -53,25 +53,24 @@ class ScheduleNotificationAddBatchConfig(
     fun userBirthdayListItemProcessor(): ItemProcessor<User, List<ScheduledNotification>> {
         return ItemProcessor<User, List<ScheduledNotification>> { user ->
             val zoneSource = ZoneId.of("Asia/Seoul")
-            val birthdayUser = user.couple?.members?.find { it.birthDate == LocalDate.now() }
-                ?: return@ItemProcessor emptyList()
-            val partner = user.couple?.members?.find { it.id != birthdayUser.id }
+
+            val partner = user.couple?.members?.find { it.id != user.id }
                 ?: return@ItemProcessor emptyList()
 
-            val notifyAt = birthdayUser.birthDate?.atStartOfDay(zoneSource)?.toLocalDateTime()
+            val notifyAt = user.birthDate?.atStartOfDay(zoneSource)?.toLocalDateTime()
                 ?: return@ItemProcessor emptyList()
 
             val birthdayUserMessage = messageProvider.provide(
                 type = NotificationType.MY_BIRTHDAY,
                 notificationMessageParameter = BirthDayParameter(
                     label = "생일",
-                    birthdayMemberNickname = requireNotNull(birthdayUser.nickname),
+                    birthdayMemberNickname = requireNotNull(user.nickname),
                     isMyBirthday = true
                 )
             )
 
             val birthDayUserScheduleNotification = ScheduledNotification(
-                targetUserId = birthdayUser.id,
+                targetUserId = user.id,
                 notificationType = NotificationType.MY_BIRTHDAY,
                 notifyAt = notifyAt,
                 title = birthdayUserMessage.title,
@@ -83,7 +82,7 @@ class ScheduleNotificationAddBatchConfig(
                 type = NotificationType.PARTNER_BIRTHDAY,
                 notificationMessageParameter = BirthDayParameter(
                     label = "생일",
-                    birthdayMemberNickname = requireNotNull(birthdayUser.nickname),
+                    birthdayMemberNickname = requireNotNull(user.nickname),
                     isMyBirthday = false
                 )
             )
