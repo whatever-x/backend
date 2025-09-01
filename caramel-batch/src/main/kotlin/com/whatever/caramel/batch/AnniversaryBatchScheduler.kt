@@ -6,6 +6,7 @@ import org.springframework.batch.core.launch.JobLauncher
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.LocalDate
+import java.time.ZoneId
 
 @Component
 class AnniversaryBatchScheduler(
@@ -16,16 +17,22 @@ class AnniversaryBatchScheduler(
 
     @Scheduled(cron = "0 40 23 * * *", zone = "Asia/Seoul")
     fun runAnniversaryJob() {
+        val zoneSource = ZoneId.of("Asia/Seoul")
+        val localDate = LocalDate.now(zoneSource)
+
         val params = JobParametersBuilder()
-            .addString("anniversary", LocalDate.now().toString())
+            .addString("anniversary", localDate.toString())
             .toJobParameters()
         jobLauncher.run(anniversaryJob, params)
     }
 
     @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
     fun runCombinedJob() {
+        val zoneSource = ZoneId.of("Asia/Seoul")
+        val localDate = LocalDate.now(zoneSource)
+
         val params = JobParametersBuilder()
-            .addString("combinedJob", LocalDate.now().toString())
+            .addString("combinedJob", localDate.toString())
             .toJobParameters()
         jobLauncher.run(combinedJob, params)
     }
