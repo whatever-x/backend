@@ -95,6 +95,7 @@ class SecurityConfig(
                 authorize(HttpMethod.POST, "/v1/auth/refresh", permitAll)
                 authorize("/sample/**", permitAll)
                 authorize("${actuatorPath}/**", permitAll)
+                authorize("/v1/client-versions/**", permitAll)
 
                 // 2. Role: NEW
                 authorize(HttpMethod.POST, "/v1/user/profile", hasAnyRole(NEW.name))

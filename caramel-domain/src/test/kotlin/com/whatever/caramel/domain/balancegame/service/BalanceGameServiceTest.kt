@@ -280,7 +280,7 @@ class BalanceGameServiceTest @Autowired constructor(
         }
     }
 
-    @DisplayName("밸런스게임 선택 시 내가 이미 선택했다면 초기 선택 결과가 반환된다.")
+    @DisplayName("밸런스게임 선택 시 내가 이미 선택했다면 변경된 선택 결과가 반환된다.")
     @Test
     fun chooseBalanceGameOption_WhenIHaveChosen() {
         // given
@@ -312,7 +312,7 @@ class BalanceGameServiceTest @Autowired constructor(
             // then
             val myChoice = assertNotNull(result.myChoice)
             assertThat(myChoice.balanceGameId).isEqualTo(myChoiceOption.balanceGame.id)
-            assertThat(myChoice.balanceGameOptionId).isEqualTo(myChoiceOption.balanceGameOption.id)
+            assertThat(myChoice.balanceGameOptionId).isEqualTo(selectedOptionId)
             assertThat(result.partnerChoice).isNull()
         }
     }

@@ -1,6 +1,10 @@
 package com.whatever.caramel.config
 
-import com.whatever.caramel.domain.user.model.LoginPlatform
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.cache.CacheManager
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
@@ -16,21 +20,28 @@ import java.time.Duration
 @EnableCaching
 @Configuration
 class RedisCacheConfig {
+    @Bean
+    fun cacheManager(redisConnectionFactory: RedisConnectionFactory): CacheManager {
+        val ptv = BasicPolymorphicTypeValidator.builder().allowIfBaseType(Any::class.java).build()
+        val customObjectMapper = jacksonObjectMapper()
+            .registerModule(KotlinModule.Builder().build())
+            .registerModule(JavaTimeModule())
+            .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.EVERYTHING)
 
-    @Bean(name = ["oidcCacheManager"])
-    fun oidcCacheManager(redisConnectionFactory: RedisConnectionFactory): CacheManager {
-        val stringSerializationPair =
-            RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer())
-        val jsonSerializerPair =
-            RedisSerializationContext.SerializationPair.fromSerializer(GenericJackson2JsonRedisSerializer())
 
-        val redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
-            .serializeKeysWith(stringSerializationPair)
-            .serializeValuesWith(jsonSerializerPair)
-            .entryTtl(CacheType.OIDC_PUBLIC_KEY.ttl)
+        val keySerializationPair = RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer())
+        val valueSerializationPair =
+            RedisSerializationContext.SerializationPair.fromSerializer(GenericJackson2JsonRedisSerializer(customObjectMapper))
+        val baseConfig = RedisCacheConfiguration.defaultCacheConfig()
+            .serializeKeysWith(keySerializationPair)
+            .serializeValuesWith(valueSerializationPair)
+
+        val cacheConfigurations = CacheType.entries.associate { cacheType ->
+            cacheType.cacheName to baseConfig.entryTtl(cacheType.ttl)
+        }
 
         return RedisCacheManager.builder(redisConnectionFactory)
-            .cacheDefaults(redisCacheConfiguration)
+            .withInitialCacheConfigurations(cacheConfigurations)
             .build()
     }
 }
@@ -38,7 +49,7 @@ class RedisCacheConfig {
 enum class CacheType(
     val cacheName: String,
     val ttl: Duration = Duration.ofDays(7L),
-    val maximumSize: Long = LoginPlatform.entries.size.toLong(),
 ) {
-    OIDC_PUBLIC_KEY("oidc"),
+    OIDC_PUBLIC_KEY("auth:oidc-public-key"),
+    CLIENT_VERSIONS("app:client-versions"),
 }

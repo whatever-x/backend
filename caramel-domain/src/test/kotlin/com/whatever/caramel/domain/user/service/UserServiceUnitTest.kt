@@ -27,14 +27,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.mockito.InjectMocks
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.junit.jupiter.MockitoExtension
-import org.mockito.kotlin.whenever
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDate
 import java.util.Optional
@@ -42,20 +37,11 @@ import java.util.UUID
 import kotlin.test.Test
 
 @ActiveProfiles("test")
-@ExtendWith(MockitoExtension::class)
 class UserServiceUnitTest {
-
-    @Mock
-    private lateinit var mockUserRepository: UserRepository
-
-    @Mock
-    private lateinit var mockUserSettingRepository: UserSettingRepository
-
-    @InjectMocks
-    private lateinit var userService: UserService
     private val mockkUserRepository = mockk<UserRepository>()
     private val mockkUserSettingRepository = mockk<UserSettingRepository>()
-    private val spykUserService = spyk(UserService(mockkUserRepository, mockkUserSettingRepository))
+    private val mockkApplicationEventPublisher = mockk<ApplicationEventPublisher>()
+    private val spykUserService = spyk(UserService(mockkUserRepository, mockkUserSettingRepository, mockkApplicationEventPublisher))
 
     private lateinit var user: User
     private var userId: Long = Long.MIN_VALUE
@@ -301,22 +287,16 @@ class UserServiceUnitTest {
     fun `유저의 세팅을 업데이트 합니다`(setting: Boolean) {
         // given
         val userSetting = UserSetting(user = user, notificationEnabled = setting)
-        whenever(
-            mockUserSettingRepository.findByUserAndIsDeleted(
-                user = user,
-                isDeleted = false,
-            )
-        ).thenReturn(userSetting)
 
-        whenever(mockUserRepository.getReferenceById(Mockito.anyLong()))
-            .thenReturn(user)
+        every { mockkUserSettingRepository.findByUserAndIsDeleted(user = user, isDeleted = false) } returns userSetting
+        every { mockkUserRepository.getReferenceById(any()) } returns user
 
         /**
          * 요청에서 setting을 반대로 주면?
          */
         // when
         val vo = UpdateUserSettingVo(notificationEnabled = setting.not())
-        val result = userService.updateUserSetting(updateUserSettingVo = vo, userId = userId)
+        val result = spykUserService.updateUserSetting(updateUserSettingVo = vo, userId = userId)
 
         // then
         assertThat(result.notificationEnabled).isEqualTo(setting.not())
@@ -329,19 +309,14 @@ class UserServiceUnitTest {
     fun `유저의 세팅을 업데이트 - vo null 이면 기존 그대로 응답`(setting: Boolean) {
         // given
         val userSetting = UserSetting(user = user, notificationEnabled = setting)
-        whenever(
-            mockUserSettingRepository.findByUserAndIsDeleted(
-                user = user,
-                isDeleted = false,
-            )
-        ).thenReturn(userSetting)
 
-        whenever(mockUserRepository.getReferenceById(Mockito.anyLong()))
-            .thenReturn(user)
+        every { mockkUserSettingRepository.findByUserAndIsDeleted(user = user, isDeleted = false) } returns userSetting
+        every { mockkUserRepository.getReferenceById(any()) } returns user
+
 
         // when
         val vo = UpdateUserSettingVo(notificationEnabled = null)
-        val result = userService.updateUserSetting(updateUserSettingVo = vo, userId = userId)
+        val result = spykUserService.updateUserSetting(updateUserSettingVo = vo, userId = userId)
 
         // then
         assertThat(result.notificationEnabled).isEqualTo(setting)
@@ -350,30 +325,14 @@ class UserServiceUnitTest {
     @Test
     fun `유저의 세팅을 업데이트 하려하지만, 유저 설정 정보를 찾을 수 없음`() {
         // given
-        whenever(mockUserRepository.getReferenceById(Mockito.anyLong()))
-            .thenReturn(user)
+        every { mockkUserRepository.getReferenceById(any()) } returns user
+        every { mockkUserSettingRepository.findByUserAndIsDeleted(any()) } returns null
 
         // when
         val vo = UpdateUserSettingVo(notificationEnabled = true)
         val result = assertThrows<UserIllegalStateException> {
-            userService.updateUserSetting(updateUserSettingVo = vo, userId = userId)
+            spykUserService.updateUserSetting(updateUserSettingVo = vo, userId = userId)
         }
-        // then
-        assertThat(result.errorCode).isEqualTo(UserExceptionCode.SETTING_DATA_NOT_FOUND)
-    }
-
-    @Test
-    fun `유저의 세팅을 업데이트 - getCurrentUserId() 에 문제 없음`() {
-        // given
-        whenever(mockUserRepository.getReferenceById(Mockito.anyLong()))
-            .thenReturn(user)
-
-        // when
-        val vo = UpdateUserSettingVo(notificationEnabled = true)
-        val result = assertThrows<UserIllegalStateException> {
-            userService.updateUserSetting(updateUserSettingVo = vo, userId = userId)
-        }
-
         // then
         assertThat(result.errorCode).isEqualTo(UserExceptionCode.SETTING_DATA_NOT_FOUND)
     }

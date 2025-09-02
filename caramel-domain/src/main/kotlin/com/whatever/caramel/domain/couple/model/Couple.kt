@@ -48,6 +48,7 @@ class Couple(
     @OneToMany(mappedBy = "_couple", fetch = FetchType.LAZY)
     protected val mutableMembers: MutableSet<User> = mutableSetOf()
     val members: Set<User> get() = mutableMembers.toSet()
+    val memberIds: Set<Long> get() = mutableMembers.map { member -> member.id }.toSet()
 
     @Version
     private var version: Long = 0L

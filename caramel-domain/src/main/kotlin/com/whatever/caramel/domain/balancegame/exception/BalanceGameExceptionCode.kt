@@ -32,7 +32,11 @@ enum class BalanceGameExceptionCode(
         message = "등록된 게임이 없습니다.",
         status = HttpStatus.NOT_FOUND
     ),
-    ;
+    ALREADY_PICKED(
+      sequence = "005",
+        message = "이미 파트너는 선택했어요.",
+        status = HttpStatus.BAD_REQUEST,
+    );
 
     override val code = "BGAME$sequence"
 }

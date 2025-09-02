@@ -916,7 +916,6 @@ class ScheduleEventServiceTest @Autowired constructor(
         val scheduleDetailVoList = scheduleEventService.getSchedules(
             startDate = startDate,
             endDate = endDate,
-            userTimeZone = userTimeZone.id,
             currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
             requestUserId = myUser.id,
         ).scheduleDetailVoList
@@ -961,14 +960,12 @@ class ScheduleEventServiceTest @Autowired constructor(
         val resultDaily = scheduleEventService.getSchedules(
             startDate = startDate,
             endDate = startDate,
-            userTimeZone = userTimeZone.id,
             currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
             requestUserId = myUser.id,
         ).scheduleDetailVoList
         val resultWeekly = scheduleEventService.getSchedules(
             startDate = startDate,
             endDate = startDate.plusDays(6),
-            userTimeZone = userTimeZone.id,
             currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
             requestUserId = myUser.id,
         ).scheduleDetailVoList
@@ -1002,7 +999,6 @@ class ScheduleEventServiceTest @Autowired constructor(
         val result = scheduleEventService.getSchedules(
             startDate = startDate.minusDays(1),
             endDate = startDate.minusDays(1),
-            userTimeZone = userTimeZone.id,
             currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
             requestUserId = myUser.id,
         ).scheduleDetailVoList
@@ -1043,7 +1039,6 @@ class ScheduleEventServiceTest @Autowired constructor(
         val result = scheduleEventService.getSchedules(
             startDate = startDate,
             endDate = startDate.plusDays(1),
-            userTimeZone = userTimeZone.id,
             currentUserCoupleId = myUser.couple?.id ?: error("couple id가 없습니다"),
             requestUserId = myUser.id,
         ).scheduleDetailVoList
@@ -1076,7 +1071,6 @@ class ScheduleEventServiceTest @Autowired constructor(
             scheduleEventService.getSchedules(
                 startDate = startDate.minusDays(1),
                 endDate = startDate.minusDays(1),
-                userTimeZone = userTimeZone.id,
                 currentUserCoupleId = 0L,  // Invalid couple id
                 requestUserId = myUser.id,
             )
@@ -1111,7 +1105,6 @@ class ScheduleEventServiceTest @Autowired constructor(
             scheduleEventService.getSchedules(
                 startDate = startDate.minusDays(1),
                 endDate = startDate.minusDays(1),
-                userTimeZone = userTimeZone.id,
                 currentUserCoupleId = couple.id,
                 requestUserId = myUser.id,
             )

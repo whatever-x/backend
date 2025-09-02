@@ -23,11 +23,4 @@ data class GetCalendarQueryParameter(
         example = "2025-03-31",
     )
     val endDate: LocalDate,
-
-    @field:Parameter(
-        description = "유저의 현재 타임존",
-        `in` = ParameterIn.QUERY,
-        example = "Asia/Seoul",
-    )
-    val userTimeZone: String = ZoneId.of("Asia/Seoul").id,
 )
