@@ -87,12 +87,16 @@ class ScheduleNotificationAddBatchConfig(
     fun userBirthdayItemProcessor(): ItemProcessor<User, List<ScheduledNotification>> {
         return ItemProcessor<User, List<ScheduledNotification>> { user ->
             val zoneSource = ZoneId.of("Asia/Seoul")
+            val today = LocalDate.now(zoneSource)
 
             val partner = user.couple?.members?.find { it.id != user.id }
                 ?: return@ItemProcessor emptyList()
 
-            val notifyAt = user.birthDate?.atStartOfDay(zoneSource)?.toLocalDateTime()?.minusDays(1)
-                ?: return@ItemProcessor emptyList()
+            val birthDate = user.birthDate ?: return@ItemProcessor emptyList()
+            val thisYearsBirthday = birthDate.withYear(today.year)
+
+            // 하루 전에 알림을 날릴 예정
+            val notifyAt = thisYearsBirthday.minusDays(1).atStartOfDay(zoneSource).toLocalDateTime()
 
             val birthdayUserMessage = messageProvider.provide(
                 type = NotificationType.MY_BIRTHDAY,
