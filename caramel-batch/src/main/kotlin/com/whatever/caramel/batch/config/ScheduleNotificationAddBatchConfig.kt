@@ -17,7 +17,6 @@ import org.springframework.batch.core.launch.support.RunIdIncrementer
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemProcessor
-import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.database.JpaPagingItemReader
 import org.springframework.context.annotation.Bean
@@ -33,44 +32,52 @@ class ScheduleNotificationAddBatchConfig(
 ) {
     @Bean
     @StepScope
-    fun userBirthdayItemReader(entityManagerFactory: EntityManagerFactory): ItemReader<User> {
+    fun userBirthdayItemReader(entityManagerFactory: EntityManagerFactory): JpaPagingItemReader<User> {
         val zoneSource = ZoneId.of("Asia/Seoul")
         val tomorrow = LocalDate.now(zoneSource).plusDays(1)
 
-        return object : ItemReader<User> {
-            private val reader: JpaPagingItemReader<User>? by lazy {
-                val expectedDate = AnniversaryUtil.findYearlyAnniversary(
-                    targetDate = tomorrow,
-                    startDate = tomorrow,
-                    endDate = tomorrow,
-                ).firstOrNull() ?: return@lazy null
+        val expectedDate = AnniversaryUtil.findYearlyAnniversary(
+            targetDate = tomorrow,
+            startDate = tomorrow,
+            endDate = tomorrow,
+        ).firstOrNull()
 
-                val month = expectedDate.date.monthValue
-                val day = expectedDate.date.dayOfMonth
+        if (expectedDate == null) {
+            return JpaPagingItemReader<User>().apply {
+                name = "userBirthdayEmptyReader"
+                setEntityManagerFactory(entityManagerFactory)
+                setQueryString("SELECT u FROM User u WHERE 1=0")
+                pageSize = DEFAULT_BATCH_SIZE
+                afterPropertiesSet()
+            }
+        }
+        val month = expectedDate.date.monthValue
+        val day = expectedDate.date.dayOfMonth
 
-                JpaPagingItemReader<User>().apply {
-                    setEntityManagerFactory(entityManagerFactory)
-                    setQueryString(
-                        """
+        return JpaPagingItemReader<User>().apply {
+            name = "userBirthdayReader"
+            setEntityManagerFactory(entityManagerFactory)
+            setQueryString(
+                """
                     SELECT DISTINCT u FROM User u
                     JOIN FETCH u._couple c
                     WHERE function('TO_CHAR', u.birthDate, 'MM') = LPAD(CAST(:month AS text), 2, '0')
                     AND function('TO_CHAR', u.birthDate, 'DD') = LPAD(CAST(:day AS text), 2, '0')
                     ORDER BY u.id
                 """.trimIndent()
-                    )
-                    setParameterValues(
-                        mapOf("month" to month, "day" to day)
-                    )
-                    pageSize = DEFAULT_BATCH_SIZE
-                    afterPropertiesSet()
-                }
-
-            }
-
-            override fun read(): User? {
-                return reader?.read()
-            }
+                // """
+                // 테스트 데이터에서는 커플 연결을 안해줘서 아래 쿼리로 수행했음
+                // SELECT u FROM User u
+                //     WHERE function('TO_CHAR', u.birthDate, 'MM') = LPAD(CAST(:month AS text), 2, '0')
+                //     AND function('TO_CHAR', u.birthDate, 'DD') = LPAD(CAST(:day AS text), 2, '0')
+                //     ORDER BY u.id
+                // """.trimIndent()
+            )
+            setParameterValues(
+                mapOf("month" to month, "day" to day)
+            )
+            pageSize = DEFAULT_BATCH_SIZE
+            afterPropertiesSet()
         }
     }
 
@@ -150,7 +157,7 @@ class ScheduleNotificationAddBatchConfig(
     fun userBirthdayAddStep(
         whatEverJobRepository: JobRepository,
         transactionManager: PlatformTransactionManager,
-        userBirthdayItemReader: ItemReader<User>,
+        userBirthdayItemReader: JpaPagingItemReader<User>,
         userBirthdayItemProcessor: ItemProcessor<User, List<ScheduledNotification>>,
         userBirthdayAddItemWriter: ItemWriter<List<ScheduledNotification>>,
     ): Step {
