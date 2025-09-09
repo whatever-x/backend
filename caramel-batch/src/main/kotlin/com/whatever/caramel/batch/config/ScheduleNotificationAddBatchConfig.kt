@@ -1,7 +1,7 @@
 package com.whatever.caramel.batch.config
 
 import com.whatever.caramel.batch.config.BatchConfig.Companion.DEFAULT_BATCH_SIZE
-import com.whatever.caramel.common.util.AnniversaryUtil
+import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.notification.model.NotificationType
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import com.whatever.caramel.domain.notification.repository.ScheduledNotificationRepository
@@ -36,56 +36,42 @@ class ScheduleNotificationAddBatchConfig(
         val zoneSource = ZoneId.of("Asia/Seoul")
         val tomorrow = LocalDate.now(zoneSource).plusDays(1)
 
-        val expectedDate = AnniversaryUtil.findYearlyAnniversary(
-            targetDate = tomorrow,
-            startDate = tomorrow,
-            endDate = tomorrow,
-        ).firstOrNull()
+        val year = tomorrow.year
+        val month = tomorrow.monthValue
+        val day = tomorrow.dayOfMonth
 
-        if (expectedDate == null) {
-            return JpaPagingItemReader<User>().apply {
-                name = "userBirthdayEmptyReader"
-                setEntityManagerFactory(entityManagerFactory)
-                setQueryString("SELECT u FROM User u WHERE 1=0")
-                pageSize = DEFAULT_BATCH_SIZE
-                afterPropertiesSet()
-            }
+        // 윤년이 아니고 2.28 일이면 2.29 도 같이 조회
+        val leapYearPredicate = DateTimeUtil.isLeapYear(year).not() && month == 2 && day == 28
+        val query = if (leapYearPredicate) {
+            """
+                SELECT DISTINCT u FROM User u
+                JOIN FETCH u._couple c
+                WHERE (function('TO_CHAR', u.birthDate, 'MM') = '02' AND function('TO_CHAR', u.birthDate, 'DD') = '28')
+                   OR (function('TO_CHAR', u.birthDate, 'MM') = '02' AND function('TO_CHAR', u.birthDate, 'DD') = '29')
+                ORDER BY u.id
+            """.trimIndent()
+        } else {
+            """
+                SELECT DISTINCT u FROM User u
+                JOIN FETCH u._couple c
+                WHERE function('TO_CHAR', u.birthDate, 'MM') = LPAD(CAST(:month AS text), 2, '0')
+                AND function('TO_CHAR', u.birthDate, 'DD') = LPAD(CAST(:day AS text), 2, '0')
+                ORDER BY u.id
+            """.trimIndent()
         }
-        val month = expectedDate.date.monthValue
-        val day = expectedDate.date.dayOfMonth
 
         return JpaPagingItemReader<User>().apply {
             name = "userBirthdayReader"
+            pageSize = DEFAULT_BATCH_SIZE
             setEntityManagerFactory(entityManagerFactory)
-            setQueryString(
-                """
-                    SELECT DISTINCT u FROM User u
-                    JOIN FETCH u._couple c
-                    WHERE function('TO_CHAR', u.birthDate, 'MM') = LPAD(CAST(:month AS text), 2, '0')
-                    AND function('TO_CHAR', u.birthDate, 'DD') = LPAD(CAST(:day AS text), 2, '0')
-                    ORDER BY u.id
-                """.trimIndent()
-                // """
-                // 테스트 데이터에서는 커플 연결을 안해줘서 아래 쿼리로 수행했음
-                // SELECT u FROM User u
-                //     WHERE function('TO_CHAR', u.birthDate, 'MM') = LPAD(CAST(:month AS text), 2, '0')
-                //     AND function('TO_CHAR', u.birthDate, 'DD') = LPAD(CAST(:day AS text), 2, '0')
-                //     ORDER BY u.id
-                // """.trimIndent()
-            )
-            setParameterValues(
-                mapOf("month" to month, "day" to day)
-            )
+            setQueryString(query)
+            if (leapYearPredicate.not()) {
+                setParameterValues(
+                    mapOf("month" to month, "day" to day)
+                )
+            }
             pageSize = DEFAULT_BATCH_SIZE
             afterPropertiesSet()
-        }
-    }
-
-    @Bean
-    @StepScope
-    fun userBirthdayListItemProcessor(): ItemProcessor<User, User> {
-        return ItemProcessor<User, User> { user ->
-            user
         }
     }
 
