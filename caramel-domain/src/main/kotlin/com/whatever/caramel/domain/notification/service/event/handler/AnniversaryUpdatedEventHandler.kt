@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 @Component
 class AnniversaryUpdatedEventHandler(
@@ -86,39 +86,39 @@ class AnniversaryUpdatedEventHandler(
         )
     }
 
-private fun deleteScheduledAnniversaryNotifications(
-    anniversaryItems: List<AnniversaryItem>,
-    memberIds: Set<Long>,
-) {
-    anniversaryItems.forEach { anniversaryVo ->
-        val typeToDelete = anniversaryVo.type.toNotificationType()
+    private fun deleteScheduledAnniversaryNotifications(
+        anniversaryItems: List<AnniversaryItem>,
+        memberIds: Set<Long>,
+    ) {
+        anniversaryItems.forEach { anniversaryVo ->
+            val typeToDelete = anniversaryVo.type.toNotificationType()
 
-        when (anniversaryVo) {
-            is CoupleAnniversaryItem -> {
-                val effectedRows = scheduledNotificationService.deleteScheduledNotifications(
-                    targetUserIds = memberIds,
-                    notificationTypes = typeToDelete,
-                )
-                logger.debug { "Deleted today's anniversary notifications ($typeToDelete) for users $memberIds. Effected rows: $effectedRows" }
-            }
-
-            is MemberAnniversaryItem -> {
-                val ownerId = anniversaryVo.ownerId
-                val deletionMemberIdByNotificationType = memberIds.groupBy { memberId ->
-                    if (memberId == ownerId) NotificationType.MY_BIRTHDAY
-                    else NotificationType.PARTNER_BIRTHDAY
+            when (anniversaryVo) {
+                is CoupleAnniversaryItem -> {
+                    val effectedRows = scheduledNotificationService.deleteScheduledNotifications(
+                        targetUserIds = memberIds,
+                        notificationTypes = typeToDelete,
+                    )
+                    logger.debug { "Deleted today's anniversary notifications ($typeToDelete) for users $memberIds. Effected rows: $effectedRows" }
                 }
 
-                deletionMemberIdByNotificationType.forEach { (notificationType, memberIds) ->
-                    scheduledNotificationService.deleteScheduledNotifications(
-                        targetUserIds = memberIds.toSet(),
-                        notificationTypes = setOf(notificationType),
-                    )
+                is MemberAnniversaryItem -> {
+                    val ownerId = anniversaryVo.ownerId
+                    val deletionMemberIdByNotificationType = memberIds.groupBy { memberId ->
+                        if (memberId == ownerId) NotificationType.MY_BIRTHDAY
+                        else NotificationType.PARTNER_BIRTHDAY
+                    }
+
+                    deletionMemberIdByNotificationType.forEach { (notificationType, memberIds) ->
+                        scheduledNotificationService.deleteScheduledNotifications(
+                            targetUserIds = memberIds.toSet(),
+                            notificationTypes = setOf(notificationType),
+                        )
+                    }
                 }
             }
         }
     }
-}
 
     private fun scheduleAnniversaryNotification(
         anniversaryItems: List<AnniversaryItem>,
@@ -126,10 +126,12 @@ private fun deleteScheduledAnniversaryNotifications(
         targetDate: LocalDate,
     ) {
         anniversaryItems.forEach { anniversary ->
-            schedulerProvider.provide(anniversary.type).schedule(
-                notifyAt = targetDate.toDateTime(),
-                schedulingParameter = createAnniversarySchedulingParameter(anniversary, memberIds),
-            )
+            schedulerProvider
+                .provide(anniversary.type)
+                .schedule(
+                    notifyAt = targetDate.toDateTime(),
+                    schedulingParameter = createAnniversarySchedulingParameter(anniversary, memberIds),
+                )
         }
     }
 
@@ -160,12 +162,13 @@ private fun deleteScheduledAnniversaryNotifications(
 
     private fun createAnniversarySchedulingParameter(
         anniversaryItem: AnniversaryItem,
-        memberIds: Set<Long>
+        memberIds: Set<Long>,
     ): NotificationSchedulingParameter {
         return when (anniversaryItem) {
-             is CoupleAnniversaryItem -> {
+            is CoupleAnniversaryItem -> {
                 CoupleNotificationSchedulingParameter(anniversaryItem = anniversaryItem, memberIds = memberIds)
             }
+
             is MemberAnniversaryItem -> {
                 BirthDateNotificationSchedulingParameter(anniversaryItem = anniversaryItem, memberIds = memberIds)
             }
@@ -180,6 +183,7 @@ private fun CoupleAnniversaryType.toNotificationType(): Set<NotificationType> {
         CoupleAnniversaryType.BIRTHDAY -> setOf(NotificationType.MY_BIRTHDAY, NotificationType.PARTNER_BIRTHDAY)
     }
 }
+
 private fun CoupleAnniversaryService.findYearlyAnniversaryOn(
     coupleStartDate: LocalDate,
     targetDate: LocalDate,
@@ -190,6 +194,7 @@ private fun CoupleAnniversaryService.findYearlyAnniversaryOn(
         endDate = targetDate,
     )
 }
+
 private fun CoupleAnniversaryService.findHundredDaysAnniversaryOn(
     coupleStartDate: LocalDate,
     targetDate: LocalDate,

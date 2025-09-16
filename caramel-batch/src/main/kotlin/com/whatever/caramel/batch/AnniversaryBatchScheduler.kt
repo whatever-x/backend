@@ -6,30 +6,34 @@ import org.springframework.batch.core.launch.JobLauncher
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.LocalDate
+import java.time.ZoneId
 
 @Component
 class AnniversaryBatchScheduler(
     private val jobLauncher: JobLauncher,
     private val anniversaryJob: Job,
-    private val scheduleRemoveJob: Job,
+    private val combinedJob: Job,
 ) {
 
-    /**
-     * 협의해서 시간 변경 필요
-     */
     @Scheduled(cron = "0 40 23 * * *", zone = "Asia/Seoul")
     fun runAnniversaryJob() {
+        val zoneSource = ZoneId.of("Asia/Seoul")
+        val localDate = LocalDate.now(zoneSource)
+
         val params = JobParametersBuilder()
-            .addString("anniversary", LocalDate.now().toString())
+            .addString("anniversary", localDate.toString())
             .toJobParameters()
         jobLauncher.run(anniversaryJob, params)
     }
 
-    @Scheduled(cron = "0 55 23 * * *", zone = "Asia/Seoul")
-    fun runDeleteJob() {
+    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
+    fun runCombinedJob() {
+        val zoneSource = ZoneId.of("Asia/Seoul")
+        val localDate = LocalDate.now(zoneSource)
+
         val params = JobParametersBuilder()
-            .addString("delete", LocalDate.now().toString())
+            .addString("combinedJob", localDate.toString())
             .toJobParameters()
-        jobLauncher.run(scheduleRemoveJob, params)
+        jobLauncher.run(combinedJob, params)
     }
 }

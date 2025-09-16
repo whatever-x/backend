@@ -12,7 +12,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 /**
  * CoupleAnniversaryType에 따른 알림 예약 생성을 담당하는 인터페이스
@@ -25,22 +25,21 @@ interface AnniversaryNotificationScheduler {
 @Component
 class HundredDayAnniversaryNotificationScheduler(
     private val scheduledNotificationService: ScheduledNotificationService,
-    private val notificationMessageProvider: NotificationMessageProvider
+    private val notificationMessageProvider: NotificationMessageProvider,
 ) : AnniversaryNotificationScheduler {
     override fun supports(): CoupleAnniversaryType = CoupleAnniversaryType.N_TH_DAY
     override fun schedule(notifyAt: LocalDateTime, schedulingParameter: NotificationSchedulingParameter) {
-        val notificationType  = NotificationType.ANNIVERSARY_HUNDRED
+        val notificationType = NotificationType.ANNIVERSARY_HUNDRED
 
         if (schedulingParameter !is CoupleNotificationSchedulingParameter) {
             logger.error {
                 "Invalid scheduling parameter type. " +
-                "Expected: CoupleNotificationSchedulingParameter, " +
-                "Actual: ${schedulingParameter::class.simpleName}, " +
-                "parameter details: ${schedulingParameter}"
+                    "Expected: CoupleNotificationSchedulingParameter, " +
+                    "Actual: ${schedulingParameter::class.simpleName}, " +
+                    "parameter details: ${schedulingParameter}"
             }
             throw InvalidSchedulingParameterException()
         }
-
 
         val message = notificationMessageProvider.provide(
             type = notificationType,
@@ -57,17 +56,17 @@ class HundredDayAnniversaryNotificationScheduler(
 @Component
 class YearlyAnniversaryNotificationScheduler(
     private val scheduledNotificationService: ScheduledNotificationService,
-    private val notificationMessageProvider: NotificationMessageProvider
+    private val notificationMessageProvider: NotificationMessageProvider,
 ) : AnniversaryNotificationScheduler {
     override fun supports(): CoupleAnniversaryType = CoupleAnniversaryType.YEARLY
     override fun schedule(notifyAt: LocalDateTime, schedulingParameter: NotificationSchedulingParameter) {
-        val notificationType  = NotificationType.ANNIVERSARY_YEARLY
+        val notificationType = NotificationType.ANNIVERSARY_YEARLY
         if (schedulingParameter !is CoupleNotificationSchedulingParameter) {
             logger.error {
                 "Invalid scheduling parameter type. " +
-                "Expected: CoupleNotificationSchedulingParameter, " +
-                "Actual: ${schedulingParameter::class.simpleName}, " +
-                "parameter details: ${schedulingParameter}"
+                    "Expected: CoupleNotificationSchedulingParameter, " +
+                    "Actual: ${schedulingParameter::class.simpleName}, " +
+                    "parameter details: ${schedulingParameter}"
             }
             throw InvalidSchedulingParameterException()
         }
@@ -87,16 +86,16 @@ class YearlyAnniversaryNotificationScheduler(
 @Component
 class BirthDateNotificationScheduler(
     private val scheduledNotificationService: ScheduledNotificationService,
-    private val notificationMessageProvider: NotificationMessageProvider
+    private val notificationMessageProvider: NotificationMessageProvider,
 ) : AnniversaryNotificationScheduler {
     override fun supports(): CoupleAnniversaryType = CoupleAnniversaryType.BIRTHDAY
     override fun schedule(notifyAt: LocalDateTime, schedulingParameter: NotificationSchedulingParameter) {
         if (schedulingParameter !is BirthDateNotificationSchedulingParameter) {
             logger.error {
                 "Invalid scheduling parameter type. " +
-                "Expected: BirthDateNotificationSchedulingParameter, " +
-                "Actual: ${schedulingParameter::class.simpleName}, " +
-                "parameter details: ${schedulingParameter}"
+                    "Expected: BirthDateNotificationSchedulingParameter, " +
+                    "Actual: ${schedulingParameter::class.simpleName}, " +
+                    "parameter details: ${schedulingParameter}"
             }
             throw InvalidSchedulingParameterException()
         }

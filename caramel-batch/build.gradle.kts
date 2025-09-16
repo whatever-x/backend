@@ -5,6 +5,7 @@ version = "0.0.1-SNAPSHOT"
 
 dependencies {
     implementation(project(":caramel-domain"))
+    implementation(project(":caramel-common"))
     implementation(project(":caramel-infrastructure"))
 
     // Spring Batch
