@@ -11,19 +11,19 @@ open class CaramelScheduleException(
 class ScheduleNotFoundException(
     errorCode: ScheduleExceptionCode,
     errorUi: ErrorUi = ErrorUi.Toast("일정 정보를 찾을 수 없어요."),
-) : CaramelScheduleException(errorCode)
+) : CaramelScheduleException(errorCode, errorUi)
 
 class ScheduleIllegalArgumentException(
     errorCode: ScheduleExceptionCode,
     errorUi: ErrorUi,
-) : CaramelScheduleException(errorCode)
+) : CaramelScheduleException(errorCode, errorUi)
 
 class ScheduleIllegalStateException(
     errorCode: ScheduleExceptionCode,
     errorUi: ErrorUi,
-) : CaramelScheduleException(errorCode)
+) : CaramelScheduleException(errorCode, errorUi)
 
 class ScheduleAccessDeniedException(
     errorCode: ScheduleExceptionCode,
     errorUi: ErrorUi = ErrorUi.Toast("커플 멤버가 작성한 일정만 접근할 수 있어요."),
-) : CaramelScheduleException(errorCode)
+) : CaramelScheduleException(errorCode, errorUi)
