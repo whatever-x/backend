@@ -45,7 +45,7 @@ class ScheduleNotificationAddBatchConfig(
         val query = if (leapYearPredicate) {
             """
                 SELECT DISTINCT u FROM User u
-                JOIN FETCH u._couple c
+                JOIN u._couple c
                 WHERE (function('TO_CHAR', u.birthDate, 'MM') = '02' AND function('TO_CHAR', u.birthDate, 'DD') = '28')
                    OR (function('TO_CHAR', u.birthDate, 'MM') = '02' AND function('TO_CHAR', u.birthDate, 'DD') = '29')
                 ORDER BY u.id
@@ -53,7 +53,7 @@ class ScheduleNotificationAddBatchConfig(
         } else {
             """
                 SELECT DISTINCT u FROM User u
-                JOIN FETCH u._couple c
+                JOIN u._couple c
                 WHERE function('TO_CHAR', u.birthDate, 'MM') = LPAD(CAST(:month AS text), 2, '0')
                 AND function('TO_CHAR', u.birthDate, 'DD') = LPAD(CAST(:day AS text), 2, '0')
                 ORDER BY u.id
