@@ -47,15 +47,15 @@ class ScheduleNotificationAddBatchConfig(
                 SELECT DISTINCT u FROM User u
                 JOIN u._couple c
                 WHERE (function('TO_CHAR', u.birthDate, 'MM') = '02' AND function('TO_CHAR', u.birthDate, 'DD') = '28')
-                   OR (function('TO_CHAR', u.birthDate, 'MM') = '02' AND function('TO_CHAR', u.birthDate, 'DD') = '29')
+                OR (function('TO_CHAR', u.birthDate, 'MM') = '02' AND function('TO_CHAR', u.birthDate, 'DD') = '29')
                 ORDER BY u.id
             """.trimIndent()
         } else {
             """
                 SELECT DISTINCT u FROM User u
                 JOIN u._couple c
-                WHERE function('TO_CHAR', u.birthDate, 'MM') = LPAD(CAST(:month AS text), 2, '0')
-                AND function('TO_CHAR', u.birthDate, 'DD') = LPAD(CAST(:day AS text), 2, '0')
+                WHERE function('TO_CHAR', u.birthDate, 'MM') = :month
+                AND function('TO_CHAR', u.birthDate, 'DD') = :day
                 ORDER BY u.id
             """.trimIndent()
         }
@@ -67,7 +67,7 @@ class ScheduleNotificationAddBatchConfig(
             setQueryString(query)
             if (leapYearPredicate.not()) {
                 setParameterValues(
-                    mapOf("month" to month, "day" to day)
+                    mapOf("month" to String.format("%02d", month), "day" to String.format("%02d", day))
                 )
             }
             pageSize = DEFAULT_BATCH_SIZE
