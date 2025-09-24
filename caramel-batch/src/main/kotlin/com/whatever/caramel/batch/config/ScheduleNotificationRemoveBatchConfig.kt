@@ -1,5 +1,6 @@
 package com.whatever.caramel.batch.config
 
+import com.whatever.caramel.batch.config.BatchConfig.Companion.DEFAULT_BATCH_SIZE
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import com.whatever.caramel.domain.notification.repository.ScheduledNotificationRepository
 import jakarta.persistence.EntityManagerFactory
@@ -27,7 +28,7 @@ class ScheduleNotificationRemoveBatchConfig(
     @StepScope
     fun scheduleRemoveItemReader(entityManagerFactory: EntityManagerFactory): JpaPagingItemReader<ScheduledNotification> {
         val zoneSource = ZoneId.of("Asia/Seoul")
-        val localDate = LocalDate.now(zoneSource)
+        val localDate = LocalDate.now(zoneSource).minusDays(1)
         val startOfDay = localDate.atStartOfDay(zoneSource).toLocalDateTime()
         val endOfDay = localDate.atTime(23, 59, 59).withNano(0)
 
@@ -35,7 +36,7 @@ class ScheduleNotificationRemoveBatchConfig(
             setEntityManagerFactory(entityManagerFactory)
             setQueryString("SELECT s FROM ScheduledNotification s WHERE s.notifyAt BETWEEN :startOfDay AND :endOfDay")
             setParameterValues(mapOf("startOfDay" to startOfDay, "endOfDay" to endOfDay))
-            pageSize = 10
+            pageSize = DEFAULT_BATCH_SIZE
             afterPropertiesSet()
         }
     }

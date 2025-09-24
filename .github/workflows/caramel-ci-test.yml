@@ -61,7 +61,7 @@ jobs:
         ports:
           - '6379:6379'
       postgresql:
-        image: docker.io/bitnami/postgresql:17
+        image: docker.io/bitnamilegacy/postgresql:17
         ports:
           - '5432:5432'
         env:
