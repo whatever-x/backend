@@ -126,7 +126,6 @@ class AnniversaryBatchConfig(
     @Bean
     fun anniversaryJob(jobRepository: JobRepository, anniversaryStep: Step, removeStep: Step): Job {
         return JobBuilder("anniversaryJob", jobRepository)
-            .incrementer(RunIdIncrementer())
             .start(anniversaryStep)
             .next(removeStep)
             .build()

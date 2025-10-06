@@ -157,7 +157,6 @@ class ScheduleNotificationAddBatchConfig(
     @Bean
     fun notificationAddJob(jobRepository: JobRepository, userBirthdayAddStep: Step): Job {
         return JobBuilder("notificationAddJob", jobRepository)
-            .incrementer(RunIdIncrementer())
             .start(userBirthdayAddStep)
             .build()
     }

@@ -1,4 +1,6 @@
 import org.springframework.boot.gradle.tasks.bundling.BootJar
+import java.time.LocalDate
+import java.time.ZoneId
 
 group = "com.whatever.caramel-batch"
 version = "0.0.1-SNAPSHOT"
@@ -28,13 +30,17 @@ tasks.getByName<Jar>("jar") {
 }
 
 fun registerBatchTask(jobName: String) {
+    val zoneSource = ZoneId.of("Asia/Seoul")
+    val localDate = LocalDate.now(zoneSource)
+
     tasks.register<org.springframework.boot.gradle.tasks.run.BootRun>("${jobName}Batch") {
         group = "batch"
         mainClass.set("com.whatever.caramel.batch.WhateverBatchApplicationKt")
         classpath = project(":caramel-batch").sourceSets["main"].runtimeClasspath
         args = listOf(
+            "--spring.profiles.active=dev,batch",
             "--spring.batch.job.name=${jobName}Job",
-            "--spring.profiles.active=dev,batch"
+            "runDate=$localDate",
         )
     }
 }
