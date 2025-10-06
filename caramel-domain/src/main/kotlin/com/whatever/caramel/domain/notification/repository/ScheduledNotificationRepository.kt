@@ -5,7 +5,6 @@ import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
-import java.time.LocalDateTime
 
 interface ScheduledNotificationRepository : JpaRepository<ScheduledNotification, Long> {
     @Modifying
@@ -18,10 +17,4 @@ interface ScheduledNotificationRepository : JpaRepository<ScheduledNotification,
         notificationTypes: Set<NotificationType>,
         targetUserIds: Set<Long>
     ): Int
-
-    @Query("""
-        SELECT s FROM ScheduledNotification s 
-        WHERE s.notifyAt BETWEEN :startOfDay AND :endOfDay
-    """)
-    fun findByNotifyAt(startOfDay: LocalDateTime, endOfDay: LocalDateTime): List<ScheduledNotification>
 }
