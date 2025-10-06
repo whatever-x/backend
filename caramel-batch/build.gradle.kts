@@ -21,8 +21,23 @@ tasks.test {
 }
 
 tasks.getByName<BootJar>("bootJar") {
-    enabled = false
+    enabled = true
 }
 tasks.getByName<Jar>("jar") {
     enabled = true
 }
+
+fun registerBatchTask(jobName: String) {
+    tasks.register<org.springframework.boot.gradle.tasks.run.BootRun>("${jobName}Batch") {
+        group = "batch"
+        mainClass.set("com.whatever.caramel.batch.WhateverBatchApplicationKt")
+        classpath = project(":caramel-batch").sourceSets["main"].runtimeClasspath
+        args = listOf(
+            "--spring.batch.job.name=${jobName}Job",
+            "--spring.profiles.active=dev,batch"
+        )
+    }
+}
+
+registerBatchTask("notificationAdd")
+registerBatchTask("anniversary")

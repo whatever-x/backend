@@ -16,6 +16,7 @@ import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemProcessor
 import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
+import org.springframework.batch.item.database.JpaPagingItemReader
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder
 import org.springframework.batch.repeat.RepeatStatus
 import org.springframework.context.annotation.Bean
@@ -32,7 +33,7 @@ class AnniversaryBatchConfig(
 ) {
     @Bean
     @StepScope
-    fun anniversaryItemReader(): ItemReader<ScheduledNotification> {
+    fun anniversaryItemReader(): JpaPagingItemReader<ScheduledNotification> {
         val zoneSource = ZoneId.of("Asia/Seoul")
         val localDate = LocalDate.now(zoneSource)
         val startOfDay = localDate.atStartOfDay(zoneSource).toLocalDateTime()

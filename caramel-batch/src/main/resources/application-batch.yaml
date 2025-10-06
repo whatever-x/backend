@@ -1,12 +1,10 @@
 spring:
-  profiles:
-    active: batch
-  batch:
-    job:
-      enabled: false
   config:
-    import: optional:file:.env[.properties]
+    import: optional:file:../.env[.properties]
   datasource:
+    hikari:
+      maximum-pool-size: ${DB_MAX_CONNECTION}
+      connection-test-query: "SELECT 1"
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
     username: ${POSTGRES_USERNAME}
@@ -20,7 +18,3 @@ spring:
         highlight_sql: true
         jdbc:
           batch_size: 10
-
-firebase:
-  credential-file-path: ${GOOGLE_APPLICATION_CREDENTIALS}
-  fcm-enabled: ${FCM_ENABLED}
