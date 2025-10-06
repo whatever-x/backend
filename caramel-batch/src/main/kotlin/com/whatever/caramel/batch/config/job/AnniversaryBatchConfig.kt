@@ -25,7 +25,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 
 @Configuration
-class FcmBatchConfig(
+class AnniversaryBatchConfig(
     private val whatEverJobRepository: JobRepository,
     private val transactionManager: PlatformTransactionManager,
     private val entityManagerFactory: EntityManagerFactory,
@@ -54,7 +54,7 @@ class FcmBatchConfig(
                     "endOfDay" to endOfDay,
                 )
             )
-            .pageSize(PAGE_SIZE)
+            .pageSize(FCM_PAGE_SIZE)
             .build()
     }
 
@@ -100,7 +100,7 @@ class FcmBatchConfig(
         anniversaryItemWriter: ItemWriter<BatchFcmNotification>,
     ): Step {
         return StepBuilder("anniversaryStep", whatEverJobRepository)
-            .chunk<ScheduledNotification, BatchFcmNotification>(CHUNK_SIZE, transactionManager)
+            .chunk<ScheduledNotification, BatchFcmNotification>(FCM_CHUNK_SIZE, transactionManager)
             .reader(anniversaryItemReader)
             .processor(compositeItemProcessor)
             .writer(anniversaryItemWriter)
@@ -129,7 +129,7 @@ class FcmBatchConfig(
     }
 
     companion object {
-        private const val PAGE_SIZE = 10
-        private const val CHUNK_SIZE = 10
+        private const val FCM_PAGE_SIZE = 10
+        private const val FCM_CHUNK_SIZE = 10
     }
 }
