@@ -6,7 +6,7 @@ spring:
       maximum-pool-size: ${DB_MAX_CONNECTION}
       connection-test-query: "SELECT 1"
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
+    jdbc-url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
     username: ${POSTGRES_USERNAME}
     password: ${POSTGRES_PASSWORD}
   jpa:

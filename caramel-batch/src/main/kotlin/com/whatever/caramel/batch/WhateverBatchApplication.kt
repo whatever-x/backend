@@ -1,5 +1,6 @@
 package com.whatever.caramel.batch
 
+import com.whatever.caramel.batch.config.BatchJpaConfig
 import com.whatever.caramel.batch.config.CoupleConfig
 import com.whatever.caramel.batch.config.FirebaseConfig
 import com.whatever.caramel.batch.config.NotificationConfig
@@ -26,6 +27,7 @@ import kotlin.system.exitProcess
     FirebaseConfig::class,
     NotificationConfig::class,
     UserConfig::class,
+    BatchJpaConfig::class,
 )
 class WhateverBatchApplication
 

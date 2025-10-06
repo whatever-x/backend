@@ -12,7 +12,6 @@ import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.job.builder.JobBuilder
-import org.springframework.batch.core.launch.support.RunIdIncrementer
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemProcessor
@@ -26,12 +25,14 @@ import java.time.ZoneId
 
 @Configuration
 class ScheduleNotificationAddBatchConfig(
+    private val transactionManager: PlatformTransactionManager,
+    private val entityManagerFactory: EntityManagerFactory,
     private val messageProvider: NotificationMessageProvider,
     private val scheduledNotificationRepository: ScheduledNotificationRepository,
 ) {
     @Bean
     @StepScope
-    fun userBirthdayItemReader(entityManagerFactory: EntityManagerFactory): JpaPagingItemReader<User> {
+    fun userBirthdayItemReader(): JpaPagingItemReader<User> {
         val zoneSource = ZoneId.of("Asia/Seoul")
         val tomorrow = LocalDate.now(zoneSource).plusDays(1)
 
@@ -141,7 +142,6 @@ class ScheduleNotificationAddBatchConfig(
     @Bean
     fun userBirthdayAddStep(
         whatEverJobRepository: JobRepository,
-        transactionManager: PlatformTransactionManager,
         userBirthdayItemReader: JpaPagingItemReader<User>,
         userBirthdayItemProcessor: ItemProcessor<User, List<ScheduledNotification>>,
         userBirthdayAddItemWriter: ItemWriter<List<ScheduledNotification>>,
