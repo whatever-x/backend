@@ -6,18 +6,15 @@ import com.whatever.caramel.batch.config.NotificationConfig
 import com.whatever.caramel.batch.config.UserConfig
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.domain.EntityScan
-import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Import
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import kotlin.system.exitProcess
 
 @SpringBootApplication(
     scanBasePackages = [
         "com.whatever.caramel.batch",
-        "com.whatever.caramel.domain.notification.repository",
-        "com.whatever.caramel.domain.notification.model",
+        "com.whatever.caramel.domain.notification",
+        "com.whatever.caramel.domain.couple",
         "com.whatever.caramel.domain.firebase",
         "com.whatever.caramel.infrastructure",
     ]

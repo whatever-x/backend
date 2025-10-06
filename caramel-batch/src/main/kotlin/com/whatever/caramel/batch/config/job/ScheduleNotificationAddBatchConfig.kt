@@ -1,6 +1,5 @@
-package com.whatever.caramel.batch.config
+package com.whatever.caramel.batch.config.job
 
-import com.whatever.caramel.batch.config.BatchConfig.Companion.DEFAULT_BATCH_SIZE
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.notification.model.NotificationType
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
@@ -62,7 +61,7 @@ class ScheduleNotificationAddBatchConfig(
 
         return JpaPagingItemReader<User>().apply {
             name = "userBirthdayReader"
-            pageSize = DEFAULT_BATCH_SIZE
+            pageSize = ADD_PAGE_SIZE
             setEntityManagerFactory(entityManagerFactory)
             setQueryString(query)
             if (leapYearPredicate.not()) {
@@ -70,7 +69,7 @@ class ScheduleNotificationAddBatchConfig(
                     mapOf("month" to String.format("%02d", month), "day" to String.format("%02d", day))
                 )
             }
-            pageSize = DEFAULT_BATCH_SIZE
+            setTransacted(false)
             afterPropertiesSet()
         }
     }
@@ -147,8 +146,8 @@ class ScheduleNotificationAddBatchConfig(
         userBirthdayItemProcessor: ItemProcessor<User, List<ScheduledNotification>>,
         userBirthdayAddItemWriter: ItemWriter<List<ScheduledNotification>>,
     ): Step {
-        return StepBuilder("add", whatEverJobRepository)
-            .chunk<User, List<ScheduledNotification>>(DEFAULT_BATCH_SIZE, transactionManager)
+        return StepBuilder("addStep", whatEverJobRepository)
+            .chunk<User, List<ScheduledNotification>>(ADD_CHUNK_SIZE, transactionManager)
             .reader(userBirthdayItemReader)
             .processor(userBirthdayItemProcessor)
             .writer(userBirthdayAddItemWriter)
@@ -157,9 +156,14 @@ class ScheduleNotificationAddBatchConfig(
 
     @Bean
     fun scheduleAddJob(jobRepository: JobRepository, userBirthdayAddStep: Step): Job {
-        return JobBuilder("add", jobRepository)
+        return JobBuilder("addJob", jobRepository)
             .incrementer(RunIdIncrementer())
             .start(userBirthdayAddStep)
             .build()
+    }
+
+    companion object {
+        private const val ADD_PAGE_SIZE = 10
+        private const val ADD_CHUNK_SIZE = 10
     }
 }
