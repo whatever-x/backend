@@ -1,0 +1,21 @@
+spring:
+  profiles:
+    active: batch
+  batch:
+    job:
+      enabled: false
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    properties:
+      hibernate:
+        ddl-auto: validate
+        show_sql: false
+        format_sql: true
+        jdbc:
+          batch_size: 20
