@@ -4,6 +4,7 @@ import com.whatever.caramel.batch.entity.BatchFcmNotification
 import com.whatever.caramel.domain.firebase.service.FirebaseService
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import com.whatever.caramel.domain.notification.repository.ScheduledNotificationRepository
+import com.whatever.caramel.infrastructure.firebase.exception.FcmException
 import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import jakarta.persistence.EntityManagerFactory
 import org.springframework.batch.core.Job
@@ -105,6 +106,8 @@ class AnniversaryBatchConfig(
             .reader(anniversaryItemReader)
             .processor(compositeItemProcessor)
             .writer(anniversaryItemWriter)
+            .faultTolerant()
+            .skip(FcmException::class.java)
             .build()
     }
 
