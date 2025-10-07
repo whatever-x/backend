@@ -6,6 +6,7 @@ import com.whatever.caramel.domain.firebase.service.FirebaseService
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import com.whatever.caramel.domain.notification.repository.ScheduledNotificationRepository
 import com.whatever.caramel.infrastructure.firebase.exception.FcmException
+import com.whatever.caramel.infrastructure.firebase.exception.FcmIllegalArgumentException
 import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import jakarta.persistence.EntityManagerFactory
 import org.springframework.batch.core.Job
@@ -14,6 +15,7 @@ import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.job.builder.JobBuilder
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
+import org.springframework.batch.core.step.skip.AlwaysSkipItemSkipPolicy
 import org.springframework.batch.item.ItemProcessor
 import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
@@ -22,6 +24,7 @@ import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilde
 import org.springframework.batch.repeat.RepeatStatus
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.retry.backoff.FixedBackOffPolicy
 import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDate
 import java.time.ZoneId
@@ -62,7 +65,7 @@ class AnniversaryBatchConfig(
     }
 
     @Bean
-    fun compositeItemProcessor(): ItemProcessor<ScheduledNotification, BatchFcmNotification> {
+    fun anniversaryItemProcessor(): ItemProcessor<ScheduledNotification, BatchFcmNotification> {
         return ItemProcessor<ScheduledNotification, BatchFcmNotification> { notification ->
             val fcmNotification = FcmNotification(
                 title = notification.title,
@@ -99,16 +102,24 @@ class AnniversaryBatchConfig(
     @Bean
     fun anniversaryStep(
         anniversaryItemReader: ItemReader<ScheduledNotification>,
-        compositeItemProcessor: ItemProcessor<ScheduledNotification, BatchFcmNotification>,
+        anniversaryItemProcessor: ItemProcessor<ScheduledNotification, BatchFcmNotification>,
         anniversaryItemWriter: ItemWriter<BatchFcmNotification>,
     ): Step {
         return StepBuilder("anniversaryStep", whatEverJobRepository)
             .chunk<ScheduledNotification, BatchFcmNotification>(FCM_CHUNK_SIZE, transactionManager)
             .reader(anniversaryItemReader)
-            .processor(compositeItemProcessor)
+            .processor(anniversaryItemProcessor)
             .writer(anniversaryItemWriter)
             .faultTolerant()
+            .retry(FcmException::class.java)
+            .noRetry(FcmIllegalArgumentException::class.java)
+            .retryLimit(2)
+            .backOffPolicy(FixedBackOffPolicy().apply {
+                backOffPeriod = 500L
+            })
+            .processorNonTransactional() // processor 에서 딱히 실패할만한 요소는 보이지 않지만 넣어둠
             .skip(FcmException::class.java)
+            .skipPolicy(AlwaysSkipItemSkipPolicy())
             .build()
     }
 
