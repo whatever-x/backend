@@ -5,6 +5,8 @@ import jakarta.persistence.EntityManagerFactory
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean
 import org.springframework.batch.support.DatabaseType
+import org.springframework.boot.autoconfigure.batch.BatchDataSource
+import org.springframework.boot.autoconfigure.batch.BatchTransactionManager
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder
 import org.springframework.context.annotation.Bean
@@ -17,6 +19,7 @@ import javax.sql.DataSource
 @Configuration
 class BatchJpaConfig {
     @Bean
+    @BatchDataSource
     @ConfigurationProperties("spring.datasource")
     fun batchDataSource(): DataSource {
         return HikariDataSource()
@@ -41,6 +44,7 @@ class BatchJpaConfig {
     }
 
     @Bean
+    @BatchTransactionManager
     fun transactionManager(
         entityManagerFactory: EntityManagerFactory
     ): PlatformTransactionManager {
@@ -49,8 +53,8 @@ class BatchJpaConfig {
 
     @Bean
     fun whatEverJobRepository(
-        batchDataSource: DataSource,
-        transactionManager: PlatformTransactionManager
+        @BatchDataSource batchDataSource: DataSource,
+        @BatchTransactionManager transactionManager: PlatformTransactionManager
     ): JobRepository {
         return JobRepositoryFactoryBean().apply {
             setDataSource(batchDataSource)
