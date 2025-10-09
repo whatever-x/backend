@@ -1,6 +1,5 @@
 package com.whatever.caramel.batch.config.job
 
-import com.whatever.caramel.batch.config.listener.AnniversaryJobListener
 import com.whatever.caramel.batch.entity.BatchFcmNotification
 import com.whatever.caramel.domain.firebase.service.FirebaseService
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
@@ -22,7 +21,6 @@ import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.database.JpaPagingItemReader
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder
 import org.springframework.batch.repeat.RepeatStatus
-import org.springframework.boot.autoconfigure.batch.BatchTransactionManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.retry.backoff.FixedBackOffPolicy
@@ -101,7 +99,7 @@ class AnniversaryBatchConfig(
 
     @Bean
     fun anniversaryStep(
-        @BatchTransactionManager transactionManager: PlatformTransactionManager,
+        transactionManager: PlatformTransactionManager,
         anniversaryItemReader: ItemReader<ScheduledNotification>,
         anniversaryItemProcessor: ItemProcessor<ScheduledNotification, BatchFcmNotification>,
         anniversaryItemWriter: ItemWriter<BatchFcmNotification>,
@@ -126,7 +124,7 @@ class AnniversaryBatchConfig(
 
     @Bean
     fun removeStep(
-        @BatchTransactionManager transactionManager: PlatformTransactionManager,
+        transactionManager: PlatformTransactionManager,
         scheduledNotificationRepository: ScheduledNotificationRepository,
     ): Step {
         return StepBuilder("removeStep", whatEverJobRepository)
@@ -142,7 +140,6 @@ class AnniversaryBatchConfig(
         return JobBuilder("anniversaryJob", jobRepository)
             .start(anniversaryStep)
             .next(removeStep)
-            .listener(AnniversaryJobListener::class.java)
             .build()
     }
 

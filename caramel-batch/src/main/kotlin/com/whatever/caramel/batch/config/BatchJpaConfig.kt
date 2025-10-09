@@ -5,9 +5,8 @@ import jakarta.persistence.EntityManagerFactory
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean
 import org.springframework.batch.support.DatabaseType
-import org.springframework.boot.autoconfigure.batch.BatchDataSource
-import org.springframework.boot.autoconfigure.batch.BatchTransactionManager
 import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.jdbc.DataSourceBuilder
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -18,43 +17,17 @@ import javax.sql.DataSource
 
 @Configuration
 class BatchJpaConfig {
+
     @Bean
-    @BatchDataSource
-    @ConfigurationProperties("spring.datasource")
+    @ConfigurationProperties(prefix = "spring.datasource.batch")
     fun batchDataSource(): DataSource {
-        return HikariDataSource()
-    }
-
-    @Bean
-    fun entityManagerFactory(
-        builder: EntityManagerFactoryBuilder,
-        @BatchDataSource batchDataSource: DataSource
-    ): LocalContainerEntityManagerFactoryBean {
-        return builder
-            .dataSource(batchDataSource)
-            .packages(
-                "com.whatever.caramel.batch",
-                "com.whatever.caramel.domain.notification.model",
-                "com.whatever.caramel.domain.couple.model",
-                "com.whatever.caramel.domain.user.model",
-                "com.whatever.caramel.domain.firebase.model",
-            )
-            .persistenceUnit("batch")
-            .build()
-    }
-
-    @Bean
-    @BatchTransactionManager
-    fun transactionManager(
-        entityManagerFactory: EntityManagerFactory
-    ): PlatformTransactionManager {
-        return JpaTransactionManager(entityManagerFactory)
+        return DataSourceBuilder.create().type(HikariDataSource::class.java).build()
     }
 
     @Bean
     fun whatEverJobRepository(
-        @BatchDataSource batchDataSource: DataSource,
-        @BatchTransactionManager transactionManager: PlatformTransactionManager
+        batchDataSource: DataSource,
+        transactionManager: PlatformTransactionManager
     ): JobRepository {
         return JobRepositoryFactoryBean().apply {
             setDataSource(batchDataSource)

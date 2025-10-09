@@ -17,7 +17,6 @@ import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemProcessor
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.database.JpaPagingItemReader
-import org.springframework.boot.autoconfigure.batch.BatchTransactionManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
@@ -141,7 +140,7 @@ class ScheduleNotificationAddBatchConfig(
 
     @Bean
     fun userBirthdayAddStep(
-        @BatchTransactionManager transactionManager: PlatformTransactionManager,
+        transactionManager: PlatformTransactionManager,
         whatEverJobRepository: JobRepository,
         userBirthdayItemReader: JpaPagingItemReader<User>,
         userBirthdayItemProcessor: ItemProcessor<User, List<ScheduledNotification>>,
