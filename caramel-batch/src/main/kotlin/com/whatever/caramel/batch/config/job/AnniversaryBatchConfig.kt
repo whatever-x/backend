@@ -22,6 +22,7 @@ import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.database.JpaPagingItemReader
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder
 import org.springframework.batch.repeat.RepeatStatus
+import org.springframework.boot.autoconfigure.batch.BatchTransactionManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.retry.backoff.FixedBackOffPolicy
@@ -32,7 +33,6 @@ import java.time.ZoneId
 @Configuration
 class AnniversaryBatchConfig(
     private val whatEverJobRepository: JobRepository,
-    private val transactionManager: PlatformTransactionManager,
     private val entityManagerFactory: EntityManagerFactory,
 ) {
     @Bean
@@ -101,6 +101,7 @@ class AnniversaryBatchConfig(
 
     @Bean
     fun anniversaryStep(
+        @BatchTransactionManager transactionManager: PlatformTransactionManager,
         anniversaryItemReader: ItemReader<ScheduledNotification>,
         anniversaryItemProcessor: ItemProcessor<ScheduledNotification, BatchFcmNotification>,
         anniversaryItemWriter: ItemWriter<BatchFcmNotification>,
@@ -125,6 +126,7 @@ class AnniversaryBatchConfig(
 
     @Bean
     fun removeStep(
+        @BatchTransactionManager transactionManager: PlatformTransactionManager,
         scheduledNotificationRepository: ScheduledNotificationRepository,
     ): Step {
         return StepBuilder("removeStep", whatEverJobRepository)

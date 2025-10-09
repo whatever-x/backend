@@ -28,7 +28,7 @@ class BatchJpaConfig {
     @Bean
     fun entityManagerFactory(
         builder: EntityManagerFactoryBuilder,
-        batchDataSource: DataSource
+        @BatchDataSource batchDataSource: DataSource
     ): LocalContainerEntityManagerFactoryBean {
         return builder
             .dataSource(batchDataSource)
