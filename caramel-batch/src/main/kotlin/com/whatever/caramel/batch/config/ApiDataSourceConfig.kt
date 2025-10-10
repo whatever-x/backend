@@ -2,38 +2,42 @@ package com.whatever.caramel.batch.config
 
 import com.zaxxer.hikari.HikariDataSource
 import jakarta.persistence.EntityManagerFactory
-import org.springframework.batch.core.repository.JobRepository
-import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean
-import org.springframework.batch.support.DatabaseType
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.jdbc.DataSourceBuilder
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Primary
 import org.springframework.orm.jpa.JpaTransactionManager
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean
 import org.springframework.transaction.PlatformTransactionManager
 import javax.sql.DataSource
 
 @Configuration
-class BatchJpaConfig {
-
+class ApiDataSourceConfig {
     @Bean
-    @ConfigurationProperties(prefix = "spring.datasource.batch")
-    fun batchDataSource(): DataSource {
+    @Primary
+    @ConfigurationProperties(prefix = "spring.datasource.api")
+    fun apiDataSource(): DataSource {
         return DataSourceBuilder.create().type(HikariDataSource::class.java).build()
     }
 
     @Bean
-    fun whatEverJobRepository(
-        batchDataSource: DataSource,
-        transactionManager: PlatformTransactionManager
-    ): JobRepository {
-        return JobRepositoryFactoryBean().apply {
-            setDataSource(batchDataSource)
-            this.transactionManager = transactionManager
-            setDatabaseType(DatabaseType.POSTGRES.name)
-            afterPropertiesSet()
-        }.`object`
+    @Primary
+    fun apiEntityManagerFactory(
+        builder: EntityManagerFactoryBuilder,
+        apiDataSource: DataSource,
+    ): LocalContainerEntityManagerFactoryBean {
+        return builder
+            .dataSource(apiDataSource)
+            .packages("com.whatever.caramel.domain")
+            .persistenceUnit("batch")
+            .build()
+    }
+
+    @Bean
+    @Primary
+    fun apiTransactionManager(entityManagerFactory: EntityManagerFactory): PlatformTransactionManager {
+        return JpaTransactionManager(entityManagerFactory)
     }
 }

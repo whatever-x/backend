@@ -2,20 +2,17 @@ spring:
   config:
     import: optional:file:../.env[.properties]
   datasource:
-    hikari:
-      maximum-pool-size: ${DB_MAX_CONNECTION}
-      connection-test-query: "SELECT 1"
     api:
       driver-class-name: org.postgresql.Driver
       jdbc-url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
       username: ${POSTGRES_USERNAME}
-      password: ${POSTGRES_PASSWORD}
-
+      password: 123
     batch:
       driver-class-name: org.postgresql.Driver
-      jdbc-url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
-      username: ${POSTGRES_USERNAME}
-      password: ${POSTGRES_PASSWORD}
+      jdbc-url: jdbc:postgresql://${POSTGRES_BATCH_HOST}:${POSTGRES_BATCH_PORT}/${POSTGRES_BATCH_DATABASE}
+      username: ${POSTGRES_BATCH_USERNAME}
+      password: 123
+
   jpa:
     properties:
       hibernate:

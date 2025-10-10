@@ -8,7 +8,7 @@ import org.springframework.boot.runApplication
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import kotlin.system.exitProcess
 
-@ConfigurationPropertiesScan(basePackages = ["com.whatever.caramel"],)
+@ConfigurationPropertiesScan(basePackages = ["com.whatever.caramel"])
 @SpringBootApplication(scanBasePackages = ["com.whatever.caramel"])
 @EnableJpaRepositories(basePackages = ["com.whatever.caramel.domain"])
 @EntityScan(basePackages = ["com.whatever.caramel.domain"])

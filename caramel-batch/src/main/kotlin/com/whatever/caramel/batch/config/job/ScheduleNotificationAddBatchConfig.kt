@@ -25,7 +25,7 @@ import java.time.ZoneId
 
 @Configuration
 class ScheduleNotificationAddBatchConfig(
-    private val entityManagerFactory: EntityManagerFactory,
+    private val apiEntityManagerFactory: EntityManagerFactory,
     private val messageProvider: NotificationMessageProvider,
     private val scheduledNotificationRepository: ScheduledNotificationRepository,
 ) {
@@ -62,7 +62,7 @@ class ScheduleNotificationAddBatchConfig(
         return JpaPagingItemReader<User>().apply {
             name = "userBirthdayReader"
             pageSize = ADD_PAGE_SIZE
-            setEntityManagerFactory(entityManagerFactory)
+            setEntityManagerFactory(apiEntityManagerFactory)
             setQueryString(query)
             if (leapYearPredicate.not()) {
                 setParameterValues(
@@ -140,14 +140,14 @@ class ScheduleNotificationAddBatchConfig(
 
     @Bean
     fun userBirthdayAddStep(
-        transactionManager: PlatformTransactionManager,
+        apiTransactionManager: PlatformTransactionManager,
         whatEverJobRepository: JobRepository,
         userBirthdayItemReader: JpaPagingItemReader<User>,
         userBirthdayItemProcessor: ItemProcessor<User, List<ScheduledNotification>>,
         userBirthdayAddItemWriter: ItemWriter<List<ScheduledNotification>>,
     ): Step {
         return StepBuilder("addStep", whatEverJobRepository)
-            .chunk<User, List<ScheduledNotification>>(ADD_CHUNK_SIZE, transactionManager)
+            .chunk<User, List<ScheduledNotification>>(ADD_CHUNK_SIZE, apiTransactionManager)
             .reader(userBirthdayItemReader)
             .processor(userBirthdayItemProcessor)
             .writer(userBirthdayAddItemWriter)

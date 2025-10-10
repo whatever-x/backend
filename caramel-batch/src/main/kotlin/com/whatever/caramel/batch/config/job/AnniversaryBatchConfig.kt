@@ -31,7 +31,7 @@ import java.time.ZoneId
 @Configuration
 class AnniversaryBatchConfig(
     private val whatEverJobRepository: JobRepository,
-    private val entityManagerFactory: EntityManagerFactory,
+    private val apiEntityManagerFactory: EntityManagerFactory,
 ) {
     @Bean
     @StepScope
@@ -43,7 +43,7 @@ class AnniversaryBatchConfig(
 
         return JpaPagingItemReaderBuilder<ScheduledNotification>()
             .name("anniversaryItemReader")
-            .entityManagerFactory(entityManagerFactory)
+            .entityManagerFactory(apiEntityManagerFactory)
             .queryString(
                 """
                     SELECT s FROM ScheduledNotification s 
@@ -99,13 +99,13 @@ class AnniversaryBatchConfig(
 
     @Bean
     fun anniversaryStep(
-        transactionManager: PlatformTransactionManager,
+        apiTransactionManager: PlatformTransactionManager,
         anniversaryItemReader: ItemReader<ScheduledNotification>,
         anniversaryItemProcessor: ItemProcessor<ScheduledNotification, BatchFcmNotification>,
         anniversaryItemWriter: ItemWriter<BatchFcmNotification>,
     ): Step {
         return StepBuilder("anniversaryStep", whatEverJobRepository)
-            .chunk<ScheduledNotification, BatchFcmNotification>(FCM_CHUNK_SIZE, transactionManager)
+            .chunk<ScheduledNotification, BatchFcmNotification>(FCM_CHUNK_SIZE, apiTransactionManager)
             .reader(anniversaryItemReader)
             .processor(anniversaryItemProcessor)
             .writer(anniversaryItemWriter)
@@ -124,14 +124,14 @@ class AnniversaryBatchConfig(
 
     @Bean
     fun removeStep(
-        transactionManager: PlatformTransactionManager,
+        apiTransactionManager: PlatformTransactionManager,
         scheduledNotificationRepository: ScheduledNotificationRepository,
     ): Step {
         return StepBuilder("removeStep", whatEverJobRepository)
             .tasklet({ _, _ ->
                 scheduledNotificationRepository.deleteAllInBatch()
                 RepeatStatus.FINISHED
-            }, transactionManager)
+            }, apiTransactionManager)
             .build()
     }
 
