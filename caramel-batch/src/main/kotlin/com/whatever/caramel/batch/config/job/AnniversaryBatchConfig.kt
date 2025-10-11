@@ -1,6 +1,7 @@
 package com.whatever.caramel.batch.config.job
 
 import com.whatever.caramel.batch.config.listener.AnniversaryJobListener
+import com.whatever.caramel.batch.config.listener.AnniversaryStepListener
 import com.whatever.caramel.batch.entity.BatchFcmNotification
 import com.whatever.caramel.domain.firebase.service.FirebaseService
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
@@ -104,6 +105,7 @@ class AnniversaryBatchConfig(
         anniversaryItemReader: ItemReader<ScheduledNotification>,
         anniversaryItemProcessor: ItemProcessor<ScheduledNotification, BatchFcmNotification>,
         anniversaryItemWriter: ItemWriter<BatchFcmNotification>,
+        anniversaryStepListener: AnniversaryStepListener,
     ): Step {
         return StepBuilder("anniversaryStep", whatEverJobRepository)
             .chunk<ScheduledNotification, BatchFcmNotification>(FCM_CHUNK_SIZE, transactionManager)
@@ -120,6 +122,7 @@ class AnniversaryBatchConfig(
             .processorNonTransactional() // processor 에서 딱히 실패할만한 요소는 보이지 않지만 넣어둠
             .skip(FcmException::class.java)
             .skipPolicy(AlwaysSkipItemSkipPolicy())
+            .listener(anniversaryStepListener)
             .build()
     }
 
