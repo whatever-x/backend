@@ -13,6 +13,9 @@ dependencies {
     // Spring Batch
     implementation("org.springframework.boot:spring-boot-starter-batch")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+
+    // Slack
+    implementation("com.slack.api:slack-api-client:1.45.4")
 }
 
 /**

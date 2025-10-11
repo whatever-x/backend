@@ -1,5 +1,6 @@
 package com.whatever.caramel.batch.config.job
 
+import com.whatever.caramel.batch.config.listener.AnniversaryJobListener
 import com.whatever.caramel.batch.entity.BatchFcmNotification
 import com.whatever.caramel.domain.firebase.service.FirebaseService
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
@@ -136,10 +137,16 @@ class AnniversaryBatchConfig(
     }
 
     @Bean
-    fun anniversaryJob(jobRepository: JobRepository, anniversaryStep: Step, removeStep: Step): Job {
+    fun anniversaryJob(
+        jobRepository: JobRepository,
+        anniversaryStep: Step,
+        removeStep: Step,
+        anniversaryJobListener: AnniversaryJobListener,
+    ): Job {
         return JobBuilder("anniversaryJob", jobRepository)
             .start(anniversaryStep)
             .next(removeStep)
+            .listener(anniversaryJobListener)
             .build()
     }
 
