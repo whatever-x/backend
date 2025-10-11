@@ -99,13 +99,13 @@ class AnniversaryBatchConfig(
 
     @Bean
     fun anniversaryStep(
-        apiTransactionManager: PlatformTransactionManager,
+        transactionManager: PlatformTransactionManager,
         anniversaryItemReader: ItemReader<ScheduledNotification>,
         anniversaryItemProcessor: ItemProcessor<ScheduledNotification, BatchFcmNotification>,
         anniversaryItemWriter: ItemWriter<BatchFcmNotification>,
     ): Step {
         return StepBuilder("anniversaryStep", whatEverJobRepository)
-            .chunk<ScheduledNotification, BatchFcmNotification>(FCM_CHUNK_SIZE, apiTransactionManager)
+            .chunk<ScheduledNotification, BatchFcmNotification>(FCM_CHUNK_SIZE, transactionManager)
             .reader(anniversaryItemReader)
             .processor(anniversaryItemProcessor)
             .writer(anniversaryItemWriter)
@@ -124,14 +124,14 @@ class AnniversaryBatchConfig(
 
     @Bean
     fun removeStep(
-        apiTransactionManager: PlatformTransactionManager,
+        transactionManager: PlatformTransactionManager,
         scheduledNotificationRepository: ScheduledNotificationRepository,
     ): Step {
         return StepBuilder("removeStep", whatEverJobRepository)
             .tasklet({ _, _ ->
                 scheduledNotificationRepository.deleteAllInBatch()
                 RepeatStatus.FINISHED
-            }, apiTransactionManager)
+            }, transactionManager)
             .build()
     }
 

@@ -140,14 +140,14 @@ class ScheduleNotificationAddBatchConfig(
 
     @Bean
     fun userBirthdayAddStep(
-        apiTransactionManager: PlatformTransactionManager,
+        transactionManager: PlatformTransactionManager,
         whatEverJobRepository: JobRepository,
         userBirthdayItemReader: JpaPagingItemReader<User>,
         userBirthdayItemProcessor: ItemProcessor<User, List<ScheduledNotification>>,
         userBirthdayAddItemWriter: ItemWriter<List<ScheduledNotification>>,
     ): Step {
         return StepBuilder("addStep", whatEverJobRepository)
-            .chunk<User, List<ScheduledNotification>>(ADD_CHUNK_SIZE, apiTransactionManager)
+            .chunk<User, List<ScheduledNotification>>(ADD_CHUNK_SIZE, transactionManager)
             .reader(userBirthdayItemReader)
             .processor(userBirthdayItemProcessor)
             .writer(userBirthdayAddItemWriter)

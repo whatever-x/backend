@@ -37,7 +37,7 @@ class ApiDataSourceConfig {
 
     @Bean
     @Primary
-    fun apiTransactionManager(entityManagerFactory: EntityManagerFactory): PlatformTransactionManager {
+    fun transactionManager(entityManagerFactory: EntityManagerFactory): PlatformTransactionManager {
         return JpaTransactionManager(entityManagerFactory)
     }
 }
