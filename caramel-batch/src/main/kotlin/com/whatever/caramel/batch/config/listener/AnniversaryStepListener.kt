@@ -15,6 +15,7 @@ class AnniversaryStepListener {
 
     @AfterStep
     fun afterStep(stepExecution: StepExecution): ExitStatus {
+        if (webhookUrl.isBlank()) return ExitStatus.NOOP
         val slack = Slack.getInstance()
         val message = "${stepExecution.writeCount}명 대상으로 FCM 발송"
         val payLoad = Payload.builder()

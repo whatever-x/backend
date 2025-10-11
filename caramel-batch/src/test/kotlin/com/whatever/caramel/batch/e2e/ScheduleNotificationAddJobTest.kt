@@ -1,10 +1,8 @@
 package com.whatever.caramel.batch.e2e
 
 import com.whatever.caramel.domain.notification.repository.ScheduledNotificationRepository
-import com.whatever.caramel.domain.user.repository.UserRepository
 import jakarta.annotation.PostConstruct
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.batch.core.BatchStatus
 import org.springframework.batch.core.ExitStatus
@@ -21,7 +19,7 @@ import java.time.ZoneId
 @SpringBootTest
 @SpringBatchTest
 @ActiveProfiles("test")
-class ScheduleNotificationAddBatchTest @Autowired constructor(
+class ScheduleNotificationAddJobTest @Autowired constructor(
     private val jobLauncherTestUtils: JobLauncherTestUtils,
     private val jdbcTemplate: JdbcTemplate,
     private val notificationAddJob: Job,
@@ -55,7 +53,8 @@ class ScheduleNotificationAddBatchTest @Autowired constructor(
     private fun insertCouples() {
         // 커플 초기화
         jdbcTemplate.batchUpdate(
-            "INSERT INTO couple (shared_message, status, is_deleted, version, created_at, updated_at) VALUES (?, ?, false, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+            "INSERT INTO couple (shared_message, status, is_deleted, version, created_at, updated_at) " +
+                "VALUES (?, ?, false, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
             listOf(
                 arrayOf("hi", "ACTIVE"),
                 arrayOf("hi", "ACTIVE"),
