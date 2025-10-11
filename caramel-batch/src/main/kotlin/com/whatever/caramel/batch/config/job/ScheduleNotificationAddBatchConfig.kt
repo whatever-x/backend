@@ -134,7 +134,7 @@ class ScheduleNotificationAddBatchConfig(
     @StepScope
     fun userBirthdayAddItemWriter(): ItemWriter<List<ScheduledNotification>> {
         return ItemWriter { chunk ->
-            scheduledNotificationRepository.saveAll(chunk.flatten())
+            scheduledNotificationRepository.insertAllWithoutConflict(chunk.flatten())
         }
     }
 
