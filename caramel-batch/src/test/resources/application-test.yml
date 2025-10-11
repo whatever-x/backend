@@ -1,9 +1,8 @@
 spring:
-  datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+  config:
+    activate:
+      on-profile: test
+    import: optional:file:../.env[.properties]
   sql:
     init:
       mode: always
@@ -13,3 +12,73 @@ spring:
       initialize-schema: always
     job:
       enabled: false
+  datasource:
+    api:
+      jdbc-url: jdbc:h2:mem:batchdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_UPPER=false
+      driver-class-name: org.h2.Driver
+      username: sa
+      password:
+    batch:
+      jdbc-url: jdbc:h2:mem:batchdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_UPPER=false
+      driver-class-name: org.h2.Driver
+      username: sa
+      password:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        show_sql: true
+        use_sql_comments: false
+        format_sql: true
+        globally_quoted_identifiers: true
+        order_updates: true
+        jdbc:
+          batch_size: 20
+  cloud:
+    openfeign:
+      okhttp:
+        enabled: true
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+  cache:
+    type: redis
+
+oauth:
+  kakao:
+    base-url: ${OAUTH_BASE_URL}
+    client-id: ${OAUTH_CLIENT_ID}
+    client-secret: ${OAUTH_CLIENT_SECRET}
+    redirect-url: ${OAUTH_REDIRECT_URL}
+    app-id: ${OAUTH_APP_ID}
+    admin-key: ${OAUTH_ADMIN_KEY}
+springdoc:
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+  swagger-ui:
+    path: /swagger
+    disable-swagger-default-url: true
+    display-request-duration: true
+jwt:
+  secret-key-str: ${SECRET_KEY_STR}
+  access-expiration-sec: ${ACCESS_EXPIRATION_SEC}
+  refresh-expiration-sec: ${REFRESH_EXPIRATION_SEC}
+  issuer: Caramel
+kor: # Kor Open Api Key
+  openapi:
+    specialday:
+      key: ${OPENAPI_SPECIALDAY_KEY}
+firebase:
+  credential-file-path: ${GOOGLE_APPLICATION_CREDENTIALS}
+  fcm-enabled: ${FCM_ENABLED}
+crypto:
+  password: ${CRYPTO_PASSWORD}
+  salt: ${CRYPTO_SALT}
+
+slack:
+  webhook:
+    url: ""
