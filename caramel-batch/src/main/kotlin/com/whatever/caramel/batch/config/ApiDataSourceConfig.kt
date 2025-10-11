@@ -24,7 +24,7 @@ class ApiDataSourceConfig {
 
     @Bean
     @Primary
-    fun apiEntityManagerFactory(
+    fun entityManagerFactory(
         builder: EntityManagerFactoryBuilder,
         apiDataSource: DataSource,
     ): LocalContainerEntityManagerFactoryBean {

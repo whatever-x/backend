@@ -25,7 +25,7 @@ import java.time.ZoneId
 
 @Configuration
 class ScheduleNotificationAddBatchConfig(
-    private val apiEntityManagerFactory: EntityManagerFactory,
+    private val entityManagerFactory: EntityManagerFactory,
     private val messageProvider: NotificationMessageProvider,
     private val scheduledNotificationRepository: ScheduledNotificationRepository,
 ) {
@@ -62,7 +62,7 @@ class ScheduleNotificationAddBatchConfig(
         return JpaPagingItemReader<User>().apply {
             name = "userBirthdayReader"
             pageSize = ADD_PAGE_SIZE
-            setEntityManagerFactory(apiEntityManagerFactory)
+            setEntityManagerFactory(entityManagerFactory)
             setQueryString(query)
             if (leapYearPredicate.not()) {
                 setParameterValues(

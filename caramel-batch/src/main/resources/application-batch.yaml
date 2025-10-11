@@ -6,17 +6,17 @@ spring:
       driver-class-name: org.postgresql.Driver
       jdbc-url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
       username: ${POSTGRES_USERNAME}
-      password: 123
+      password: ${POSTGRES_PASSWORD}
     batch:
       driver-class-name: org.postgresql.Driver
       jdbc-url: jdbc:postgresql://${POSTGRES_BATCH_HOST}:${POSTGRES_BATCH_PORT}/${POSTGRES_BATCH_DATABASE}
       username: ${POSTGRES_BATCH_USERNAME}
-      password: 123
+      password: ${POSTGRES_BATCH_PASSWORD}
 
   jpa:
     properties:
       hibernate:
-        ddl-auto: validate
+        ddl-auto: none
         show_sql: true
         format_sql: true
         highlight_sql: true
