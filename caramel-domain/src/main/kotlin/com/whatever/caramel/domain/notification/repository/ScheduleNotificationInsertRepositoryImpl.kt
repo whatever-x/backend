@@ -1,48 +1,51 @@
 package com.whatever.caramel.domain.notification.repository
 
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
-import jakarta.persistence.EntityManager
-import jakarta.persistence.PersistenceContext
 import jakarta.transaction.Transactional
 import org.springframework.core.env.Environment
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
+import java.sql.Timestamp
 
 @Repository
 class ScheduleNotificationInsertRepositoryImpl(
-    @PersistenceContext
-    private val entityManager: EntityManager,
     private val env: Environment,
+    private val jdbcTemplate: JdbcTemplate,
 ) : ScheduleNotificationInsertRepository {
 
     @Transactional
     override fun insertAllWithoutConflict(notifications: List<ScheduledNotification>) {
         if (notifications.isEmpty()) return
 
-        val values = notifications.joinToString(",") { notification ->
-            val imageValue = notification.image?.let { "'${it.replace("'", "''")}'" } ?: "NULL"
+        val isBatchProfile = env.activeProfiles.contains("batch")
+
+        val sql = if (isBatchProfile) {
             """
-            (${notification.targetUserId}, '${notification.notificationType}', '${notification.notifyAt}', 
-             '${notification.title.replace("'", "''")}', '${notification.body.replace("'", "''")}', 
-             $imageValue, NOW(), NOW())
+            INSERT INTO scheduled_notification
+                (target_user_id, notification_type, notify_at, title, body, image)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT (target_user_id, notification_type) DO NOTHING
+            """.trimIndent()
+        } else {
+            """
+            MERGE INTO scheduled_notification
+                (target_user_id, notification_type, notify_at, title, body, image, created_at, updated_at)
+            KEY(target_user_id, notification_type)
+            VALUES (?, ?, ?, ?, ?, ?, now(), now())
             """.trimIndent()
         }
 
-        // H2 에서는 ON CONFLICT가 없어서 아래처럼 분기, 더좋은 방법이 있다면 알려주세용
-        val sql = if (env.activeProfiles.contains("batch")) {
-            """
-            INSERT INTO scheduled_notification 
-                (target_user_id, notification_type, notify_at, title, body, image, created_at, updated_at)
-            VALUES $values
-            ON CONFLICT (target_user_id, notification_type) DO NOTHING
-        """
-        } else {
-            """
-            INSERT INTO scheduled_notification 
-                (target_user_id, notification_type, notify_at, title, body, image, created_at, updated_at)
-            VALUES $values
-        """
+        val batchArgs = notifications.map { notification ->
+            arrayOf<Any?>(
+                notification.targetUserId,
+                notification.notificationType.name,
+                notification.notifyAt.let { Timestamp.valueOf(it) },
+                notification.title,
+                notification.body,
+                notification.image // nullable
+            )
         }
 
-        entityManager.createNativeQuery(sql).executeUpdate()
+        jdbcTemplate.batchUpdate(sql, batchArgs)
     }
 }
