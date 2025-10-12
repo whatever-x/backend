@@ -1,4 +1,6 @@
 spring:
+  main:
+    web-application-type: none
   config:
     import: optional:file:../.env[.properties]
   datasource:

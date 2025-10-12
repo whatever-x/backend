@@ -7,5 +7,3 @@ ON scheduled_notification(target_user_id, notification_type);
 
 ## FCM 전송 및 성공시 제거 배치 수행
 ./gradlew anniversaryBatch
-
-// 테스트 코드... 가능하면 짜기
