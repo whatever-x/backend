@@ -2,7 +2,9 @@ spring:
   main:
     web-application-type: none
   config:
-    import: optional:file:../.env[.properties]
+    import: >
+      optional:file:.env[.properties],
+      optional:file:../.env[.properties]
   datasource:
     api:
       driver-class-name: org.postgresql.Driver
