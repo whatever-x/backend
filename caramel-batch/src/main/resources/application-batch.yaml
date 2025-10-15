@@ -1,0 +1,57 @@
+spring:
+  config:
+    import: optional:file:../.env[.properties]
+  datasource:
+    api:
+      driver-class-name: org.postgresql.Driver
+      jdbc-url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
+      username: ${POSTGRES_USERNAME}
+      password: ${POSTGRES_PASSWORD}
+    batch:
+      driver-class-name: org.postgresql.Driver
+      jdbc-url: jdbc:postgresql://${POSTGRES_BATCH_HOST}:${POSTGRES_BATCH_PORT}/${POSTGRES_BATCH_DATABASE}
+      username: ${POSTGRES_BATCH_USERNAME}
+      password: ${POSTGRES_BATCH_PASSWORD}
+
+  jpa:
+    properties:
+      hibernate:
+        ddl-auto: none
+        show_sql: true
+        format_sql: true
+        highlight_sql: true
+        jdbc:
+          batch_size: 10
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+  cache:
+    type: redis
+
+slack:
+  webhook:
+    url: ${SLACK_BATCH_WEBHOOK_URL}
+
+jwt:
+  secret-key-str: ${SECRET_KEY_STR}
+  access-expiration-sec: ${ACCESS_EXPIRATION_SEC}
+  refresh-expiration-sec: ${REFRESH_EXPIRATION_SEC}
+  issuer: Caramel
+
+oauth:
+  kakao:
+    base-url: ${OAUTH_BASE_URL}
+    client-id: ${OAUTH_CLIENT_ID}
+    client-secret: ${OAUTH_CLIENT_SECRET}
+    redirect-url: ${OAUTH_REDIRECT_URL}
+    app-id: ${OAUTH_APP_ID}
+    admin-key: ${OAUTH_ADMIN_KEY}
+  apple:
+    base-url: ${APPLE_BASE_URL}
+    team-id: ${APPLE_TEAM_ID}
+    service-id: ${APPLE_SERVICE_ID}
+    key-id: ${APPLE_KEY_ID}
+    key-path: ${APPLE_KEY_PATH}
+    redirect-url: ${APPLE_REDIRECT_URI}

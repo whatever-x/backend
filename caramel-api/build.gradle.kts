@@ -9,7 +9,6 @@ val opentelemetryVersion = "2.14.0"
 dependencies {
     implementation(project(":caramel-domain"))
     implementation(project(":caramel-common"))
-    implementation(project(":caramel-batch"))
 
     // Spring
     implementation("org.springframework.boot:spring-boot-starter-web")

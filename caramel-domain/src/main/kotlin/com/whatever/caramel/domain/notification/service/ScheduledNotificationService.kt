@@ -5,7 +5,6 @@ import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import com.whatever.caramel.domain.notification.repository.ScheduledNotificationRepository
 import com.whatever.caramel.domain.notification.vo.NotificationMessageVo
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
@@ -32,11 +31,6 @@ class ScheduledNotificationService(
             )
         }
         scheduledNotificationRepository.saveAll(notifications)
-    }
-
-    @Transactional(readOnly = true)
-    fun getMatchedScheduledNotifications(startOfDay: LocalDateTime, endOfDay: LocalDateTime): List<ScheduledNotification> {
-        return scheduledNotificationRepository.findByNotifyAt(startOfDay, endOfDay)
     }
 
     fun deleteScheduledNotifications(
