@@ -15,6 +15,7 @@ class AnniversaryJobListener {
 
     @AfterJob
     fun finishAnniversaryJob(jobExecution: JobExecution) {
+        if (webhookUrl.isBlank()) return
         val slack = Slack.getInstance()
         val batchStatusText = "FCM SEND ${jobExecution.status.name}"
         val message = when (jobExecution.status) {
