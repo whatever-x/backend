@@ -1,15 +1,16 @@
-package com.whatever.caramel.domain.notification.repository
+package com.whatever.caramel.domain.notification.repository.h2
 
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
+import com.whatever.caramel.domain.notification.repository.ScheduleNotificationInsertRepository
 import jakarta.transaction.Transactional
-import org.springframework.core.env.Environment
+import org.springframework.context.annotation.Profile
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import java.sql.Timestamp
 
 @Repository
+@Profile("test")
 class ScheduleNotificationInsertRepositoryImpl(
-    private val env: Environment,
     private val jdbcTemplate: JdbcTemplate,
 ) : ScheduleNotificationInsertRepository {
 
@@ -17,23 +18,12 @@ class ScheduleNotificationInsertRepositoryImpl(
     override fun insertAllWithoutConflict(notifications: List<ScheduledNotification>) {
         if (notifications.isEmpty()) return
 
-        val isBatchProfile = env.activeProfiles.contains("batch")
-
-        val sql = if (isBatchProfile) {
-            """
-            INSERT INTO scheduled_notification
-                (target_user_id, notification_type, notify_at, title, body, image)
-            VALUES (?, ?, ?, ?, ?, ?)
-            ON CONFLICT (target_user_id, notification_type) DO NOTHING
-            """.trimIndent()
-        } else {
-            """
+        val sql = """
             MERGE INTO scheduled_notification
                 (target_user_id, notification_type, notify_at, title, body, image, created_at, updated_at)
             KEY(target_user_id, notification_type)
             VALUES (?, ?, ?, ?, ?, ?, now(), now())
-            """.trimIndent()
-        }
+        """.trimIndent()
 
         val batchArgs = notifications.map { notification ->
             arrayOf<Any?>(
