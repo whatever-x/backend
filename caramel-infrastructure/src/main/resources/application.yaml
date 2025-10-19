@@ -243,27 +243,5 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
-  cache: # 원하는 cache의 주석을 해제하여 사용
-    type: caffeine
-#    type: redis
-
----
-# ┌───────────────────────── Batch 프로파일 ────────────────────────────
-spring:
-  config:
-    import: optional:file:.env[.properties]
-    activate:
-      on-profile: batch
-  application:
-    name: whatever-batch
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
-  jpa:
-    hibernate:
-      ddl-auto: none
-    defer-datasource-initialization: true
-  cache: # 원하는 cache의 주석을 해제하여 사용
+  cache:
     type: redis

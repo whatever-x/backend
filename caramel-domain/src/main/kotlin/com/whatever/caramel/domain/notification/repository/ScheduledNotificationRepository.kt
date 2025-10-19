@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query
 interface ScheduledNotificationRepository :
     JpaRepository<ScheduledNotification, Long>,
     ScheduleNotificationInsertRepository {
-    @Modifying
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(
         """
         delete from ScheduledNotification sn

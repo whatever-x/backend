@@ -44,7 +44,7 @@ fun registerBatchTask(jobName: String) {
         mainClass.set("com.whatever.caramel.batch.WhateverBatchApplicationKt")
         classpath = project(":caramel-batch").sourceSets["main"].runtimeClasspath
         args = listOf(
-            "--spring.profiles.active=dev,batch",
+            "--spring.profiles.active=batch",
             "--spring.batch.job.name=${jobName}Job",
             "runDate=$localDate",
         )
