@@ -1,6 +1,7 @@
 name: caramel batch publish
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'caramel-batch/**'
