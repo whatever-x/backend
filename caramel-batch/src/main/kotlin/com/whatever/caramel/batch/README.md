@@ -1,3 +1,4 @@
+## 수동 실행은 아래를 따릅니다.
 ## 유저 테이블에 추가 배치 수행
 ./gradlew notificationAddBatch
 
