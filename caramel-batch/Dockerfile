@@ -6,10 +6,10 @@ RUN chmod +x gradlew
 COPY gradle /app/gradle
 
 COPY settings.gradle.kts build.gradle.kts ./
-COPY caramel-batch caramel-batch
-COPY caramel-domain caramel-domain
-COPY caramel-common caramel-common
 COPY caramel-infrastructure caramel-infrastructure
+COPY caramel-common caramel-common
+COPY caramel-domain caramel-domain
+COPY caramel-batch caramel-batch
 
 RUN ./gradlew :caramel-batch:bootJar --no-daemon
 
