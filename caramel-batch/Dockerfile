@@ -14,7 +14,6 @@ COPY caramel-infrastructure caramel-infrastructure
 RUN ./gradlew :caramel-batch:bootJar --no-daemon
 
 # -----
-
 FROM eclipse-temurin:21-jre-alpine AS runner
 
 WORKDIR /app

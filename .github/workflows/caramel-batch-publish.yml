@@ -30,7 +30,8 @@ jobs:
       - name: Build and Push
         uses: docker/build-push-action@v6
         with:
-          context: ./caramel-batch
+          context: .
+          file: ./caramel-batch/Dockerfile
           push: true
           tags: ${{ secrets.BATCH_DOCKERHUB_USERNAME }}/caramel-batch:latest
           platforms: linux/amd64,linux/arm64/v8
