@@ -19,5 +19,5 @@ FROM eclipse-temurin:21-jre-alpine AS runner
 WORKDIR /app
 
 COPY --from=builder /app/caramel-batch/build/libs/caramel-batch.jar caramel-batch.jar
-USER caramel-batch
+
 ENTRYPOINT ["java", "-jar", "caramel-batch.jar"]
