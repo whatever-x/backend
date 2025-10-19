@@ -5,13 +5,13 @@ COPY gradlew .
 RUN chmod +x gradlew
 COPY gradle /app/gradle
 
-COPY build.gradle.kts ../settings.gradle.kts ./
+COPY settings.gradle.kts build.gradle.kts ./
+COPY caramel-batch caramel-batch
+COPY caramel-domain caramel-domain
+COPY caramel-common caramel-common
+COPY caramel-infrastructure caramel-infrastructure
 
-RUN ./gradlew dependencies
-
-COPY src/main /app/src/main
-
-RUN ./gradlew bootJar --no-daemon
+RUN ./gradlew :caramel-batch:bootJar --no-daemon
 
 # -----
 
@@ -19,6 +19,6 @@ FROM eclipse-temurin:21-jre-alpine AS runner
 
 WORKDIR /app
 
-COPY --from=builder /app/build/libs/*.jar caramel-batch.jar
+COPY --from=builder /app/caramel-batch/build/libs/caramel-batch.jar caramel-batch.jar
 USER caramel-batch
 ENTRYPOINT ["java", "-jar", "caramel-batch.jar"]
