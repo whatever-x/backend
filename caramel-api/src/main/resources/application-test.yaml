@@ -63,3 +63,10 @@ firebase:
 crypto:
   password: ${CRYPTO_PASSWORD}
   salt: ${CRYPTO_SALT}
+
+jasypt:
+  encryptor:
+    password: ${JASYPT_ENCRYPTOR_PASSWORD}
+    algorithm: PBEWITHHMACSHA512ANDAES_256
+    iv-generator-classname: org.jasypt.iv.RandomIvGenerator
+    pool-size: 1
