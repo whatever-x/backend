@@ -3,18 +3,22 @@ package com.whatever.caramel.domain.content.model
 import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.domain.content.exception.ContentExceptionCode.ILLEGAL_CONTENT_DETAIL
 import com.whatever.caramel.domain.content.exception.ContentIllegalArgumentException
+import com.whatever.caramel.domain.content.model.converter.JpaStringEncryptConverter
 import jakarta.persistence.Column
+import jakarta.persistence.Convert
 import jakarta.persistence.Embeddable
 import org.hibernate.validator.constraints.CodePointLength
 
 @Embeddable
 class ContentDetail(
-    @Column(length = MAX_TITLE_LENGTH)
+    @Column(length = ENCRYPTED_TITLE_LENGTH)
     @field:CodePointLength(max = MAX_TITLE_LENGTH)
+    @Convert(converter = JpaStringEncryptConverter::class)
     var title: String?,
 
-    @Column(length = MAX_DESCRIPTION_LENGTH)
+    @Column(length = ENCRYPTED_DESCRIPTION_LENGTH)
     @field:CodePointLength(max = MAX_DESCRIPTION_LENGTH)
+    @Convert(converter = JpaStringEncryptConverter::class)
     var description: String?,
 
     @Column(nullable = false)
@@ -39,5 +43,8 @@ class ContentDetail(
     companion object {
         const val MAX_TITLE_LENGTH = 30
         const val MAX_DESCRIPTION_LENGTH = 5000
+
+        const val ENCRYPTED_TITLE_LENGTH = 512
+        const val ENCRYPTED_DESCRIPTION_LENGTH = 15000
     }
 }
