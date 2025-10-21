@@ -81,20 +81,20 @@ class ScheduleNotificationAddBatchConfig(
             val zoneSource = ZoneId.of("Asia/Seoul")
             val today = LocalDate.now(zoneSource)
 
-            val partner = user.couple?.members?.find { it.id != user.id }
-                ?: return@ItemProcessor emptyList()
+            val partner = user.couple?.members?.find { it.id != user.id } ?: return@ItemProcessor null
 
-            val birthDate = user.birthDate ?: return@ItemProcessor emptyList()
+            val birthDate = user.birthDate ?: return@ItemProcessor null
             val thisYearsBirthday = birthDate.withYear(today.year)
 
             // 하루 전에 알림을 날릴 예정
             val notifyAt = thisYearsBirthday.minusDays(1).atStartOfDay(zoneSource).toLocalDateTime()
 
+            val nickname = user.nickname ?: return@ItemProcessor null
             val birthdayUserMessage = messageProvider.provide(
                 type = NotificationType.MY_BIRTHDAY,
                 notificationMessageParameter = BirthDayParameter(
                     label = "생일",
-                    birthdayMemberNickname = requireNotNull(user.nickname),
+                    birthdayMemberNickname = nickname,
                     isMyBirthday = true
                 )
             )
@@ -112,7 +112,7 @@ class ScheduleNotificationAddBatchConfig(
                 type = NotificationType.PARTNER_BIRTHDAY,
                 notificationMessageParameter = BirthDayParameter(
                     label = "생일",
-                    birthdayMemberNickname = requireNotNull(user.nickname),
+                    birthdayMemberNickname = nickname,
                     isMyBirthday = false
                 )
             )
