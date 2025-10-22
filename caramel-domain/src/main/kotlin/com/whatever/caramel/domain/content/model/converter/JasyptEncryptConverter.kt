@@ -8,17 +8,17 @@ import org.springframework.stereotype.Component
 
 @Converter
 @Component
-class JpaStringEncryptConverter(
-    @Qualifier("jasyptStringEncryptor")
-    private val stringEncryptor: StringEncryptor,
+class JasyptEncryptConverter(
+    @Qualifier("jasyptContentEncryptor")
+    private val jasyptContentEncryptor: StringEncryptor,
 ) : AttributeConverter<String?, String?> {
 
     override fun convertToDatabaseColumn(attribute: String?): String? {
-        return attribute?.let { stringEncryptor.encrypt(it) }
+        return attribute?.let { jasyptContentEncryptor.encrypt(it) }
     }
 
     override fun convertToEntityAttribute(dbData: String?): String? {
-        return dbData?.let { stringEncryptor.decrypt(it) }
+        return dbData?.let { jasyptContentEncryptor.decrypt(it) }
     }
 }
 
