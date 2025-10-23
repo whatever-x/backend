@@ -46,6 +46,9 @@ dependencies {
     // test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.postgresql:postgresql")
+
+    // Secrets
+    implementation("com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.4")
 }
 
 tasks.getByName<BootJar>("bootJar") {

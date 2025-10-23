@@ -63,3 +63,7 @@ firebase:
 crypto:
   password: ${CRYPTO_PASSWORD}
   salt: ${CRYPTO_SALT}
+
+jasypt:
+  encryptor:
+    gcm-secret-key-string: ${JASYPT_GCM_SECRET_KEY}
