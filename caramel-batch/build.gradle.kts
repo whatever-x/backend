@@ -30,6 +30,7 @@ tasks.test {
 
 tasks.getByName<BootJar>("bootJar") {
     enabled = true
+    archiveFileName = "caramel-batch.jar"
 }
 tasks.getByName<Jar>("jar") {
     enabled = true

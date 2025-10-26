@@ -17,11 +17,11 @@ import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemProcessor
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.database.JpaPagingItemReader
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDate
-import java.time.ZoneId
 
 @Configuration
 class ScheduleNotificationAddBatchConfig(
@@ -31,9 +31,10 @@ class ScheduleNotificationAddBatchConfig(
 ) {
     @Bean
     @StepScope
-    fun userBirthdayItemReader(): JpaPagingItemReader<User> {
-        val zoneSource = ZoneId.of("Asia/Seoul")
-        val tomorrow = LocalDate.now(zoneSource).plusDays(1)
+    fun userBirthdayItemReader(
+        @Value("#{jobParameters['runDate']}") runDate: LocalDate,
+    ): JpaPagingItemReader<User> {
+        val tomorrow = runDate.plusDays(1)
 
         val year = tomorrow.year
         val month = tomorrow.monthValue
@@ -76,25 +77,24 @@ class ScheduleNotificationAddBatchConfig(
 
     @Bean
     @StepScope
-    fun userBirthdayItemProcessor(): ItemProcessor<User, List<ScheduledNotification>> {
+    fun userBirthdayItemProcessor(
+        @Value("#{jobParameters['runDate']}") runDate: LocalDate,
+    ): ItemProcessor<User, List<ScheduledNotification>> {
         return ItemProcessor<User, List<ScheduledNotification>> { user ->
-            val zoneSource = ZoneId.of("Asia/Seoul")
-            val today = LocalDate.now(zoneSource)
+            val partner = user.couple?.members?.find { it.id != user.id } ?: return@ItemProcessor null
 
-            val partner = user.couple?.members?.find { it.id != user.id }
-                ?: return@ItemProcessor emptyList()
-
-            val birthDate = user.birthDate ?: return@ItemProcessor emptyList()
-            val thisYearsBirthday = birthDate.withYear(today.year)
+            val birthDate = user.birthDate ?: return@ItemProcessor null
+            val thisYearsBirthday = birthDate.withYear(runDate.year)
 
             // 하루 전에 알림을 날릴 예정
-            val notifyAt = thisYearsBirthday.minusDays(1).atStartOfDay(zoneSource).toLocalDateTime()
+            val notifyAt = thisYearsBirthday.minusDays(1).atStartOfDay()
 
+            val nickname = user.nickname ?: return@ItemProcessor null
             val birthdayUserMessage = messageProvider.provide(
                 type = NotificationType.MY_BIRTHDAY,
                 notificationMessageParameter = BirthDayParameter(
                     label = "생일",
-                    birthdayMemberNickname = requireNotNull(user.nickname),
+                    birthdayMemberNickname = nickname,
                     isMyBirthday = true
                 )
             )
@@ -112,7 +112,7 @@ class ScheduleNotificationAddBatchConfig(
                 type = NotificationType.PARTNER_BIRTHDAY,
                 notificationMessageParameter = BirthDayParameter(
                     label = "생일",
-                    birthdayMemberNickname = requireNotNull(user.nickname),
+                    birthdayMemberNickname = nickname,
                     isMyBirthday = false
                 )
             )

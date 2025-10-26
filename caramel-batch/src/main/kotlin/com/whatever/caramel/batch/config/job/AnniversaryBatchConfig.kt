@@ -23,12 +23,12 @@ import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.database.JpaPagingItemReader
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder
 import org.springframework.batch.repeat.RepeatStatus
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.retry.backoff.FixedBackOffPolicy
 import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDate
-import java.time.ZoneId
 
 @Configuration
 class AnniversaryBatchConfig(
@@ -37,11 +37,11 @@ class AnniversaryBatchConfig(
 ) {
     @Bean
     @StepScope
-    fun anniversaryItemReader(): JpaPagingItemReader<ScheduledNotification> {
-        val zoneSource = ZoneId.of("Asia/Seoul")
-        val localDate = LocalDate.now(zoneSource)
-        val startOfDay = localDate.atStartOfDay(zoneSource).toLocalDateTime()
-        val endOfDay = localDate.atTime(23, 59, 59).withNano(0)
+    fun anniversaryItemReader(
+        @Value("#{jobParameters['runDate']}") runDate: LocalDate,
+    ): JpaPagingItemReader<ScheduledNotification> {
+        val startOfDay = runDate.atStartOfDay()
+        val endOfDay = startOfDay.plusDays(1).withNano(0)
 
         return JpaPagingItemReaderBuilder<ScheduledNotification>()
             .name("anniversaryItemReader")
