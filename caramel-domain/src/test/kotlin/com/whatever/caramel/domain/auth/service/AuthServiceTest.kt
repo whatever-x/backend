@@ -269,6 +269,7 @@ class AuthServiceTest @Autowired constructor(
 
         // then
         verify(oidcCacheManager.getCache(OIDC_PUBLIC_KEY.cacheName), never())!!.evictIfPresent(user.platform.name)
+        assertThat(result.userId).isEqualTo(user.id)
         assertThat(result.nickname).isEqualTo(user.nickname)
         assertThat(result.accessToken).isEqualTo(fakeServiceToken.accessToken)
         assertThat(result.refreshToken).isEqualTo(fakeServiceToken.refreshToken)
@@ -325,6 +326,7 @@ class AuthServiceTest @Autowired constructor(
 
         // then
         verify(oidcCacheManager.getCache(OIDC_PUBLIC_KEY.cacheName), times(1))!!.evictIfPresent(user.platform.name)
+        assertThat(result.userId).isEqualTo(user.id)
         assertThat(result.nickname).isEqualTo(user.nickname)
         assertThat(result.accessToken).isEqualTo(fakeServiceToken.accessToken)
         assertThat(result.refreshToken).isEqualTo(fakeServiceToken.refreshToken)
@@ -380,6 +382,7 @@ class AuthServiceTest @Autowired constructor(
         )
 
         // then
+        assertThat(result.userId).isEqualTo(user.id)
         assertThat(result.nickname).isEqualTo(user.nickname)
         assertThat(result.accessToken).isEqualTo(fakeServiceToken.accessToken)
         assertThat(result.refreshToken).isEqualTo(fakeServiceToken.refreshToken)
