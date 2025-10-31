@@ -37,3 +37,40 @@ data class SignInResponse(
         }
     }
 }
+
+@Schema(description = "로그인 성공 응답 DTO V2")
+data class SignInResponseV2(
+    @Schema(description = "서버에서 발급한 JWT(access, refresh) 정보")
+    val serviceToken: ServiceTokenResponse,
+
+    @Schema(description = "로그인한 유저의 고유 ID")
+    val userId: Long,
+
+    @Schema(description = "유저의 현재 상태")
+    val userStatus: UserStatus,
+
+    @Schema(description = "유저의 닉네임. null일 수 있음.", nullable = true)
+    val nickname: String?,
+
+    @Schema(description = "유저의 생일. null일 수 있음.", nullable = true)
+    val birthDay: LocalDate?,
+
+    @Schema(description = "유저가 속한 커플 id. null일 수 있음.", nullable = true)
+    val coupleId: Long?,
+) {
+    companion object {
+        fun from(signInVo: SignInVo): SignInResponseV2 {
+            return SignInResponseV2(
+                serviceToken = ServiceTokenResponse(
+                    accessToken = signInVo.accessToken,
+                    refreshToken = signInVo.refreshToken
+                ),
+                userId = signInVo.userId,
+                userStatus = UserStatus.valueOf(signInVo.userStatus),
+                nickname = signInVo.nickname,
+                birthDay = signInVo.birthDay,
+                coupleId = signInVo.coupleId,
+            )
+        }
+    }
+}

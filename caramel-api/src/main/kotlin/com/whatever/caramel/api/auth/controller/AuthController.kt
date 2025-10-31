@@ -3,6 +3,7 @@ package com.whatever.caramel.api.auth.controller
 import com.whatever.caramel.api.auth.dto.ServiceTokenResponse
 import com.whatever.caramel.api.auth.dto.SignInRequest
 import com.whatever.caramel.api.auth.dto.SignInResponse
+import com.whatever.caramel.api.auth.dto.SignInResponseV2
 import com.whatever.caramel.common.global.annotation.DisableSwaggerAuthButton
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.AUTH_JWT_HEADER
 import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.DEVICE_ID
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @Tag(
@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController
     description = "로그인, 토큰 갱신 등 인증과 관련된 API"
 )
 @RestController
-@RequestMapping("/v1/auth")
 class AuthController(
     private val authService: AuthService,
 ) {
@@ -44,7 +43,7 @@ class AuthController(
             ApiResponse(responseCode = "403", description = "유효하지 않은 토큰"),
         ]
     )
-    @PostMapping("/sign-in")
+    @PostMapping("/v1/auth/sign-in")
     fun signIn(
         @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
         @RequestBody request: SignInRequest,
@@ -57,6 +56,34 @@ class AuthController(
         return SignInResponse.from(signInVo).succeed()
     }
 
+    @DisableSwaggerAuthButton
+    @Operation(
+        summary = "로그인 or 회원가입 v2",
+        description = """
+            ### 이미 회원인 경우 로그인을, 그렇지 않다면 회원가입을 진행합니다.
+            
+            - 회원가입을 진행한 유저는 NEW 상태로 생성되며, 프로필 생성을 진행해야 합니다.
+            - 반환값에 user id가 추가된 api입니다.
+        """,
+        responses = [
+            ApiResponse(responseCode = "200", description = "로그인 성공"),
+            ApiResponse(responseCode = "201", description = "회원가입 성공"),
+            ApiResponse(responseCode = "403", description = "유효하지 않은 토큰"),
+        ]
+    )
+    @PostMapping("/v2/auth/sign-in")
+    fun signInV2(
+        @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
+        @RequestBody request: SignInRequest,
+    ): CaramelApiResponse<SignInResponseV2> {
+        val signInVo = authService.signUpOrSignIn(
+            loginPlatform = request.loginPlatform,
+            idToken = request.idToken,
+            deviceId = deviceId
+        )
+        return SignInResponseV2.from(signInVo).succeed()
+    }
+
     @Operation(
         summary = "로그아웃",
         description = """
@@ -67,7 +94,7 @@ class AuthController(
             - 파기된 토큰은 재사용이 불가능하고, 새롭게 로그인을 하여 발급받아야 합니다.
         """,
     )
-    @PostMapping("/sign-out")
+    @PostMapping("/v1/auth/sign-out")
     fun signOut(
         @Parameter(hidden = true) @RequestHeader(name = AUTH_JWT_HEADER, required = true) bearerAccessToken: String,
         @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
@@ -95,7 +122,7 @@ class AuthController(
             ApiResponse(responseCode = "403", description = "리프레시 토큰 만료. 재로그인 필요."),
         ]
     )
-    @PostMapping("/refresh")
+    @PostMapping("/v1/auth/refresh")
     fun refresh(
         @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
         @RequestBody request: ServiceTokenResponse,
@@ -120,7 +147,7 @@ class AuthController(
             - 로그아웃을 진행합니다.
         """,
     )
-    @DeleteMapping("/account")
+    @DeleteMapping("/v1/auth/account")
     fun deleteUser(
         @Parameter(hidden = true) @RequestHeader(name = AUTH_JWT_HEADER, required = true) bearerAccessToken: String,
         @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
