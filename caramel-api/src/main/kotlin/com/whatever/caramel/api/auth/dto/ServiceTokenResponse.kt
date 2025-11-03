@@ -19,3 +19,23 @@ data class ServiceTokenResponse(
         }
     }
 }
+
+@Schema(description = "JWT 갱신 응답 DTO")
+data class TokenRefreshResponse(
+    @Schema(description = "서버에서 발급한 JWT(access, refresh) 정보")
+    val serviceToken: ServiceTokenResponse,
+    @Schema(description = "토큰 refresh 유저의 고유 ID")
+    val userId: Long,
+) {
+    companion object {
+        fun from(serviceTokenVo: ServiceTokenVo): TokenRefreshResponse {
+            return TokenRefreshResponse(
+                serviceToken = ServiceTokenResponse(
+                    accessToken = serviceTokenVo.accessToken,
+                    refreshToken = serviceTokenVo.refreshToken
+                ),
+                userId = serviceTokenVo.userId,
+            )
+        }
+    }
+}

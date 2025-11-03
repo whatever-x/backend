@@ -1,6 +1,7 @@
 package com.whatever.caramel.api.auth.controller
 
 import com.whatever.caramel.api.auth.dto.ServiceTokenResponse
+import com.whatever.caramel.api.auth.dto.TokenRefreshResponse
 import com.whatever.caramel.api.auth.dto.SignInRequest
 import com.whatever.caramel.api.auth.dto.SignInResponse
 import com.whatever.caramel.api.auth.dto.SignInResponseV2
@@ -133,6 +134,36 @@ class AuthController(
             deviceId = deviceId,
         )
         return ServiceTokenResponse.from(serviceTokenVo).succeed()
+    }
+
+    @DisableSwaggerAuthButton
+    @Operation(
+        summary = "토큰 refresh v2",
+        description = """
+            ### 새로운 Access Token, Refresh Token을 재발급합니다.
+            
+            - 전송한 Access Token과 Refresh Token이 서버 측에서 파기됩니다.
+            
+            - 해당 요청 이후에는 새롭게 발급된 토큰을 사용해야 합니다.
+            
+            - 반환값에 user id가 추가된 api입니다.
+        """,
+        responses = [
+            ApiResponse(responseCode = "200", description = "발급 완료"),
+            ApiResponse(responseCode = "403", description = "리프레시 토큰 만료. 재로그인 필요."),
+        ]
+    )
+    @PostMapping("/v2/auth/refresh")
+    fun refreshV2(
+        @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
+        @RequestBody request: ServiceTokenResponse,
+    ): CaramelApiResponse<TokenRefreshResponse> {
+        val serviceTokenVo = authService.refresh(
+            accessToken = request.accessToken,
+            refreshToken = request.refreshToken,
+            deviceId = deviceId,
+        )
+        return TokenRefreshResponse.from(serviceTokenVo).succeed()
     }
 
     @Operation(
