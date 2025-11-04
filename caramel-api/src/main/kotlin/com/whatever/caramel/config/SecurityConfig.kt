@@ -93,6 +93,8 @@ class SecurityConfig(
                 // 1. Public Access
                 authorize(HttpMethod.POST, "/v1/auth/sign-in", permitAll)
                 authorize(HttpMethod.POST, "/v1/auth/refresh", permitAll)
+                authorize(HttpMethod.POST, "/v2/auth/sign-in", permitAll)
+                authorize(HttpMethod.POST, "/v2/auth/refresh", permitAll)
                 authorize("/sample/**", permitAll)
                 authorize("${actuatorPath}/**", permitAll)
                 authorize("/v1/client-versions/**", permitAll)

@@ -103,9 +103,9 @@ class AuthServiceTest @Autowired constructor(
     @Test
     fun refresh() {
         // given
-        val oldServiceToken = ServiceTokenVo(accessToken = "accessToken", refreshToken = "refreshToken")
-        val deviceId = "test-device"
         val userId = 0L
+        val oldServiceToken = ServiceTokenVo(accessToken = "accessToken", refreshToken = "refreshToken", userId = userId)
+        val deviceId = "test-device"
         doReturn(userId)
             .whenever(jwtHelper).extractUserIdIgnoringSignature(oldServiceToken.accessToken)
         doReturn(true)
@@ -129,9 +129,9 @@ class AuthServiceTest @Autowired constructor(
     @Test
     fun refresh_WithInvalidRefreshToken_ThrowsException() {
         // given
-        val serviceToken = ServiceTokenVo(accessToken = "accessToken", refreshToken = "invalidRefreshToken")
-        val deviceId = "test-device"
         val userId = 1L
+        val serviceToken = ServiceTokenVo(accessToken = "accessToken", refreshToken = "invalidRefreshToken", userId = userId)
+        val deviceId = "test-device"
         doReturn(userId)
             .whenever(jwtHelper).extractUserIdIgnoringSignature(serviceToken.accessToken)
         doReturn(false)
@@ -151,9 +151,9 @@ class AuthServiceTest @Autowired constructor(
     @Test
     fun refresh_WithMismatchedRefreshToken_ThrowsException() {
         // given
-        val serviceToken = ServiceTokenVo(accessToken = "accessToken", refreshToken = "refreshToken")
-        val deviceId = "test-device"
         val userId = 1L
+        val serviceToken = ServiceTokenVo(accessToken = "accessToken", refreshToken = "refreshToken", userId = userId)
+        val deviceId = "test-device"
         val storedRefreshToken = "differentRefreshToken"
         doReturn(userId)
             .whenever(jwtHelper).extractUserIdIgnoringSignature(serviceToken.accessToken)
@@ -246,6 +246,7 @@ class AuthServiceTest @Autowired constructor(
         val fakeServiceToken = ServiceTokenVo(
             accessToken = "test-access-token",
             refreshToken = "test-refresh-token",
+            userId = user.id,
         )
 
         whenever(kakaoOIDCClient.getOIDCPublicKey())
@@ -269,6 +270,7 @@ class AuthServiceTest @Autowired constructor(
 
         // then
         verify(oidcCacheManager.getCache(OIDC_PUBLIC_KEY.cacheName), never())!!.evictIfPresent(user.platform.name)
+        assertThat(result.userId).isEqualTo(user.id)
         assertThat(result.nickname).isEqualTo(user.nickname)
         assertThat(result.accessToken).isEqualTo(fakeServiceToken.accessToken)
         assertThat(result.refreshToken).isEqualTo(fakeServiceToken.refreshToken)
@@ -300,6 +302,7 @@ class AuthServiceTest @Autowired constructor(
         val fakeServiceToken = ServiceTokenVo(
             accessToken = "test-access-token",
             refreshToken = "test-refresh-token",
+            userId = user.id,
         )
 
         whenever(kakaoOIDCClient.getOIDCPublicKey())
@@ -325,6 +328,7 @@ class AuthServiceTest @Autowired constructor(
 
         // then
         verify(oidcCacheManager.getCache(OIDC_PUBLIC_KEY.cacheName), times(1))!!.evictIfPresent(user.platform.name)
+        assertThat(result.userId).isEqualTo(user.id)
         assertThat(result.nickname).isEqualTo(user.nickname)
         assertThat(result.accessToken).isEqualTo(fakeServiceToken.accessToken)
         assertThat(result.refreshToken).isEqualTo(fakeServiceToken.refreshToken)
@@ -356,6 +360,7 @@ class AuthServiceTest @Autowired constructor(
         val fakeServiceToken = ServiceTokenVo(
             accessToken = "test-access-token",
             refreshToken = "test-refresh-token",
+            userId = user.id,
         )
 
         whenever(kakaoOIDCClient.getOIDCPublicKey())
@@ -380,6 +385,7 @@ class AuthServiceTest @Autowired constructor(
         )
 
         // then
+        assertThat(result.userId).isEqualTo(user.id)
         assertThat(result.nickname).isEqualTo(user.nickname)
         assertThat(result.accessToken).isEqualTo(fakeServiceToken.accessToken)
         assertThat(result.refreshToken).isEqualTo(fakeServiceToken.refreshToken)
@@ -403,6 +409,7 @@ class AuthServiceTest @Autowired constructor(
         val fakeServiceToken = ServiceTokenVo(
             accessToken = "test-access-token",
             refreshToken = "test-refresh-token",
+            userId = user.id,
         )
 
         whenever(kakaoOIDCClient.getOIDCPublicKey())
