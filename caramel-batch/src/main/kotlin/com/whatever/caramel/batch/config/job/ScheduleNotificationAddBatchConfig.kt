@@ -34,7 +34,7 @@ class ScheduleNotificationAddBatchConfig(
     @StepScope
     fun userBirthdayItemReader(
         @DateTimeFormat(pattern = "yyyy-MM-dd")
-        @Value("#{jobParameters[runDate]}") runDate: LocalDate,
+        @Value("#{jobParameters['runDate']}") runDate: LocalDate,
     ): JpaPagingItemReader<User> {
         val tomorrow = runDate.plusDays(1)
 
@@ -81,7 +81,7 @@ class ScheduleNotificationAddBatchConfig(
     @StepScope
     fun userBirthdayItemProcessor(
         @DateTimeFormat(pattern = "yyyy-MM-dd")
-        @Value("#{jobParameters[runDate]}") runDate: LocalDate,
+        @Value("#{jobParameters['runDate']}") runDate: LocalDate,
     ): ItemProcessor<User, List<ScheduledNotification>> {
         return ItemProcessor<User, List<ScheduledNotification>> { user ->
             val partner = user.couple?.members?.find { it.id != user.id } ?: return@ItemProcessor null

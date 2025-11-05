@@ -40,7 +40,7 @@ class AnniversaryBatchConfig(
     @StepScope
     fun anniversaryItemReader(
         @DateTimeFormat(pattern = "yyyy-MM-dd")
-        @Value("#{jobParameters[runDate]}") runDate: LocalDate,
+        @Value("#{jobParameters['runDate']}") runDate: LocalDate,
     ): JpaPagingItemReader<ScheduledNotification> {
         val startOfDay = runDate.atStartOfDay()
         val endOfDay = startOfDay.plusDays(1).withNano(0)
