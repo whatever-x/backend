@@ -82,3 +82,7 @@ crypto:
 slack:
   webhook:
     url: ""
+
+jasypt:
+  encryptor:
+    gcm-secret-key-string: ${JASYPT_GCM_SECRET_KEY}

@@ -20,6 +20,7 @@ import org.springframework.batch.item.database.JpaPagingItemReader
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDate
 
@@ -32,6 +33,7 @@ class ScheduleNotificationAddBatchConfig(
     @Bean
     @StepScope
     fun userBirthdayItemReader(
+        @DateTimeFormat(pattern = "yyyy-MM-dd")
         @Value("#{jobParameters['runDate']}") runDate: LocalDate,
     ): JpaPagingItemReader<User> {
         val tomorrow = runDate.plusDays(1)
@@ -78,6 +80,7 @@ class ScheduleNotificationAddBatchConfig(
     @Bean
     @StepScope
     fun userBirthdayItemProcessor(
+        @DateTimeFormat(pattern = "yyyy-MM-dd")
         @Value("#{jobParameters['runDate']}") runDate: LocalDate,
     ): ItemProcessor<User, List<ScheduledNotification>> {
         return ItemProcessor<User, List<ScheduledNotification>> { user ->
