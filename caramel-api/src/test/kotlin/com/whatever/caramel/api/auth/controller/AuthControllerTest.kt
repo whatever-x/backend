@@ -8,6 +8,7 @@ import com.whatever.caramel.common.global.constants.CaramelHttpHeaders.DEVICE_ID
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.auth.vo.ServiceTokenVo
 import com.whatever.caramel.domain.auth.vo.SignInVo
+import com.whatever.caramel.domain.auth.vo.TokenRefreshVo
 import com.whatever.caramel.domain.user.model.LoginPlatform
 import com.whatever.caramel.domain.user.model.UserStatus
 import com.whatever.caramel.security.util.SecurityUtil
@@ -41,6 +42,7 @@ class AuthControllerTest : ControllerTestSupport() {
             SignInVo(
                 accessToken = "",
                 refreshToken = "",
+                userId = 0L,
                 userStatus = UserStatus.SINGLE.name,
                 nickname = "",
                 birthDay = DateTimeUtil.localNow().toLocalDate(),
@@ -98,6 +100,11 @@ class AuthControllerTest : ControllerTestSupport() {
             accessToken = newAccessToken,
             refreshToken = newRefreshToken
         )
+        val newTokenRefreshVo = TokenRefreshVo(
+            serviceTokenVo = newServiceTokenVo,
+            userId = 0L,
+            userStatus = UserStatus.SINGLE,
+        )
 
         whenever(
             authService.refresh(
@@ -105,7 +112,7 @@ class AuthControllerTest : ControllerTestSupport() {
                 refreshToken = requestDto.refreshToken,
                 deviceId = deviceId
             )
-        ).thenReturn(newServiceTokenVo)
+        ).thenReturn(newTokenRefreshVo)
 
         // when // then
         mockMvc.post("/v1/auth/refresh") {

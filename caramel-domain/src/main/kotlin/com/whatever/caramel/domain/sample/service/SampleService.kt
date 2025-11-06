@@ -116,7 +116,6 @@ class SampleService(
         return ServiceTokenVo(
             accessToken,
             refreshToken,
-            userId,
         )
     }
 
