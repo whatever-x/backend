@@ -6,6 +6,7 @@ import java.time.LocalDate
 data class SignInVo(
     val accessToken: String,
     val refreshToken: String,
+    val userId: Long,
     val userStatus: String,
     val nickname: String?,
     val birthDay: LocalDate?,
@@ -16,6 +17,7 @@ data class SignInVo(
             return SignInVo(
                 accessToken = serviceToken.accessToken,
                 refreshToken = serviceToken.refreshToken,
+                userId = user.id,
                 userStatus = user.userStatus.name,
                 nickname = user.nickname,
                 birthDay = user.birthDate,

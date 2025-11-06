@@ -2,19 +2,34 @@ spring:
   config:
     activate:
       on-profile: test
-    import: optional:file:.env[.properties]
+    import: optional:file:../.env[.properties]
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
+    api:
+      jdbc-url: jdbc:h2:mem:batchdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_UPPER=false
+      driver-class-name: org.h2.Driver
+      username: sa
+      password:
+    batch:
+      jdbc-url: jdbc:h2:mem:batchdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_UPPER=false
+      driver-class-name: org.h2.Driver
+      username: sa
+      password:
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: create
     properties:
       hibernate:
-        show_sql: false
+        show_sql: true
         use_sql_comments: false
         format_sql: true
         globally_quoted_identifiers: true
@@ -63,6 +78,10 @@ firebase:
 crypto:
   password: ${CRYPTO_PASSWORD}
   salt: ${CRYPTO_SALT}
+
+slack:
+  webhook:
+    url: ""
 
 jasypt:
   encryptor:

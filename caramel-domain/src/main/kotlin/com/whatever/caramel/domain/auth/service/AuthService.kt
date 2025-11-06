@@ -161,6 +161,7 @@ class AuthService(
         return ServiceTokenVo.from(
             accessToken,
             refreshToken,
+            userId,
         )
     }
 }

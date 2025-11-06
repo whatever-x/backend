@@ -1,6 +1,5 @@
-package com.whatever.caramel.batch.config
+package com.whatever.caramel.batch.config.job
 
-import com.whatever.caramel.batch.config.BatchConfig.Companion.DEFAULT_BATCH_SIZE
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.notification.model.NotificationType
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
@@ -13,28 +12,31 @@ import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.job.builder.JobBuilder
-import org.springframework.batch.core.launch.support.RunIdIncrementer
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemProcessor
 import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.database.JpaPagingItemReader
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDate
-import java.time.ZoneId
 
 @Configuration
 class ScheduleNotificationAddBatchConfig(
+    private val entityManagerFactory: EntityManagerFactory,
     private val messageProvider: NotificationMessageProvider,
     private val scheduledNotificationRepository: ScheduledNotificationRepository,
 ) {
     @Bean
     @StepScope
-    fun userBirthdayItemReader(entityManagerFactory: EntityManagerFactory): JpaPagingItemReader<User> {
-        val zoneSource = ZoneId.of("Asia/Seoul")
-        val tomorrow = LocalDate.now(zoneSource).plusDays(1)
+    fun userBirthdayItemReader(
+        @DateTimeFormat(pattern = "yyyy-MM-dd")
+        @Value("#{jobParameters['runDate']}") runDate: LocalDate,
+    ): JpaPagingItemReader<User> {
+        val tomorrow = runDate.plusDays(1)
 
         val year = tomorrow.year
         val month = tomorrow.monthValue
@@ -62,7 +64,7 @@ class ScheduleNotificationAddBatchConfig(
 
         return JpaPagingItemReader<User>().apply {
             name = "userBirthdayReader"
-            pageSize = DEFAULT_BATCH_SIZE
+            pageSize = ADD_PAGE_SIZE
             setEntityManagerFactory(entityManagerFactory)
             setQueryString(query)
             if (leapYearPredicate.not()) {
@@ -70,32 +72,32 @@ class ScheduleNotificationAddBatchConfig(
                     mapOf("month" to String.format("%02d", month), "day" to String.format("%02d", day))
                 )
             }
-            pageSize = DEFAULT_BATCH_SIZE
+            setTransacted(false)
             afterPropertiesSet()
         }
     }
 
     @Bean
     @StepScope
-    fun userBirthdayItemProcessor(): ItemProcessor<User, List<ScheduledNotification>> {
+    fun userBirthdayItemProcessor(
+        @DateTimeFormat(pattern = "yyyy-MM-dd")
+        @Value("#{jobParameters['runDate']}") runDate: LocalDate,
+    ): ItemProcessor<User, List<ScheduledNotification>> {
         return ItemProcessor<User, List<ScheduledNotification>> { user ->
-            val zoneSource = ZoneId.of("Asia/Seoul")
-            val today = LocalDate.now(zoneSource)
+            val partner = user.couple?.members?.find { it.id != user.id } ?: return@ItemProcessor null
 
-            val partner = user.couple?.members?.find { it.id != user.id }
-                ?: return@ItemProcessor emptyList()
-
-            val birthDate = user.birthDate ?: return@ItemProcessor emptyList()
-            val thisYearsBirthday = birthDate.withYear(today.year)
+            val birthDate = user.birthDate ?: return@ItemProcessor null
+            val thisYearsBirthday = birthDate.withYear(runDate.year)
 
             // 하루 전에 알림을 날릴 예정
-            val notifyAt = thisYearsBirthday.minusDays(1).atStartOfDay(zoneSource).toLocalDateTime()
+            val notifyAt = thisYearsBirthday.minusDays(1).atStartOfDay()
 
+            val nickname = user.nickname ?: return@ItemProcessor null
             val birthdayUserMessage = messageProvider.provide(
                 type = NotificationType.MY_BIRTHDAY,
                 notificationMessageParameter = BirthDayParameter(
                     label = "생일",
-                    birthdayMemberNickname = requireNotNull(user.nickname),
+                    birthdayMemberNickname = nickname,
                     isMyBirthday = true
                 )
             )
@@ -113,7 +115,7 @@ class ScheduleNotificationAddBatchConfig(
                 type = NotificationType.PARTNER_BIRTHDAY,
                 notificationMessageParameter = BirthDayParameter(
                     label = "생일",
-                    birthdayMemberNickname = requireNotNull(user.nickname),
+                    birthdayMemberNickname = nickname,
                     isMyBirthday = false
                 )
             )
@@ -135,20 +137,20 @@ class ScheduleNotificationAddBatchConfig(
     @StepScope
     fun userBirthdayAddItemWriter(): ItemWriter<List<ScheduledNotification>> {
         return ItemWriter { chunk ->
-            scheduledNotificationRepository.saveAll(chunk.flatten())
+            scheduledNotificationRepository.insertAllWithoutConflict(chunk.flatten())
         }
     }
 
     @Bean
     fun userBirthdayAddStep(
-        whatEverJobRepository: JobRepository,
         transactionManager: PlatformTransactionManager,
+        whatEverJobRepository: JobRepository,
         userBirthdayItemReader: JpaPagingItemReader<User>,
         userBirthdayItemProcessor: ItemProcessor<User, List<ScheduledNotification>>,
         userBirthdayAddItemWriter: ItemWriter<List<ScheduledNotification>>,
     ): Step {
-        return StepBuilder("add", whatEverJobRepository)
-            .chunk<User, List<ScheduledNotification>>(DEFAULT_BATCH_SIZE, transactionManager)
+        return StepBuilder("addStep", whatEverJobRepository)
+            .chunk<User, List<ScheduledNotification>>(ADD_CHUNK_SIZE, transactionManager)
             .reader(userBirthdayItemReader)
             .processor(userBirthdayItemProcessor)
             .writer(userBirthdayAddItemWriter)
@@ -156,10 +158,14 @@ class ScheduleNotificationAddBatchConfig(
     }
 
     @Bean
-    fun scheduleAddJob(jobRepository: JobRepository, userBirthdayAddStep: Step): Job {
-        return JobBuilder("add", jobRepository)
-            .incrementer(RunIdIncrementer())
+    fun notificationAddJob(jobRepository: JobRepository, userBirthdayAddStep: Step): Job {
+        return JobBuilder("notificationAddJob", jobRepository)
             .start(userBirthdayAddStep)
             .build()
+    }
+
+    companion object {
+        private const val ADD_PAGE_SIZE = 10
+        private const val ADD_CHUNK_SIZE = 10
     }
 }

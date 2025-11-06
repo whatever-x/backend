@@ -5,23 +5,20 @@ import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
-import java.time.LocalDateTime
 
-interface ScheduledNotificationRepository : JpaRepository<ScheduledNotification, Long> {
-    @Modifying
-    @Query("""
+interface ScheduledNotificationRepository :
+    JpaRepository<ScheduledNotification, Long>,
+    ScheduleNotificationInsertRepository {
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(
+        """
         delete from ScheduledNotification sn
         where sn.notificationType in :notificationTypes
             and sn.targetUserId in :targetUserIds
-    """)
+    """
+    )
     fun deleteAllByNotificationTypeInAndTargetUserIdIn(
         notificationTypes: Set<NotificationType>,
         targetUserIds: Set<Long>
     ): Int
-
-    @Query("""
-        SELECT s FROM ScheduledNotification s 
-        WHERE s.notifyAt BETWEEN :startOfDay AND :endOfDay
-    """)
-    fun findByNotifyAt(startOfDay: LocalDateTime, endOfDay: LocalDateTime): List<ScheduledNotification>
 }
