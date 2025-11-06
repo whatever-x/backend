@@ -16,6 +16,7 @@ import com.whatever.caramel.domain.auth.repository.AuthRedisRepository
 import com.whatever.caramel.domain.auth.service.provider.SocialUserProvider
 import com.whatever.caramel.domain.auth.vo.ServiceTokenVo
 import com.whatever.caramel.domain.auth.vo.SignInVo
+import com.whatever.caramel.domain.auth.vo.TokenRefreshVo
 import com.whatever.caramel.domain.couple.service.CoupleService
 import com.whatever.caramel.domain.findByIdAndNotDeleted
 import com.whatever.caramel.domain.user.exception.UserExceptionCode.NOT_FOUND
@@ -74,9 +75,7 @@ class AuthService(
                 )
             }
 
-        val userId = user.id
-
-        val serviceToken = createTokenAndSave(userId = userId, deviceId = deviceId)
+        val serviceToken = createTokenAndSave(userId = user.id, deviceId = deviceId)
         return SignInVo.from(
             serviceToken = serviceToken,
             user = user
@@ -107,11 +106,12 @@ class AuthService(
         logger.debug { "SignOut End - UserId: $userId, DeviceId: $deviceId" }
     }
 
-    fun refresh(accessToken: String, refreshToken: String, deviceId: String): ServiceTokenVo {
+    fun refresh(accessToken: String, refreshToken: String, deviceId: String): TokenRefreshVo {
         val userId = jwtHelper.extractUserIdIgnoringSignature(accessToken)
         val isValid = jwtHelper.isValidJwt(refreshToken)
 
-        if (isValid.not()) throw AuthException(errorCode = AuthExceptionCode.UNAUTHORIZED)
+        val user = userRepository.findByIdAndNotDeleted(userId)
+        if (isValid.not() || user == null) throw AuthException(errorCode = AuthExceptionCode.UNAUTHORIZED)
 
         val localRefreshToken = authRedisRepository.getRefreshToken(userId = userId, deviceId = deviceId)
 
@@ -120,7 +120,12 @@ class AuthService(
         }
         // TODO(준용) access token black list 등록
 
-        return createTokenAndSave(userId = userId, deviceId = deviceId)
+        val serviceTokenVo = createTokenAndSave(userId = userId, deviceId = deviceId)
+        return TokenRefreshVo(
+            serviceTokenVo = serviceTokenVo,
+            userId = user.id,
+            userStatus = user.userStatus,
+        )
     }
 
     @Transactional
@@ -161,7 +166,6 @@ class AuthService(
         return ServiceTokenVo.from(
             accessToken,
             refreshToken,
-            userId,
         )
     }
 }
