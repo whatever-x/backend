@@ -128,12 +128,12 @@ class AuthController(
         @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
         @RequestBody request: ServiceTokenResponse,
     ): CaramelApiResponse<ServiceTokenResponse> {
-        val serviceTokenVo = authService.refresh(
+        val tokenRefreshVo = authService.refresh(
             accessToken = request.accessToken,
             refreshToken = request.refreshToken,
             deviceId = deviceId,
         )
-        return ServiceTokenResponse.from(serviceTokenVo).succeed()
+        return ServiceTokenResponse.from(tokenRefreshVo.serviceTokenVo).succeed()
     }
 
     @DisableSwaggerAuthButton
@@ -158,12 +158,12 @@ class AuthController(
         @RequestHeader(name = DEVICE_ID, required = true) deviceId: String,
         @RequestBody request: ServiceTokenResponse,
     ): CaramelApiResponse<TokenRefreshResponse> {
-        val serviceTokenVo = authService.refresh(
+        val tokenRefreshVo = authService.refresh(
             accessToken = request.accessToken,
             refreshToken = request.refreshToken,
             deviceId = deviceId,
         )
-        return TokenRefreshResponse.from(serviceTokenVo).succeed()
+        return TokenRefreshResponse.from(tokenRefreshVo).succeed()
     }
 
     @Operation(
