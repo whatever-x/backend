@@ -30,8 +30,6 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.retry.backoff.FixedBackOffPolicy
 import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDate
-import java.time.ZoneId
-import java.time.ZoneOffset
 
 @Configuration
 class AnniversaryFcmBatchConfig(
