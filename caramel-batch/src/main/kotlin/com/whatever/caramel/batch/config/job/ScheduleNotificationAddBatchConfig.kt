@@ -36,6 +36,7 @@ class ScheduleNotificationAddBatchConfig(
         @DateTimeFormat(pattern = "yyyy-MM-dd")
         @Value("#{jobParameters['runDate']}") runDate: LocalDate,
     ): JpaPagingItemReader<User> {
+        // KST 기준, 내일이 생일인 유저를 read
         val tomorrow = runDate.plusDays(1)
 
         val year = tomorrow.year
@@ -86,11 +87,8 @@ class ScheduleNotificationAddBatchConfig(
         return ItemProcessor<User, List<ScheduledNotification>> { user ->
             val partner = user.couple?.members?.find { it.id != user.id } ?: return@ItemProcessor null
 
-            val birthDate = user.birthDate ?: return@ItemProcessor null
-            val thisYearsBirthday = birthDate.withYear(runDate.year)
-
-            // 하루 전에 알림을 날림
-            val notifyAt = thisYearsBirthday.minusDays(1).atStartOfDay()
+            // 생일 하루 전날 23:40에 알림을 날림
+            val notifyAt = runDate.atTime(23, 40)
 
             val nickname = user.nickname ?: return@ItemProcessor null
             val birthdayUserMessage = messageProvider.provide(
