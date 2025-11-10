@@ -30,6 +30,8 @@ import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.retry.backoff.FixedBackOffPolicy
 import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
 
 @Configuration
 class AnniversaryFcmBatchConfig(
@@ -42,7 +44,7 @@ class AnniversaryFcmBatchConfig(
         @DateTimeFormat(pattern = "yyyy-MM-dd")
         @Value("#{jobParameters['runDate']}") runDate: LocalDate,
     ): JpaPagingItemReader<ScheduledNotification> {
-        val startOfDay = runDate.atStartOfDay()
+        val startOfDay = runDate.plusDays(1).atStartOfDay()
         val endOfDay = startOfDay.plusDays(1).withNano(0)
 
         return JpaPagingItemReaderBuilder<ScheduledNotification>()
@@ -51,7 +53,8 @@ class AnniversaryFcmBatchConfig(
             .queryString(
                 """
                     SELECT s FROM ScheduledNotification s 
-                    WHERE s.notifyAt BETWEEN :startOfDay AND :endOfDay
+                    WHERE s.notifyAt >= :startOfDay 
+                    AND s.notifyAt < :endOfDay
                     ORDER BY s.id
                     """.trimIndent()
             )
