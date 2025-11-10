@@ -36,7 +36,7 @@ class ScheduleNotificationAddBatchConfig(
         @DateTimeFormat(pattern = "yyyy-MM-dd")
         @Value("#{jobParameters['runDate']}") runDate: LocalDate,
     ): JpaPagingItemReader<User> {
-        val tomorrow = runDate.plusDays(1)
+        val tomorrow = runDate.plusDays(2) // runDate 수행이 UST 기준이라 2일 뒤에서 찾습니다
 
         val year = tomorrow.year
         val month = tomorrow.monthValue
