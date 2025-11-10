@@ -32,7 +32,7 @@ import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDate
 
 @Configuration
-class AnniversaryBatchConfig(
+class AnniversaryFcmBatchConfig(
     private val whatEverJobRepository: JobRepository,
     private val apiEntityManagerFactory: EntityManagerFactory,
 ) {
