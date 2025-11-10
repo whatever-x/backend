@@ -44,7 +44,7 @@ class AnniversaryFcmBatchConfig(
         @DateTimeFormat(pattern = "yyyy-MM-dd")
         @Value("#{jobParameters['runDate']}") runDate: LocalDate,
     ): JpaPagingItemReader<ScheduledNotification> {
-        val startOfDay = runDate.plusDays(1).atStartOfDay()
+        val startOfDay = runDate.atStartOfDay()
         val endOfDay = startOfDay.plusDays(1).withNano(0)
 
         return JpaPagingItemReaderBuilder<ScheduledNotification>()
