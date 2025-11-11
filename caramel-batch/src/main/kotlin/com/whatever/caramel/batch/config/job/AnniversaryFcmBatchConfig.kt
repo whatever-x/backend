@@ -32,7 +32,7 @@ import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDate
 
 @Configuration
-class AnniversaryBatchConfig(
+class AnniversaryFcmBatchConfig(
     private val whatEverJobRepository: JobRepository,
     private val apiEntityManagerFactory: EntityManagerFactory,
 ) {
@@ -51,7 +51,8 @@ class AnniversaryBatchConfig(
             .queryString(
                 """
                     SELECT s FROM ScheduledNotification s 
-                    WHERE s.notifyAt BETWEEN :startOfDay AND :endOfDay
+                    WHERE s.notifyAt >= :startOfDay 
+                    AND s.notifyAt < :endOfDay
                     ORDER BY s.id
                     """.trimIndent()
             )
