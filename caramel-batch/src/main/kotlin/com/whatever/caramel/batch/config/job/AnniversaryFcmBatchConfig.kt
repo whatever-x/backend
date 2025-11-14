@@ -8,6 +8,7 @@ import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import com.whatever.caramel.domain.notification.repository.ScheduledNotificationRepository
 import com.whatever.caramel.infrastructure.firebase.exception.FcmException
 import com.whatever.caramel.infrastructure.firebase.exception.FcmIllegalArgumentException
+import com.whatever.caramel.infrastructure.firebase.exception.FcmSendException
 import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import jakarta.persistence.EntityManagerFactory
 import org.springframework.batch.core.Job
@@ -116,14 +117,8 @@ class AnniversaryFcmBatchConfig(
             .processor(anniversaryItemProcessor)
             .writer(anniversaryItemWriter)
             .faultTolerant()
-            .retry(FcmException::class.java)
-            .noRetry(FcmIllegalArgumentException::class.java)
-            .retryLimit(2)
-            .backOffPolicy(FixedBackOffPolicy().apply {
-                backOffPeriod = 500L
-            })
             .processorNonTransactional() // processor 에서 딱히 실패할만한 요소는 보이지 않지만 넣어둠
-            .skip(FcmException::class.java)
+            .skip(FcmSendException::class.java)
             .skipPolicy(AlwaysSkipItemSkipPolicy())
             .listener(anniversaryStepListener)
             .build()
