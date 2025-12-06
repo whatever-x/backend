@@ -1,7 +1,9 @@
-package com.whatever.caramel.batch.config.skip
+package com.whatever.caramel.batch.config.listener
 
 import com.whatever.caramel.batch.config.exception.BatchUnregisteredException
+import com.whatever.caramel.batch.entity.BatchFcmNotification
 import com.whatever.caramel.domain.firebase.service.FirebaseService
+import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import com.whatever.caramel.infrastructure.firebase.exception.FcmSendFailedReason
 import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_BLANK_TOKEN
 import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_EMPTY_TOKEN
@@ -14,21 +16,22 @@ import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionC
 import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_THIRD_PARTY_AUTH_ERROR
 import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_UNREGISTERED_TOKEN
 import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.UNKNOWN
-import org.springframework.batch.core.step.skip.SkipPolicy
+import org.springframework.batch.core.SkipListener
+import org.springframework.stereotype.Component
 
-class FcmSkipPolicy(
+@Component
+class AnniversarySkipListener(
     private val fcmTokenService: FirebaseService,
-) : SkipPolicy {
+) : SkipListener<ScheduledNotification, BatchFcmNotification> {
 
-    override fun shouldSkip(throwable: Throwable, skipCount: Long): Boolean {
-        if (throwable !is BatchUnregisteredException) return true
+    override fun onSkipInWrite(item: BatchFcmNotification, throwable: Throwable) {
+        if (throwable !is BatchUnregisteredException) return
 
         if (throwable.errorCode == FCM_UNREGISTERED_TOKEN || throwable.errorCode == FCM_MULTIPLE_TOKEN_ERROR) {
             throwable.tokens.forEach { fcmToken ->
                 checkUnregisterToken(fcmToken)
             }
         }
-        return true
     }
 
     private fun checkUnregisterToken(fcmToken: FcmSendFailedReason) {

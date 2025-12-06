@@ -3,8 +3,8 @@ package com.whatever.caramel.batch.config.job
 import com.whatever.caramel.batch.config.exception.BatchUnregisteredException
 import com.whatever.caramel.batch.config.exception.CaramelBatchException
 import com.whatever.caramel.batch.config.listener.AnniversaryJobListener
+import com.whatever.caramel.batch.config.listener.AnniversarySkipListener
 import com.whatever.caramel.batch.config.listener.AnniversaryStepListener
-import com.whatever.caramel.batch.config.skip.FcmSkipPolicy
 import com.whatever.caramel.batch.entity.BatchFcmNotification
 import com.whatever.caramel.domain.firebase.service.FirebaseService
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
@@ -19,6 +19,7 @@ import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.job.builder.JobBuilder
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
+import org.springframework.batch.core.step.skip.AlwaysSkipItemSkipPolicy
 import org.springframework.batch.item.ItemProcessor
 import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
@@ -36,6 +37,7 @@ import java.time.LocalDate
 class AnniversaryFcmBatchConfig(
     private val whatEverJobRepository: JobRepository,
     private val apiEntityManagerFactory: EntityManagerFactory,
+    private val firebaseService: FirebaseService,
 ) {
     @Bean
     @StepScope
@@ -84,9 +86,7 @@ class AnniversaryFcmBatchConfig(
     }
 
     @Bean
-    fun anniversaryItemWriter(
-        firebaseService: FirebaseService,
-    ): ItemWriter<BatchFcmNotification> {
+    fun anniversaryItemWriter(): ItemWriter<BatchFcmNotification> {
         return ItemWriter { chunk ->
             chunk.items.forEach { notification ->
                 with(notification) {
@@ -119,7 +119,7 @@ class AnniversaryFcmBatchConfig(
         anniversaryItemProcessor: ItemProcessor<ScheduledNotification, BatchFcmNotification>,
         anniversaryItemWriter: ItemWriter<BatchFcmNotification>,
         anniversaryStepListener: AnniversaryStepListener,
-        firebaseService: FirebaseService,
+        anniversarySkipListener: AnniversarySkipListener,
     ): Step {
         return StepBuilder("anniversaryStep", whatEverJobRepository)
             .chunk<ScheduledNotification, BatchFcmNotification>(FCM_CHUNK_SIZE, transactionManager)
@@ -128,10 +128,11 @@ class AnniversaryFcmBatchConfig(
             .writer(anniversaryItemWriter)
             .faultTolerant()
             .processorNonTransactional() // processor 에서 딱히 실패할만한 요소는 보이지 않지만 넣어둠
-            .skipPolicy(FcmSkipPolicy(firebaseService))
+            .skipPolicy(AlwaysSkipItemSkipPolicy())
             .noRetry(FcmException::class.java)
             .noRetry(CaramelBatchException::class.java)
             .listener(anniversaryStepListener)
+            .listener(anniversarySkipListener)
             .build()
     }
 
