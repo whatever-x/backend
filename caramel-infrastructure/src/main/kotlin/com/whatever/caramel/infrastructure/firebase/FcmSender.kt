@@ -1,5 +1,6 @@
 package com.whatever.caramel.infrastructure.firebase
 
+import com.google.firebase.messaging.BatchResponse
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingException
 import com.google.firebase.messaging.Message
@@ -13,9 +14,12 @@ import com.google.firebase.messaging.MulticastMessage
 import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.infrastructure.firebase.exception.FcmIllegalArgumentException
 import com.whatever.caramel.infrastructure.firebase.exception.FcmSendException
+import com.whatever.caramel.infrastructure.firebase.exception.FcmSendFailedReason
+import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode
 import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_EMPTY_TOKEN
 import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_INTERNAL_SERVER_ERROR
 import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_INVALID_ARGUMENT
+import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_MULTIPLE_TOKEN_ERROR
 import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_QUOTA_EXCEEDED
 import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_SENDER_ID_MISMATCH
 import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_SERVER_UNAVAILABLE
@@ -76,7 +80,7 @@ class FcmSender {
             .setToken(token)
             .build()
 
-        return executeFcmCall("sendData to token: $token") {
+        return executeFcmCall("sendData to token: $token", listOf(token)) {
             FirebaseMessaging.getInstance().send(message)
         }
     }
@@ -98,43 +102,85 @@ class FcmSender {
             .addAllTokens(tokens)
             .build()
 
-        return executeFcmCall("sendDataAll to ${tokens.size} tokens") {
+        return executeFcmCall("sendDataAll to ${tokens.size} tokens", tokens) {
             FirebaseMessaging.getInstance().sendEachForMulticast(message)
         }
     }
 
     private fun <T> executeFcmCall(
         callDescription: String,
+        tokens: List<String> = emptyList(),
         fcmCall: () -> T,
     ): T {
         try {
-            return fcmCall()
+            val call = fcmCall()
+
+            if (call is BatchResponse) {
+                val failedTokens = call.responses.mapIndexedNotNull { index, sendResponse ->
+                    if (sendResponse.isSuccessful.not()) {
+                        sendResponse.exception?.let {
+                            logger.error(sendResponse.exception) {
+                                "Multicast failure for token=${tokens[index]}, FCM error=${sendResponse.exception.messagingErrorCode}"
+                            }
+                        }
+
+                        FcmSendFailedReason(
+                            errorToken = tokens[index],
+                            errorMessageCode = mapToCaramelError(sendResponse.exception),
+                        )
+                    } else {
+                        null
+                    }
+                }
+
+                if (failedTokens.isNotEmpty()) {
+                    throw FcmSendException(
+                        tokens = failedTokens,
+                        errorCode = FCM_MULTIPLE_TOKEN_ERROR,
+                        errorUi = ErrorUi.Toast("일부 알림 전송에 실패했어요.")
+                    )
+                }
+            }
+
+            return call
+        } catch (e: FcmSendException) {
+            throw e
         } catch (e: FirebaseMessagingException) {
             //
-            val mappedCode =
-                when (e.messagingErrorCode) {
-                    INVALID_ARGUMENT -> FCM_INVALID_ARGUMENT
-                    UNREGISTERED -> FCM_UNREGISTERED_TOKEN
-                    SENDER_ID_MISMATCH -> FCM_SENDER_ID_MISMATCH
-                    QUOTA_EXCEEDED -> FCM_QUOTA_EXCEEDED
-                    UNAVAILABLE -> FCM_SERVER_UNAVAILABLE
-                    INTERNAL -> FCM_INTERNAL_SERVER_ERROR
-                    else -> UNKNOWN
-                }
+            val mappedCode = mapToCaramelError(e)
             logger.error(e) {
                 "FCM call failed: $callDescription. FCM ErrorCode: ${e.messagingErrorCode}, MappedCode: $mappedCode"
             }
 
             throw FcmSendException(
+                tokens = listOf(
+                    FcmSendFailedReason(
+                        errorToken = tokens.firstOrNull().orEmpty(),
+                        errorMessageCode = mappedCode,
+                    )
+                ),
                 errorCode = mappedCode,
                 errorUi = ErrorUi.Toast("알림을 전송에 실패했어요.")
             )
         } catch (e: Exception) {
             logger.error(e) { "Generic error during FCM call: $callDescription" }
             throw FcmSendException(
+                tokens = emptyList(),
                 errorCode = UNKNOWN,
                 errorUi = ErrorUi.Toast("알림을 전송에 실패했어요.")
             )
+        }
+    }
+
+    private fun mapToCaramelError(e: FirebaseMessagingException): FirebaseExceptionCode {
+        return when (e.messagingErrorCode) {
+            INVALID_ARGUMENT -> FCM_INVALID_ARGUMENT
+            UNREGISTERED -> FCM_UNREGISTERED_TOKEN
+            SENDER_ID_MISMATCH -> FCM_SENDER_ID_MISMATCH
+            QUOTA_EXCEEDED -> FCM_QUOTA_EXCEEDED
+            UNAVAILABLE -> FCM_SERVER_UNAVAILABLE
+            INTERNAL -> FCM_INTERNAL_SERVER_ERROR
+            else -> UNKNOWN
         }
     }
 }

@@ -63,6 +63,11 @@ enum class FirebaseExceptionCode(
         sequence = "010",
         message = "FCM 토큰은 Blank일 수 없습니다.",
     ),
+    FCM_MULTIPLE_TOKEN_ERROR(
+        sequence = "011",
+        message = "FCM 토큰 중 하나에서 오류가 발생했습니다.",
+        status = INTERNAL_SERVER_ERROR,
+    )
     ;
 
     override val code = "FIREBASE$sequence"
