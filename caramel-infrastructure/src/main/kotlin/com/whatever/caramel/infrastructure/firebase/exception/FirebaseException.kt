@@ -19,6 +19,12 @@ class FcmIllegalArgumentException(
 ) : FcmException(errorCode, errorUi)
 
 class FcmSendException(
+    val tokens: List<FcmSendFailedReason> = emptyList(),
     errorCode: FirebaseExceptionCode,
     errorUi: ErrorUi,
 ) : FcmException(errorCode, errorUi)
+
+class FcmSendFailedReason(
+    val errorToken: String,
+    val errorMessageCode: FirebaseExceptionCode,
+)

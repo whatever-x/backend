@@ -100,4 +100,9 @@ class FirebaseService(
             )
         }
     }
+
+    @Transactional
+    fun removeToken(fcmToken: String) {
+        fcmTokenRepository.deleteFcmTokensByToken(fcmToken)
+    }
 }
