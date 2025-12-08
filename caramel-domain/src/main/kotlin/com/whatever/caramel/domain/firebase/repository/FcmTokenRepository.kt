@@ -25,7 +25,7 @@ interface FcmTokenRepository : JpaRepository<FcmToken, Long> {
         expireDateTime: LocalDateTime = DateTimeUtil.localNow().minusDays(270),
     ): List<FcmToken>
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query(
         """
         delete from FcmToken tk where tk._token = :token
