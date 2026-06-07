@@ -48,30 +48,14 @@ interface UserChoiceOptionRepository : JpaRepository<UserChoiceOption, Long> {
             where uco.user.id in :memberIds
                 and uco.isDeleted = false
                 and bg.isDeleted = false
-            group by bg.id
-            order by bg.gameDate desc
-        """
-    )
-    fun findRespondedGameIds(
-        memberIds: Collection<Long>,
-        pageable: Pageable,
-    ): List<Long>
-
-    @Query(
-        """
-            select bg.id from UserChoiceOption uco
-                join uco.balanceGame bg
-            where uco.user.id in :memberIds
-                and uco.isDeleted = false
-                and bg.isDeleted = false
-                and bg.gameDate < :cursor
+                and bg.gameDate < :date
             group by bg.id
             order by bg.gameDate desc
         """
     )
     fun findRespondedGameIdsBefore(
         memberIds: Collection<Long>,
-        cursor: LocalDate,
+        date: LocalDate,
         pageable: Pageable,
     ): List<Long>
 

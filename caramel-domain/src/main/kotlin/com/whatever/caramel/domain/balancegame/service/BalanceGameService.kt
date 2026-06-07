@@ -44,20 +44,15 @@ class BalanceGameService(
         queryVo: BalanceGameHistoryQueryVo,
     ): PagedSlice<BalanceGameHistoryVo> {
         val memberIds = getCoupleMemberIds(coupleId)
+        // 진행중인 오늘 게임은 히스토리에서 제외한다. 커서가 있으면 더 과거의 상한을 사용한다.
+        val today = DateTimeUtil.localNow(TARGET_ZONE_ID).toLocalDate()
         val cursorDate = queryVo.cursorDate()
-        val pageable = Pageable.ofSize(queryVo.cursorAwarePageSize())
-        val respondedGameIds = if (cursorDate == null) {
-            userChoiceOptionRepository.findRespondedGameIds(
-                memberIds = memberIds,
-                pageable = pageable,
-            )
-        } else {
-            userChoiceOptionRepository.findRespondedGameIdsBefore(
-                memberIds = memberIds,
-                cursor = cursorDate,
-                pageable = pageable,
-            )
-        }
+        val exclusiveUpperDate = if (cursorDate == null) today else minOf(cursorDate, today)
+        val respondedGameIds = userChoiceOptionRepository.findRespondedGameIdsBefore(
+            memberIds = memberIds,
+            date = exclusiveUpperDate,
+            pageable = Pageable.ofSize(queryVo.cursorAwarePageSize()),
+        )
 
         val gameMap = balanceGameRepository.findAllWithOptionByIds(
             gameIds = respondedGameIds

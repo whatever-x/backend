@@ -733,6 +733,35 @@ class BalanceGameServiceTest @Autowired constructor(
         )
     }
 
+    @DisplayName("밸런스 게임 히스토리 조회 시 진행중인 오늘 게임은 응답했더라도 히스토리에서 제외된다.")
+    @Test
+    fun getBalanceGameHistory_ExcludesTodayGame() {
+        // given
+        val (myUser, _, couple) = setUpCouple()
+        val now = LocalDateTime.of(2025, 5, 5, 9, 0)
+        mockStatic(DateTimeUtil::class.java).use {
+            whenever(DateTimeUtil.localNow(any())).thenReturn(now)
+            val games = makeBalanceGame(2, LocalDate.of(2025, 5, 4)) // 05-04(어제), 05-05(오늘)
+            games.forEach { (game, options) ->
+                userChoiceOptionRepository.save(
+                    UserChoiceOption(balanceGame = game, balanceGameOption = options.first(), user = myUser)
+                )
+            }
+            val queryVo = BalanceGameHistoryQueryVo(
+                size = 10,
+                cursor = null,
+                sortType = BalanceGameHistorySortType.GAME_DATE_DESC,
+            )
+
+            // when
+            val result = balanceGameService.getBalanceGameHistory(myUser.id, couple.id, queryVo)
+
+            // then
+            assertThat(result.list).hasSize(1)
+            assertThat(result.list.first().balanceGame.gameDate).isEqualTo(LocalDate.of(2025, 5, 4))
+        }
+    }
+
     private fun setUpCouple(
         myPlatformId: String = "my-user-id",
         partnerPlatformId: String = "partner-user-id",
