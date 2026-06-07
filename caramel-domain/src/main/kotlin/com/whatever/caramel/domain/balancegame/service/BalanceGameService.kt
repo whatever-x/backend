@@ -1,6 +1,8 @@
 package com.whatever.caramel.domain.balancegame.service
 
+import com.whatever.caramel.common.global.cursor.PagedSlice
 import com.whatever.caramel.common.global.exception.ErrorUi
+import com.whatever.caramel.common.util.CursorUtil
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameExceptionCode.ALREADY_PICKED
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameExceptionCode.GAME_CHANGED
@@ -14,11 +16,15 @@ import com.whatever.caramel.domain.balancegame.model.BalanceGame
 import com.whatever.caramel.domain.balancegame.model.UserChoiceOption
 import com.whatever.caramel.domain.balancegame.repository.BalanceGameRepository
 import com.whatever.caramel.domain.balancegame.repository.UserChoiceOptionRepository
+import com.whatever.caramel.domain.balancegame.vo.BalanceGameHistoryQueryVo
+import com.whatever.caramel.domain.balancegame.vo.BalanceGameHistoryVo
 import com.whatever.caramel.domain.balancegame.vo.BalanceGameVo
 import com.whatever.caramel.domain.balancegame.vo.CoupleChoiceOptionVo
 import com.whatever.caramel.domain.balancegame.vo.UserChoiceOptionVo
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.user.repository.UserRepository
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -31,6 +37,47 @@ class BalanceGameService(
     private val coupleRepository: CoupleRepository,
     private val userRepository: UserRepository,
 ) {
+
+    @Transactional(readOnly = true)
+    fun getBalanceGameHistory(
+        userId: Long,
+        coupleId: Long,
+        queryVo: BalanceGameHistoryQueryVo,
+    ): PagedSlice<BalanceGameHistoryVo> {
+        val memberIds = getCoupleMemberIds(coupleId)
+        val respondedGameIds = userChoiceOptionRepository.findRespondedGameIds(
+            memberIds = memberIds,
+            cursor = queryVo.cursorDate(),
+            pageable = Pageable.ofSize(queryVo.cursorAwarePageSize()),
+        )
+
+        val gameMap = balanceGameRepository.findAllWithOptionByIds(
+            gameIds = respondedGameIds
+        ).associateBy { it.id }
+        val choiceMap = userChoiceOptionRepository.findAllByGameIdsAndUserIds(
+            gameIds = respondedGameIds,
+            memberIds = memberIds,
+        ).groupBy { it.balanceGame.id }
+
+        return respondedGameIds.mapNotNull { gameMap[it] }.let { games ->
+            PagedSlice.from(
+                list = games,
+                size = queryVo.size,
+                generateCursor = { game -> CursorUtil.toHash(game.gameDate.toString()) }
+            )
+        }.map { game ->
+            val gameChoices = choiceMap[game.id].orEmpty()
+            val myChoice = gameChoices.find { it.user.id == userId }
+            val partnerChoice = gameChoices.find { it.user.id != userId }
+
+            BalanceGameHistoryVo.from(
+                balanceGame = game,
+                balanceGameOptions = game.options,
+                myChoice = myChoice,
+                partnerChoice = partnerChoice
+            )
+        }
+    }
 
     @Transactional(readOnly = true)
     fun getTodayBalanceGameInfo(): BalanceGameVo {
@@ -118,12 +165,18 @@ class BalanceGameService(
         coupleId: Long,
         gameId: Long,
     ): List<UserChoiceOption> {
-        val couple = coupleRepository.findByIdWithMembers(coupleId) ?: return emptyList()
-        val memberIds = couple.members.map { it.id }.ifEmpty { return emptyList() }
+        val memberIds = getCoupleMemberIds(coupleId)
         return userChoiceOptionRepository.findAllWithOptionByBalanceGameIdAndUsers(
             gameId = gameId,
             userIds = memberIds,
         )
+    }
+
+    private fun getCoupleMemberIds(
+        coupleId: Long,
+    ): Set<Long> {
+        val couple = coupleRepository.findByIdWithMembers(coupleId) ?: return emptySet()
+        return couple.members.map { it.id }.ifEmpty { return emptySet() }.toSet()
     }
 
     companion object {
