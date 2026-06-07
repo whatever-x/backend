@@ -22,7 +22,9 @@ import com.whatever.caramel.domain.balancegame.vo.BalanceGameVo
 import com.whatever.caramel.domain.balancegame.vo.CoupleChoiceOptionVo
 import com.whatever.caramel.domain.balancegame.vo.UserChoiceOptionVo
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
+import com.whatever.caramel.domain.firebase.service.event.dto.BalanceGameOptionChosenEvent
 import com.whatever.caramel.domain.user.repository.UserRepository
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -35,6 +37,7 @@ class BalanceGameService(
     private val userChoiceOptionRepository: UserChoiceOptionRepository,
     private val coupleRepository: CoupleRepository,
     private val userRepository: UserRepository,
+    private val applicationEventPublisher: ApplicationEventPublisher
 ) {
 
     @Transactional(readOnly = true)
@@ -134,8 +137,13 @@ class BalanceGameService(
                 balanceGameOption = selectedOption,
                 user = requestUser,
             )
-
             userChoiceOptionRepository.save(newChoice)
+
+            applicationEventPublisher.publishEvent(BalanceGameOptionChosenEvent(
+                userId = requestUserId,
+                memberIds = getCoupleMemberIds(coupleId),
+            ))
+            newChoice
         }
 
         val myChoiceVo = UserChoiceOptionVo.from(myChoice)

@@ -21,6 +21,8 @@ import com.whatever.caramel.domain.balancegame.vo.BalanceGameHistoryVo
 import com.whatever.caramel.domain.calendarevent.scheduleevent.service.createCouple
 import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
+import com.whatever.caramel.domain.couple.service.event.ExcludeAsyncConfigBean
+import com.whatever.caramel.domain.firebase.service.FirebaseService
 import com.whatever.caramel.domain.user.model.User
 import com.whatever.caramel.domain.user.model.UserGender
 import com.whatever.caramel.domain.user.repository.UserRepository
@@ -32,9 +34,15 @@ import org.mockito.Mockito.anyLong
 import org.mockito.Mockito.mockStatic
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationEventPublisher
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.contracts.contract
@@ -49,7 +57,10 @@ class BalanceGameServiceTest @Autowired constructor(
     private val balanceGameRepository: BalanceGameRepository,
     private val balanceGameOptionRepository: BalanceGameOptionRepository,
     private val userChoiceOptionRepository: UserChoiceOptionRepository,
-) {
+) : ExcludeAsyncConfigBean() {
+
+    @MockitoBean
+    private lateinit var firebaseService: FirebaseService
 
     @AfterEach
     fun tearDown() {
@@ -205,7 +216,7 @@ class BalanceGameServiceTest @Autowired constructor(
         whenever(coupleRepository.findByIdWithMembers(anyLong())).thenReturn(null)
 
         val balanceGameService =
-            BalanceGameService(balanceGameRepository, userChoiceOptionRepository, coupleRepository, userRepository)
+            BalanceGameService(balanceGameRepository, userChoiceOptionRepository, coupleRepository, userRepository, mock<ApplicationEventPublisher>())
 
         // when
         val userChoices = balanceGameService.getCoupleMemberChoices(couple.id, expectedGame.first.id)
@@ -227,7 +238,7 @@ class BalanceGameServiceTest @Autowired constructor(
             removeMember(user2)
         })
         val balanceGameService =
-            BalanceGameService(balanceGameRepository, userChoiceOptionRepository, coupleRepository, userRepository)
+            BalanceGameService(balanceGameRepository, userChoiceOptionRepository, coupleRepository, userRepository, mock<ApplicationEventPublisher>())
 
         // when
         val userChoices = balanceGameService.getCoupleMemberChoices(couple.id, expectedGame.first.id)
@@ -422,6 +433,98 @@ class BalanceGameServiceTest @Autowired constructor(
 
             // then
             assertThat(result.errorCode).isEqualTo(BalanceGameExceptionCode.ILLEGAL_OPTION)
+        }
+    }
+
+    @DisplayName("밸런스게임을 처음 선택하면 상대방에게 fcm 알림이 전송된다.")
+    @Test
+    fun chooseBalanceGameOption_WhenFirstChoice_SendsNotificationToPartner() {
+        // given
+        val (myUser, partnerUser, couple) = setUpCouple()
+        val now = LocalDateTime.of(2025, 5, 5, 9, 0)
+        mockStatic(DateTimeUtil::class.java).use {
+            whenever(DateTimeUtil.localNow(any())).thenReturn(now)
+            val gameInfo = makeBalanceGame(1, now.toLocalDate()).first()
+
+            // when
+            balanceGameService.chooseBalanceGameOption(
+                gameId = gameInfo.first.id,
+                selectedOptionId = gameInfo.second.first().id,
+                coupleId = couple.id,
+                requestUserId = myUser.id,
+            )
+
+            // then
+            verify(firebaseService, times(1))
+                .sendNotification(
+                    targetUserIds = eq(setOf(partnerUser.id)),
+                    fcmNotification = any(),
+                )
+        }
+    }
+
+    @DisplayName("밸런스게임을 재선택(이미 내 선택 존재)하면 fcm 알림이 전송되지 않는다.")
+    @Test
+    fun chooseBalanceGameOption_WhenReChoice_DoesNotSendNotification() {
+        // given
+        val (myUser, _, couple) = setUpCouple()
+        val now = LocalDateTime.of(2025, 5, 5, 9, 0)
+        mockStatic(DateTimeUtil::class.java).use {
+            whenever(DateTimeUtil.localNow(any())).thenReturn(now)
+            val gameInfo = makeBalanceGame(1, now.toLocalDate()).first()
+            userChoiceOptionRepository.save(
+                UserChoiceOption(
+                    balanceGame = gameInfo.first,
+                    balanceGameOption = gameInfo.second.first(),
+                    user = myUser,
+                )
+            )
+
+            // when
+            balanceGameService.chooseBalanceGameOption(
+                gameId = gameInfo.first.id,
+                selectedOptionId = gameInfo.second.last().id,
+                coupleId = couple.id,
+                requestUserId = myUser.id,
+            )
+
+            // then
+            verify(firebaseService, never())
+                .sendNotification(any(), any())
+        }
+    }
+
+    @DisplayName("파트너가 먼저 선택한 뒤 내가 처음 선택하면 상대방에게 fcm 알림이 전송된다.")
+    @Test
+    fun chooseBalanceGameOption_WhenPartnerChosenThenIChooseFirst_SendsNotificationToPartner() {
+        // given
+        val (myUser, partnerUser, couple) = setUpCouple()
+        val now = LocalDateTime.of(2025, 5, 5, 9, 0)
+        mockStatic(DateTimeUtil::class.java).use {
+            whenever(DateTimeUtil.localNow(any())).thenReturn(now)
+            val gameInfo = makeBalanceGame(1, now.toLocalDate()).first()
+            userChoiceOptionRepository.save(
+                UserChoiceOption(
+                    balanceGame = gameInfo.first,
+                    balanceGameOption = gameInfo.second.first(),
+                    user = partnerUser,
+                )
+            )
+
+            // when
+            balanceGameService.chooseBalanceGameOption(
+                gameId = gameInfo.first.id,
+                selectedOptionId = gameInfo.second.last().id,
+                coupleId = couple.id,
+                requestUserId = myUser.id,
+            )
+
+            // then
+            verify(firebaseService, times(1))
+                .sendNotification(
+                    targetUserIds = eq(setOf(partnerUser.id)),
+                    fcmNotification = any(),
+                )
         }
     }
 
@@ -639,7 +742,7 @@ class BalanceGameServiceTest @Autowired constructor(
         val coupleRepository = mock<CoupleRepository>()
         whenever(coupleRepository.findByIdWithMembers(anyLong())).thenReturn(null)
         val balanceGameService =
-            BalanceGameService(balanceGameRepository, userChoiceOptionRepository, coupleRepository, userRepository)
+            BalanceGameService(balanceGameRepository, userChoiceOptionRepository, coupleRepository, userRepository, mock<ApplicationEventPublisher>())
         val queryVo = BalanceGameHistoryQueryVo(
             size = 10,
             cursor = null,
