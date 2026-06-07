@@ -1,6 +1,7 @@
 package com.whatever.caramel.domain.firebase.service.event
 
 import com.whatever.caramel.domain.firebase.service.FirebaseService
+import com.whatever.caramel.domain.firebase.service.event.dto.BalanceGameOptionChosenEvent
 import com.whatever.caramel.domain.firebase.service.event.dto.CoupleConnectedEvent
 import com.whatever.caramel.domain.firebase.service.event.dto.MemoCreateEvent
 import com.whatever.caramel.domain.firebase.service.event.dto.ScheduleCreateEvent
@@ -67,6 +68,20 @@ class FcmEventListener(
         firebaseService.sendNotification(
             targetUserIds = event.memberIds,
             fcmNotification = fcmNotification,
+        )
+    }
+
+    @TransactionalEventListener(phase = AFTER_COMMIT)
+    @Async
+    fun balanceGameOptionChosen(event: BalanceGameOptionChosenEvent) {
+        val partnerUserId = runCatching { event.memberIds.first { it != event.userId } }
+            .getOrElse { return }
+        firebaseService.sendNotification(
+            targetUserIds = setOf(partnerUserId),
+            fcmNotification = FcmNotification(
+                title = "밸런스 게임",
+                body = "연인이 오늘의 밸런스 게임에 답했어요!",
+            ),
         )
     }
 }
