@@ -1,13 +1,16 @@
 package com.whatever.caramel.batch.config.job
 
+import com.whatever.caramel.batch.config.exception.BatchUnregisteredException
+import com.whatever.caramel.batch.config.exception.CaramelBatchException
 import com.whatever.caramel.batch.config.listener.AnniversaryJobListener
+import com.whatever.caramel.batch.config.listener.AnniversarySkipListener
 import com.whatever.caramel.batch.config.listener.AnniversaryStepListener
 import com.whatever.caramel.batch.entity.BatchFcmNotification
 import com.whatever.caramel.domain.firebase.service.FirebaseService
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import com.whatever.caramel.domain.notification.repository.ScheduledNotificationRepository
 import com.whatever.caramel.infrastructure.firebase.exception.FcmException
-import com.whatever.caramel.infrastructure.firebase.exception.FcmIllegalArgumentException
+import com.whatever.caramel.infrastructure.firebase.exception.FcmSendException
 import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import jakarta.persistence.EntityManagerFactory
 import org.springframework.batch.core.Job
@@ -27,14 +30,14 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.retry.backoff.FixedBackOffPolicy
 import org.springframework.transaction.PlatformTransactionManager
 import java.time.LocalDate
 
 @Configuration
-class AnniversaryBatchConfig(
+class AnniversaryFcmBatchConfig(
     private val whatEverJobRepository: JobRepository,
     private val apiEntityManagerFactory: EntityManagerFactory,
+    private val firebaseService: FirebaseService,
 ) {
     @Bean
     @StepScope
@@ -51,7 +54,8 @@ class AnniversaryBatchConfig(
             .queryString(
                 """
                     SELECT s FROM ScheduledNotification s 
-                    WHERE s.notifyAt BETWEEN :startOfDay AND :endOfDay
+                    WHERE s.notifyAt >= :startOfDay 
+                    AND s.notifyAt < :endOfDay
                     ORDER BY s.id
                     """.trimIndent()
             )
@@ -82,20 +86,27 @@ class AnniversaryBatchConfig(
     }
 
     @Bean
-    fun anniversaryItemWriter(
-        firebaseService: FirebaseService,
-    ): ItemWriter<BatchFcmNotification> {
+    fun anniversaryItemWriter(): ItemWriter<BatchFcmNotification> {
         return ItemWriter { chunk ->
-            chunk.items.map { notification ->
+            chunk.items.forEach { notification ->
                 with(notification) {
-                    firebaseService.sendNotification(
-                        setOf(targetId),
-                        FcmNotification(
-                            title = fcmNotification.title,
-                            body = fcmNotification.body,
-                            image = fcmNotification.image,
+                    runCatching {
+                        firebaseService.sendNotification(
+                            setOf(targetId),
+                            FcmNotification(
+                                title = fcmNotification.title,
+                                body = fcmNotification.body,
+                                image = fcmNotification.image,
+                            )
                         )
-                    )
+                    }.onFailure { exception ->
+                        if (exception is FcmSendException && exception.tokens.isNotEmpty()) {
+                            throw BatchUnregisteredException(
+                                tokens = exception.tokens,
+                                errorCode = exception.errorCode,
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -108,6 +119,7 @@ class AnniversaryBatchConfig(
         anniversaryItemProcessor: ItemProcessor<ScheduledNotification, BatchFcmNotification>,
         anniversaryItemWriter: ItemWriter<BatchFcmNotification>,
         anniversaryStepListener: AnniversaryStepListener,
+        anniversarySkipListener: AnniversarySkipListener,
     ): Step {
         return StepBuilder("anniversaryStep", whatEverJobRepository)
             .chunk<ScheduledNotification, BatchFcmNotification>(FCM_CHUNK_SIZE, transactionManager)
@@ -115,16 +127,12 @@ class AnniversaryBatchConfig(
             .processor(anniversaryItemProcessor)
             .writer(anniversaryItemWriter)
             .faultTolerant()
-            .retry(FcmException::class.java)
-            .noRetry(FcmIllegalArgumentException::class.java)
-            .retryLimit(2)
-            .backOffPolicy(FixedBackOffPolicy().apply {
-                backOffPeriod = 500L
-            })
             .processorNonTransactional() // processor 에서 딱히 실패할만한 요소는 보이지 않지만 넣어둠
-            .skip(FcmException::class.java)
             .skipPolicy(AlwaysSkipItemSkipPolicy())
+            .noRetry(FcmException::class.java)
+            .noRetry(CaramelBatchException::class.java)
             .listener(anniversaryStepListener)
+            .listener(anniversarySkipListener)
             .build()
     }
 

@@ -17,4 +17,15 @@ interface BalanceGameRepository : JpaRepository<BalanceGame, Long> {
     """
     )
     fun findWithOptionsByGameDate(gameDate: LocalDate): BalanceGame?
+
+    @Query(
+        """
+            select distinct bg from BalanceGame bg
+                join fetch bg.options o
+            where bg.id in :gameIds
+                and bg.isDeleted = false
+        """
+    )
+    fun findAllWithOptionByIds(gameIds: List<Long>): List<BalanceGame>
+
 }

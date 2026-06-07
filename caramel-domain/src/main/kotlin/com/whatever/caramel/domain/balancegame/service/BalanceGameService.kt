@@ -1,6 +1,8 @@
 package com.whatever.caramel.domain.balancegame.service
 
+import com.whatever.caramel.common.global.cursor.PagedSlice
 import com.whatever.caramel.common.global.exception.ErrorUi
+import com.whatever.caramel.common.util.CursorUtil
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameExceptionCode.ALREADY_PICKED
 import com.whatever.caramel.domain.balancegame.exception.BalanceGameExceptionCode.GAME_CHANGED
@@ -14,11 +16,14 @@ import com.whatever.caramel.domain.balancegame.model.BalanceGame
 import com.whatever.caramel.domain.balancegame.model.UserChoiceOption
 import com.whatever.caramel.domain.balancegame.repository.BalanceGameRepository
 import com.whatever.caramel.domain.balancegame.repository.UserChoiceOptionRepository
+import com.whatever.caramel.domain.balancegame.vo.BalanceGameHistoryQueryVo
+import com.whatever.caramel.domain.balancegame.vo.BalanceGameHistoryVo
 import com.whatever.caramel.domain.balancegame.vo.BalanceGameVo
 import com.whatever.caramel.domain.balancegame.vo.CoupleChoiceOptionVo
 import com.whatever.caramel.domain.balancegame.vo.UserChoiceOptionVo
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.user.repository.UserRepository
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -31,6 +36,52 @@ class BalanceGameService(
     private val coupleRepository: CoupleRepository,
     private val userRepository: UserRepository,
 ) {
+
+    @Transactional(readOnly = true)
+    fun getBalanceGameHistory(
+        userId: Long,
+        coupleId: Long,
+        queryVo: BalanceGameHistoryQueryVo,
+    ): PagedSlice<BalanceGameHistoryVo> {
+        val memberIds = getCoupleMemberIds(coupleId)
+        // 진행중인 오늘 게임은 히스토리에서 제외한다. 커서가 있으면 더 과거의 상한을 사용한다.
+        val today = DateTimeUtil.localNow(TARGET_ZONE_ID).toLocalDate()
+        val cursorDate = queryVo.cursorDate()
+        val exclusiveUpperDate = if (cursorDate == null) today else minOf(cursorDate, today)
+        // 커플 멤버가 모두 응답한 게임만 히스토리에 노출한다.
+        val respondedGameIds = userChoiceOptionRepository.findFullyRespondedGameIdsBefore(
+            memberIds = memberIds,
+            memberCount = memberIds.size.toLong(),
+            date = exclusiveUpperDate,
+            pageable = Pageable.ofSize(queryVo.cursorAwarePageSize()),
+        )
+
+        val gameMap = balanceGameRepository.findAllWithOptionByIds(
+            gameIds = respondedGameIds
+        ).associateBy { it.id }
+        val choiceMap = userChoiceOptionRepository.findAllByGameIdsAndUserIds(
+            gameIds = respondedGameIds,
+            memberIds = memberIds,
+        ).groupBy { it.balanceGame.id }
+
+        return respondedGameIds.mapNotNull { gameMap[it] }.let { games ->
+            PagedSlice.from(
+                list = games,
+                size = queryVo.size,
+                generateCursor = { game -> CursorUtil.toHash(game.gameDate.toString()) })
+        }.map { game ->
+            val gameChoices = choiceMap[game.id].orEmpty()
+            val myChoice = gameChoices.find { it.user.id == userId }
+            val partnerChoice = gameChoices.find { it.user.id != userId }
+
+            BalanceGameHistoryVo.from(
+                balanceGame = game,
+                balanceGameOptions = game.options,
+                myChoice = myChoice,
+                partnerChoice = partnerChoice
+            )
+        }
+    }
 
     @Transactional(readOnly = true)
     fun getTodayBalanceGameInfo(): BalanceGameVo {
@@ -48,10 +99,8 @@ class BalanceGameService(
         val balanceGame = getBalanceGame()
         if (balanceGame.id != gameId) {
             throw BalanceGameIllegalArgumentException(
-                errorCode = GAME_CHANGED,
-                errorUi = ErrorUi.Dialog(
-                    title = "12시가 넘어 새로운 질문으로 업데이트되었어요.",
-                    description = "질문을 보고 새롭게 선택해 주세요."
+                errorCode = GAME_CHANGED, errorUi = ErrorUi.Dialog(
+                    title = "12시가 넘어 새로운 질문으로 업데이트되었어요.", description = "질문을 보고 새롭게 선택해 주세요."
                 )
             )
         }
@@ -67,8 +116,7 @@ class BalanceGameService(
             UserChoiceOptionVo.from(it)
         }
 
-        val myChoice = memberChoices.find { it.user.id == requestUserId }
-            ?.let { userChoiceOption ->
+        val myChoice = memberChoices.find { it.user.id == requestUserId }?.let { userChoiceOption ->
                 // 추후에 PATCH 분리시 이곳을 분리해야함
                 if (partnerChoiceVo != null) {
                     throw BalanceGameIllegalStateException(
@@ -101,8 +149,9 @@ class BalanceGameService(
     private fun getBalanceGame(
         date: LocalDate = DateTimeUtil.localNow(TARGET_ZONE_ID).toLocalDate(),
     ): BalanceGame {
-        return balanceGameRepository.findWithOptionsByGameDate(gameDate = date)
-            ?: throw BalanceGameNotFoundException(errorCode = GAME_NOT_EXISTS)
+        return balanceGameRepository.findWithOptionsByGameDate(gameDate = date) ?: throw BalanceGameNotFoundException(
+            errorCode = GAME_NOT_EXISTS
+        )
     }
 
     fun getCoupleMemberChoices(
@@ -118,12 +167,18 @@ class BalanceGameService(
         coupleId: Long,
         gameId: Long,
     ): List<UserChoiceOption> {
-        val couple = coupleRepository.findByIdWithMembers(coupleId) ?: return emptyList()
-        val memberIds = couple.members.map { it.id }.ifEmpty { return emptyList() }
+        val memberIds = getCoupleMemberIds(coupleId)
         return userChoiceOptionRepository.findAllWithOptionByBalanceGameIdAndUsers(
             gameId = gameId,
             userIds = memberIds,
         )
+    }
+
+    private fun getCoupleMemberIds(
+        coupleId: Long,
+    ): Set<Long> {
+        val couple = coupleRepository.findByIdWithMembers(coupleId) ?: return emptySet()
+        return couple.members.map { it.id }.ifEmpty { return emptySet() }.toSet()
     }
 
     companion object {

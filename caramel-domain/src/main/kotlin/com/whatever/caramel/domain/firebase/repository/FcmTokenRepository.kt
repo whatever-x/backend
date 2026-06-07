@@ -3,6 +3,7 @@ package com.whatever.caramel.domain.firebase.repository
 import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.firebase.model.FcmToken
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import java.time.LocalDateTime
 
@@ -23,4 +24,12 @@ interface FcmTokenRepository : JpaRepository<FcmToken, Long> {
         userIds: Set<Long>,
         expireDateTime: LocalDateTime = DateTimeUtil.localNow().minusDays(270),
     ): List<FcmToken>
+
+    @Modifying(clearAutomatically = true)
+    @Query(
+        """
+        delete from FcmToken tk where tk._token = :token
+    """
+    )
+    fun deleteFcmTokensByToken(token: String)
 }

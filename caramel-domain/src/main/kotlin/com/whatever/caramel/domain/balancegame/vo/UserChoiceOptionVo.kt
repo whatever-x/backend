@@ -1,6 +1,7 @@
 package com.whatever.caramel.domain.balancegame.vo
 
 import com.whatever.caramel.domain.balancegame.model.UserChoiceOption
+import com.whatever.caramel.domain.user.model.UserGender
 
 data class UserChoiceOptionVo(
     val id: Long = 0L,
@@ -10,6 +11,8 @@ data class UserChoiceOptionVo(
     val balanceGameOptionId: Long,
 
     val userId: Long,
+
+    val gender: UserGender,
 ) {
 
     companion object {
@@ -19,6 +22,7 @@ data class UserChoiceOptionVo(
                 balanceGameId = userChoiceOption.balanceGame.id,
                 balanceGameOptionId = userChoiceOption.balanceGameOption.id,
                 userId = userChoiceOption.user.id,
+                gender = userChoiceOption.user.gender!!
             )
         }
     }

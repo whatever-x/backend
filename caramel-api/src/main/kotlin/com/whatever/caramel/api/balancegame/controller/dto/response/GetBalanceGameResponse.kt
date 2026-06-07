@@ -29,8 +29,14 @@ data class GetBalanceGameResponse(
                 partnerChoice?.let { gameVo.options.firstOrNull { it.id == partnerChoice.balanceGameOptionId } }
             return GetBalanceGameResponse(
                 gameInfo = BalanceGameInfo.of(gameVo, gameVo.options),
-                myChoice = myChoiceOptionVo?.let { OptionInfo.from(it) },
-                partnerChoice = partnerChoiceOptionVo?.let { OptionInfo.from(it) }
+                myChoice = myChoiceOptionVo?.let { OptionInfo.from(
+                    it,
+                    myChoice.gender.toString(),
+                ) },
+                partnerChoice = partnerChoiceOptionVo?.let { OptionInfo.from(
+                    it,
+                    partnerChoice.gender.toString(),
+                ) },
             )
         }
     }
@@ -72,12 +78,19 @@ data class OptionInfo(
 
     @Schema(description = "선택지 내용")
     val text: String,
+
+    @Schema(description = "선택한 유저의 성별")
+    val gender: String?,
 ) {
     companion object {
-        fun from(option: BalanceGameOptionVo): OptionInfo {
+        fun from(
+            option: BalanceGameOptionVo,
+            gender: String? = null,
+        ): OptionInfo {
             return OptionInfo(
                 id = option.id,
-                text = option.optionText
+                text = option.optionText,
+                gender = gender,
             )
         }
     }
