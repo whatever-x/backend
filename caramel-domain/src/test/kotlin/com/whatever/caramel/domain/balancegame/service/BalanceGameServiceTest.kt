@@ -22,6 +22,7 @@ import com.whatever.caramel.domain.calendarevent.scheduleevent.service.createCou
 import com.whatever.caramel.domain.couple.model.Couple
 import com.whatever.caramel.domain.couple.repository.CoupleRepository
 import com.whatever.caramel.domain.user.model.User
+import com.whatever.caramel.domain.user.model.UserGender
 import com.whatever.caramel.domain.user.repository.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -469,11 +470,14 @@ class BalanceGameServiceTest @Autowired constructor(
     @Test
     fun getBalanceGameHistory_WhenMoreThanPageSizeReturnsNextCursor() {
         // given
-        val (myUser, _, couple) = setUpCouple()
+        val (myUser, partnerUser, couple) = setUpCouple()
         val games = makeBalanceGame(5, LocalDate.of(2025, 5, 1)) // 05-01 ~ 05-05
         games.forEach { (game, options) ->
             userChoiceOptionRepository.save(
                 UserChoiceOption(balanceGame = game, balanceGameOption = options.first(), user = myUser)
+            )
+            userChoiceOptionRepository.save(
+                UserChoiceOption(balanceGame = game, balanceGameOption = options.last(), user = partnerUser)
             )
         }
         val queryVo = BalanceGameHistoryQueryVo(
@@ -572,40 +576,18 @@ class BalanceGameServiceTest @Autowired constructor(
         assertThat(result.cursor.next).isNull()
     }
 
-    @DisplayName("밸런스 게임 히스토리 조회 시 나만 응답한 게임은 partnerChoice가 null이다.")
+    @DisplayName("밸런스 게임 히스토리 조회 시 커플 중 한 명만 응답한 게임은 히스토리에서 제외된다.")
     @Test
-    fun getBalanceGameHistory_WhenOnlyMeRespondedPartnerChoiceIsNull() {
-        // given
-        val (myUser, _, couple) = setUpCouple()
-        val (game, options) = makeBalanceGame(1, LocalDate.of(2025, 5, 1)).first()
-        val myChoice = userChoiceOptionRepository.save(
-            UserChoiceOption(balanceGame = game, balanceGameOption = options.first(), user = myUser)
-        )
-        val queryVo = BalanceGameHistoryQueryVo(
-            size = 10,
-            cursor = null,
-            sortType = BalanceGameHistorySortType.GAME_DATE_DESC,
-        )
-
-        // when
-        val result = balanceGameService.getBalanceGameHistory(myUser.id, couple.id, queryVo)
-
-        // then
-        assertThat(result.list).hasSize(1)
-        val choice = result.list.first().coupleChoiceOption
-        assertThat(choice.myChoice).isNotNull
-        assertThat(choice.myChoice!!.balanceGameOptionId).isEqualTo(myChoice.balanceGameOption.id)
-        assertThat(choice.partnerChoice).isNull()
-    }
-
-    @DisplayName("밸런스 게임 히스토리 조회 시 파트너만 응답한 게임도 포함되며 myChoice가 null이다.")
-    @Test
-    fun getBalanceGameHistory_WhenOnlyPartnerRespondedMyChoiceIsNull() {
+    fun getBalanceGameHistory_ExcludesGamesAnsweredByOnlyOneMember() {
         // given
         val (myUser, partnerUser, couple) = setUpCouple()
-        val (game, options) = makeBalanceGame(1, LocalDate.of(2025, 5, 1)).first()
-        val partnerChoice = userChoiceOptionRepository.save(
-            UserChoiceOption(balanceGame = game, balanceGameOption = options.first(), user = partnerUser)
+        val games = makeBalanceGame(2, LocalDate.of(2025, 5, 1)) // 05-01, 05-02
+        // 05-01: 나만 응답, 05-02: 파트너만 응답 -> 둘 다 양쪽 응답이 아님
+        userChoiceOptionRepository.save(
+            UserChoiceOption(balanceGame = games[0].first, balanceGameOption = games[0].second.first(), user = myUser)
+        )
+        userChoiceOptionRepository.save(
+            UserChoiceOption(balanceGame = games[1].first, balanceGameOption = games[1].second.first(), user = partnerUser)
         )
         val queryVo = BalanceGameHistoryQueryVo(
             size = 10,
@@ -617,12 +599,7 @@ class BalanceGameServiceTest @Autowired constructor(
         val result = balanceGameService.getBalanceGameHistory(myUser.id, couple.id, queryVo)
 
         // then
-        assertThat(result.list).hasSize(1)
-        val choice = result.list.first().coupleChoiceOption
-        assertThat(choice.myChoice).isNull()
-        assertThat(choice.partnerChoice).isNotNull
-        assertThat(choice.partnerChoice!!.userId).isEqualTo(partnerUser.id)
-        assertThat(choice.partnerChoice!!.balanceGameOptionId).isEqualTo(partnerChoice.balanceGameOption.id)
+        assertThat(result.list).isEmpty()
     }
 
     @DisplayName("밸런스 게임 히스토리 조회 시 커플 모두 응답한 게임은 my/partner 선택이 모두 매핑된다.")
@@ -677,17 +654,25 @@ class BalanceGameServiceTest @Autowired constructor(
         assertThat(result.cursor.next).isNull()
     }
 
-    @DisplayName("밸런스 게임 히스토리 조회 시 soft delete된 응답만 있는 게임은 히스토리에서 제외된다.")
+    @DisplayName("밸런스 게임 히스토리 조회 시 양쪽 응답 중 하나가 soft delete되면 해당 게임은 제외된다.")
     @Test
-    fun getBalanceGameHistory_WhenChoiceSoftDeletedExcludesGame() {
+    fun getBalanceGameHistory_WhenOneOfBothChoicesSoftDeletedExcludesGame() {
         // given
-        val (myUser, _, couple) = setUpCouple()
+        val (myUser, partnerUser, couple) = setUpCouple()
         val games = makeBalanceGame(2, LocalDate.of(2025, 5, 1)) // 05-01, 05-02
+        // 05-01: 양쪽 응답 (포함되어야 함)
         userChoiceOptionRepository.save(
             UserChoiceOption(balanceGame = games[0].first, balanceGameOption = games[0].second.first(), user = myUser)
         )
-        val deletedChoice = userChoiceOptionRepository.save(
+        userChoiceOptionRepository.save(
+            UserChoiceOption(balanceGame = games[0].first, balanceGameOption = games[0].second.last(), user = partnerUser)
+        )
+        // 05-02: 양쪽 응답했지만 파트너 응답을 soft delete -> 활성 응답 1명 -> 제외
+        userChoiceOptionRepository.save(
             UserChoiceOption(balanceGame = games[1].first, balanceGameOption = games[1].second.first(), user = myUser)
+        )
+        val deletedChoice = userChoiceOptionRepository.save(
+            UserChoiceOption(balanceGame = games[1].first, balanceGameOption = games[1].second.last(), user = partnerUser)
         )
         deletedChoice.deleteEntity()
         userChoiceOptionRepository.save(deletedChoice)
@@ -705,17 +690,27 @@ class BalanceGameServiceTest @Autowired constructor(
         assertThat(result.list.first().balanceGame.gameDate).isEqualTo(games[0].first.gameDate)
     }
 
-    @DisplayName("밸런스 게임 히스토리 조회 시 응답한 게임만 포함되고 미응답 게임은 제외된다.")
+    @DisplayName("밸런스 게임 히스토리 조회 시 양쪽이 모두 응답한 게임만 gameDate 내림차순으로 내려온다.")
     @Test
-    fun getBalanceGameHistory_OnlyRespondedGamesIncluded() {
+    fun getBalanceGameHistory_IncludesOnlyGamesBothAnswered() {
         // given
-        val (myUser, _, couple) = setUpCouple()
+        val (myUser, partnerUser, couple) = setUpCouple()
         val games = makeBalanceGame(3, LocalDate.of(2025, 5, 1)) // 05-01, 05-02, 05-03
+        // 05-01: 양쪽, 05-02: 나만, 05-03: 양쪽 -> 05-03, 05-01 만 노출
         userChoiceOptionRepository.save(
             UserChoiceOption(balanceGame = games[0].first, balanceGameOption = games[0].second.first(), user = myUser)
         )
         userChoiceOptionRepository.save(
+            UserChoiceOption(balanceGame = games[0].first, balanceGameOption = games[0].second.last(), user = partnerUser)
+        )
+        userChoiceOptionRepository.save(
+            UserChoiceOption(balanceGame = games[1].first, balanceGameOption = games[1].second.first(), user = myUser)
+        )
+        userChoiceOptionRepository.save(
             UserChoiceOption(balanceGame = games[2].first, balanceGameOption = games[2].second.first(), user = myUser)
+        )
+        userChoiceOptionRepository.save(
+            UserChoiceOption(balanceGame = games[2].first, balanceGameOption = games[2].second.last(), user = partnerUser)
         )
         val queryVo = BalanceGameHistoryQueryVo(
             size = 10,
@@ -737,7 +732,7 @@ class BalanceGameServiceTest @Autowired constructor(
     @Test
     fun getBalanceGameHistory_ExcludesTodayGame() {
         // given
-        val (myUser, _, couple) = setUpCouple()
+        val (myUser, partnerUser, couple) = setUpCouple()
         val now = LocalDateTime.of(2025, 5, 5, 9, 0)
         mockStatic(DateTimeUtil::class.java).use {
             whenever(DateTimeUtil.localNow(any())).thenReturn(now)
@@ -745,6 +740,9 @@ class BalanceGameServiceTest @Autowired constructor(
             games.forEach { (game, options) ->
                 userChoiceOptionRepository.save(
                     UserChoiceOption(balanceGame = game, balanceGameOption = options.first(), user = myUser)
+                )
+                userChoiceOptionRepository.save(
+                    UserChoiceOption(balanceGame = game, balanceGameOption = options.last(), user = partnerUser)
                 )
             }
             val queryVo = BalanceGameHistoryQueryVo(
@@ -772,6 +770,11 @@ class BalanceGameServiceTest @Autowired constructor(
             myPlatformId,
             partnerPlatformId
         )
+        // 커플 멤버는 register 시 gender가 필수이므로 테스트에서도 gender를 부여한다.
+        myUser.gender = UserGender.MALE
+        partnerUser.gender = UserGender.FEMALE
+        userRepository.save(myUser)
+        userRepository.save(partnerUser)
         return Triple(myUser, partnerUser, couple)
     }
 

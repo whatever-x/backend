@@ -48,8 +48,10 @@ class BalanceGameService(
         val today = DateTimeUtil.localNow(TARGET_ZONE_ID).toLocalDate()
         val cursorDate = queryVo.cursorDate()
         val exclusiveUpperDate = if (cursorDate == null) today else minOf(cursorDate, today)
-        val respondedGameIds = userChoiceOptionRepository.findRespondedGameIdsBefore(
+        // 커플 멤버가 모두 응답한 게임만 히스토리에 노출한다.
+        val respondedGameIds = userChoiceOptionRepository.findFullyRespondedGameIdsBefore(
             memberIds = memberIds,
+            memberCount = memberIds.size.toLong(),
             date = exclusiveUpperDate,
             pageable = Pageable.ofSize(queryVo.cursorAwarePageSize()),
         )
