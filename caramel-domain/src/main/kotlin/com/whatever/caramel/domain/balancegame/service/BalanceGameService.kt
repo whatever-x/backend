@@ -44,11 +44,20 @@ class BalanceGameService(
         queryVo: BalanceGameHistoryQueryVo,
     ): PagedSlice<BalanceGameHistoryVo> {
         val memberIds = getCoupleMemberIds(coupleId)
-        val respondedGameIds = userChoiceOptionRepository.findRespondedGameIds(
-            memberIds = memberIds,
-            cursor = queryVo.cursorDate(),
-            pageable = Pageable.ofSize(queryVo.cursorAwarePageSize()),
-        )
+        val cursorDate = queryVo.cursorDate()
+        val pageable = Pageable.ofSize(queryVo.cursorAwarePageSize())
+        val respondedGameIds = if (cursorDate == null) {
+            userChoiceOptionRepository.findRespondedGameIds(
+                memberIds = memberIds,
+                pageable = pageable,
+            )
+        } else {
+            userChoiceOptionRepository.findRespondedGameIdsBefore(
+                memberIds = memberIds,
+                cursor = cursorDate,
+                pageable = pageable,
+            )
+        }
 
         val gameMap = balanceGameRepository.findAllWithOptionByIds(
             gameIds = respondedGameIds
