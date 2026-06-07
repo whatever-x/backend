@@ -1,9 +1,11 @@
 package com.whatever.caramel.api.balancegame.controller
 
 import com.whatever.caramel.api.balancegame.controller.dto.request.ChooseBalanceGameOptionRequest
+import com.whatever.caramel.api.balancegame.controller.dto.request.GetBalanceGameHistoryQueryParameter
 import com.whatever.caramel.api.balancegame.controller.dto.response.ChooseBalanceGameOptionResponse
 import com.whatever.caramel.api.balancegame.controller.dto.response.GetBalanceGameResponse
 import com.whatever.caramel.common.response.CaramelApiResponse
+import com.whatever.caramel.common.response.CursoredResponse
 import com.whatever.caramel.common.response.succeed
 import com.whatever.caramel.domain.balancegame.service.BalanceGameService
 import com.whatever.caramel.security.util.SecurityUtil.getCurrentUserCoupleId
@@ -13,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Positive
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -87,5 +90,36 @@ class BalanceGameController(
             myChoice = coupleChoiceOptionVo.myChoice,
             partnerChoice = coupleChoiceOptionVo.partnerChoice,
         ).succeed()
+    }
+
+    @Operation(
+        summary = "밸런스 게임 히스토리 조회",
+        description = """
+            ### 커플 멤버 중 한 명이라도 응답한 지난 밸런스 게임을 커서 기반으로 조회합니다.
+
+            - 최신 게임(gameDate 내림차순)부터 정렬됩니다.
+            - 각 게임마다 내 선택/상대방 선택 정보를 포함합니다. (응답하지 않았다면 null)
+        """,
+        responses = [
+            ApiResponse(responseCode = "200", description = "밸런스 게임 히스토리 목록 + 다음 커서"),
+        ]
+    )
+    @GetMapping("/history")
+    fun getBalanceGameHistory(
+        @ParameterObject queryParameter: GetBalanceGameHistoryQueryParameter,
+    ): CaramelApiResponse<CursoredResponse<GetBalanceGameResponse>> {
+        val balanceGameHistory = balanceGameService.getBalanceGameHistory(
+            userId = getCurrentUserId(),
+            coupleId = getCurrentUserCoupleId(),
+            queryVo = queryParameter.toVo(),
+        )
+        val response = balanceGameHistory.map { historyVo ->
+            GetBalanceGameResponse.from(
+                gameVo = historyVo.balanceGame,
+                myChoice = historyVo.coupleChoiceOption.myChoice,
+                partnerChoice = historyVo.coupleChoiceOption.partnerChoice,
+            )
+        }
+        return CursoredResponse.from(response).succeed()
     }
 }
