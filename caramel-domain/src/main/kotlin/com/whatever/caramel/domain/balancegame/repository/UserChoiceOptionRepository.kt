@@ -19,9 +19,10 @@ interface UserChoiceOptionRepository : JpaRepository<UserChoiceOption, Long> {
         """
         select uco from UserChoiceOption uco
             join fetch uco.balanceGameOption
+            join fetch uco.user
         where uco.balanceGame.id = :gameId
             and uco.user.id in :userIds
-            and uco.isDeleted = false 
+            and uco.isDeleted = false
     """
     )
     fun findAllWithOptionByBalanceGameIdAndUsers(
@@ -48,36 +49,23 @@ interface UserChoiceOptionRepository : JpaRepository<UserChoiceOption, Long> {
             where uco.user.id in :memberIds
                 and uco.isDeleted = false
                 and bg.isDeleted = false
+                and bg.gameDate < :date
             group by bg.id
+            having count(distinct uco.user.id) = :memberCount
             order by bg.gameDate desc
         """
     )
-    fun findRespondedGameIds(
+    fun findFullyRespondedGameIdsBefore(
         memberIds: Collection<Long>,
-        pageable: Pageable,
-    ): List<Long>
-
-    @Query(
-        """
-            select bg.id from UserChoiceOption uco
-                join uco.balanceGame bg
-            where uco.user.id in :memberIds
-                and uco.isDeleted = false
-                and bg.isDeleted = false
-                and bg.gameDate < :cursor
-            group by bg.id
-            order by bg.gameDate desc
-        """
-    )
-    fun findRespondedGameIdsBefore(
-        memberIds: Collection<Long>,
-        cursor: LocalDate,
+        memberCount: Long,
+        date: LocalDate,
         pageable: Pageable,
     ): List<Long>
 
     @Query(
         """
             select uco from UserChoiceOption uco
+                join fetch uco.user
             where uco.balanceGame.id in :gameIds
                 and uco.user.id in :memberIds
                 and uco.isDeleted = false

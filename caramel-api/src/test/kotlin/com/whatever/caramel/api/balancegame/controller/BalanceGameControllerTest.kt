@@ -7,6 +7,7 @@ import com.whatever.caramel.domain.balancegame.vo.BalanceGameOptionVo
 import com.whatever.caramel.domain.balancegame.vo.BalanceGameVo
 import com.whatever.caramel.domain.balancegame.vo.CoupleChoiceOptionVo
 import com.whatever.caramel.domain.balancegame.vo.UserChoiceOptionVo
+import com.whatever.caramel.domain.user.model.UserGender
 import com.whatever.caramel.security.util.SecurityUtil
 import io.mockk.every
 import io.mockk.mockkStatic
@@ -46,7 +47,7 @@ class BalanceGameControllerTest : ControllerTestSupport() {
                 )
             )
         whenever(balanceGameService.getCoupleMemberChoices(any(), any()))
-            .thenReturn(listOf(UserChoiceOptionVo(0L, 0L, 0L, 0L)))
+            .thenReturn(listOf(UserChoiceOptionVo(0L, 0L, 0L, 0L, UserGender.MALE)))
         every { SecurityUtil.getCurrentUserCoupleId() } returns 0L
         every { SecurityUtil.getCurrentUserId() } returns 0L
 
