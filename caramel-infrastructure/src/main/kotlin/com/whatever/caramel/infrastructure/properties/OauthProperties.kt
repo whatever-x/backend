@@ -10,7 +10,7 @@ data class OauthProperties(
 
 data class KakaoOauthSecret(
     val baseUrl: String,
-    val clientId: String,
+    val clientIds: List<String>,
     val clientSecret: String,
     val redirectUrl: String,
     val appId: String,
@@ -23,7 +23,7 @@ data class KakaoOauthSecret(
 data class AppleOauthSecret(
     val baseUrl: String,
     val teamId: String,
-    val serviceId: String,
+    val serviceIds: List<String>,
     val keyId: String,
     val keyPath: String,
     val redirectUrl: String,
