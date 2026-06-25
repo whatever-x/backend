@@ -32,6 +32,11 @@ enum class AuthExceptionCode(
         sequence = "004",
         message = "지원되지 않는 로그인 플랫폼입니다.",
     ),
+    ILLEGAL_AUDIENCE(
+        sequence = "005",
+        message = "id token의 audience가 허용된 client_id와 일치하지 않습니다.",
+        status = HttpStatus.UNAUTHORIZED,
+    ),
     ;
 
     override val code = "AUTH$sequence"

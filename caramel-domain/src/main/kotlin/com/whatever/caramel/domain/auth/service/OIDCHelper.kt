@@ -1,7 +1,9 @@
 package com.whatever.caramel.domain.auth.service
 
+import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.common.global.jwt.JwtProvider
 import com.whatever.caramel.domain.auth.exception.AuthExceptionCode
+import com.whatever.caramel.domain.auth.exception.IllegalOidcTokenException
 import com.whatever.caramel.domain.auth.exception.OidcPublicKeyMismatchException
 import com.whatever.caramel.infrastructure.client.dto.AppleIdTokenPayload
 import com.whatever.caramel.infrastructure.client.dto.JsonWebKey
@@ -41,7 +43,7 @@ class OIDCHelper(
             idToken = idToken,
             rsaPublicKey = getRsaPublicKey(webKey.n, webKey.e),
             issuer = oauthProperties.apple.baseUrl,
-            audience = oauthProperties.apple.serviceId,
+            audiences = oauthProperties.apple.serviceIds,
         )
 
         return jws.toAppleIdTokenPayload()
@@ -61,7 +63,7 @@ class OIDCHelper(
             idToken = idToken,
             rsaPublicKey = getRsaPublicKey(webKey.n, webKey.e),
             issuer = oauthProperties.kakao.baseUrl,
-            audience = oauthProperties.kakao.clientId,
+            audiences = oauthProperties.kakao.clientIds,
         )
 
         return jws.toKakaoIdTokenPayload()
@@ -71,27 +73,34 @@ class OIDCHelper(
         idToken: String,
         rsaPublicKey: PublicKey,
         issuer: String,
-        audience: String,
+        audiences: List<String>,
     ): Jws<Claims> {
         val idTokenParser = getIdTokenParser(
             issuer = issuer,
-            audience = audience,
             rsaPublicKey = rsaPublicKey
         )
-        return jwtProvider.parseJwt(
+        val jws = jwtProvider.parseJwt(
             jwtParser = idTokenParser,
             token = idToken
         )
+
+        val jwsAudiences = jws.payload.audience ?: emptySet()
+        if (audiences.none { it in jwsAudiences }) {
+            logger.warn { "id token의 audience 불일치. 대상=${jwsAudiences}, 허용=${audiences}" }
+            throw IllegalOidcTokenException(
+                AuthExceptionCode.ILLEGAL_AUDIENCE,
+                ErrorUi.Toast("유효하지 않은 로그인 토근입니다."),
+            )
+        }
+        return jws
     }
 
     private fun getIdTokenParser(
         issuer: String,
-        audience: String,
         rsaPublicKey: PublicKey,
     ): JwtParser {
         return Jwts.parser()
             .requireIssuer(issuer)
-            .requireAudience(audience)
             .verifyWith(rsaPublicKey)
             .build()
     }

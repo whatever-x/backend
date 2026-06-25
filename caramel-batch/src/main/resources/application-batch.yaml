@@ -47,7 +47,7 @@ jwt:
 oauth:
   kakao:
     base-url: ${OAUTH_BASE_URL}
-    client-id: ${OAUTH_CLIENT_ID}
+    client-ids: ${OAUTH_CLIENT_IDS}
     client-secret: ${OAUTH_CLIENT_SECRET}
     redirect-url: ${OAUTH_REDIRECT_URL}
     app-id: ${OAUTH_APP_ID}
@@ -55,7 +55,7 @@ oauth:
   apple:
     base-url: ${APPLE_BASE_URL}
     team-id: ${APPLE_TEAM_ID}
-    service-id: ${APPLE_SERVICE_ID}
+    service-ids: ${APPLE_SERVICE_IDS}
     key-id: ${APPLE_KEY_ID}
     key-path: ${APPLE_KEY_PATH}
     redirect-url: ${APPLE_REDIRECT_URI}
