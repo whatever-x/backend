@@ -19,8 +19,8 @@ import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
 import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
-import org.springframework.batch.item.database.JpaPagingItemReader
-import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder
+import org.springframework.batch.item.database.JpaCursorItemReader
+import org.springframework.batch.item.database.builder.JpaCursorItemReaderBuilder
 import org.springframework.batch.repeat.RepeatStatus
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -41,11 +41,11 @@ class AnniversaryFcmBatchConfig(
     fun anniversaryItemReader(
         @DateTimeFormat(pattern = "yyyy-MM-dd")
         @Value("#{jobParameters['runDate']}") runDate: LocalDate,
-    ): JpaPagingItemReader<ScheduledNotification> {
+    ): JpaCursorItemReader<ScheduledNotification> {
         val startOfDay = runDate.atStartOfDay()
         val endOfDay = startOfDay.plusDays(1).withNano(0)
 
-        return JpaPagingItemReaderBuilder<ScheduledNotification>()
+        return JpaCursorItemReaderBuilder<ScheduledNotification>()
             .name("anniversaryItemReader")
             .entityManagerFactory(apiEntityManagerFactory)
             .queryString(
@@ -68,8 +68,6 @@ class AnniversaryFcmBatchConfig(
                     "endOfDay" to endOfDay,
                 )
             )
-            .pageSize(FCM_PAGE_SIZE)
-            .transacted(false)
             .build()
     }
 
@@ -157,7 +155,6 @@ class AnniversaryFcmBatchConfig(
     }
 
     companion object {
-        private const val FCM_PAGE_SIZE = 10
         private const val FCM_CHUNK_SIZE = 10
     }
 }
