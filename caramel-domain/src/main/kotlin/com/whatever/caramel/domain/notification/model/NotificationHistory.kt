@@ -20,6 +20,7 @@ import java.time.LocalDateTime
 class NotificationHistory(
     @Column(nullable = false)
     val sourceNotificationId: Long,
+
     val targetUserId: Long,
 
     @Enumerated(value = EnumType.STRING)
