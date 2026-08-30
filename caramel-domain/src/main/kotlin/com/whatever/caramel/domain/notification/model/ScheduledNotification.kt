@@ -27,6 +27,8 @@ class ScheduledNotification(
     val body: String,
 
     val image: String? = null,
+
+    val sentAt: LocalDateTime? = null,
 ) : BaseTimeEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

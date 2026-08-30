@@ -22,6 +22,7 @@ import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.database.JpaPagingItemReader
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder
 import org.springframework.batch.repeat.RepeatStatus
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -34,7 +35,6 @@ class AnniversaryFcmBatchConfig(
     private val whatEverJobRepository: JobRepository,
     private val apiEntityManagerFactory: EntityManagerFactory,
     private val firebaseService: FirebaseService,
-    private val notificationHistoryRepository: NotificationHistoryRepository,
 ) {
     @Bean
     @StepScope
@@ -53,6 +53,12 @@ class AnniversaryFcmBatchConfig(
                     SELECT s FROM ScheduledNotification s 
                     WHERE s.notifyAt >= :startOfDay 
                     AND s.notifyAt < :endOfDay
+                    AND s.sentAt IS NULL
+                    AND NOT EXISTS (
+                        SELECT 1 FROM NotificationHistory nh
+                        WHERE nh.sourceNotificationId = s.id
+                            AND nh.sendStatus = com.whatever.caramel.domain.notification.model.SendStatus.FAILED
+                    )
                     ORDER BY s.id
                     """.trimIndent()
             )
@@ -68,7 +74,10 @@ class AnniversaryFcmBatchConfig(
     }
 
     @Bean
-    fun anniversaryItemWriter(): ItemWriter<ScheduledNotification> {
+    fun anniversaryItemWriter(
+        notificationHistoryRepository: NotificationHistoryRepository,
+        scheduledNotificationRepository: ScheduledNotificationRepository,
+    ): ItemWriter<ScheduledNotification> {
         return ItemWriter { chunk ->
             chunk.items.forEach { notification ->
                 with(notification) {
@@ -85,13 +94,20 @@ class AnniversaryFcmBatchConfig(
                                 errorMessage = exception.message.orEmpty(),
                             )
                         )
-                    }.onSuccess {
-                        notificationHistoryRepository.save(
-                            NotificationHistory.succeeded(
-                                source = notification,
+                    }.onSuccess { isSent ->
+                        if (isSent) {
+                            scheduledNotificationRepository.markAsSent(
+                                id = notification.id,
                                 sentAt = DateTimeUtil.localNow(zoneId = KST_ZONE_ID),
                             )
-                        )
+                        } else {
+                            notificationHistoryRepository.save(
+                                NotificationHistory.failed(
+                                    source = notification,
+                                    errorMessage = "FCM 토큰이 empty",
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -100,7 +116,7 @@ class AnniversaryFcmBatchConfig(
 
     @Bean
     fun anniversaryStep(
-        transactionManager: PlatformTransactionManager,
+        @Qualifier("apiTransactionManager") transactionManager: PlatformTransactionManager,
         anniversaryItemReader: ItemReader<ScheduledNotification>,
         anniversaryItemWriter: ItemWriter<ScheduledNotification>,
         anniversaryStepListener: AnniversaryStepListener,
@@ -115,12 +131,12 @@ class AnniversaryFcmBatchConfig(
 
     @Bean
     fun removeStep(
-        transactionManager: PlatformTransactionManager,
+        @Qualifier("apiTransactionManager") transactionManager: PlatformTransactionManager,
         scheduledNotificationRepository: ScheduledNotificationRepository,
     ): Step {
         return StepBuilder("removeStep", whatEverJobRepository)
             .tasklet({ _, _ ->
-                scheduledNotificationRepository.deleteAllInBatch()
+                scheduledNotificationRepository.deleteAllProcessed()
                 RepeatStatus.FINISHED
             }, transactionManager)
             .build()

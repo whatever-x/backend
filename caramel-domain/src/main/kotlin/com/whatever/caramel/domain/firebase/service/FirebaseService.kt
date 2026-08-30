@@ -58,16 +58,16 @@ class FirebaseService(
     fun sendNotification(
         targetUserIds: Set<Long>,
         fcmNotification: FcmNotification,
-    ) {
+    ): Boolean {
         if (!firebaseProperties.fcmEnabled) {
-            return
+            return true
         }
 
         val tokens = getSendableFcmTokens(targetUserIds).map { it.token }
 
         if (tokens.isEmpty()) {
             logger.debug { "No FCM tokens to send notification. User IDs: ${targetUserIds}" }
-            return
+            return false
         }
         logger.info { "Sending FCM notification to ${tokens.size} tokens." }
 
@@ -82,6 +82,8 @@ class FirebaseService(
                 fcmNotification = fcmNotification,
             )
         }
+
+        return true
     }
 
     fun sendData(

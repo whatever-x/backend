@@ -9,11 +9,17 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "notification_history")
+@Table(
+    name = "notification_history",
+    uniqueConstraints = [UniqueConstraint(name = "uk_notification_history_source_notification_id", columnNames = ["sourceNotificationId"])],
+)
 class NotificationHistory(
+    @Column(nullable = false)
+    val sourceNotificationId: Long,
     val targetUserId: Long,
 
     @Enumerated(value = EnumType.STRING)
@@ -32,8 +38,6 @@ class NotificationHistory(
     @Column(length = 20, nullable = false)
     val sendStatus: SendStatus,
 
-    val sentAt: LocalDateTime? = null,
-
     val errorMessage: String? = null,
 ) : BaseTimeEntity() {
     @Id
@@ -41,25 +45,11 @@ class NotificationHistory(
     val id: Long = 0L
 
     companion object {
-        fun succeeded(
-            source: ScheduledNotification,
-            sentAt: LocalDateTime,
-        ): NotificationHistory = NotificationHistory(
-            targetUserId = source.targetUserId,
-            notificationType = source.notificationType,
-            notifyAt = source.notifyAt,
-            title = source.title,
-            body = source.body,
-            image = source.image,
-            sendStatus = SendStatus.SUCCEEDED,
-            sentAt = sentAt,
-            errorMessage = null,
-        )
-
         fun failed(
             source: ScheduledNotification,
             errorMessage: String,
         ): NotificationHistory = NotificationHistory(
+            sourceNotificationId = source.id,
             targetUserId = source.targetUserId,
             notificationType = source.notificationType,
             notifyAt = source.notifyAt,
@@ -67,7 +57,6 @@ class NotificationHistory(
             body = source.body,
             image = source.image,
             sendStatus = SendStatus.FAILED,
-            sentAt = null,
             errorMessage = errorMessage,
         )
     }

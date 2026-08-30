@@ -46,6 +46,7 @@ class AnniversaryJobTest @Autowired constructor(
     @Test
     fun `anniversaryJob 배치 성공 테스트`() {
         insertScheduleNotification()
+        whenever(firebaseService.sendNotification(any(), any())).thenReturn(true)
 
         val jobParameters = jobLauncherTestUtils.uniqueJobParametersBuilder
             .addString("runDate", LocalDate.now(ZoneId.of("Asia/Seoul")).toString())
