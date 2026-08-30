@@ -84,19 +84,19 @@ class AnniversaryJobTest @Autowired constructor(
         )
         val invalidToken = "invalid-token"
 
-        whenever(firebaseService.sendNotification(any(), any()))
-            .thenThrow(
-                FcmSendException(
-                    tokens = listOf(
-                        FcmSendFailedReason(
-                            errorToken = invalidToken,
-                            errorMessageCode = FirebaseExceptionCode.FCM_UNREGISTERED_TOKEN,
-                        )
-                    ),
-                    errorCode = FirebaseExceptionCode.FCM_UNREGISTERED_TOKEN,
-                    errorUi = ErrorUi.Toast("알림을 전송에 실패했어요.")
+        val exception = FcmSendException(
+            tokens = listOf(
+                FcmSendFailedReason(
+                    errorToken = invalidToken,
+                    errorMessageCode = FirebaseExceptionCode.FCM_UNREGISTERED_TOKEN,
                 )
-            )
+            ),
+            errorCode = FirebaseExceptionCode.FCM_UNREGISTERED_TOKEN,
+            errorUi = ErrorUi.Toast("알림을 전송에 실패했어요.")
+        )
+
+        whenever(firebaseService.sendNotification(any(), any()))
+            .thenThrow(exception)
 
         val jobParameters = jobLauncherTestUtils.uniqueJobParametersBuilder
             .addString("runDate", LocalDate.now(ZoneId.of("Asia/Seoul")).toString())
@@ -112,7 +112,7 @@ class AnniversaryJobTest @Autowired constructor(
         assertThat(jobExecution.exitStatus).isEqualTo(ExitStatus.COMPLETED)
 
         verify(firebaseService, times(1))
-            .removeToken(invalidToken)
+            .removeUnregisteredTokens(exception)
     }
 
     private fun insertScheduleNotification() {
