@@ -43,7 +43,7 @@ class AnniversaryFcmBatchConfig(
         @Value("#{jobParameters['runDate']}") runDate: LocalDate,
     ): JpaCursorItemReader<ScheduledNotification> {
         val startOfDay = runDate.atStartOfDay()
-        val endOfDay = startOfDay.plusDays(1).withNano(0)
+        val now = DateTimeUtil.localNow(KST_ZONE_ID)
 
         return JpaCursorItemReaderBuilder<ScheduledNotification>()
             .name("anniversaryItemReader")
@@ -52,7 +52,7 @@ class AnniversaryFcmBatchConfig(
                 """
                     SELECT s FROM ScheduledNotification s 
                     WHERE s.notifyAt >= :startOfDay 
-                    AND s.notifyAt < :endOfDay
+                    AND s.notifyAt <= :now
                     AND s.sentAt IS NULL
                     AND NOT EXISTS (
                         SELECT 1 FROM NotificationHistory nh
@@ -65,7 +65,7 @@ class AnniversaryFcmBatchConfig(
             .parameterValues(
                 mapOf(
                     "startOfDay" to startOfDay,
-                    "endOfDay" to endOfDay,
+                    "now" to now,
                 )
             )
             .build()

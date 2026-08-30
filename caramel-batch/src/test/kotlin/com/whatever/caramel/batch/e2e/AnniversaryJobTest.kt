@@ -145,18 +145,34 @@ class AnniversaryJobTest @Autowired constructor(
         verify(firebaseService, times(21)).sendNotification(any(), any())
     }
 
+    @Test
+    fun `anniversaryJob은 아직 발송 시각이 되지 않은 알림을 처리하지 않는다`() {
+        insertScheduleNotifications(
+            count = 1,
+            notifyAt = LocalDateTime.now(ZoneId.of("Asia/Seoul")).plusMinutes(10),
+        )
+
+        val jobExecution = jobLauncherTestUtils.launchJob(jobParameters())
+
+        assertThat(jobExecution.status).isEqualTo(BatchStatus.COMPLETED)
+        assertThat(scheduledNotificationRepository.findAll()).hasSize(1)
+        verify(firebaseService, times(0)).sendNotification(any(), any())
+    }
+
     private fun insertScheduleNotification() {
         insertScheduleNotifications(count = 4)
     }
 
-    private fun insertScheduleNotifications(count: Int): List<ScheduledNotification> {
-        val now = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
+    private fun insertScheduleNotifications(
+        count: Int,
+        notifyAt: LocalDateTime = LocalDateTime.now(ZoneId.of("Asia/Seoul")),
+    ): List<ScheduledNotification> {
         return scheduledNotificationRepository.saveAll(
             (1..count).map { index ->
                 ScheduledNotification(
                     targetUserId = index.toLong(),
                     notificationType = NotificationType.MY_BIRTHDAY,
-                    notifyAt = now,
+                    notifyAt = notifyAt,
                     title = "title-$index",
                     body = "body-$index",
                 )
