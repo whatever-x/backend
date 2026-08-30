@@ -57,7 +57,6 @@ class AnniversaryFcmBatchConfig(
                     AND NOT EXISTS (
                         SELECT 1 FROM NotificationHistory nh
                         WHERE nh.sourceNotificationId = s.id
-                            AND nh.sendStatus = com.whatever.caramel.domain.notification.model.SendStatus.FAILED
                     )
                     ORDER BY s.id
                     """.trimIndent()

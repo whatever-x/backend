@@ -4,7 +4,6 @@ import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.domain.firebase.service.FirebaseService
 import com.whatever.caramel.domain.notification.model.NotificationType
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
-import com.whatever.caramel.domain.notification.model.SendStatus
 import com.whatever.caramel.domain.notification.repository.NotificationHistoryRepository
 import com.whatever.caramel.domain.notification.repository.ScheduledNotificationRepository
 import com.whatever.caramel.infrastructure.firebase.exception.FcmSendException
@@ -125,7 +124,6 @@ class AnniversaryJobTest @Autowired constructor(
 
         val history = notificationHistoryRepository.findAll().single()
         assertThat(history.sourceNotificationId).isEqualTo(notification.id)
-        assertThat(history.sendStatus).isEqualTo(SendStatus.FAILED)
         assertThat(history.errorMessage).isNotBlank()
 
         verify(firebaseService, times(1))

@@ -34,10 +34,6 @@ class NotificationHistory(
 
     val image: String? = null,
 
-    @Enumerated(value = EnumType.STRING)
-    @Column(length = 20, nullable = false)
-    val sendStatus: SendStatus,
-
     val errorMessage: String? = null,
 ) : BaseTimeEntity() {
     @Id
@@ -56,7 +52,6 @@ class NotificationHistory(
             title = source.title,
             body = source.body,
             image = source.image,
-            sendStatus = SendStatus.FAILED,
             errorMessage = errorMessage,
         )
     }

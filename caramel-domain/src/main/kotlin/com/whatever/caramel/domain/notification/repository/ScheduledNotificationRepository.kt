@@ -32,7 +32,6 @@ interface ScheduledNotificationRepository :
             or exists (
             select 1 from NotificationHistory nh
             where nh.sourceNotificationId = sn.id
-                and nh.sendStatus = com.whatever.caramel.domain.notification.model.SendStatus.FAILED
         )
         """
     )
