@@ -5,7 +5,7 @@ import com.whatever.caramel.domain.notification.model.ScheduledNotification
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 interface ScheduledNotificationRepository :
     JpaRepository<ScheduledNotification, Long>,
@@ -47,6 +47,6 @@ interface ScheduledNotificationRepository :
     )
     fun markAsSent(
         id: Long,
-        sentAt: LocalDateTime,
+        sentAt: ZonedDateTime,
     ): Int
 }

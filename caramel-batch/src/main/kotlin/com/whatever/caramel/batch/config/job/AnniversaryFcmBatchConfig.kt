@@ -95,7 +95,7 @@ class AnniversaryFcmBatchConfig(
                         if (isSent) {
                             scheduledNotificationRepository.markAsSent(
                                 id = notification.id,
-                                sentAt = DateTimeUtil.localNow(zoneId = KST_ZONE_ID),
+                                sentAt = DateTimeUtil.zonedNow(zoneId = KST_ZONE_ID),
                             )
                         } else {
                             notificationHistoryRepository.save(

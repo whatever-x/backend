@@ -1,5 +1,6 @@
 package com.whatever.caramel.domain.notification.model
 
+import com.whatever.caramel.common.util.DateTimeUtil
 import com.whatever.caramel.domain.base.BaseTimeEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -10,7 +11,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 @Entity
 @Table(
@@ -27,7 +28,7 @@ class NotificationHistory(
     @Column(length = 50, nullable = false)
     val notificationType: NotificationType,
 
-    val notifyAt: LocalDateTime,
+    val notifyAt: ZonedDateTime,
 
     val title: String,
 
@@ -49,7 +50,7 @@ class NotificationHistory(
             sourceNotificationId = source.id,
             targetUserId = source.targetUserId,
             notificationType = source.notificationType,
-            notifyAt = source.notifyAt,
+            notifyAt = source.notifyAt.atZone(DateTimeUtil.KST_ZONE_ID),
             title = source.title,
             body = source.body,
             image = source.image,

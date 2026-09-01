@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 @Entity
 @Table
@@ -28,7 +29,7 @@ class ScheduledNotification(
 
     val image: String? = null,
 
-    val sentAt: LocalDateTime? = null,
+    val sentAt: ZonedDateTime? = null,
 ) : BaseTimeEntity() {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
