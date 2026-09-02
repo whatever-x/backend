@@ -4,6 +4,19 @@ import com.whatever.caramel.domain.firebase.model.FcmToken
 import com.whatever.caramel.domain.firebase.repository.FcmTokenRepository
 import com.whatever.caramel.domain.user.repository.UserRepository
 import com.whatever.caramel.infrastructure.firebase.FcmSender
+import com.whatever.caramel.infrastructure.firebase.exception.FcmSendException
+import com.whatever.caramel.infrastructure.firebase.exception.FcmSendFailedReason
+import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_BLANK_TOKEN
+import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_EMPTY_TOKEN
+import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_INTERNAL_SERVER_ERROR
+import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_INVALID_ARGUMENT
+import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_MULTIPLE_TOKEN_ERROR
+import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_QUOTA_EXCEEDED
+import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_SENDER_ID_MISMATCH
+import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_SERVER_UNAVAILABLE
+import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_THIRD_PARTY_AUTH_ERROR
+import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.FCM_UNREGISTERED_TOKEN
+import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode.UNKNOWN
 import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import com.whatever.caramel.infrastructure.properties.FirebaseProperties
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -45,16 +58,16 @@ class FirebaseService(
     fun sendNotification(
         targetUserIds: Set<Long>,
         fcmNotification: FcmNotification,
-    ) {
+    ): Boolean {
         if (!firebaseProperties.fcmEnabled) {
-            return
+            return true
         }
 
         val tokens = getSendableFcmTokens(targetUserIds).map { it.token }
 
         if (tokens.isEmpty()) {
             logger.debug { "No FCM tokens to send notification. User IDs: ${targetUserIds}" }
-            return
+            return false
         }
         logger.info { "Sending FCM notification to ${tokens.size} tokens." }
 
@@ -69,6 +82,8 @@ class FirebaseService(
                 fcmNotification = fcmNotification,
             )
         }
+
+        return true
     }
 
     fun sendData(
@@ -101,8 +116,34 @@ class FirebaseService(
         }
     }
 
-    @Transactional
-    fun removeToken(fcmToken: String) {
-        fcmTokenRepository.deleteFcmTokensByToken(fcmToken)
+    fun removeUnregisteredTokens(exception: Throwable) {
+        if (exception is FcmSendException && exception.tokens.isNotEmpty()) {
+            if (exception.errorCode == FCM_UNREGISTERED_TOKEN || exception.errorCode == FCM_MULTIPLE_TOKEN_ERROR) {
+                exception.tokens.forEach { fcmToken ->
+                    checkUnregisterToken(fcmToken)
+                }
+            }
+        }
+    }
+
+    private fun checkUnregisterToken(fcmToken: FcmSendFailedReason) {
+        when (fcmToken.errorMessageCode) {
+            FCM_UNREGISTERED_TOKEN -> {
+                fcmTokenRepository.deleteFcmTokensByToken(fcmToken.errorToken)
+            }
+
+            UNKNOWN,
+            FCM_EMPTY_TOKEN,
+            FCM_INVALID_ARGUMENT,
+            FCM_SERVER_UNAVAILABLE,
+            FCM_INTERNAL_SERVER_ERROR,
+            FCM_QUOTA_EXCEEDED,
+            FCM_SENDER_ID_MISMATCH,
+            FCM_THIRD_PARTY_AUTH_ERROR,
+            FCM_BLANK_TOKEN,
+            FCM_MULTIPLE_TOKEN_ERROR -> {
+                /** no-op **/
+            }
+        }
     }
 }

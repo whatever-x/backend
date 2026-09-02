@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS scheduled_notification;
-DROP TABLE IF EXISTS "user";
-DROP TABLE IF EXISTS couple;
+DROP TABLE IF EXISTS scheduled_notification CASCADE;
+DROP TABLE IF EXISTS "user" CASCADE;
+DROP TABLE IF EXISTS couple CASCADE;
 
 CREATE TABLE couple
 (

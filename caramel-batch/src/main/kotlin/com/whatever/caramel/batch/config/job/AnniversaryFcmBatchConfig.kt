@@ -1,16 +1,14 @@
 package com.whatever.caramel.batch.config.job
 
-import com.whatever.caramel.batch.config.exception.BatchUnregisteredException
-import com.whatever.caramel.batch.config.exception.CaramelBatchException
 import com.whatever.caramel.batch.config.listener.AnniversaryJobListener
-import com.whatever.caramel.batch.config.listener.AnniversarySkipListener
 import com.whatever.caramel.batch.config.listener.AnniversaryStepListener
-import com.whatever.caramel.batch.entity.BatchFcmNotification
+import com.whatever.caramel.common.util.DateTimeUtil
+import com.whatever.caramel.common.util.DateTimeUtil.KST_ZONE_ID
 import com.whatever.caramel.domain.firebase.service.FirebaseService
+import com.whatever.caramel.domain.notification.model.NotificationHistory
 import com.whatever.caramel.domain.notification.model.ScheduledNotification
+import com.whatever.caramel.domain.notification.repository.NotificationHistoryRepository
 import com.whatever.caramel.domain.notification.repository.ScheduledNotificationRepository
-import com.whatever.caramel.infrastructure.firebase.exception.FcmException
-import com.whatever.caramel.infrastructure.firebase.exception.FcmSendException
 import com.whatever.caramel.infrastructure.firebase.model.FcmNotification
 import jakarta.persistence.EntityManagerFactory
 import org.springframework.batch.core.Job
@@ -19,13 +17,12 @@ import org.springframework.batch.core.configuration.annotation.StepScope
 import org.springframework.batch.core.job.builder.JobBuilder
 import org.springframework.batch.core.repository.JobRepository
 import org.springframework.batch.core.step.builder.StepBuilder
-import org.springframework.batch.core.step.skip.AlwaysSkipItemSkipPolicy
-import org.springframework.batch.item.ItemProcessor
 import org.springframework.batch.item.ItemReader
 import org.springframework.batch.item.ItemWriter
-import org.springframework.batch.item.database.JpaPagingItemReader
-import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder
+import org.springframework.batch.item.database.JpaCursorItemReader
+import org.springframework.batch.item.database.builder.JpaCursorItemReaderBuilder
 import org.springframework.batch.repeat.RepeatStatus
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -44,66 +41,68 @@ class AnniversaryFcmBatchConfig(
     fun anniversaryItemReader(
         @DateTimeFormat(pattern = "yyyy-MM-dd")
         @Value("#{jobParameters['runDate']}") runDate: LocalDate,
-    ): JpaPagingItemReader<ScheduledNotification> {
+    ): JpaCursorItemReader<ScheduledNotification> {
         val startOfDay = runDate.atStartOfDay()
-        val endOfDay = startOfDay.plusDays(1).withNano(0)
+        val now = DateTimeUtil.localNow(KST_ZONE_ID)
 
-        return JpaPagingItemReaderBuilder<ScheduledNotification>()
+        return JpaCursorItemReaderBuilder<ScheduledNotification>()
             .name("anniversaryItemReader")
             .entityManagerFactory(apiEntityManagerFactory)
             .queryString(
                 """
                     SELECT s FROM ScheduledNotification s 
                     WHERE s.notifyAt >= :startOfDay 
-                    AND s.notifyAt < :endOfDay
+                    AND s.notifyAt <= :now
+                    AND s.sentAt IS NULL
+                    AND NOT EXISTS (
+                        SELECT 1 FROM NotificationHistory nh
+                        WHERE nh.sourceNotificationId = s.id
+                    )
                     ORDER BY s.id
                     """.trimIndent()
             )
             .parameterValues(
                 mapOf(
                     "startOfDay" to startOfDay,
-                    "endOfDay" to endOfDay,
+                    "now" to now,
                 )
             )
-            .pageSize(FCM_PAGE_SIZE)
-            .transacted(false)
             .build()
     }
 
     @Bean
-    fun anniversaryItemProcessor(): ItemProcessor<ScheduledNotification, BatchFcmNotification> {
-        return ItemProcessor<ScheduledNotification, BatchFcmNotification> { notification ->
-            val fcmNotification = FcmNotification(
-                title = notification.title,
-                body = notification.body,
-                image = notification.image,
-            )
-            BatchFcmNotification(
-                targetId = notification.targetUserId,
-                fcmNotification = fcmNotification,
-            )
-        }
-    }
-
-    @Bean
-    fun anniversaryItemWriter(): ItemWriter<BatchFcmNotification> {
+    fun anniversaryItemWriter(
+        notificationHistoryRepository: NotificationHistoryRepository,
+        scheduledNotificationRepository: ScheduledNotificationRepository,
+    ): ItemWriter<ScheduledNotification> {
         return ItemWriter { chunk ->
             chunk.items.forEach { notification ->
                 with(notification) {
                     runCatching {
                         firebaseService.sendNotification(
-                            setOf(targetId),
-                            FcmNotification(
-                                title = fcmNotification.title,
-                                body = fcmNotification.body,
-                                image = fcmNotification.image,
-                            )
+                            targetUserIds = setOf(notification.targetUserId),
+                            fcmNotification = FcmNotification(title = title, body = body, image = image),
                         )
                     }.onFailure { exception ->
-                        if (exception is FcmSendException && exception.tokens.isNotEmpty()) {
-                            throw BatchUnregisteredException(
-                                tokens = exception.tokens,
-                                errorCode = exception.errorCode,
+                        firebaseService.removeUnregisteredTokens(exception)
+                        notificationHistoryRepository.save(
+                            NotificationHistory.failed(
+                                source = notification,
+                                errorMessage = exception.message.orEmpty(),
+                            )
+                        )
+                    }.onSuccess { isSent ->
+                        if (isSent) {
+                            scheduledNotificationRepository.markAsSent(
+                                id = notification.id,
+                                sentAt = DateTimeUtil.zonedNow(zoneId = KST_ZONE_ID),
+                            )
+                        } else {
+                            notificationHistoryRepository.save(
+                                NotificationHistory.failed(
+                                    source = notification,
+                                    errorMessage = "FCM 토큰이 empty",
+                                )
                             )
                         }
                     }
@@ -114,36 +113,27 @@ class AnniversaryFcmBatchConfig(
 
     @Bean
     fun anniversaryStep(
-        transactionManager: PlatformTransactionManager,
+        @Qualifier("apiTransactionManager") transactionManager: PlatformTransactionManager,
         anniversaryItemReader: ItemReader<ScheduledNotification>,
-        anniversaryItemProcessor: ItemProcessor<ScheduledNotification, BatchFcmNotification>,
-        anniversaryItemWriter: ItemWriter<BatchFcmNotification>,
+        anniversaryItemWriter: ItemWriter<ScheduledNotification>,
         anniversaryStepListener: AnniversaryStepListener,
-        anniversarySkipListener: AnniversarySkipListener,
     ): Step {
         return StepBuilder("anniversaryStep", whatEverJobRepository)
-            .chunk<ScheduledNotification, BatchFcmNotification>(FCM_CHUNK_SIZE, transactionManager)
+            .chunk<ScheduledNotification, ScheduledNotification>(FCM_CHUNK_SIZE, transactionManager)
             .reader(anniversaryItemReader)
-            .processor(anniversaryItemProcessor)
             .writer(anniversaryItemWriter)
-            .faultTolerant()
-            .processorNonTransactional() // processor 에서 딱히 실패할만한 요소는 보이지 않지만 넣어둠
-            .skipPolicy(AlwaysSkipItemSkipPolicy())
-            .noRetry(FcmException::class.java)
-            .noRetry(CaramelBatchException::class.java)
             .listener(anniversaryStepListener)
-            .listener(anniversarySkipListener)
             .build()
     }
 
     @Bean
     fun removeStep(
-        transactionManager: PlatformTransactionManager,
+        @Qualifier("apiTransactionManager") transactionManager: PlatformTransactionManager,
         scheduledNotificationRepository: ScheduledNotificationRepository,
     ): Step {
         return StepBuilder("removeStep", whatEverJobRepository)
             .tasklet({ _, _ ->
-                scheduledNotificationRepository.deleteAllInBatch()
+                scheduledNotificationRepository.deleteAllProcessed()
                 RepeatStatus.FINISHED
             }, transactionManager)
             .build()
@@ -164,7 +154,6 @@ class AnniversaryFcmBatchConfig(
     }
 
     companion object {
-        private const val FCM_PAGE_SIZE = 10
         private const val FCM_CHUNK_SIZE = 10
     }
 }

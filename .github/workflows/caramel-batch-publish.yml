@@ -3,6 +3,8 @@ name: caramel batch publish
 on:
   workflow_dispatch:
   push:
+    branches:
+      - develop
     paths:
       - 'caramel-batch/**'
 

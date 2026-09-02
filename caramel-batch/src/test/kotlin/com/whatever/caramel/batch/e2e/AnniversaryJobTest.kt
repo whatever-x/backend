@@ -2,12 +2,16 @@ package com.whatever.caramel.batch.e2e
 
 import com.whatever.caramel.common.global.exception.ErrorUi
 import com.whatever.caramel.domain.firebase.service.FirebaseService
+import com.whatever.caramel.domain.notification.model.NotificationType
+import com.whatever.caramel.domain.notification.model.ScheduledNotification
+import com.whatever.caramel.domain.notification.repository.NotificationHistoryRepository
 import com.whatever.caramel.domain.notification.repository.ScheduledNotificationRepository
 import com.whatever.caramel.infrastructure.firebase.exception.FcmSendException
 import com.whatever.caramel.infrastructure.firebase.exception.FcmSendFailedReason
 import com.whatever.caramel.infrastructure.firebase.exception.FirebaseExceptionCode
 import jakarta.annotation.PostConstruct
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
@@ -24,6 +28,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 
 @SpringBootTest
@@ -34,6 +39,7 @@ class AnniversaryJobTest @Autowired constructor(
     private val jdbcTemplate: JdbcTemplate,
     private val anniversaryJob: Job,
     private val scheduledNotificationRepository: ScheduledNotificationRepository,
+    private val notificationHistoryRepository: NotificationHistoryRepository,
 ) {
     @MockitoBean
     lateinit var firebaseService: FirebaseService
@@ -43,9 +49,16 @@ class AnniversaryJobTest @Autowired constructor(
         jobLauncherTestUtils.job = anniversaryJob
     }
 
+    @BeforeEach
+    fun cleanUp() {
+        jdbcTemplate.update("DELETE FROM notification_history")
+        jdbcTemplate.update("DELETE FROM scheduled_notification")
+    }
+
     @Test
     fun `anniversaryJob 배치 성공 테스트`() {
         insertScheduleNotification()
+        whenever(firebaseService.sendNotification(any(), any())).thenReturn(true)
 
         val jobParameters = jobLauncherTestUtils.uniqueJobParametersBuilder
             .addString("runDate", LocalDate.now(ZoneId.of("Asia/Seoul")).toString())
@@ -64,6 +77,9 @@ class AnniversaryJobTest @Autowired constructor(
         // 모두 처리 후 0개
         val result = scheduledNotificationRepository.findAll()
         assertThat(result.count()).isEqualTo(0)
+        assertThat(notificationHistoryRepository.findAll()).isEmpty()
+
+        verify(firebaseService, times(4)).sendNotification(any(), any())
 
         jobExecution.stepExecutions.map { stepExecution ->
             if (stepExecution.stepName == "anniversaryStep") {
@@ -75,28 +91,22 @@ class AnniversaryJobTest @Autowired constructor(
 
     @Test
     fun `anniversaryJob 중 firebase 토큰이 FCM_UNREGISTERED_TOKEN 를 받으면 removeToken이 호출된다`() {
-        jdbcTemplate.batchUpdate(
-            "INSERT INTO scheduled_notification (target_user_id, notification_type, notify_at, title, body, image, created_at, updated_at)" +
-                "VALUES (?, 'MY_BIRTHDAY', CURRENT_TIMESTAMP, 'title', 'body', null, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-            listOf(
-                arrayOf(1L),
-            )
-        )
+        val notification = insertScheduleNotifications(count = 1).single()
         val invalidToken = "invalid-token"
 
-        whenever(firebaseService.sendNotification(any(), any()))
-            .thenThrow(
-                FcmSendException(
-                    tokens = listOf(
-                        FcmSendFailedReason(
-                            errorToken = invalidToken,
-                            errorMessageCode = FirebaseExceptionCode.FCM_UNREGISTERED_TOKEN,
-                        )
-                    ),
-                    errorCode = FirebaseExceptionCode.FCM_UNREGISTERED_TOKEN,
-                    errorUi = ErrorUi.Toast("알림을 전송에 실패했어요.")
+        val exception = FcmSendException(
+            tokens = listOf(
+                FcmSendFailedReason(
+                    errorToken = invalidToken,
+                    errorMessageCode = FirebaseExceptionCode.FCM_UNREGISTERED_TOKEN,
                 )
-            )
+            ),
+            errorCode = FirebaseExceptionCode.FCM_UNREGISTERED_TOKEN,
+            errorUi = ErrorUi.Toast("알림을 전송에 실패했어요.")
+        )
+
+        whenever(firebaseService.sendNotification(any(), any()))
+            .thenThrow(exception)
 
         val jobParameters = jobLauncherTestUtils.uniqueJobParametersBuilder
             .addString("runDate", LocalDate.now(ZoneId.of("Asia/Seoul")).toString())
@@ -110,21 +120,65 @@ class AnniversaryJobTest @Autowired constructor(
 
         assertThat(jobExecution.status).isEqualTo(BatchStatus.COMPLETED)
         assertThat(jobExecution.exitStatus).isEqualTo(ExitStatus.COMPLETED)
+        assertThat(scheduledNotificationRepository.findAll()).isEmpty()
+
+        val history = notificationHistoryRepository.findAll().single()
+        assertThat(history.sourceNotificationId).isEqualTo(notification.id)
+        assertThat(history.errorMessage).isNotBlank()
 
         verify(firebaseService, times(1))
-            .removeToken(invalidToken)
+            .removeUnregisteredTokens(exception)
+    }
+
+    @Test
+    fun `anniversaryJob은 21건을 빠짐없이 처리한다`() {
+        insertScheduleNotifications(count = 21)
+        whenever(firebaseService.sendNotification(any(), any())).thenReturn(true)
+
+        val jobExecution = jobLauncherTestUtils.launchJob(jobParameters())
+
+        assertThat(jobExecution.status).isEqualTo(BatchStatus.COMPLETED)
+        assertThat(scheduledNotificationRepository.findAll()).isEmpty()
+        assertThat(notificationHistoryRepository.findAll()).isEmpty()
+        verify(firebaseService, times(21)).sendNotification(any(), any())
+    }
+
+    @Test
+    fun `anniversaryJob은 아직 발송 시각이 되지 않은 알림을 처리하지 않는다`() {
+        insertScheduleNotifications(
+            count = 1,
+            notifyAt = LocalDateTime.now(ZoneId.of("Asia/Seoul")).plusMinutes(10),
+        )
+
+        val jobExecution = jobLauncherTestUtils.launchJob(jobParameters())
+
+        assertThat(jobExecution.status).isEqualTo(BatchStatus.COMPLETED)
+        assertThat(scheduledNotificationRepository.findAll()).hasSize(1)
+        verify(firebaseService, times(0)).sendNotification(any(), any())
     }
 
     private fun insertScheduleNotification() {
-        jdbcTemplate.batchUpdate(
-            "INSERT INTO scheduled_notification (target_user_id, notification_type, notify_at, title, body, image, created_at, updated_at)" +
-                "VALUES (?, 'MY_BIRTHDAY', CURRENT_TIMESTAMP, 'title', 'body', null, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-            listOf(
-                arrayOf(1L),
-                arrayOf(2L),
-                arrayOf(3L),
-                arrayOf(4L),
-            )
+        insertScheduleNotifications(count = 4)
+    }
+
+    private fun insertScheduleNotifications(
+        count: Int,
+        notifyAt: LocalDateTime = LocalDateTime.now(ZoneId.of("Asia/Seoul")),
+    ): List<ScheduledNotification> {
+        return scheduledNotificationRepository.saveAll(
+            (1..count).map { index ->
+                ScheduledNotification(
+                    targetUserId = index.toLong(),
+                    notificationType = NotificationType.MY_BIRTHDAY,
+                    notifyAt = notifyAt,
+                    title = "title-$index",
+                    body = "body-$index",
+                )
+            }
         )
     }
+
+    private fun jobParameters() = jobLauncherTestUtils.uniqueJobParametersBuilder
+        .addString("runDate", LocalDate.now(ZoneId.of("Asia/Seoul")).toString())
+        .toJobParameters()
 }
