@@ -20,7 +20,8 @@ class RequestResponseLoggingFilter(
     private val objectMapper: ObjectMapper,
 ) : OncePerRequestFilter() {
     override fun shouldNotFilter(request: HttpServletRequest): Boolean {
-        return !LOGGING_PATTERN.containsMatchIn(request.requestURI)
+        val uri = request.requestURI
+        return uri.contains("/auth/", ignoreCase = true) || !LOGGING_PATTERN.containsMatchIn(uri)
     }
 
     override fun doFilterInternal(
