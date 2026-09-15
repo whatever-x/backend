@@ -13,6 +13,10 @@
             <PatternLayout pattern="${CONSOLE_LOG_PATTERN}"/>
         </Console>
 
+        <Console name="CONSOLE_PLAIN_APPENDER" target="SYSTEM_OUT">
+            <PatternLayout pattern="${CONSOLE_LOG_PATTERN}" disableAnsi="true"/>
+        </Console>
+
         <OpenTelemetry name="OTEL_APPENDER"
                        captureContextDataAttributes="*"
                        captureExperimentalAttributes="true"/>
@@ -38,13 +42,7 @@
             <Logger name="com.whatever" level="DEBUG" additivity="false">
                 <AppenderRef ref="CONSOLE_APPENDER"/>
             </Logger>
-            <Logger name="com.whatever.caramel.domain.auth.client" level="DEBUG" additivity="false">
-                <AppenderRef ref="CONSOLE_APPENDER"/>
-            </Logger>
             <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
-                <AppenderRef ref="CONSOLE_APPENDER"/>
-            </Logger>
-            <Logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" additivity="false">
                 <AppenderRef ref="CONSOLE_APPENDER"/>
             </Logger>
         </SpringProfile>
@@ -52,28 +50,26 @@
         <!-- Spring Profile: dev -->
         <SpringProfile name="dev">
             <Root level="INFO">
+                <AppenderRef ref="CONSOLE_PLAIN_APPENDER"/>
                 <AppenderRef ref="OTEL_APPENDER"/>
             </Root>
             <Logger name="com.whatever" level="DEBUG" additivity="false">
-                <AppenderRef ref="OTEL_APPENDER"/>
-            </Logger>
-            <Logger name="com.whatever.caramel.domain.auth.client" level="DEBUG" additivity="false">
+                <AppenderRef ref="CONSOLE_PLAIN_APPENDER"/>
                 <AppenderRef ref="OTEL_APPENDER"/>
             </Logger>
             <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
-                <AppenderRef ref="OTEL_APPENDER"/>
-            </Logger>
-            <Logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" additivity="false">
-                <AppenderRef ref="OTEL_APPENDER"/>
+                <AppenderRef ref="CONSOLE_PLAIN_APPENDER"/>
             </Logger>
         </SpringProfile>
 
         <!-- Spring Profile: production -->
         <SpringProfile name="production">
-            <Root level="ERROR">
+            <Root level="INFO">
+                <AppenderRef ref="CONSOLE_PLAIN_APPENDER"/>
                 <AppenderRef ref="OTEL_APPENDER"/>
             </Root>
-            <Logger name="com.whatever" level="DEBUG" additivity="false">
+            <Logger name="com.whatever" level="INFO" additivity="false">
+                <AppenderRef ref="CONSOLE_PLAIN_APPENDER"/>
                 <AppenderRef ref="OTEL_APPENDER"/>
             </Logger>
         </SpringProfile>

@@ -4,7 +4,7 @@ spring:
     default: dev
     active: local-mem
   application:
-    name: whatever-backend
+    name: caramel-api
   batch:
     job:
       enabled: false
@@ -75,9 +75,6 @@ otel:
     exporter: none
 
 management:
-  metrics:
-    tags:
-      application: ${ACTUATOR_APPLICATION_NAME}
   endpoints:
     access:
       default: none
@@ -88,6 +85,10 @@ management:
       base-path: ${ACTUATOR_BASE_PATH}
   server:
     port: ${ACTUATOR_BASE_PORT}
+  otlp:
+    metrics:
+      export:
+        enabled: false
 
 kor:
   openapi:
@@ -133,42 +134,63 @@ spring:
   cache:
     type: redis
 
+# management.*: spring boot actuator / micrometer 설정
 management:
   metrics:
     distribution:
       percentiles-histogram:
         http:
           server:
-            request: 'true'
+            requests: 'true'
   endpoints:
     web:
       exposure:
         include: ${ACTUATOR_EXPOSURE_API}
     access:
       default: read_only
+  otlp:
+    metrics:
+      export:
+        enabled: ${MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED:false}
+        url: ${OTEL_METRICS_ENDPOINT}
+        step: 30s
+        aggregation-temporality: cumulative
+        histogram-flavor: base2_exponential_bucket_histogram
+        max-bucket-count: 160
+        base-time-unit: milliseconds
+        headers:
+          tenant_id: caramel-prod
+  opentelemetry:
+    resource-attributes:
+      deployment.environment: prod
+      service.instance.id: ${OTEL_SERVICE_INSTANCE_ID}
 
+# otel.*: open telemetry sdk 설정. trace&logs 경로. metrics는 micrometer가 담당
 otel:
   sdk:
     disabled: false
-  service:
-    name: ${OTEL_SERVICE_NAME}
   resource:
-    providers:
-      process: false
     attributes:
-      deployment.environment: ${SPRING_PROFILES_ACTIVE}
+      deployment.environment: prod
+      service.instance.id: ${OTEL_SERVICE_INSTANCE_ID}
   traces:
-    exporter: ${OTEL_EXPORTER}
+    exporter: ${OTEL_EXPORTER:otlp}
+    sampler: parentbased_traceidratio
+    sampler.arg: ${OTEL_TRACES_SAMPLER_ARG:0.5}
   logs:
-    exporter: ${OTEL_EXPORTER}
+    exporter: ${OTEL_EXPORTER:otlp}
   exporter:
     otlp:
-      protocol: ${OTEL_EXPORTER_PROTOCOL}
+      protocol: ${OTEL_EXPORTER_PROTOCOL:grpc}
       endpoint: ${OTEL_EXPORTER_ENDPOINT}
+      headers:
+        tenant_id: caramel-prod
   java:
     disabled:
       resource:
-        providers: ${OTEL_DISABLED_PROVIDERS}
+        providers: ${OTEL_DISABLED_PROVIDERS:io.opentelemetry.instrumentation.resources.HostResourceProvider,io.opentelemetry.instrumentation.resources.OsResourceProvider,io.opentelemetry.instrumentation.resources.ProcessResourceProvider,io.opentelemetry.instrumentation.resources.ProcessRuntimeResourceProvider,io.opentelemetry.instrumentation.spring.autoconfigure.internal.resources.DistroVersionResourceProvider}
+  metrics:
+    exporter: none
 
 springdoc:
   api-docs:
@@ -202,36 +224,53 @@ management:
       percentiles-histogram:
         http:
           server:
-            request: 'true'
+            requests: 'true'
   endpoints:
     web:
       exposure:
         include: ${ACTUATOR_EXPOSURE_API}
     access:
       default: read_only
+  otlp:
+    metrics:
+      export:
+        enabled: ${MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED:true}
+        url: ${OTEL_METRICS_ENDPOINT}
+        step: 30s
+        aggregation-temporality: cumulative
+        histogram-flavor: base2_exponential_bucket_histogram
+        max-bucket-count: 160
+        base-time-unit: milliseconds
+        headers:
+          tenant_id: caramel-staging
+  opentelemetry:
+    resource-attributes:
+      deployment.environment: staging
+      service.instance.id: ${OTEL_SERVICE_INSTANCE_ID}
 
 otel:
   sdk:
     disabled: false
-  service:
-    name: ${OTEL_SERVICE_NAME}
   resource:
-    providers:
-      process: false
     attributes:
-      deployment.environment: ${SPRING_PROFILES_ACTIVE}
+      deployment.environment: staging
+      service.instance.id: ${OTEL_SERVICE_INSTANCE_ID}
   traces:
-    exporter: ${OTEL_EXPORTER}
+    exporter: ${OTEL_EXPORTER:otlp}
   logs:
-    exporter: ${OTEL_EXPORTER}
+    exporter: ${OTEL_EXPORTER:otlp}
   exporter:
     otlp:
-      protocol: ${OTEL_EXPORTER_PROTOCOL}
+      protocol: ${OTEL_EXPORTER_PROTOCOL:grpc}
       endpoint: ${OTEL_EXPORTER_ENDPOINT}
+      headers:
+        tenant_id: caramel-staging
   java:
     disabled:
       resource:
-        providers: ${OTEL_DISABLED_PROVIDERS}
+        providers: ${OTEL_DISABLED_PROVIDERS:io.opentelemetry.instrumentation.resources.HostResourceProvider,io.opentelemetry.instrumentation.resources.OsResourceProvider,io.opentelemetry.instrumentation.resources.ProcessResourceProvider,io.opentelemetry.instrumentation.resources.ProcessRuntimeResourceProvider,io.opentelemetry.instrumentation.spring.autoconfigure.internal.resources.DistroVersionResourceProvider}
+  metrics:
+    exporter: none
 
 ---
 # ┌───────────────────────── Local-mem 프로파일 ────────────────────────────
