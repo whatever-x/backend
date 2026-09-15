@@ -134,6 +134,7 @@ spring:
   cache:
     type: redis
 
+# management.*: spring boot actuator / micrometer 설정
 management:
   metrics:
     distribution:
@@ -147,7 +148,24 @@ management:
         include: ${ACTUATOR_EXPOSURE_API}
     access:
       default: read_only
+  otlp:
+    metrics:
+      export:
+        enabled: ${MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED:false}
+        url: ${OTEL_METRICS_ENDPOINT}
+        step: 30s
+        aggregation-temporality: cumulative
+        histogram-flavor: base2_exponential_bucket_histogram
+        max-bucket-count: 160
+        base-time-unit: milliseconds
+        headers:
+          tenant_id: caramel-prod
+  opentelemetry:
+    resource-attributes:
+      deployment.environment: prod
+      service.instance.id: ${OTEL_SERVICE_INSTANCE_ID}
 
+# otel.*: open telemetry sdk 설정. trace&logs 경로. metrics는 micrometer가 담당
 otel:
   sdk:
     disabled: false
@@ -213,6 +231,22 @@ management:
         include: ${ACTUATOR_EXPOSURE_API}
     access:
       default: read_only
+  otlp:
+    metrics:
+      export:
+        enabled: ${MANAGEMENT_OTLP_METRICS_EXPORT_ENABLED:true}
+        url: ${OTEL_METRICS_ENDPOINT}
+        step: 30s
+        aggregation-temporality: cumulative
+        histogram-flavor: base2_exponential_bucket_histogram
+        max-bucket-count: 160
+        base-time-unit: milliseconds
+        headers:
+          tenant_id: caramel-staging
+  opentelemetry:
+    resource-attributes:
+      deployment.environment: staging
+      service.instance.id: ${OTEL_SERVICE_INSTANCE_ID}
 
 otel:
   sdk:
